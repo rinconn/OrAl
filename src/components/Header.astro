@@ -12,16 +12,33 @@ const enlaces = [
 <header class="top">
   <div class="wrap">
     <a href="/" aria-label="Orto Alresa, inicio">
-      <img class="logo" src="/img/marca/logo-ortoalresa-color-horizontal.svg" alt="orto alresa" width="214" height="30" />
+      <img
+        class="logo"
+        src="/img/marca/logo-ortoalresa-color-horizontal.svg"
+        alt="orto alresa"
+        width="214"
+        height="30"
+      />
     </a>
     <nav class="nav" id="nav" aria-label="Principal">
-      {enlaces.map((e) => <a href={e.href}>{e.texto}</a>)}
+      {enlaces.map((e) => (
+        <a href={e.href}>{e.texto}</a>
+      ))}
+      <a class="solo-movil" href="/#contacto">
+        Contacto
+      </a>
     </nav>
     <div class="lang" aria-label="Idioma">
-      <span aria-current="true">ES</span><span>EN</span><span>FR</span>
+      <span aria-current="true">ES</span>
+      <span>EN</span>
+      <span>FR</span>
     </div>
-    <a class="btn red contacto" href="/#contacto">Contacto</a>
-    <button class="menu-btn" id="menuBtn" type="button" aria-expanded="false" aria-controls="nav">Menú</button>
+    <a class="btn red contacto" href="/#contacto">
+      Contacto
+    </a>
+    <button class="menu-btn" id="menuBtn" type="button" aria-expanded="false" aria-controls="nav">
+      Menú
+    </button>
   </div>
 </header>
 
@@ -82,6 +99,9 @@ const enlaces = [
   .lang [aria-current] {
     color: var(--ink);
   }
+  .solo-movil {
+    display: none;
+  }
   .menu-btn {
     display: none;
     margin-left: auto;
@@ -110,6 +130,11 @@ const enlaces = [
       background: #fff;
       border-bottom: 1px solid var(--line);
       padding: 8px var(--gut) 16px;
+    }
+    .nav.open .solo-movil {
+      display: block;
+      font-weight: 700;
+      color: var(--red);
     }
     .nav.open a {
       padding: 12px 0;

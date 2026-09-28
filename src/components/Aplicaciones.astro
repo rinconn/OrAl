@@ -11,18 +11,20 @@ const fmt = new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'long', ye
 <section class="sec" id="aplicaciones">
   <div class="wrap">
     <div class="head">
-      <h2>Aplicaciones <b>en el laboratorio</b></h2>
-      <a class="arrow" href="#aplicaciones">Todas las notas</a>
+      <h2>
+        Aplicaciones <b>en el laboratorio</b>
+      </h2>
+      <a class="arrow" href="#aplicaciones">
+        Todas las notas
+      </a>
     </div>
     <div class="apps">
-      {
-        notas.map((n) => (
-          <a class="app" href="#aplicaciones">
-            <time datetime={n.fecha}>{fmt.format(new Date(n.fecha))}</time>
-            <h3>{n.titulo}</h3>
-          </a>
-        ))
-      }
+      {notas.map((n) => (
+        <a class="app" href="#aplicaciones">
+          <time datetime={n.fecha}>{fmt.format(new Date(n.fecha))}</time>
+          <h3>{n.titulo}</h3>
+        </a>
+      ))}
     </div>
   </div>
 </section>

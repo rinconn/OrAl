@@ -29,13 +29,17 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
   </head>
   <body>
     <Header />
-    <div class="tab" aria-hidden="true">Expertos en centrifugación · desde 1949</div>
+    <div class="tab" aria-hidden="true">
+      Expertos en centrifugación · desde 1949
+    </div>
     <main id="inicio">
       <slot />
     </main>
     <Footer />
 
-    <button class="notas-btn" id="notasBtn" type="button" aria-pressed="false">Ver antes y después</button>
+    <button class="notas-btn" id="notasBtn" type="button" aria-pressed="false">
+      Ver antes y después
+    </button>
 
     <script>
       const btn = document.getElementById('notasBtn');
