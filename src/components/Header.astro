@@ -1,17 +1,47 @@
 ---
-const enlaces = [
-  { href: '/#gama', texto: 'Centrífugas' },
-  { href: '/#gama', texto: 'Elegir centrífuga' },
-  { href: '/#tecnologia', texto: 'Tecnología' },
-  { href: '/#distribuidores', texto: 'Distribuidores' },
-  { href: '/#contacto', texto: 'Servicio técnico' },
-  { href: '/#empresa', texto: 'Empresa' },
-];
+// Cabecera: barra de contacto (se queda arriba) + barra principal fija que se aparta al bajar y vuelve al subir.
+// En móvil el menú ocupa la pantalla, se cierra con Esc y mantiene el foco dentro mientras está abierto.
+import { principal, contacto, idiomas } from '../data/navegacion';
+
+const ruta = Astro.url.pathname;
+const actual = (href: string) => !href.startsWith('/#') && ruta.startsWith(href);
 ---
 
-<header class="top">
+<a class="skip" href="#inicio">
+  Saltar al contenido
+</a>
+
+<div class="util">
   <div class="wrap">
-    <a href="/" aria-label="Orto Alresa, inicio">
+    <p class="origen">Fabricamos en Daganzo (Madrid) desde 1949</p>
+    <a class="arrow dist" href="/#distribuidores">
+      Soy distribuidor
+    </a>
+    <a href={contacto.telefonoHref}>{contacto.telefono}</a>
+    <a href={`mailto:${contacto.comercial}`}>{contacto.comercial}</a>
+    <nav class="lang" aria-label="Idioma">
+      {idiomas.map((i) =>
+        i.codigo === 'es' ? (
+          <span aria-current="true" lang={i.codigo} title={i.nombre}>
+            {i.codigo.toUpperCase()}
+          </span>
+        ) : i.publicado ? (
+          <a href={i.href} hreflang={i.codigo} lang={i.codigo} title={i.nombre}>
+            {i.codigo.toUpperCase()}
+          </a>
+        ) : (
+          <span class="pronto" lang={i.codigo} title={`${i.nombre}: próximamente`}>
+            {i.codigo.toUpperCase()}
+          </span>
+        ),
+      )}
+    </nav>
+  </div>
+</div>
+
+<header class="top" id="top">
+  <div class="wrap bar">
+    <a class="marca" href="/" aria-label="Orto Alresa, inicio">
       <img
         class="logo"
         src="/img/marca/logo-ortoalresa-color-horizontal.svg"
@@ -20,125 +50,415 @@ const enlaces = [
         height="30"
       />
     </a>
+
     <nav class="nav" id="nav" aria-label="Principal">
-      {enlaces.map((e) => (
-        <a href={e.href}>{e.texto}</a>
-      ))}
-      <a class="solo-movil" href="/#contacto">
-        Contacto
-      </a>
+      <ul>
+        {principal.map((e) => (
+          <li>
+            <a href={e.href} aria-current={actual(e.href) ? 'page' : undefined}>
+              {e.texto}
+            </a>
+          </li>
+        ))}
+      </ul>
+      <div class="nav-extra">
+        <a class="btn red" href={contacto.href}>
+          Contacto
+        </a>
+        <a href={contacto.telefonoHref}>{contacto.telefono}</a>
+        <a href={`mailto:${contacto.comercial}`}>{contacto.comercial}</a>
+        <p class="lang-movil">
+          {idiomas.map((i) =>
+            i.codigo === 'es' ? (
+              <span aria-current="true">{i.nombre}</span>
+            ) : i.publicado ? (
+              <a href={i.href} hreflang={i.codigo} lang={i.codigo}>
+                {i.nombre}
+              </a>
+            ) : (
+              <span class="pronto" lang={i.codigo}>
+                {i.nombre}
+              </span>
+            ),
+          )}
+        </p>
+      </div>
     </nav>
-    <div class="lang" aria-label="Idioma">
-      <span aria-current="true">ES</span>
-      <span>EN</span>
-      <span>FR</span>
-    </div>
-    <a class="btn red contacto" href="/#contacto">
+
+    <a class="btn red contacto" href={contacto.href}>
       Contacto
     </a>
     <button class="menu-btn" id="menuBtn" type="button" aria-expanded="false" aria-controls="nav">
-      Menú
+      <span class="ico" aria-hidden="true"></span>
+      <span class="txt">Menú</span>
     </button>
+  </div>
+  <div class="wrap">
+    <p class="why">
+      <b>Antes:</b> diez entradas de menú al mismo nivel y, en móvil, el titular de la portada tapado por la cabecera.
+      <b>Ahora:</b> seis entradas claras, teléfono y correo comercial siempre a mano, y una cabecera que se aparta
+      mientras lees y vuelve en cuanto subes.
+    </p>
   </div>
 </header>
 
 <script>
-  const btn = document.getElementById('menuBtn');
+  const top = document.getElementById('top');
   const nav = document.getElementById('nav');
-  btn?.addEventListener('click', () => {
-    const open = nav?.classList.toggle('open') ?? false;
-    btn.setAttribute('aria-expanded', String(open));
+  const btn = document.getElementById('menuBtn');
+  const movil = window.matchMedia('(max-width: 1080px)');
+
+  // Menú móvil
+  const abrir = (abierto: boolean) => {
+    if (!nav || !btn) return;
+    nav.classList.toggle('open', abierto);
+    btn.setAttribute('aria-expanded', String(abierto));
+    btn.querySelector('.txt')!.textContent = abierto ? 'Cerrar' : 'Menú';
+    document.documentElement.classList.toggle('menu-abierto', abierto);
+    if (abierto) nav.querySelector('a')?.focus();
+  };
+  btn?.addEventListener('click', () => abrir(!nav?.classList.contains('open')));
+  nav?.addEventListener('click', (e) => {
+    if ((e.target as HTMLElement).closest('a')) abrir(false);
   });
-  nav?.addEventListener('click', () => {
-    nav.classList.remove('open');
-    btn?.setAttribute('aria-expanded', 'false');
+  document.addEventListener('keydown', (e) => {
+    if (!nav?.classList.contains('open')) return;
+    if (e.key === 'Escape') {
+      abrir(false);
+      btn?.focus();
+    }
+    // El foco no se escapa del menú mientras está abierto
+    if (e.key === 'Tab') {
+      const focos = [btn, ...nav.querySelectorAll<HTMLElement>('a[href]')].filter(Boolean) as HTMLElement[];
+      const primero = focos[0];
+      const ultimo = focos[focos.length - 1];
+      if (e.shiftKey && document.activeElement === primero) {
+        e.preventDefault();
+        ultimo.focus();
+      } else if (!e.shiftKey && document.activeElement === ultimo) {
+        e.preventDefault();
+        primero.focus();
+      }
+    }
   });
+  movil.addEventListener('change', () => abrir(false));
+
+  // Al bajar se aparta, al subir vuelve. Nunca se esconde con el menú abierto o con el foco dentro.
+  let ultimaY = window.scrollY;
+  let pendiente = false;
+  const alHacerScroll = () => {
+    const y = window.scrollY;
+    const bajando = y > ultimaY;
+    const ocupado = nav?.classList.contains('open') || top?.contains(document.activeElement);
+    top?.classList.toggle('scrolled', y > 40);
+    top?.classList.toggle('oculta', bajando && y > 360 && !ocupado);
+    ultimaY = y;
+    pendiente = false;
+  };
+  window.addEventListener(
+    'scroll',
+    () => {
+      if (!pendiente) {
+        pendiente = true;
+        requestAnimationFrame(alHacerScroll);
+      }
+    },
+    { passive: true },
+  );
+  top?.addEventListener('focusin', () => top.classList.remove('oculta'));
+
+  // En la portada, marca en el menú la sección que se está viendo
+  const enlaces = [...(nav?.querySelectorAll<HTMLAnchorElement>('ul a[href^="/#"]') ?? [])];
+  const porSeccion = new Map<string, HTMLAnchorElement>();
+  for (const a of enlaces) {
+    const id = a.hash.slice(1);
+    if (!porSeccion.has(id)) porSeccion.set(id, a);
+  }
+  if (location.pathname === '/') {
+    const visibles = new Set<string>();
+    const obs = new IntersectionObserver(
+      (entradas) => {
+        for (const en of entradas) {
+          if (en.isIntersecting) visibles.add(en.target.id);
+          else visibles.delete(en.target.id);
+        }
+        const activa = [...porSeccion.keys()].find((id) => visibles.has(id));
+        for (const a of enlaces) a.removeAttribute('aria-current');
+        if (activa) porSeccion.get(activa)?.setAttribute('aria-current', 'location');
+      },
+      { rootMargin: '-45% 0px -50% 0px' },
+    );
+    for (const id of porSeccion.keys()) {
+      const s = document.getElementById(id);
+      if (s) obs.observe(s);
+    }
+  }
 </script>
 
 <style>
+  .skip {
+    position: absolute;
+    left: 16px;
+    top: -60px;
+    z-index: 100;
+    background: var(--ink);
+    color: #fff;
+    padding: 12px 16px;
+    font-weight: 700;
+    text-decoration: none;
+  }
+  .skip:focus {
+    top: 12px;
+  }
+
+  /* Barra de contacto: se queda arriba y deja sitio al contenido al bajar */
+  .util {
+    background: var(--carbon);
+    color: var(--on-dark);
+    font-size: 14px;
+  }
+  .util .wrap {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+    height: 38px;
+  }
+  .util a {
+    text-decoration: none;
+  }
+  .util a:hover {
+    color: #fff;
+  }
+  .origen {
+    margin-right: auto;
+  }
+  .util .dist {
+    color: #fff;
+  }
+  .lang {
+    display: flex;
+    gap: 12px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    padding-left: 20px;
+    border-left: 1px solid var(--carbon-line);
+  }
+  .lang [aria-current] {
+    color: #fff;
+  }
+  .pronto {
+    opacity: 0.45;
+    cursor: default;
+  }
+
   .top {
     position: sticky;
     top: 0;
     z-index: 20;
-    background: rgba(255, 255, 255, 0.96);
+    background: rgba(255, 255, 255, 0.97);
     border-bottom: 1px solid var(--line);
+    transition:
+      transform 0.35s var(--ease),
+      box-shadow 0.35s var(--ease);
   }
-  .top .wrap {
+  .top.scrolled {
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.07);
+  }
+  .top.oculta {
+    transform: translateY(-100%);
+    box-shadow: none;
+  }
+  .bar {
     display: flex;
     align-items: center;
     gap: 32px;
-    height: 72px;
+    height: 76px;
+  }
+  .marca {
+    flex: none;
   }
   .logo {
     height: 30px;
     width: auto;
   }
   .nav {
-    display: flex;
-    gap: 26px;
     margin-left: auto;
+  }
+  .nav ul {
+    display: flex;
+    gap: 28px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
     font-size: 16px;
     font-weight: 400;
   }
-  .nav a {
+  .nav ul a {
+    display: block;
     text-decoration: none;
-    padding-block: 6px;
-    border-bottom: 2px solid transparent;
+    padding-block: 26px;
+    box-shadow: inset 0 -3px 0 transparent;
+    transition: box-shadow 0.2s var(--ease);
   }
-  .nav a:hover {
-    border-color: var(--red);
+  .nav ul a:hover,
+  .nav ul a[aria-current] {
+    box-shadow: inset 0 -3px 0 var(--red);
   }
-  .lang {
-    display: flex;
-    gap: 10px;
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--muted);
-    letter-spacing: 0.06em;
-  }
-  .lang [aria-current] {
-    color: var(--ink);
-  }
-  .solo-movil {
+  .nav-extra {
     display: none;
   }
   .menu-btn {
     display: none;
+    align-items: center;
+    gap: 10px;
     margin-left: auto;
     background: none;
     border: 1px solid var(--ink);
+    color: var(--ink);
     font: 700 14px var(--f);
-    padding: 8px 12px;
+    padding: 9px 12px;
+    cursor: pointer;
   }
+  .ico {
+    position: relative;
+    width: 18px;
+    height: 10px;
+    border-block: 2px solid currentColor;
+    transition: border-color 0.2s var(--ease);
+  }
+  .ico::before,
+  .ico::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 2px;
+    height: 2px;
+    background: currentColor;
+    opacity: 0;
+    transition:
+      transform 0.25s var(--ease),
+      opacity 0.2s;
+  }
+  [aria-expanded='true'] .ico {
+    border-color: transparent;
+  }
+  [aria-expanded='true'] .ico::before {
+    opacity: 1;
+    transform: rotate(45deg);
+  }
+  [aria-expanded='true'] .ico::after {
+    opacity: 1;
+    transform: rotate(-45deg);
+  }
+  .top .why {
+    margin: 0 0 14px;
+  }
+
+  @media (max-width: 1240px) {
+    .origen {
+      display: none;
+    }
+    .util .dist {
+      margin-right: auto;
+    }
+    .nav ul {
+      gap: 22px;
+    }
+  }
+
   @media (max-width: 1080px) {
-    .nav,
-    .lang,
+    .util {
+      display: none;
+    }
+    .bar {
+      height: 64px;
+    }
+    .logo {
+      height: 26px;
+    }
     .contacto {
       display: none;
     }
     .menu-btn {
-      display: block;
+      display: inline-flex;
+    }
+    .nav {
+      display: none;
+      position: fixed;
+      inset: 64px 0 0;
+      overflow-y: auto;
+      background: #fff;
+      padding: 8px var(--gut) calc(32px + env(safe-area-inset-bottom, 0px));
+      flex-direction: column;
+      gap: 28px;
     }
     .nav.open {
       display: flex;
-      position: absolute;
-      left: 0;
-      right: 0;
-      top: 72px;
+      animation: entra 0.25s var(--ease);
+    }
+    .nav ul {
       flex-direction: column;
       gap: 0;
-      background: #fff;
-      border-bottom: 1px solid var(--line);
-      padding: 8px var(--gut) 16px;
+      font-size: 26px;
+      font-weight: 300;
     }
-    .nav.open .solo-movil {
-      display: block;
-      font-weight: 700;
+    .nav ul a {
+      padding: 16px 0;
+      border-bottom: 1px solid var(--line);
+      box-shadow: none;
+      display: flex;
+      justify-content: space-between;
+    }
+    .nav ul a::after {
+      content: '»';
       color: var(--red);
     }
-    .nav.open a {
-      padding: 12px 0;
-      border-bottom: 1px solid var(--line);
+    .nav ul a[aria-current] {
+      color: var(--red);
+    }
+    .nav-extra {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 12px;
+      font-size: 17px;
+    }
+    .nav-extra > a:not(.btn) {
+      text-decoration: none;
+    }
+    .nav-extra .btn {
+      align-self: stretch;
+      justify-content: center;
+      margin-bottom: 8px;
+    }
+    .lang-movil {
+      display: flex;
+      gap: 18px;
+      margin-top: 8px;
+      padding-top: 16px;
+      border-top: 1px solid var(--line);
+      width: 100%;
+      font-size: 15px;
+      color: var(--muted);
+    }
+    .lang-movil [aria-current] {
+      color: var(--ink);
+      font-weight: 700;
+    }
+    :global(html.menu-abierto) {
+      overflow: hidden;
+    }
+    :global(html.menu-abierto .notas-btn) {
+      display: none;
+    }
+  }
+
+  @keyframes entra {
+    from {
+      opacity: 0;
+      transform: translateY(-8px);
     }
   }
 </style>

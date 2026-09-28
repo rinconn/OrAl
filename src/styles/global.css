@@ -48,6 +48,13 @@
 html {
   scroll-behavior: smooth;
 }
+/* Los saltos a una sección no quedan tapados por la cabecera fija */
+[id] {
+  scroll-margin-top: 84px;
+}
+main:focus {
+  outline: none;
+}
 body {
   margin: 0;
   background: var(--white);
