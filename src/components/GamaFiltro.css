@@ -1,0 +1,123 @@
+.fam {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 28px;
+}
+.fam button {
+  font: 400 15px var(--f);
+  background: none;
+  border: 1px solid var(--line);
+  padding: 8px 14px;
+  cursor: pointer;
+  color: var(--ink);
+}
+.fam button[aria-pressed='true'] {
+  background: var(--ink);
+  color: #fff;
+  border-color: var(--ink);
+}
+
+.range {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 48px 28px;
+}
+.item {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  text-decoration: none;
+}
+
+/* Cada equipo sobre su "estante" gris, como en el catálogo */
+.shelf {
+  position: relative;
+  isolation: isolate;
+  height: 250px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-inline: 18px;
+}
+.shelf::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 16px;
+  background: var(--panel);
+  z-index: -1;
+}
+.shelf em {
+  position: absolute;
+  right: 0;
+  bottom: 22px;
+  font-style: normal;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  color: #9b9b9b;
+  text-transform: uppercase;
+  writing-mode: vertical-rl;
+}
+.shelf img {
+  max-height: 228px;
+  width: auto;
+  height: auto;
+  margin-bottom: 8px;
+  mix-blend-mode: multiply;
+  transition: transform 0.3s var(--ease);
+}
+.item:hover .shelf img {
+  transform: translateY(-6px);
+}
+.item h3 {
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.1;
+}
+.item p {
+  font-size: 15px;
+  color: var(--body);
+}
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.chips span {
+  font-size: 13px;
+  font-weight: 700;
+  padding: 4px 8px;
+  background: var(--panel);
+  font-variant-numeric: tabular-nums;
+}
+.chips span.r {
+  background: var(--red);
+  color: #fff;
+}
+
+@media (max-width: 520px) {
+  .range {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 36px 16px;
+  }
+  .shelf {
+    height: 170px;
+    padding-inline: 8px;
+  }
+  .shelf img {
+    max-height: 150px;
+  }
+  .shelf em {
+    display: none;
+  }
+  .item h3 {
+    font-size: 20px;
+  }
+  .item p {
+    font-size: 14px;
+  }
+}

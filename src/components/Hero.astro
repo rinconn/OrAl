@@ -1,0 +1,188 @@
+---
+// Portada: quiénes sois en diez segundos y dos caminos claros (producto y distribuidor).
+// La figura de la Digicen 22 es el hueco reservado al futuro modelo 3D.
+---
+
+<section class="hero">
+  <div class="wrap grid">
+    <div>
+      <span class="eyebrow">Fabricantes en Madrid desde 1949</span>
+      <h1>Expertos en <b>centrifuga<i>ción</i></b></h1>
+      <p class="lead">
+        Diseñamos y fabricamos centrífugas de laboratorio en Daganzo y las llevamos a todo el mundo a través de una
+        red de distribuidores especializados.
+      </p>
+      <div class="ctas">
+        <a class="btn red" href="#gama">Ver la gama</a>
+        <a class="btn ghost" href="#distribuidores">Soy distribuidor</a>
+      </div>
+      <p class="why">
+        <b>Antes:</b> un carrusel de 7 novedades, con el titular cortado bajo el menú. <b>Ahora:</b> en diez segundos
+        se entiende quiénes sois y hay dos caminos claros, uno para ver producto y otro para el distribuidor.
+      </p>
+    </div>
+    <figure class="figure">
+      <img
+        src="/img/productos/digicen-22.webp"
+        alt="Centrífuga Digicen 22 con la tapa abierta y el rotor a la vista"
+        width="1400"
+        height="1830"
+        fetchpriority="high"
+      />
+      <span class="spin" aria-hidden="true"></span>
+      <span class="call c-lid"><i class="ln"></i><span>SmartConnect<small>vigílala desde el móvil</small></span></span>
+      <span class="call c-rotor"
+        ><i class="ln"></i><span>REI System<small>cambio de rotor sin herramientas</small></span></span
+      >
+      <span class="call c-screen"><i class="ln"></i><span>Pantalla TFT táctil</span></span>
+      <figcaption>Digicen 22 · aquí irá el modelo 3D interactivo</figcaption>
+    </figure>
+  </div>
+</section>
+
+<style>
+  .hero {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(90deg, var(--white) 0 52%, var(--panel) 52% 100%);
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: 1.05fr 1fr;
+    gap: 24px;
+    align-items: center;
+    padding-block: clamp(40px, 7vw, 96px) clamp(32px, 5vw, 72px);
+  }
+  h1 {
+    margin-top: 22px;
+    font-weight: 300;
+    font-size: clamp(48px, 7.4vw, 112px);
+    line-height: 0.94;
+  }
+  h1 b {
+    display: block;
+  }
+  h1 i {
+    font-style: normal;
+    color: var(--red);
+  }
+  .lead {
+    margin-top: 28px;
+    font-size: clamp(18px, 1.6vw, 22px);
+    max-width: 34ch;
+    color: var(--body);
+  }
+  .ctas {
+    margin-top: 36px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .figure {
+    position: relative;
+    justify-self: center;
+    width: min(100%, 620px);
+    margin: 0;
+  }
+  .figure img {
+    width: 100%;
+    height: auto;
+    filter: drop-shadow(0 30px 40px rgba(0, 0, 0, 0.18));
+  }
+  figcaption {
+    margin-top: 14px;
+    font-size: 13px;
+    color: var(--muted);
+    text-align: right;
+  }
+
+  /* Anotaciones técnicas sobre la foto, como en un plano */
+  .call {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    translate: -4.5px -50%;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .call::before {
+    content: '';
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--red);
+    box-shadow: 0 0 0 4px rgba(221, 4, 10, 0.18);
+  }
+  .ln {
+    display: block;
+    width: var(--len, 90px);
+    height: 1px;
+    background: var(--ink);
+  }
+  .call span {
+    background: #fff;
+    padding: 7px 10px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+    line-height: 1.2;
+  }
+  .call small {
+    display: block;
+    font-weight: 300;
+    letter-spacing: 0;
+    text-transform: none;
+    font-size: 14px;
+    color: var(--body);
+  }
+  .c-rotor {
+    left: 44.6%;
+    top: 51.5%;
+    --len: 150px;
+  }
+  .c-screen {
+    left: 62%;
+    top: 78%;
+    --len: 56px;
+  }
+  .c-lid {
+    left: 62%;
+    top: 9%;
+    --len: 56px;
+  }
+  .spin {
+    position: absolute;
+    left: 44.6%;
+    top: 51.5%;
+    width: 21%;
+    aspect-ratio: 1;
+    translate: -50% -50%;
+    border-radius: 50%;
+    border: 1px dashed rgba(221, 4, 10, 0.55);
+    animation: spin 14s linear infinite;
+    pointer-events: none;
+  }
+  @keyframes spin {
+    to {
+      rotate: 360deg;
+    }
+  }
+
+  @media (max-width: 900px) {
+    .hero {
+      background: var(--white);
+    }
+    .grid {
+      grid-template-columns: 1fr;
+    }
+    .figure {
+      background: var(--panel);
+      padding: 24px;
+    }
+    .call span,
+    .ln {
+      display: none;
+    }
+  }
+</style>

@@ -1,0 +1,117 @@
+---
+const razones = [
+  { cifra: '1', unidad: 'semana', titulo: 'Entrega rápida', texto: 'Plazo medio de entrega en 2024 y 2025, gracias al stock continuo.' },
+  { cifra: '48', unidad: 'h', titulo: 'Soporte que responde', texto: 'Asesoramiento, puesta en marcha y formación técnica online.' },
+  { cifra: '3', unidad: 'años', titulo: 'Garantía sin sorpresas', texto: 'En equipos nuevos. Menos incidencias para tu equipo comercial.' },
+  { cifra: 'OEM', titulo: 'Equipos a medida', texto: 'Fabricación con tu marca, análisis de riesgos y trazabilidad completa.' },
+];
+---
+
+<section class="sec dist" id="distribuidores">
+  <div class="wrap grid">
+    <div>
+      <span class="eyebrow">Para distribuidores</span>
+      <h2>Crece con <b>nosotros</b></h2>
+      <p class="intro">
+        Somos una empresa familiar y tratamos a cada distribuidor como un socio. Stock continuo, respuesta rápida y una
+        marca europea que se vende sola en el laboratorio.
+      </p>
+      <div class="ctas">
+        <a class="btn red" href="#contacto">Hazte distribuidor</a>
+        <a class="btn ghost" href="#contacto">Encuentra un distribuidor</a>
+      </div>
+    </div>
+    <div class="reasons">
+      {
+        razones.map((r) => (
+          <div>
+            <strong>
+              {r.cifra}
+              {r.unidad && <small>{r.unidad}</small>}
+            </strong>
+            <h3>{r.titulo}</h3>
+            <p>{r.texto}</p>
+          </div>
+        ))
+      }
+    </div>
+  </div>
+  <div class="wrap">
+    <p class="why">
+      <b>Antes:</b> no había ni una página para distribuidores y el formulario ponía "Cliente final" primero.
+      <b>Ahora:</b> una sección que habla a vuestro cliente real, con los argumentos que le importan.
+    </p>
+  </div>
+</section>
+
+<style>
+  .dist {
+    background: var(--band);
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1.3fr;
+    gap: clamp(28px, 5vw, 80px);
+  }
+  h2 {
+    margin-top: 18px;
+    font-weight: 300;
+    font-size: clamp(34px, 4.4vw, 60px);
+    line-height: 1;
+  }
+  h2 b {
+    color: var(--red);
+  }
+  .intro {
+    margin-top: 20px;
+    color: var(--body);
+    max-width: 40ch;
+  }
+  .ctas {
+    margin-top: 28px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .reasons {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+  }
+  .reasons > div {
+    background: #fff;
+    padding: 26px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .reasons strong {
+    font-size: 40px;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+  .reasons small {
+    font-size: 18px;
+    font-weight: 300;
+    margin-left: 4px;
+  }
+  .reasons h3 {
+    font-size: 18px;
+  }
+  .reasons p {
+    font-size: 15px;
+    color: var(--body);
+  }
+  @media (max-width: 900px) {
+    .grid {
+      grid-template-columns: 1fr;
+    }
+  }
+  @media (max-width: 520px) {
+    .reasons {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

@@ -1,0 +1,111 @@
+---
+const year = new Date().getFullYear();
+---
+
+<footer class="foot" id="contacto">
+  <div class="wrap cols">
+    <div>
+      <img class="logo-w" src="/img/marca/logo-ortoalresa-white.svg" alt="orto alresa" width="98" height="44" />
+      <p>Álvarez Redondo, S.A.<br />Los Frailes, 121 · Pol. Ind. Los Frailes<br />28814 Daganzo · Madrid · España</p>
+      <p class="tel">+34 91 884 40 16</p>
+    </div>
+    <div>
+      <h4>Contacto</h4>
+      <ul>
+        <li>info@ortoalresa.com</li>
+        <li>sales@ortoalresa.com</li>
+        <li>sat@ortoalresa.com</li>
+      </ul>
+    </div>
+    <div>
+      <h4>Gama</h4>
+      <ul>
+        <li><a href="/#gama">Aplicaciones generales</a></li>
+        <li><a href="/#gama">Aplicaciones especiales</a></li>
+        <li><a href="/#gama">Accesorios</a></li>
+        <li><a href="/#gama">Otros equipos</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>Recursos</h4>
+      <ul>
+        <li><a href="/#contacto">Catálogos y descargas</a></li>
+        <li><a href="/#contacto">Servicio técnico</a></li>
+        <li><a href="/#contacto">Certificados</a></li>
+        <li><a href="/#aplicaciones">Noticias</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="legal">
+    <div class="wrap">
+      <span>© {year} Álvarez Redondo, S.A.</span>
+      <span>Aviso legal · Privacidad · Cookies · Financiación europea</span>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .foot {
+    background: var(--carbon);
+    color: var(--on-dark);
+    font-size: 15px;
+  }
+  .cols {
+    padding-block: 56px 32px;
+    display: grid;
+    grid-template-columns: 1.4fr 1fr 1fr 1fr;
+    gap: 32px;
+  }
+  h4 {
+    margin: 0 0 12px;
+    color: #fff;
+    font-size: 14px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  a {
+    text-decoration: none;
+  }
+  a:hover {
+    color: #fff;
+  }
+  .logo-w {
+    height: 44px;
+    width: auto;
+    margin-bottom: 16px;
+  }
+  .tel {
+    margin-top: 12px;
+    color: #fff;
+    font-weight: 700;
+  }
+  .legal {
+    border-top: 1px solid var(--carbon-line);
+  }
+  .legal .wrap {
+    padding-block: 18px;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    font-size: 13px;
+  }
+  @media (max-width: 900px) {
+    .cols {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+  @media (max-width: 520px) {
+    .cols {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
