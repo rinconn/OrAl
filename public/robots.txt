@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://ortoalresa.com/sitemap-index.xml

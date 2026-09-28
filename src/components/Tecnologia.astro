@@ -2,7 +2,8 @@
 const sistemas = [
   {
     nombre: 'REI System',
-    texto: 'El rotor se asegura solo al colocarlo en el eje y se retira con un tirador. Sin herramientas y con una mano.',
+    texto:
+      'El rotor se asegura solo al colocarlo en el eje y se retira con un tirador. Sin herramientas y con una mano.',
   },
   {
     nombre: 'SmartConnect',
@@ -16,25 +17,27 @@ const sistemas = [
 <section class="sec tech" id="tecnologia">
   <div class="wrap">
     <div class="head">
-      <h2>Tecnología <b>propia</b></h2>
-      <p>Lo que diferencia a una centrífuga Orto Alresa está dentro. Estos son los sistemas que desarrollamos nosotros.</p>
+      <h2>
+        Tecnología <b>propia</b>
+      </h2>
+      <p>
+        Lo que diferencia a una centrífuga Orto Alresa está dentro. Estos son los sistemas que desarrollamos nosotros.
+      </p>
     </div>
     <div class="grid">
       <figure class="photo" role="img" aria-label="Pantalla táctil de una Consul 22 con los parámetros del programa">
         <figcaption>Valores reales de FCR según el adaptador, en pasos de 10 rpm.</figcaption>
       </figure>
       <div class="list">
-        {
-          sistemas.map((s) => (
-            <div>
-              <b>
-                {s.nombre}
-                {s.dato && <span class="num">{s.dato}</span>}
-              </b>
-              <p>{s.texto}</p>
-            </div>
-          ))
-        }
+        {sistemas.map((s) => (
+          <div>
+            <b>
+              {s.nombre}
+              {s.dato && <span class="num">{s.dato}</span>}
+            </b>
+            <p>{s.texto}</p>
+          </div>
+        ))}
       </div>
     </div>
     <p class="why">

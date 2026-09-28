@@ -11,14 +11,12 @@ const cifras = [
 
 <div class="proof">
   <div class="wrap grid">
-    {
-      cifras.map((c) => (
-        <div>
-          <strong>{c.valor}</strong>
-          <span>{c.texto}</span>
-        </div>
-      ))
-    }
+    {cifras.map((c) => (
+      <div>
+        <strong>{c.valor}</strong>
+        <span>{c.texto}</span>
+      </div>
+    ))}
   </div>
 </div>
 
