@@ -9,7 +9,7 @@ Si se para, en la terminal del Codespace: `npm run dev`.
 ## Flujo de un cambio
 
 1. Cada cambio va en su **rama**, nunca directo a `main` ([0005](decisiones/0005-ramas-pr-y-ci.md)).
-2. Se abre una **PR** con la plantilla rellena: qué cambia, antes y después, cómo se ha probado.
+2. Se abre una **PR** contando en pocas líneas qué cambia y cómo se ha probado.
 3. GitHub ejecuta la **comprobación automática** (formato, lint, tipos y build). Tiene que salir en verde.
 4. Se revisa y se **acepta** la PR. En el Codespace: `git checkout main` y `git pull`.
 

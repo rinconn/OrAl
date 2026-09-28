@@ -11,7 +11,7 @@ Hasta que se publique la web, todo va en "Sin publicar"; al publicar se cierra l
   pendiente de la empresa, forma de trabajar y registro de decisiones. Plantilla de PR y este registro. (#6)
 - Cabecera definitiva: barra superior con teléfono, correo comercial, acceso para distribuidores e idiomas;
   la cabecera se aparta al bajar y vuelve al subir; menú móvil a pantalla completa y accesible;
-  enlace "Saltar al contenido"; enlaces centralizados en `src/data/navegacion.ts`. (#5)
+  enlace "Saltar al contenido"; enlaces centralizados en `src/data/navegacion.ts`. (#3)
 - Entorno en GitHub Codespaces: se abre, instala y arranca la web solo; vista previa en `*.app.github.dev`. (#2)
 - Base de calidad: comprobación automática en cada PR (formato, lint, tipos y build), sitemap, página 404,
   `robots.txt`, cabeceras de seguridad y caché, y normas del proyecto en `CLAUDE.md`. (#1)
@@ -20,4 +20,4 @@ Hasta que se publique la web, todo va en "Sin publicar"; al publicar se cierra l
 
 ### Cambiado
 
-- Las anclas ya no quedan tapadas por la cabecera fija (`scroll-margin-top`). (#5)
+- Las anclas ya no quedan tapadas por la cabecera fija (`scroll-margin-top`). (#3)

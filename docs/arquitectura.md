@@ -42,7 +42,7 @@ src/
   pages/                 Cada archivo es una URL (index.astro → /, 404.astro → página de error)
   layouts/Base.astro     Estructura común: <head>, cabecera, pie, pestaña roja, botón "antes y después"
   components/            Una sección por archivo, con sus estilos dentro
-  data/                  Datos tipados: navegación (PR #5), productos...
+  data/                  Datos tipados: navegación, productos...
   styles/global.css      Variables de marca y utilidades comunes
   types/                 Tipos de librerías que no los traen
 astro.config.mjs         Dominio, integraciones, idiomas
