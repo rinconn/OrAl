@@ -14,11 +14,24 @@ npm run dev
 
 Abre http://localhost:4321. Los cambios se ven al guardar.
 
-| Comando           | Qué hace                                        |
-| ----------------- | ----------------------------------------------- |
-| `npm run dev`     | Servidor local con recarga automática           |
-| `npm run build`   | Revisa tipos y genera la web estática en `dist/` |
-| `npm run preview` | Sirve `dist/` para verla como en producción     |
+| Comando           | Qué hace                                          |
+| ----------------- | ------------------------------------------------- |
+| `npm run dev`     | Servidor local con recarga automática             |
+| `npm run build`   | Revisa tipos y genera la web estática en `dist/`  |
+| `npm run preview` | Sirve `dist/` para verla como en producción       |
+| `npm run format`  | Da formato a todo el código                       |
+| `npm run verify`  | Formato, lint y build: lo mismo que revisa GitHub |
+
+## Cómo trabajamos
+
+Cada mejora llega en una rama con su PR. GitHub comprueba automáticamente formato, errores y que la web compile.
+Cuando se acepta la PR, en tu copia local basta con:
+
+```bash
+git pull
+npm install   # solo si cambiaron dependencias
+npm run dev
+```
 
 ## Estructura
 

@@ -1,0 +1,56 @@
+---
+import Base from '../layouts/Base.astro';
+---
+
+<Base
+  title="Página no encontrada · Orto Alresa"
+  description="La página que buscas no existe o ha cambiado de dirección."
+>
+  <section class="sec">
+    <div class="wrap nf">
+      <span class="eyebrow">Error 404</span>
+      <h1>
+        Esta página <b>no existe</b>
+      </h1>
+      <p>Puede que haya cambiado de dirección con la web nueva. Desde aquí llegas a todo:</p>
+      <div class="links">
+        <a class="arrow" href="/">
+          Inicio
+        </a>
+        <a class="arrow" href="/#gama">
+          Centrífugas
+        </a>
+        <a class="arrow" href="/#distribuidores">
+          Distribuidores
+        </a>
+        <a class="arrow" href="/#contacto">
+          Contacto
+        </a>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .nf {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    min-height: 50vh;
+    justify-content: center;
+  }
+  h1 {
+    font-weight: 300;
+    font-size: clamp(40px, 6vw, 80px);
+    line-height: 1;
+  }
+  p {
+    color: var(--body);
+    max-width: 50ch;
+  }
+  .links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 28px;
+  }
+</style>

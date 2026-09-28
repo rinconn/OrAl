@@ -1,9 +1,28 @@
 ---
 const razones = [
-  { cifra: '1', unidad: 'semana', titulo: 'Entrega rápida', texto: 'Plazo medio de entrega en 2024 y 2025, gracias al stock continuo.' },
-  { cifra: '48', unidad: 'h', titulo: 'Soporte que responde', texto: 'Asesoramiento, puesta en marcha y formación técnica online.' },
-  { cifra: '3', unidad: 'años', titulo: 'Garantía sin sorpresas', texto: 'En equipos nuevos. Menos incidencias para tu equipo comercial.' },
-  { cifra: 'OEM', titulo: 'Equipos a medida', texto: 'Fabricación con tu marca, análisis de riesgos y trazabilidad completa.' },
+  {
+    cifra: '1',
+    unidad: 'semana',
+    titulo: 'Entrega rápida',
+    texto: 'Plazo medio de entrega en 2024 y 2025, gracias al stock continuo.',
+  },
+  {
+    cifra: '48',
+    unidad: 'h',
+    titulo: 'Soporte que responde',
+    texto: 'Asesoramiento, puesta en marcha y formación técnica online.',
+  },
+  {
+    cifra: '3',
+    unidad: 'años',
+    titulo: 'Garantía sin sorpresas',
+    texto: 'En equipos nuevos. Menos incidencias para tu equipo comercial.',
+  },
+  {
+    cifra: 'OEM',
+    titulo: 'Equipos a medida',
+    texto: 'Fabricación con tu marca, análisis de riesgos y trazabilidad completa.',
+  },
 ];
 ---
 
@@ -11,29 +30,33 @@ const razones = [
   <div class="wrap grid">
     <div>
       <span class="eyebrow">Para distribuidores</span>
-      <h2>Crece con <b>nosotros</b></h2>
+      <h2>
+        Crece con <b>nosotros</b>
+      </h2>
       <p class="intro">
         Somos una empresa familiar y tratamos a cada distribuidor como un socio. Stock continuo, respuesta rápida y una
         marca europea que se vende sola en el laboratorio.
       </p>
       <div class="ctas">
-        <a class="btn red" href="#contacto">Hazte distribuidor</a>
-        <a class="btn ghost" href="#contacto">Encuentra un distribuidor</a>
+        <a class="btn red" href="#contacto">
+          Hazte distribuidor
+        </a>
+        <a class="btn ghost" href="#contacto">
+          Encuentra un distribuidor
+        </a>
       </div>
     </div>
     <div class="reasons">
-      {
-        razones.map((r) => (
-          <div>
-            <strong>
-              {r.cifra}
-              {r.unidad && <small>{r.unidad}</small>}
-            </strong>
-            <h3>{r.titulo}</h3>
-            <p>{r.texto}</p>
-          </div>
-        ))
-      }
+      {razones.map((r) => (
+        <div>
+          <strong>
+            {r.cifra}
+            {r.unidad && <small>{r.unidad}</small>}
+          </strong>
+          <h3>{r.titulo}</h3>
+          <p>{r.texto}</p>
+        </div>
+      ))}
     </div>
   </div>
   <div class="wrap">
