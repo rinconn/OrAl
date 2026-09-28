@@ -12,7 +12,7 @@ Queremos trabajar como si la web ya fuera la definitiva desde el primer día: na
 - `main` siempre funciona. Cada cambio va en una rama y entra por **PR**.
 - En cada PR, GitHub Actions ejecuta formato (Prettier), lint (ESLint con reglas de accesibilidad),
   tipos (`astro check`) y build. Si algo falla, no se acepta.
-- La PR sigue la plantilla: qué cambia, antes y después, cómo se ha probado y documentación actualizada.
+- La PR explica en pocas líneas qué cambia y cómo se ha probado.
 
 ## Alternativas descartadas
 

@@ -20,9 +20,9 @@ En la propia web, el botón **Ver antes y después** muestra estas mismas notas 
 
 | Zona             | Antes                                          | Ahora                                                                     | Por qué es mejor                                          |
 | ---------------- | ---------------------------------------------- | ------------------------------------------------------------------------- | --------------------------------------------------------- |
-| Cabecera (PR #5) | Diez entradas de menú al mismo nivel           | Seis entradas; teléfono, correo comercial e idiomas en una barra superior | Menos opciones, más claras; el contacto siempre a mano    |
-| Cabecera (PR #5) | Fija ocupando pantalla al leer                 | Se aparta al bajar y vuelve al subir                                      | Más espacio para el contenido, sobre todo en móvil        |
-| Móvil (PR #5)    | Menú pequeño                                   | Menú a pantalla completa con Contacto, teléfono e idiomas                 | Se usa con el pulgar; el distribuidor llama en un toque   |
+| Cabecera (PR #3) | Diez entradas de menú al mismo nivel           | Seis entradas; teléfono, correo comercial e idiomas en una barra superior | Menos opciones, más claras; el contacto siempre a mano    |
+| Cabecera (PR #3) | Fija ocupando pantalla al leer                 | Se aparta al bajar y vuelve al subir                                      | Más espacio para el contenido, sobre todo en móvil        |
+| Móvil (PR #3)    | Menú pequeño                                   | Menú a pantalla completa con Contacto, teléfono e idiomas                 | Se usa con el pulgar; el distribuidor llama en un toque   |
 | Rendimiento      | WordPress con plugins                          | Web estática                                                              | Carga casi instantánea, más segura y más barata de alojar |
 | Datos            | Garantía de 2 y de 3 años; 70 y 75 años        | Un solo dato, del Catálogo 2025                                           | La web no se contradice                                   |
 | Google           | Se ve el WordPress interno (wp.ortoalresa.com) | Solo la web pública                                                       | Imagen profesional en los resultados                      |
