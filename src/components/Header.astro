@@ -229,17 +229,13 @@ const actual = (href: string) => !href.startsWith('/#') && ruta.startsWith(href)
   .nav {
     margin-left: auto;
   }
-  /* Escritorio: el menú va centrado en la página, con logo y Contacto a los lados */
+  /* Escritorio: el mismo hueco a cada lado del menú, entre el logo y las banderas */
   @media (min-width: 1151px) {
     .bar {
-      display: grid;
-      grid-template-columns: 1fr auto 1fr;
+      justify-content: space-between;
     }
     .nav {
       margin-left: 0;
-    }
-    .der {
-      justify-self: end;
     }
   }
   .nav ul {
