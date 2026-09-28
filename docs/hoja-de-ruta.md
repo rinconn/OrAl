@@ -6,16 +6,16 @@ solo haya que añadirlo, sin rehacer nada.
 
 Estado a 28 de septiembre de 2026.
 
-| Fase | Qué                            | Estado              | Depende de la empresa                        |
-| ---- | ------------------------------ | ------------------- | -------------------------------------------- |
-| 0    | Base del proyecto              | Hecha               | —                                            |
-| 0b   | Cabecera definitiva            | En revisión (PR #5) | —                                            |
-| 1    | Catálogo completo y fichas     | En curso            | Fotos de todos los modelos (hay 6 de ~25)    |
-| 2    | Elegir centrífuga              | Pendiente           | —                                            |
-| 3    | Resto de páginas               | Pendiente           | Código de WordPress, lista de distribuidores |
-| 4    | Portada definitiva y modelo 3D | Pendiente           | Archivos CAD (STEP por piezas)               |
-| 5    | Inglés, francés y publicación  | Pendiente           | Dominio, alojamiento, licencia tipográfica   |
-| 6    | Área privada de distribuidores | Segunda etapa       | Aprobación de la web pública                 |
+| Fase | Qué                            | Estado        | Depende de la empresa                        |
+| ---- | ------------------------------ | ------------- | -------------------------------------------- |
+| 0    | Base del proyecto              | Hecha         | —                                            |
+| 0b   | Cabecera definitiva            | Hecha (PR #3) | —                                            |
+| 1    | Catálogo completo y fichas     | En curso      | Fotos de todos los modelos (hay 6 de ~25)    |
+| 2    | Elegir centrífuga              | Pendiente     | —                                            |
+| 3    | Resto de páginas               | Pendiente     | Código de WordPress, lista de distribuidores |
+| 4    | Portada definitiva y modelo 3D | Pendiente     | Archivos CAD (STEP por piezas)               |
+| 5    | Inglés, francés y publicación  | Pendiente     | Dominio, alojamiento, licencia tipográfica   |
+| 6    | Área privada de distribuidores | Segunda etapa | Aprobación de la web pública                 |
 
 ## 0 · Base del proyecto (hecha)
 
@@ -23,9 +23,9 @@ Astro + React + TypeScript, control de calidad automático en cada PR, SEO bási
 cabeceras de seguridad), entorno en GitHub Codespaces y prototipo de portada con las notas
 "antes y después". PRs #1 y #2.
 
-## 0b · Cabecera definitiva (en revisión)
+## 0b · Cabecera definitiva (hecha)
 
-Barra de contacto, cabecera que se aparta al bajar, menú móvil accesible y enlaces centralizados. PR #5.
+Barra de contacto, cabecera que se aparta al bajar, menú móvil accesible y enlaces centralizados. PR #3.
 
 ## 1 · Catálogo completo
 
