@@ -41,8 +41,7 @@ export const productos: Producto[] = [
     nombre: 'Cyto 22',
     aplicacion: 'especial',
     categoria: 'Citología',
-    descripcion:
-      'Citocentrífuga para oncología, hematología y microbiología. Procesa en menos de 15 minutos.',
+    descripcion: 'Citocentrífuga para oncología, hematología y microbiología. Procesa en menos de 15 minutos.',
     destacados: ['2.500 rpm', '607 xg'],
     tecnologia: ['SmartConnect'],
     imagen: { src: '/img/productos/cyto-22.webp', ancho: 900, alto: 600 },

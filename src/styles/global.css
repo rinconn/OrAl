@@ -1,20 +1,20 @@
 /* Tokens de marca Orto Alresa, a partir del sistema de diseño (tokens/colors.css y typography.css). */
 
 @font-face {
-  font-family: "Helvetica Neue Cond";
-  src: url("/fonts/HelveticaNeue-LightCond.otf") format("opentype");
+  font-family: 'Helvetica Neue Cond';
+  src: url('/fonts/HelveticaNeue-LightCond.otf') format('opentype');
   font-weight: 300;
   font-display: swap;
 }
 @font-face {
-  font-family: "Helvetica Neue Cond";
-  src: url("/fonts/HelveticaNeue-Cond.otf") format("opentype");
+  font-family: 'Helvetica Neue Cond';
+  src: url('/fonts/HelveticaNeue-Cond.otf') format('opentype');
   font-weight: 400;
   font-display: swap;
 }
 @font-face {
-  font-family: "Helvetica Neue Cond";
-  src: url("/fonts/HelveticaNeue-BoldCond.otf") format("opentype");
+  font-family: 'Helvetica Neue Cond';
+  src: url('/fonts/HelveticaNeue-BoldCond.otf') format('opentype');
   font-weight: 700;
   font-display: swap;
 }
@@ -34,7 +34,7 @@
   --steel: #9aa1a6;
   --on-dark: #bfc5c9;
 
-  --f: "Helvetica Neue Cond", "Roboto Condensed", "Arial Narrow", Arial, sans-serif;
+  --f: 'Helvetica Neue Cond', 'Roboto Condensed', 'Arial Narrow', Arial, sans-serif;
   --wrap: 1280px;
   --gut: clamp(16px, 4vw, 48px);
   --ease: cubic-bezier(0.2, 0.6, 0.2, 1);
@@ -105,7 +105,7 @@ button:focus-visible {
   gap: 12px;
 }
 .eyebrow::before {
-  content: "";
+  content: '';
   width: 28px;
   height: 2px;
   background: var(--red);
@@ -120,7 +120,7 @@ button:focus-visible {
   align-items: baseline;
 }
 .arrow::after {
-  content: "»";
+  content: '»';
   color: var(--red);
   transition: transform 0.2s var(--ease);
 }
@@ -137,7 +137,9 @@ button:focus-visible {
   font: 700 16px/1 var(--f);
   text-decoration: none;
   border: 1px solid var(--ink);
-  transition: background 0.2s var(--ease), color 0.2s var(--ease);
+  transition:
+    background 0.2s var(--ease),
+    color 0.2s var(--ease);
 }
 .btn.red {
   background: var(--red);
