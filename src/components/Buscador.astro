@@ -1,0 +1,227 @@
+---
+// Lupa de la cabecera. Busca en el navegador, sin servidor, entre los modelos y las secciones de la web.
+// Cuando entre el catálogo completo basta con que el índice lo lea de ahí.
+import { productos } from '../data/productos';
+import { principal } from '../data/navegacion';
+
+interface Entrada {
+  titulo: string;
+  detalle: string;
+  href: string;
+  texto: string;
+}
+
+const indice: Entrada[] = [
+  ...productos.map((p) => ({
+    titulo: p.nombre,
+    detalle: `Centrífuga · ${p.categoria}`,
+    href: '/#gama',
+    texto: [p.nombre, p.categoria, p.descripcion, ...p.destacados, ...(p.tecnologia ?? [])].join(' '),
+  })),
+  ...principal.map((e) => ({ titulo: e.texto, detalle: 'Sección', href: e.href, texto: e.texto })),
+];
+---
+
+<button class="lupa" id="lupaBtn" type="button" aria-expanded="false" aria-controls="buscador">
+  <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+    <circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="1.6"></circle>
+    <path d="M15.5 15.5 21 21" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"></path>
+  </svg>
+  <span class="sr">Buscar</span>
+</button>
+
+<div class="buscador" id="buscador" role="search" hidden data-indice={JSON.stringify(indice)}>
+  <div class="wrap">
+    <label class="sr" for="buscarInput">
+      Buscar en la web
+    </label>
+    <input
+      id="buscarInput"
+      type="search"
+      placeholder="Busca un modelo, p. ej. Digicen 22"
+      autocomplete="off"
+      spellcheck="false"
+    />
+    <ul class="resultados" id="resultados" aria-live="polite"></ul>
+  </div>
+</div>
+
+<script>
+  interface Entrada {
+    titulo: string;
+    detalle: string;
+    href: string;
+    texto: string;
+  }
+
+  const btn = document.getElementById('lupaBtn');
+  const panel = document.getElementById('buscador');
+  const input = document.getElementById('buscarInput') as HTMLInputElement | null;
+  const lista = document.getElementById('resultados');
+  const indice: Entrada[] = JSON.parse(panel?.dataset.indice ?? '[]');
+
+  // Sin tildes ni mayúsculas, para que "centrifuga" encuentre "Centrífuga"
+  const normal = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+  const textos = indice.map((e) => normal(`${e.titulo} ${e.detalle} ${e.texto}`));
+
+  const pintar = () => {
+    if (!lista || !input) return;
+    const palabras = normal(input.value).split(/\s+/).filter(Boolean);
+    lista.replaceChildren();
+    if (!palabras.length) return;
+    const hallados = indice.filter((_, i) => palabras.every((p) => textos[i].includes(p)));
+    if (!hallados.length) {
+      const li = document.createElement('li');
+      li.className = 'nada';
+      li.textContent = 'No hay resultados. Prueba con el nombre del modelo o escríbenos desde Contacto.';
+      lista.append(li);
+      return;
+    }
+    for (const e of hallados.slice(0, 8)) {
+      const li = document.createElement('li');
+      const a = document.createElement('a');
+      a.href = e.href;
+      const t = document.createElement('b');
+      t.textContent = e.titulo;
+      const d = document.createElement('span');
+      d.textContent = e.detalle;
+      a.append(t, d);
+      li.append(a);
+      lista.append(li);
+    }
+  };
+
+  const abrir = (abierto: boolean) => {
+    if (!panel || !btn) return;
+    panel.hidden = !abierto;
+    btn.setAttribute('aria-expanded', String(abierto));
+    if (abierto) input?.focus();
+  };
+
+  btn?.addEventListener('click', () => abrir(!!panel?.hidden));
+  input?.addEventListener('input', pintar);
+  lista?.addEventListener('click', (e) => {
+    if ((e.target as HTMLElement).closest('a')) abrir(false);
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && panel && !panel.hidden) {
+      abrir(false);
+      btn?.focus();
+    }
+  });
+  document.addEventListener('click', (e) => {
+    const t = e.target as Node;
+    if (panel && !panel.hidden && !panel.contains(t) && !btn?.contains(t)) abrir(false);
+  });
+</script>
+
+<style>
+  .lupa {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    background: none;
+    border: 0;
+    color: var(--ink);
+    cursor: pointer;
+    transition: color 0.2s var(--ease);
+  }
+  .lupa:hover,
+  .lupa[aria-expanded='true'] {
+    color: var(--red);
+  }
+  .sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .buscador {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--white);
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    box-shadow: 0 18px 30px -24px rgba(0, 0, 0, 0.35);
+    padding-block: 28px 32px;
+    animation: entra 0.2s var(--ease);
+  }
+  .buscador[hidden] {
+    display: none;
+  }
+  input {
+    width: 100%;
+    border: 0;
+    border-bottom: 2px solid var(--ink);
+    padding: 8px 0 12px;
+    font: 300 32px/1.2 var(--f);
+    color: var(--ink);
+    background: none;
+    border-radius: 0;
+    outline: none;
+  }
+  input:focus {
+    border-color: var(--red);
+  }
+  input::placeholder {
+    color: var(--muted);
+  }
+  input::-webkit-search-cancel-button {
+    display: none;
+  }
+  .resultados {
+    list-style: none;
+    margin: 8px 0 0;
+    padding: 0;
+  }
+  .resultados :global(a) {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 16px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--line);
+    text-decoration: none;
+  }
+  .resultados :global(a:hover b),
+  .resultados :global(a:focus-visible b) {
+    color: var(--red);
+  }
+  .resultados :global(b) {
+    font-size: 20px;
+    color: var(--ink);
+  }
+  .resultados :global(span) {
+    color: var(--muted);
+    font-size: 15px;
+  }
+  .resultados :global(.nada) {
+    padding: 14px 0;
+    color: var(--muted);
+  }
+
+  @media (max-width: 1220px) {
+    .buscador {
+      padding-block: 20px 24px;
+      max-height: calc(100dvh - 72px);
+      overflow-y: auto;
+    }
+    input {
+      font-size: 24px;
+    }
+  }
+
+  @keyframes entra {
+    from {
+      opacity: 0;
+      transform: translateY(-6px);
+    }
+  }
+</style>

@@ -1,6 +1,9 @@
 ---
-// Cabecera: barra de contacto (se queda arriba) + barra principal fija que se aparta al bajar y vuelve al subir.
-// En móvil el menú ocupa la pantalla, se cierra con Esc y mantiene el foco dentro mientras está abierto.
+// Cabecera: logo en dos líneas, menú, banderas de idioma, lupa y Contacto.
+// Se aparta al bajar y vuelve al subir. En móvil el menú ocupa la pantalla, se cierra con Esc
+// y mantiene el foco dentro mientras está abierto.
+import Bandera from './ui/Bandera.astro';
+import Buscador from './Buscador.astro';
 import { principal, contacto, idiomas } from '../data/navegacion';
 
 const ruta = Astro.url.pathname;
@@ -11,44 +14,10 @@ const actual = (href: string) => !href.startsWith('/#') && ruta.startsWith(href)
   Saltar al contenido
 </a>
 
-<div class="util">
-  <div class="wrap">
-    <p class="origen">Fabricamos en Daganzo (Madrid) desde 1949</p>
-    <a class="arrow dist" href="/#distribuidores">
-      Soy distribuidor
-    </a>
-    <a href={contacto.telefonoHref}>{contacto.telefono}</a>
-    <a href={`mailto:${contacto.comercial}`}>{contacto.comercial}</a>
-    <nav class="lang" aria-label="Idioma">
-      {idiomas.map((i) =>
-        i.codigo === 'es' ? (
-          <span aria-current="true" lang={i.codigo} title={i.nombre}>
-            {i.codigo.toUpperCase()}
-          </span>
-        ) : i.publicado ? (
-          <a href={i.href} hreflang={i.codigo} lang={i.codigo} title={i.nombre}>
-            {i.codigo.toUpperCase()}
-          </a>
-        ) : (
-          <span class="pronto" lang={i.codigo} title={`${i.nombre}: próximamente`}>
-            {i.codigo.toUpperCase()}
-          </span>
-        ),
-      )}
-    </nav>
-  </div>
-</div>
-
 <header class="top" id="top">
   <div class="wrap bar">
     <a class="marca" href="/" aria-label="Orto Alresa, inicio">
-      <img
-        class="logo"
-        src="/img/marca/logo-ortoalresa-color-horizontal.svg"
-        alt="orto alresa"
-        width="214"
-        height="30"
-      />
+      <img class="logo" src="/img/marca/logo-ortoalresa-2-lineas.svg" alt="orto alresa" width="132" height="44" />
     </a>
 
     <nav class="nav" id="nav" aria-label="Principal">
@@ -67,27 +36,36 @@ const actual = (href: string) => !href.startsWith('/#') && ruta.startsWith(href)
         </a>
         <a href={contacto.telefonoHref}>{contacto.telefono}</a>
         <a href={`mailto:${contacto.comercial}`}>{contacto.comercial}</a>
-        <p class="lang-movil">
-          {idiomas.map((i) =>
-            i.codigo === 'es' ? (
-              <span aria-current="true">{i.nombre}</span>
-            ) : i.publicado ? (
-              <a href={i.href} hreflang={i.codigo} lang={i.codigo}>
-                {i.nombre}
-              </a>
-            ) : (
-              <span class="pronto" lang={i.codigo}>
-                {i.nombre}
-              </span>
-            ),
-          )}
-        </p>
       </div>
     </nav>
 
-    <a class="btn red contacto" href={contacto.href}>
-      Contacto
-    </a>
+    <div class="der">
+      <div class="banderas" role="group" aria-label="Idioma">
+        {idiomas.map((i) =>
+          i.codigo === 'es' ? (
+            <span class="bandera" aria-current="true" title={i.nombre}>
+              <Bandera codigo={i.codigo} />
+              <span class="sr">{i.nombre}</span>
+            </span>
+          ) : i.publicado ? (
+            <a class="bandera" href={i.href} hreflang={i.codigo} title={i.nombre}>
+              <Bandera codigo={i.codigo} />
+              <span class="sr">{i.nombre}</span>
+            </a>
+          ) : (
+            <span class="bandera" title={`${i.nombre}: próximamente`}>
+              <Bandera codigo={i.codigo} />
+              <span class="sr">{i.nombre}: próximamente</span>
+            </span>
+          ),
+        )}
+      </div>
+      <Buscador />
+      <a class="btn red contacto" href={contacto.href}>
+        Contacto
+      </a>
+    </div>
+
     <button class="menu-btn" id="menuBtn" type="button" aria-expanded="false" aria-controls="nav">
       <span class="ico" aria-hidden="true"></span>
       <span class="txt">Menú</span>
@@ -96,8 +74,8 @@ const actual = (href: string) => !href.startsWith('/#') && ruta.startsWith(href)
   <div class="wrap">
     <p class="why">
       <b>Antes:</b> diez entradas de menú al mismo nivel y, en móvil, el titular de la portada tapado por la cabecera.
-      <b>Ahora:</b> seis entradas claras, teléfono y correo comercial siempre a mano, y una cabecera que se aparta
-      mientras lees y vuelve en cuanto subes.
+      <b>Ahora:</b> seis entradas claras, el mismo logo, idioma con banderas, una lupa para ir directo a un modelo, más
+      aire, y una cabecera que se aparta mientras lees y vuelve en cuanto subes.
     </p>
   </div>
 </header>
@@ -106,7 +84,7 @@ const actual = (href: string) => !href.startsWith('/#') && ruta.startsWith(href)
   const top = document.getElementById('top');
   const nav = document.getElementById('nav');
   const btn = document.getElementById('menuBtn');
-  const movil = window.matchMedia('(max-width: 1080px)');
+  const movil = window.matchMedia('(max-width: 1220px)');
 
   // Menú móvil
   const abrir = (abierto: boolean) => {
@@ -210,46 +188,13 @@ const actual = (href: string) => !href.startsWith('/#') && ruta.startsWith(href)
   .skip:focus {
     top: 12px;
   }
-
-  /* Barra de contacto: se queda arriba y deja sitio al contenido al bajar */
-  .util {
-    background: var(--carbon);
-    color: var(--on-dark);
-    font-size: 14px;
-  }
-  .util .wrap {
-    display: flex;
-    align-items: center;
-    gap: 28px;
-    height: 38px;
-  }
-  .util a {
-    text-decoration: none;
-  }
-  .util a:hover {
-    color: #fff;
-  }
-  .origen {
-    margin-right: auto;
-  }
-  .util .dist {
-    color: #fff;
-  }
-  .lang {
-    display: flex;
-    gap: 12px;
-    font-size: 13px;
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    padding-left: 20px;
-    border-left: 1px solid var(--carbon-line);
-  }
-  .lang [aria-current] {
-    color: #fff;
-  }
-  .pronto {
-    opacity: 0.45;
-    cursor: default;
+  .sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
   }
 
   .top {
@@ -272,32 +217,43 @@ const actual = (href: string) => !href.startsWith('/#') && ruta.startsWith(href)
   .bar {
     display: flex;
     align-items: center;
-    gap: 32px;
-    height: 76px;
+    gap: 40px;
+    height: 96px;
   }
   .marca {
     flex: none;
   }
   .logo {
-    height: 30px;
+    height: 52px;
     width: auto;
   }
+
   .nav {
     margin-left: auto;
   }
+  /* Escritorio: el mismo hueco a cada lado del menú, entre el logo y las banderas */
+  @media (min-width: 1221px) {
+    .bar {
+      justify-content: space-between;
+    }
+    .nav {
+      margin-left: 0;
+    }
+  }
   .nav ul {
     display: flex;
-    gap: 28px;
+    gap: 30px;
     list-style: none;
     margin: 0;
     padding: 0;
-    font-size: 16px;
+    font-size: 17px;
     font-weight: 400;
   }
   .nav ul a {
     display: block;
+    white-space: nowrap;
     text-decoration: none;
-    padding-block: 26px;
+    padding-block: 36px;
     box-shadow: inset 0 -3px 0 transparent;
     transition: box-shadow 0.2s var(--ease);
   }
@@ -307,6 +263,35 @@ const actual = (href: string) => !href.startsWith('/#') && ruta.startsWith(href)
   }
   .nav-extra {
     display: none;
+  }
+
+  .der {
+    flex: none;
+    display: flex;
+    align-items: center;
+    gap: 22px;
+  }
+  .banderas {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+  .bandera {
+    display: block;
+    padding-block: 5px;
+    border-bottom: 2px solid transparent;
+  }
+  .bandera[aria-current] {
+    border-color: var(--red);
+  }
+  .bandera :global(svg) {
+    display: block;
+    width: 24px;
+    height: 16px;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.12);
+  }
+  span.bandera:not([aria-current]) {
+    cursor: default;
   }
   .menu-btn {
     display: none;
@@ -356,38 +341,40 @@ const actual = (href: string) => !href.startsWith('/#') && ruta.startsWith(href)
     margin: 0 0 14px;
   }
 
-  @media (max-width: 1240px) {
-    .origen {
-      display: none;
-    }
-    .util .dist {
-      margin-right: auto;
+  /* Portátiles: menos hueco entre elementos para que el menú respire */
+  @media (max-width: 1360px) {
+    .bar {
+      gap: 32px;
     }
     .nav ul {
-      gap: 22px;
+      gap: 24px;
     }
   }
 
-  @media (max-width: 1080px) {
-    .util {
-      display: none;
-    }
+  @media (max-width: 1220px) {
     .bar {
-      height: 64px;
+      height: 72px;
+      gap: 20px;
     }
     .logo {
-      height: 26px;
+      height: 42px;
     }
-    .contacto {
+    /* En móvil solo quedan las banderas a la vista; Contacto va dentro del menú */
+    .der {
+      margin-left: auto;
+      gap: 12px;
+    }
+    .der .contacto {
       display: none;
     }
     .menu-btn {
       display: inline-flex;
+      margin-left: 0;
     }
     .nav {
       display: none;
       position: fixed;
-      inset: 64px 0 0;
+      inset: 72px 0 0;
       overflow-y: auto;
       background: #fff;
       padding: 8px var(--gut) calc(32px + env(safe-area-inset-bottom, 0px));
@@ -433,25 +420,35 @@ const actual = (href: string) => !href.startsWith('/#') && ruta.startsWith(href)
       justify-content: center;
       margin-bottom: 8px;
     }
-    .lang-movil {
-      display: flex;
-      gap: 18px;
-      margin-top: 8px;
-      padding-top: 16px;
-      border-top: 1px solid var(--line);
-      width: 100%;
-      font-size: 15px;
-      color: var(--muted);
-    }
-    .lang-movil [aria-current] {
-      color: var(--ink);
-      font-weight: 700;
-    }
     :global(html.menu-abierto) {
       overflow: hidden;
     }
     :global(html.menu-abierto .notas-btn) {
       display: none;
+    }
+  }
+
+  /* Móviles: el botón de menú se queda en icono para que quepan banderas y lupa */
+  @media (max-width: 480px) {
+    .bar {
+      gap: 12px;
+    }
+    .der {
+      gap: 4px;
+    }
+    .der .banderas {
+      gap: 8px;
+    }
+    .menu-btn {
+      padding: 9px 10px;
+    }
+    .menu-btn .txt {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
     }
   }
 

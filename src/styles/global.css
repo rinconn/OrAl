@@ -50,7 +50,7 @@ html {
 }
 /* Los saltos a una sección no quedan tapados por la cabecera fija */
 [id] {
-  scroll-margin-top: 84px;
+  scroll-margin-top: 104px;
 }
 main:focus {
   outline: none;
