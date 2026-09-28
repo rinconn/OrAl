@@ -9,6 +9,12 @@ const notas = [
   { titulo: 'REI System', detalle: 'cambio de rotor sin herramientas', x: 44.6, y: 51.5, linea: 150 },
   { titulo: 'Pantalla TFT táctil', detalle: '', x: 62, y: 78, linea: 56 },
 ];
+
+// Ficha corta del equipo de la foto, sobre su "estante" como en el catálogo. Catálogo General 2025, Serie Digicen 22 (pág. 52).
+const equipo = {
+  nombre: 'Digicen 22',
+  datos: ['16.500 rpm', '26.480 xg', '4 × 125 ml'],
+};
 ---
 
 <section class="hero">
@@ -50,42 +56,51 @@ const notas = [
 
     <div class="foto">
       <figure class="figure">
-        <img
-          src="/img/productos/digicen-22.webp"
-          alt="Centrífuga Digicen 22 con la tapa abierta y el rotor a la vista"
-          width="1400"
-          height="1830"
-          fetchpriority="high"
-        />
-        <span class="spin" aria-hidden="true"></span>
-        {notas.map((n) => (
-          <span class="call" style={`left:${n.x}%;top:${n.y}%;--len:${n.linea}px`} aria-hidden="true">
-            <i class="ln"></i>
-            <span>
-              {n.titulo}
-              {n.detalle && <small>{n.detalle}</small>}
+        <div class="lienzo">
+          <img
+            src="/img/productos/digicen-22.webp"
+            alt="Centrífuga Digicen 22 con la tapa abierta y el rotor a la vista"
+            width="1400"
+            height="1830"
+            fetchpriority="high"
+          />
+          <span class="spin" aria-hidden="true"></span>
+          {notas.map((n, i) => (
+            <span class="call" style={`left:${n.x}%;top:${n.y}%;--len:${n.linea}px;--i:${i}`} aria-hidden="true">
+              <i class="ln"></i>
+              <span>
+                {n.titulo}
+                {n.detalle && <small>{n.detalle}</small>}
+              </span>
             </span>
-          </span>
-        ))}
-        <figcaption>
-          <ul class="notas">
-            {notas.map((n) => (
-              <li>
-                <b>{n.titulo}</b>
-                {n.detalle && <span>{n.detalle}</span>}
-              </li>
-            ))}
-          </ul>
-        </figcaption>
+          ))}
+        </div>
       </figure>
+      <div class="estante">
+        <a class="ficha" href="#gama">
+          <b>{equipo.nombre}</b>
+          <span>{equipo.datos.join(' · ')}</span>
+          <span class="arrow">Ver en la gama</span>
+        </a>
+      </div>
+      <ul class="notas">
+        {notas.map((n) => (
+          <li>
+            <b>{n.titulo}</b>
+            {n.detalle && <span>{n.detalle}</span>}
+          </li>
+        ))}
+      </ul>
     </div>
   </div>
 </section>
 
 <style>
   .hero {
+    --estante: 104px;
     position: relative;
     overflow: hidden;
+    border-bottom: 1px solid var(--line);
   }
   /* Una pantalla de alto (menos la cabecera), sin pasarse en monitores muy altos */
   .grid {
@@ -157,18 +172,63 @@ const notas = [
   /* La columna de la foto lleva el fondo gris hasta el borde derecho de la pantalla */
   .foto {
     align-self: stretch;
-    display: grid;
-    place-items: center;
+    display: flex;
+    flex-direction: column;
     background: var(--panel);
     box-shadow: 0 0 0 100vmax var(--panel);
     clip-path: inset(0 -100vmax 0 0);
-    padding-block: 32px;
+    padding-top: 32px;
   }
   .figure {
     position: relative;
-    margin: 0;
+    z-index: 1;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-self: center;
+    /* Las patas se apoyan un poco dentro del estante */
+    margin: 0 0 -14px;
     /* La foto se ajusta al alto disponible para que la primera pantalla entre entera */
-    width: min(84%, calc((min(100svh - 96px, 900px) - 96px) * 1400 / 1830));
+    width: min(84%, calc((min(100svh - 96px, 900px) - 32px - var(--estante)) * 1400 / 1830));
+  }
+
+  /* El "estante" gris del catálogo: la máquina se posa encima y debajo va su ficha corta */
+  .estante {
+    position: relative;
+    height: var(--estante);
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    padding: 0 0 22px 32px;
+    background: var(--estante-gris, #e6e6e6);
+    box-shadow: 0 0 0 100vmax var(--estante-gris, #e6e6e6);
+    clip-path: inset(0 -100vmax 0 0);
+  }
+  .ficha {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    text-decoration: none;
+  }
+  .ficha b {
+    color: var(--red);
+    font-size: 15px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .ficha span {
+    font-size: 15px;
+    color: var(--body);
+    font-variant-numeric: tabular-nums;
+  }
+  .ficha .arrow {
+    margin-top: 4px;
+    color: var(--ink);
+  }
+  /* Foto y notas comparten caja para que las posiciones en % sean sobre la imagen */
+  .lienzo {
+    position: relative;
   }
   .figure img {
     width: 100%;
@@ -245,7 +305,7 @@ const notas = [
     }
     /* Más estrecho: la foto deja sitio a las notas para que no se salgan */
     .figure {
-      width: min(80%, calc((min(100svh - 72px, 900px) - 96px) * 1400 / 1830));
+      width: min(80%, calc((min(100svh - 72px, 900px) - 32px - var(--estante)) * 1400 / 1830));
     }
   }
 
@@ -282,10 +342,17 @@ const notas = [
       box-shadow: none;
       clip-path: none;
       margin-inline: calc(var(--gut) * -1);
-      padding: 24px var(--gut) 28px;
+      padding: 24px 0 24px;
     }
     .figure {
-      width: min(100%, 420px);
+      width: min(calc(100% - 2 * var(--gut)), 420px);
+      flex: none;
+    }
+    .estante {
+      --estante: 100px;
+      box-shadow: none;
+      clip-path: none;
+      padding-inline: var(--gut);
     }
     .call {
       display: none;
@@ -296,7 +363,7 @@ const notas = [
       gap: 8px;
       list-style: none;
       margin: 20px 0 0;
-      padding: 0;
+      padding: 0 var(--gut);
     }
     .notas li {
       display: flex;
@@ -317,6 +384,73 @@ const notas = [
     }
   }
 
+  /* Entrada al cargar: el texto sube por partes, la máquina entra y las notas se dibujan una a una
+     desde la máquina, como las cotas de un plano. Solo si el sistema no pide menos movimiento. */
+  @media (prefers-reduced-motion: no-preference) {
+    .texto > * {
+      animation: sube 0.7s var(--ease) both;
+    }
+    .texto > :nth-child(2) {
+      animation-delay: 0.08s;
+    }
+    .texto > :nth-child(3) {
+      animation-delay: 0.16s;
+    }
+    .texto > :nth-child(4) {
+      animation-delay: 0.24s;
+    }
+    .texto > :nth-child(5) {
+      animation-delay: 0.32s;
+    }
+    .lienzo img {
+      animation: entra-foto 1s var(--ease) 0.15s both;
+    }
+    .ficha {
+      animation: sube 0.6s var(--ease) 0.5s both;
+    }
+    .spin {
+      animation:
+        spin 14s linear infinite,
+        aparece 0.6s ease 0.9s both;
+    }
+    .call::before {
+      animation: punto 0.4s var(--ease) calc(0.9s + var(--i) * 0.25s) both;
+    }
+    .ln {
+      transform-origin: left;
+      animation: linea 0.45s var(--ease) calc(1.05s + var(--i) * 0.25s) both;
+    }
+    .call > span {
+      animation: aparece 0.4s ease calc(1.35s + var(--i) * 0.25s) both;
+    }
+  }
+  @keyframes sube {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+  }
+  @keyframes entra-foto {
+    from {
+      opacity: 0;
+      transform: translateX(40px);
+    }
+  }
+  @keyframes aparece {
+    from {
+      opacity: 0;
+    }
+  }
+  @keyframes punto {
+    from {
+      transform: scale(0);
+    }
+  }
+  @keyframes linea {
+    from {
+      transform: scaleX(0);
+    }
+  }
   @media (prefers-reduced-motion: reduce) {
     .spin {
       animation: none;
