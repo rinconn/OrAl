@@ -1,9 +1,9 @@
 ---
-// Cabecera: logo en dos líneas, menú, banderas de idioma, sellos y Contacto.
+// Cabecera: logo en dos líneas, menú, banderas de idioma y Contacto.
 // Se aparta al bajar y vuelve al subir. En móvil el menú ocupa la pantalla, se cierra con Esc
 // y mantiene el foco dentro mientras está abierto.
 import Bandera from './ui/Bandera.astro';
-import { principal, contacto, idiomas, sellos } from '../data/navegacion';
+import { principal, contacto, idiomas } from '../data/navegacion';
 
 const ruta = Astro.url.pathname;
 const actual = (href: string) => !href.startsWith('/#') && ruta.startsWith(href);
@@ -59,11 +59,6 @@ const actual = (href: string) => !href.startsWith('/#') && ruta.startsWith(href)
           ),
         )}
       </div>
-      <a class="sellos" href="/#empresa">
-        {sellos.map((s) => (
-          <img src={s.src} alt={s.alt} width={s.ancho} height={s.alto} />
-        ))}
-      </a>
       <a class="btn red contacto" href={contacto.href}>
         Contacto
       </a>
@@ -77,8 +72,8 @@ const actual = (href: string) => !href.startsWith('/#') && ruta.startsWith(href)
   <div class="wrap">
     <p class="why">
       <b>Antes:</b> diez entradas de menú al mismo nivel y, en móvil, el titular de la portada tapado por la cabecera.
-      <b>Ahora:</b> seis entradas claras, el mismo logo, banderas y sellos que ya conocéis, más aire, y una cabecera que
-      se aparta mientras lees y vuelve en cuanto subes.
+      <b>Ahora:</b> seis entradas claras, el mismo logo, idioma con banderas, los sellos en el pie, más aire, y una
+      cabecera que se aparta mientras lees y vuelve en cuanto subes.
     </p>
   </div>
 </header>
@@ -87,7 +82,7 @@ const actual = (href: string) => !href.startsWith('/#') && ruta.startsWith(href)
   const top = document.getElementById('top');
   const nav = document.getElementById('nav');
   const btn = document.getElementById('menuBtn');
-  const movil = window.matchMedia('(max-width: 1080px)');
+  const movil = window.matchMedia('(max-width: 1150px)');
 
   // Menú móvil
   const abrir = (abierto: boolean) => {
@@ -287,19 +282,6 @@ const actual = (href: string) => !href.startsWith('/#') && ruta.startsWith(href)
   span.bandera:not([aria-current]) {
     cursor: default;
   }
-  .sellos {
-    display: flex;
-    gap: 12px;
-    align-items: center;
-    padding-left: 22px;
-    border-left: 1px solid var(--line);
-  }
-  .sellos img {
-    flex: none;
-    height: 34px;
-    width: auto;
-  }
-
   .menu-btn {
     display: none;
     align-items: center;
@@ -348,11 +330,8 @@ const actual = (href: string) => !href.startsWith('/#') && ruta.startsWith(href)
     margin: 0 0 14px;
   }
 
-  /* Portátiles: los sellos se quedan solo en el pie para que el menú respire */
-  @media (max-width: 1500px) {
-    .der .sellos {
-      display: none;
-    }
+  /* Portátiles: menos hueco entre elementos para que el menú respire */
+  @media (max-width: 1360px) {
     .bar {
       gap: 32px;
     }
@@ -361,7 +340,7 @@ const actual = (href: string) => !href.startsWith('/#') && ruta.startsWith(href)
     }
   }
 
-  @media (max-width: 1080px) {
+  @media (max-width: 1150px) {
     .bar {
       height: 72px;
       gap: 20px;
@@ -369,12 +348,11 @@ const actual = (href: string) => !href.startsWith('/#') && ruta.startsWith(href)
     .logo {
       height: 42px;
     }
-    /* En móvil solo quedan las banderas a la vista; los sellos van al pie */
+    /* En móvil solo quedan las banderas a la vista; Contacto va dentro del menú */
     .der {
       margin-left: auto;
       gap: 0;
     }
-    .der .sellos,
     .der .contacto {
       display: none;
     }
