@@ -6,16 +6,16 @@ solo haya que añadirlo, sin rehacer nada.
 
 Estado a 28 de septiembre de 2026.
 
-| Fase | Qué                            | Estado        | Depende de la empresa                        |
-| ---- | ------------------------------ | ------------- | -------------------------------------------- |
-| 0    | Base del proyecto              | Hecha         | —                                            |
-| 0b   | Cabecera definitiva            | Hecha (PR #3) | —                                            |
-| 1    | Catálogo completo y fichas     | En curso      | Fotos de todos los modelos (hay 6 de ~25)    |
-| 2    | Elegir centrífuga              | Pendiente     | —                                            |
-| 3    | Resto de páginas               | Pendiente     | Código de WordPress, lista de distribuidores |
-| 4    | Portada definitiva y modelo 3D | Pendiente     | Archivos CAD (STEP por piezas)               |
-| 5    | Inglés, francés y publicación  | Pendiente     | Dominio, alojamiento, licencia tipográfica   |
-| 6    | Área privada de distribuidores | Segunda etapa | Aprobación de la web pública                 |
+| Fase | Qué                            | Estado              | Depende de la empresa                        |
+| ---- | ------------------------------ | ------------------- | -------------------------------------------- |
+| 0    | Base del proyecto              | Hecha               | —                                            |
+| 0b   | Cabecera definitiva            | Hecha (PRs #3 y #8) | —                                            |
+| 1    | Catálogo completo y fichas     | Siguiente           | Fotos de todos los modelos (hay 6 de ~25)    |
+| 2    | Elegir centrífuga              | Pendiente           | —                                            |
+| 3    | Resto de páginas               | Pendiente           | Código de WordPress, lista de distribuidores |
+| 4    | Portada definitiva y modelo 3D | Pendiente           | Archivos CAD (STEP por piezas)               |
+| 5    | Inglés, francés y publicación  | Pendiente           | Dominio, alojamiento, licencia tipográfica   |
+| 6    | Área privada de distribuidores | Segunda etapa       | Aprobación de la web pública                 |
 
 ## 0 · Base del proyecto (hecha)
 
@@ -25,12 +25,19 @@ cabeceras de seguridad), entorno en GitHub Codespaces y prototipo de portada con
 
 ## 0b · Cabecera definitiva (hecha)
 
-Barra de contacto, cabecera que se aparta al bajar, menú móvil accesible y enlaces centralizados. PR #3.
+Primera versión con barra de contacto, cabecera que se aparta al bajar, menú móvil accesible y enlaces
+centralizados (PR #3). Rediseño aprobado (PR #8): logo de dos líneas, menú con el mismo hueco a cada lado,
+banderas, lupa y sin barra superior; los sellos pasan al pie.
+
+Quedan dos cosas que llegan con otras fases: el desplegable de Centrífugas y que la lupa lleve a cada ficha
+(fase 1), y el desplegable de Distribuidores (fase 3). Hasta que existan esas páginas no se ponen, para no
+tener enlaces que lleven todos a la portada.
 
 ## 1 · Catálogo completo
 
 Los modelos del Catálogo General 2025 transcritos a datos validados en cada build, el listado de
 Centrífugas por familias, la plantilla de ficha y el desplegable de Centrífugas en la cabecera.
+La lupa pasa a leer del catálogo y lleva a la ficha de cada modelo.
 Las fotos que faltan tienen su hueco en `src/data/medios.ts`.
 
 ## 2 · Elegir centrífuga
