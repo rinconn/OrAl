@@ -53,6 +53,7 @@ motivo) y centro de descargas.
 ## 4 · Portada definitiva y modelo 3D
 
 La portada se remata con todo lo anterior ya real y entra la centrífuga 3D interactiva (glTF y React Three Fiber).
+La primera pantalla ya está cerrada (PR #9); el visor 3D ocupará el hueco de la foto de la Digicen 22 sin mover nada más.
 
 ## 5 · Inglés, francés y publicación
 

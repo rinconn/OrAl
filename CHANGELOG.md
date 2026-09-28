@@ -22,6 +22,10 @@ Hasta que se publique la web, todo va en "Sin publicar"; al publicar se cierra l
 
 ### Cambiado
 
+- Primera pantalla de la portada: cabe entera en la pantalla, con las cifras (48 h, 1 semana, 3 años, ISO 13485)
+  junto al titular y sin la franja de cifras aparte; la Digicen 22 se posa sobre su estante con una ficha corta;
+  entrada animada breve (texto, máquina y notas dibujándose), desactivada si el sistema pide menos movimiento;
+  en móvil las notas de la foto pasan a etiquetas. Se quita la nota interna del modelo 3D. (#9)
 - Cabecera nueva: logo de dos líneas, menú con el mismo hueco a cada lado, idioma con banderas y sin la
   barra negra superior (teléfono y correo siguen en el menú móvil y en el pie). Por debajo de 1220 px sale
   el botón de menú; en móvil las banderas y la lupa quedan siempre a la vista. (#8)
