@@ -1,11 +1,19 @@
 ---
-// Portada: quiénes sois en diez segundos y dos caminos claros (producto y distribuidor).
-// La figura de la Digicen 22 es el hueco reservado al futuro modelo 3D.
+// Portada: quiénes sois, por qué fiarse y dos caminos claros (producto y distribuidor), todo en la primera pantalla.
+// La figura de la Digicen 22 es el hueco reservado al futuro modelo 3D: el visor ocupará este mismo sitio.
+import { cifras } from '../data/cifras';
+
+// Notas técnicas sobre la foto. Posición en % de la imagen; en móvil se muestran como lista bajo la foto.
+const notas = [
+  { titulo: 'SmartConnect', detalle: 'vigílala desde el móvil', x: 62, y: 9, linea: 56 },
+  { titulo: 'REI System', detalle: 'cambio de rotor sin herramientas', x: 44.6, y: 51.5, linea: 150 },
+  { titulo: 'Pantalla TFT táctil', detalle: '', x: 62, y: 78, linea: 56 },
+];
 ---
 
 <section class="hero">
   <div class="wrap grid">
-    <div>
+    <div class="texto">
       <span class="eyebrow">Fabricantes en Madrid desde 1949</span>
       <h1>
         Expertos en{' '}
@@ -17,6 +25,14 @@
         Diseñamos y fabricamos centrífugas de laboratorio en Daganzo y las llevamos a todo el mundo a través de una red
         de distribuidores especializados.
       </p>
+      <dl class="cifras">
+        {cifras.map((c) => (
+          <div>
+            <dt>{c.valor}</dt>
+            <dd>{c.texto}</dd>
+          </div>
+        ))}
+      </dl>
       <div class="ctas">
         <a class="btn red" href="#gama">
           Ver la gama
@@ -26,37 +42,43 @@
         </a>
       </div>
       <p class="why">
-        <b>Antes:</b> un carrusel de 7 novedades, con el titular cortado bajo el menú. <b>Ahora:</b> en diez segundos se
-        entiende quiénes sois y hay dos caminos claros, uno para ver producto y otro para el distribuidor.
+        <b>Antes:</b> un carrusel de 7 novedades, con el titular cortado bajo el menú. <b>Ahora:</b> en una sola
+        pantalla se entiende quiénes sois, por qué fiarse (respuesta en 48 h, entrega en una semana, 3 años de garantía,
+        ISO 13485) y hay dos caminos claros, uno para ver producto y otro para el distribuidor.
       </p>
     </div>
-    <figure class="figure">
-      <img
-        src="/img/productos/digicen-22.webp"
-        alt="Centrífuga Digicen 22 con la tapa abierta y el rotor a la vista"
-        width="1400"
-        height="1830"
-        fetchpriority="high"
-      />
-      <span class="spin" aria-hidden="true"></span>
-      <span class="call c-lid">
-        <i class="ln"></i>
-        <span>
-          SmartConnect<small>vigílala desde el móvil</small>
-        </span>
-      </span>
-      <span class="call c-rotor">
-        <i class="ln"></i>
-        <span>
-          REI System<small>cambio de rotor sin herramientas</small>
-        </span>
-      </span>
-      <span class="call c-screen">
-        <i class="ln"></i>
-        <span>Pantalla TFT táctil</span>
-      </span>
-      <figcaption>Digicen 22 · aquí irá el modelo 3D interactivo</figcaption>
-    </figure>
+
+    <div class="foto">
+      <figure class="figure">
+        <img
+          src="/img/productos/digicen-22.webp"
+          alt="Centrífuga Digicen 22 con la tapa abierta y el rotor a la vista"
+          width="1400"
+          height="1830"
+          fetchpriority="high"
+        />
+        <span class="spin" aria-hidden="true"></span>
+        {notas.map((n) => (
+          <span class="call" style={`left:${n.x}%;top:${n.y}%;--len:${n.linea}px`} aria-hidden="true">
+            <i class="ln"></i>
+            <span>
+              {n.titulo}
+              {n.detalle && <small>{n.detalle}</small>}
+            </span>
+          </span>
+        ))}
+        <figcaption>
+          <ul class="notas">
+            {notas.map((n) => (
+              <li>
+                <b>{n.titulo}</b>
+                {n.detalle && <span>{n.detalle}</span>}
+              </li>
+            ))}
+          </ul>
+        </figcaption>
+      </figure>
+    </div>
   </div>
 </section>
 
@@ -64,19 +86,22 @@
   .hero {
     position: relative;
     overflow: hidden;
-    background: linear-gradient(90deg, var(--white) 0 52%, var(--panel) 52% 100%);
   }
+  /* Una pantalla de alto (menos la cabecera), sin pasarse en monitores muy altos */
   .grid {
     display: grid;
-    grid-template-columns: 1.05fr 1fr;
-    gap: 24px;
+    grid-template-columns: 1.1fr 1fr;
     align-items: center;
-    padding-block: clamp(40px, 7vw, 96px) clamp(32px, 5vw, 72px);
+    min-height: min(calc(100svh - 96px), 900px);
+  }
+  .texto {
+    padding-block: clamp(32px, 5vh, 64px);
+    padding-right: clamp(24px, 4vw, 56px);
   }
   h1 {
-    margin-top: 22px;
+    margin-top: 18px;
     font-weight: 300;
-    font-size: clamp(48px, 7.4vw, 112px);
+    font-size: clamp(48px, 6.2vw, 96px);
     line-height: 0.94;
   }
   h1 b {
@@ -87,33 +112,68 @@
     color: var(--red);
   }
   .lead {
-    margin-top: 28px;
-    font-size: clamp(18px, 1.6vw, 22px);
-    max-width: 34ch;
+    margin-top: 22px;
+    font-size: clamp(18px, 1.5vw, 21px);
+    max-width: 36ch;
     color: var(--body);
   }
+
+  .cifras {
+    margin: 28px 0 0;
+    display: grid;
+    grid-template-columns: repeat(4, auto);
+    justify-content: start;
+    border-block: 1px solid var(--line);
+  }
+  .cifras div {
+    padding: 12px 20px;
+    border-left: 1px solid var(--line);
+  }
+  .cifras div:first-child {
+    padding-left: 0;
+    border-left: 0;
+  }
+  dt {
+    font-weight: 700;
+    font-size: clamp(22px, 1.9vw, 28px);
+    line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  dd {
+    margin: 2px 0 0;
+    font-size: 14px;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
   .ctas {
-    margin-top: 36px;
+    margin-top: 28px;
     display: flex;
     flex-wrap: wrap;
     gap: 12px;
   }
+
+  /* La columna de la foto lleva el fondo gris hasta el borde derecho de la pantalla */
+  .foto {
+    align-self: stretch;
+    display: grid;
+    place-items: center;
+    background: var(--panel);
+    box-shadow: 0 0 0 100vmax var(--panel);
+    clip-path: inset(0 -100vmax 0 0);
+    padding-block: 32px;
+  }
   .figure {
     position: relative;
-    justify-self: center;
-    width: min(100%, 620px);
     margin: 0;
+    /* La foto se ajusta al alto disponible para que la primera pantalla entre entera */
+    width: min(100%, calc((min(100svh - 96px, 900px) - 64px) * 1400 / 1830));
   }
   .figure img {
     width: 100%;
     height: auto;
     filter: drop-shadow(0 30px 40px rgba(0, 0, 0, 0.18));
-  }
-  figcaption {
-    margin-top: 14px;
-    font-size: 13px;
-    color: var(--muted);
-    text-align: right;
   }
 
   /* Anotaciones técnicas sobre la foto, como en un plano */
@@ -156,21 +216,6 @@
     font-size: 14px;
     color: var(--body);
   }
-  .c-rotor {
-    left: 44.6%;
-    top: 51.5%;
-    --len: 150px;
-  }
-  .c-screen {
-    left: 62%;
-    top: 78%;
-    --len: 56px;
-  }
-  .c-lid {
-    left: 62%;
-    top: 9%;
-    --len: 56px;
-  }
   .spin {
     position: absolute;
     left: 44.6%;
@@ -189,20 +234,92 @@
     }
   }
 
-  @media (max-width: 900px) {
-    .hero {
-      background: var(--white);
+  /* La lista de notas solo se ve en móvil; en escritorio las notas están sobre la foto */
+  .notas {
+    display: none;
+  }
+
+  @media (max-width: 1220px) {
+    .grid {
+      min-height: min(calc(100svh - 72px), 900px);
     }
+    /* Más estrecho: la foto deja sitio a las notas para que no se salgan */
+    .figure {
+      width: min(84%, calc((min(100svh - 72px, 900px) - 64px) * 1400 / 1830));
+    }
+  }
+
+  @media (max-width: 1366px) {
+    .ln {
+      width: min(var(--len, 90px), 48px);
+    }
+  }
+
+  @media (max-width: 1024px) {
     .grid {
       grid-template-columns: 1fr;
+      min-height: 0;
+    }
+    .texto {
+      padding-right: 0;
+    }
+    .cifras {
+      grid-template-columns: 1fr 1fr;
+      width: 100%;
+    }
+    .cifras div {
+      padding: 12px 0;
+      border-left: 0;
+    }
+    .cifras div:nth-child(n + 3) {
+      border-top: 1px solid var(--line);
+    }
+    .cifras div:nth-child(even) {
+      padding-left: 16px;
+      border-left: 1px solid var(--line);
+    }
+    .foto {
+      box-shadow: none;
+      clip-path: none;
+      margin-inline: calc(var(--gut) * -1);
+      padding: 24px var(--gut) 28px;
     }
     .figure {
-      background: var(--panel);
-      padding: 24px;
+      width: min(100%, 420px);
     }
-    .call span,
-    .ln {
+    .call {
       display: none;
+    }
+    .notas {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      list-style: none;
+      margin: 20px 0 0;
+      padding: 0;
+    }
+    .notas li {
+      display: flex;
+      flex-direction: column;
+      background: #fff;
+      padding: 8px 12px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+      line-height: 1.25;
+    }
+    .notas b {
+      font-size: 13px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .notas span {
+      font-size: 14px;
+      color: var(--body);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .spin {
+      animation: none;
     }
   }
 </style>
