@@ -8,13 +8,14 @@ En la propia web, el botón **Ver antes y después** muestra estas mismas notas 
 
 ## Portada
 
-| Zona             | Antes                                                          | Ahora                                                                                             | Por qué es mejor                                        |
-| ---------------- | -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
-| Primera pantalla | Carrusel de 7 novedades, con el titular cortado bajo el menú   | "Expertos en centrifugación", quiénes sois y dos caminos: ver la gama o "Soy distribuidor"        | Se entiende en diez segundos quién sois y qué hacer     |
-| Gama             | Rejilla plana; configurador, guía y comparativa en tres sitios | Cada equipo sobre su "estante", como en el catálogo, con sus cifras y un único camino para elegir | Se reconoce la marca del catálogo y se elige más rápido |
-| Tecnología       | SmartConnect y REI System como entradas sueltas del menú       | Una sección oscura, como la portada del catálogo                                                  | Deja claro que la tecnología es propia                  |
-| Distribuidores   | No existía; el formulario ponía "Cliente final" primero        | Sección que habla a vuestro cliente real                                                          | Es vuestro canal de venta y no tenía sitio              |
-| Empresa          | Valores genéricos ("integridad, dinamismo")                    | La frase del catálogo, datos concretos y personas reales                                          | Lo concreto convence; lo genérico lo dice cualquiera    |
+| Zona             | Antes                                                          | Ahora                                                                                                                | Por qué es mejor                                                                 |
+| ---------------- | -------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| Primera pantalla | Carrusel de 7 novedades, con el titular cortado bajo el menú   | "Expertos en centrifugación", quiénes sois, 48 h · 1 semana · 3 años · ISO 13485 y dos caminos, todo en una pantalla | Se entiende en diez segundos quién sois, por qué fiarse y qué hacer              |
+| Foto de portada  | Fotos sueltas del carrusel                                     | La Digicen 22 sobre su estante, como en el catálogo, con sus datos y notas técnicas que se dibujan al entrar         | Se reconoce la marca del catálogo y se ven cifras reales desde el primer segundo |
+| Gama             | Rejilla plana; configurador, guía y comparativa en tres sitios | Cada equipo sobre su "estante", como en el catálogo, con sus cifras y un único camino para elegir                    | Se reconoce la marca del catálogo y se elige más rápido                          |
+| Tecnología       | SmartConnect y REI System como entradas sueltas del menú       | Una sección oscura, como la portada del catálogo                                                                     | Deja claro que la tecnología es propia                                           |
+| Distribuidores   | No existía; el formulario ponía "Cliente final" primero        | Sección que habla a vuestro cliente real                                                                             | Es vuestro canal de venta y no tenía sitio                                       |
+| Empresa          | Valores genéricos ("integridad, dinamismo")                    | La frase del catálogo, datos concretos y personas reales                                                             | Lo concreto convence; lo genérico lo dice cualquiera                             |
 
 ## Toda la web
 
