@@ -1,0 +1,37 @@
+---
+import GamaFiltro from './GamaFiltro';
+import { productos } from '../data/productos';
+---
+
+<section class="sec" id="gama">
+  <div class="wrap">
+    <div class="head">
+      <h2>Una centrífuga para <b>cada laboratorio</b></h2>
+      <p>
+        Más de 25 modelos, de la minicentrífuga personal a los equipos de suelo, y series específicas para petróleo,
+        tejidos, lácteos y veterinaria.
+      </p>
+    </div>
+    <GamaFiltro client:visible productos={productos} />
+    <div class="range-foot">
+      <a class="arrow" href="#gama">Ver las 25 centrífugas</a>
+      <a class="arrow" href="#gama">¿No sabes cuál? Configúrala en 6 pasos</a>
+    </div>
+    <p class="why">
+      <b>Antes:</b> una rejilla plana y el configurador, la guía y la comparativa en tres sitios distintos. <b>Ahora:</b>
+      cada equipo sobre su "estante", como en vuestro catálogo, con sus cifras a la vista y un único camino para elegir.
+    </p>
+  </div>
+</section>
+
+<style>
+  .range-foot {
+    margin-top: 48px;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    border-top: 1px solid var(--line);
+    padding-top: 20px;
+  }
+</style>

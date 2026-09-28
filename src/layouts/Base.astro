@@ -1,0 +1,90 @@
+---
+import '../styles/global.css';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+
+interface Props {
+  title: string;
+  description: string;
+}
+
+const { title, description } = Astro.props;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preload" href="/fonts/HelveticaNeue-LightCond.otf" as="font" type="font/otf" crossorigin />
+    <link rel="preload" href="/fonts/HelveticaNeue-BoldCond.otf" as="font" type="font/otf" crossorigin />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:locale" content="es_ES" />
+  </head>
+  <body>
+    <Header />
+    <div class="tab" aria-hidden="true">Expertos en centrifugación · desde 1949</div>
+    <main id="inicio">
+      <slot />
+    </main>
+    <Footer />
+
+    <button class="notas-btn" id="notasBtn" type="button" aria-pressed="false">Ver antes y después</button>
+
+    <script>
+      const btn = document.getElementById('notasBtn');
+      btn?.addEventListener('click', () => {
+        const on = document.body.classList.toggle('notas');
+        btn.setAttribute('aria-pressed', String(on));
+        btn.textContent = on ? 'Ocultar antes y después' : 'Ver antes y después';
+      });
+    </script>
+  </body>
+</html>
+
+<style>
+  /* Pestaña roja vertical: el elemento de navegación más reconocible del catálogo */
+  .tab {
+    position: fixed;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+    background: var(--red);
+    color: #fff;
+    writing-mode: vertical-rl;
+    rotate: 180deg;
+    padding: 18px 7px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+  @media (max-width: 760px) {
+    .tab {
+      display: none;
+    }
+  }
+  .notas-btn {
+    position: fixed;
+    right: 16px;
+    bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+    z-index: 30;
+    background: var(--ink);
+    color: #fff;
+    border: 0;
+    font: 700 14px var(--f);
+    padding: 12px 16px;
+    cursor: pointer;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  }
+  :global(body.notas) .notas-btn {
+    background: var(--red);
+  }
+</style>

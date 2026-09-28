@@ -1,0 +1,119 @@
+---
+const enlaces = [
+  { href: '/#gama', texto: 'Centrífugas' },
+  { href: '/#gama', texto: 'Elegir centrífuga' },
+  { href: '/#tecnologia', texto: 'Tecnología' },
+  { href: '/#distribuidores', texto: 'Distribuidores' },
+  { href: '/#contacto', texto: 'Servicio técnico' },
+  { href: '/#empresa', texto: 'Empresa' },
+];
+---
+
+<header class="top">
+  <div class="wrap">
+    <a href="/" aria-label="Orto Alresa, inicio">
+      <img class="logo" src="/img/marca/logo-ortoalresa-color-horizontal.svg" alt="orto alresa" width="214" height="30" />
+    </a>
+    <nav class="nav" id="nav" aria-label="Principal">
+      {enlaces.map((e) => <a href={e.href}>{e.texto}</a>)}
+    </nav>
+    <div class="lang" aria-label="Idioma">
+      <span aria-current="true">ES</span><span>EN</span><span>FR</span>
+    </div>
+    <a class="btn red contacto" href="/#contacto">Contacto</a>
+    <button class="menu-btn" id="menuBtn" type="button" aria-expanded="false" aria-controls="nav">Menú</button>
+  </div>
+</header>
+
+<script>
+  const btn = document.getElementById('menuBtn');
+  const nav = document.getElementById('nav');
+  btn?.addEventListener('click', () => {
+    const open = nav?.classList.toggle('open') ?? false;
+    btn.setAttribute('aria-expanded', String(open));
+  });
+  nav?.addEventListener('click', () => {
+    nav.classList.remove('open');
+    btn?.setAttribute('aria-expanded', 'false');
+  });
+</script>
+
+<style>
+  .top {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: rgba(255, 255, 255, 0.96);
+    border-bottom: 1px solid var(--line);
+  }
+  .top .wrap {
+    display: flex;
+    align-items: center;
+    gap: 32px;
+    height: 72px;
+  }
+  .logo {
+    height: 30px;
+    width: auto;
+  }
+  .nav {
+    display: flex;
+    gap: 26px;
+    margin-left: auto;
+    font-size: 16px;
+    font-weight: 400;
+  }
+  .nav a {
+    text-decoration: none;
+    padding-block: 6px;
+    border-bottom: 2px solid transparent;
+  }
+  .nav a:hover {
+    border-color: var(--red);
+  }
+  .lang {
+    display: flex;
+    gap: 10px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--muted);
+    letter-spacing: 0.06em;
+  }
+  .lang [aria-current] {
+    color: var(--ink);
+  }
+  .menu-btn {
+    display: none;
+    margin-left: auto;
+    background: none;
+    border: 1px solid var(--ink);
+    font: 700 14px var(--f);
+    padding: 8px 12px;
+  }
+  @media (max-width: 1080px) {
+    .nav,
+    .lang,
+    .contacto {
+      display: none;
+    }
+    .menu-btn {
+      display: block;
+    }
+    .nav.open {
+      display: flex;
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 72px;
+      flex-direction: column;
+      gap: 0;
+      background: #fff;
+      border-bottom: 1px solid var(--line);
+      padding: 8px var(--gut) 16px;
+    }
+    .nav.open a {
+      padding: 12px 0;
+      border-bottom: 1px solid var(--line);
+    }
+  }
+</style>

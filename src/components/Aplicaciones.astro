@@ -1,0 +1,63 @@
+---
+// Últimas notas de aplicación del blog actual. Más adelante vendrán del gestor de contenidos.
+const notas = [
+  { fecha: '2026-08-21', titulo: 'Purificación de anticuerpos monoclonales mediante centrifugación y HPLC' },
+  { fecha: '2026-07-28', titulo: 'Detección de microorganismos en agua según la norma UNE-EN ISO 8199' },
+  { fecha: '2026-05-25', titulo: 'Aplicaciones específicas de centrifugación en alimentación animal' },
+];
+const fmt = new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
+---
+
+<section class="sec" id="aplicaciones">
+  <div class="wrap">
+    <div class="head">
+      <h2>Aplicaciones <b>en el laboratorio</b></h2>
+      <a class="arrow" href="#aplicaciones">Todas las notas</a>
+    </div>
+    <div class="apps">
+      {
+        notas.map((n) => (
+          <a class="app" href="#aplicaciones">
+            <time datetime={n.fecha}>{fmt.format(new Date(n.fecha))}</time>
+            <h3>{n.titulo}</h3>
+          </a>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<style>
+  .apps {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 28px;
+  }
+  .app {
+    border-top: 2px solid var(--ink);
+    padding-top: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    text-decoration: none;
+  }
+  time {
+    font-size: 13px;
+    color: var(--muted);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  h3 {
+    font-size: 22px;
+    line-height: 1.15;
+    font-weight: 700;
+  }
+  .app:hover h3 {
+    color: var(--red);
+  }
+  @media (max-width: 900px) {
+    .apps {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

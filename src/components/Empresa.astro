@@ -1,0 +1,79 @@
+---
+const certificados = ['ISO 9001', 'ISO 13485', 'ISO 14001', 'IVDR', 'CE'];
+---
+
+<section class="company" id="empresa">
+  <div class="ph" role="img" aria-label="Mano con guante negro usando la pantalla de una centrífuga Orto Alresa"></div>
+  <div class="tx">
+    <span class="eyebrow">La empresa</span>
+    <blockquote>
+      "Nuestro objetivo no es ser una opción más, sino una empresa que destaca por ir <b>más allá de lo estándar</b>."
+    </blockquote>
+    <div class="since">
+      <span><b>1949</b>Nace como fabricante de centrífugas</span>
+      <span><b>Daganzo</b>Fábrica y oficinas en Madrid</span>
+      <span><b>Familiar</b>Integramos a socios y usuarios</span>
+    </div>
+    <div class="certs">{certificados.map((c) => <span>{c}</span>)}</div>
+    <a class="arrow" href="#empresa">Conoce nuestra historia</a>
+    <p class="why">
+      <b>Antes:</b> valores genéricos ("integridad, dinamismo"). <b>Ahora:</b> vuestra propia frase del catálogo, datos
+      concretos y personas reales.
+    </p>
+  </div>
+</section>
+
+<style>
+  .company {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    min-height: 520px;
+  }
+  .ph {
+    background: url('/img/fotos/lab-114.webp') center / cover;
+    min-height: 320px;
+  }
+  .tx {
+    padding: clamp(40px, 6vw, 88px) var(--gut);
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    justify-content: center;
+    max-width: 640px;
+  }
+  blockquote {
+    margin: 0;
+    font-size: clamp(24px, 2.4vw, 32px);
+    line-height: 1.2;
+    font-weight: 300;
+  }
+  .since {
+    display: flex;
+    gap: 28px;
+    flex-wrap: wrap;
+    font-size: 15px;
+    color: var(--body);
+  }
+  .since b {
+    display: block;
+    font-size: 22px;
+    color: var(--ink);
+  }
+  .certs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .certs span {
+    border: 1px solid var(--ink);
+    padding: 6px 10px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+  }
+  @media (max-width: 900px) {
+    .company {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
