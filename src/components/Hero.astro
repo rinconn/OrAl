@@ -96,12 +96,12 @@ const notas = [
   }
   .texto {
     padding-block: clamp(32px, 5vh, 64px);
-    padding-right: clamp(24px, 4vw, 56px);
+    padding-right: clamp(32px, 5vw, 96px);
   }
   h1 {
     margin-top: 18px;
     font-weight: 300;
-    font-size: clamp(48px, 6.2vw, 96px);
+    font-size: clamp(48px, 5.4vw, 84px);
     line-height: 0.94;
   }
   h1 b {
@@ -168,7 +168,7 @@ const notas = [
     position: relative;
     margin: 0;
     /* La foto se ajusta al alto disponible para que la primera pantalla entre entera */
-    width: min(100%, calc((min(100svh - 96px, 900px) - 64px) * 1400 / 1830));
+    width: min(84%, calc((min(100svh - 96px, 900px) - 96px) * 1400 / 1830));
   }
   .figure img {
     width: 100%;
@@ -245,7 +245,7 @@ const notas = [
     }
     /* Más estrecho: la foto deja sitio a las notas para que no se salgan */
     .figure {
-      width: min(84%, calc((min(100svh - 72px, 900px) - 64px) * 1400 / 1830));
+      width: min(80%, calc((min(100svh - 72px, 900px) - 96px) * 1400 / 1830));
     }
   }
 
