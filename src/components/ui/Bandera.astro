@@ -1,0 +1,40 @@
+---
+// Banderas en SVG: los emojis de bandera no se ven en Windows.
+interface Props {
+  codigo: 'es' | 'en' | 'fr';
+}
+const { codigo } = Astro.props;
+// La bandera británica usa recortes con id; cada copia necesita el suyo
+const uid = `gb${Math.random().toString(36).slice(2, 8)}`;
+---
+
+{codigo === 'es' && (
+  <svg viewBox="0 0 3 2" aria-hidden="true">
+    <rect width="3" height="2" fill="#c60b1e" />
+    <rect y=".5" width="3" height="1" fill="#ffc400" />
+  </svg>
+)}
+{codigo === 'en' && (
+  <svg viewBox="0 0 60 30" aria-hidden="true">
+    <clipPath id={`${uid}c`}>
+      <path d="M0,0 v30 h60 v-30 z" />
+    </clipPath>
+    <clipPath id={`${uid}t`}>
+      <path d="M30,15 h30 v15 z v15 h-30 z h-30 v-15 z v-15 h30 z" />
+    </clipPath>
+    <g clip-path={`url(#${uid}c)`}>
+      <path d="M0,0 v30 h60 v-30 z" fill="#012169" />
+      <path d="M0,0 L60,30 M60,0 L0,30" stroke="#fff" stroke-width="6" />
+      <path d="M0,0 L60,30 M60,0 L0,30" clip-path={`url(#${uid}t)`} stroke="#C8102E" stroke-width="4" />
+      <path d="M30,0 v30 M0,15 h60" stroke="#fff" stroke-width="10" />
+      <path d="M30,0 v30 M0,15 h60" stroke="#C8102E" stroke-width="6" />
+    </g>
+  </svg>
+)}
+{codigo === 'fr' && (
+  <svg viewBox="0 0 3 2" aria-hidden="true">
+    <rect width="1" height="2" fill="#002654" />
+    <rect x="1" width="1" height="2" fill="#fff" />
+    <rect x="2" width="1" height="2" fill="#ce1126" />
+  </svg>
+)}

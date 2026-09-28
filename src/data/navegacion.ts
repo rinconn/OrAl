@@ -36,3 +36,19 @@ export const idiomas: Idioma[] = [
   { codigo: 'en', nombre: 'English', href: '/en/', publicado: false },
   { codigo: 'fr', nombre: 'Français', href: '/fr/', publicado: false },
 ];
+
+/** Sellos que acompañan al logo, como en la web actual */
+export const sellos = [
+  {
+    src: '/img/sellos/ods.webp',
+    alt: 'Objetivos de Desarrollo Sostenible',
+    ancho: 96,
+    alto: 96,
+  },
+  {
+    src: '/img/sellos/empresa-solidaria-2024.webp',
+    alt: 'Empresa Solidaria 2024',
+    ancho: 204,
+    alto: 96,
+  },
+];
