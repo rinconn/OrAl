@@ -24,6 +24,13 @@ Astro 7 (web estática) + React 19 solo para islas interactivas + TypeScript est
 - `src/styles/global.css` tokens de marca y utilidades (`.wrap`, `.sec`, `.head`, `.eyebrow`, `.arrow`, `.btn`, `.why`)
 - `public/img/` imágenes ya optimizadas en WebP (máx. ~1400 px de ancho)
 
+## Documentación
+
+Todo el proyecto está documentado en `docs/` (empieza por `docs/README.md`). Cada PR actualiza
+`CHANGELOG.md` y los documentos que toque; cada decisión que cueste deshacer va en `docs/decisiones/`
+(numerada, no se borra, se sustituye); cada mejora visible frente a la web actual va en
+`docs/antes-y-despues.md`. Un cambio sin su documentación no está terminado.
+
 ## Antes de subir cambios
 
 ```bash
