@@ -39,34 +39,8 @@ npm install   # solo si cambiaron dependencias
 npm run dev
 ```
 
-## Estructura
+## Documentación
 
-```
-src/
-  pages/index.astro        Portada
-  layouts/Base.astro       Cabecera, pie, pestaña roja lateral y botón "antes y después"
-  components/              Una sección por archivo (Hero, Cifras, Gama, Tecnologia...)
-  components/GamaFiltro.tsx  Filtro de la gama (React, se carga solo al verse)
-  data/productos.ts        Datos de cada centrífuga
-  styles/global.css        Colores, tipografía y utilidades de marca
-public/
-  fonts/                   Helvetica Neue Condensed (marca)
-  img/                     Productos, fotos y logos, optimizados para web
-```
-
-## Marca
-
-Los colores, la tipografía y los patrones salen del sistema de diseño de Orto Alresa
-(rojo `#DD040A`, grises en porcentaje de negro, Helvetica Neue Condensed ligera y negrita,
-titulares en dos pesos y enlaces con `»`). Se usan como base y se modernizan donde mejora el resultado.
-
-El botón **Ver antes y después** muestra en cada sección qué había en la web anterior y por qué el cambio es mejor.
-Sirve para presentar la propuesta y se quitará antes de publicar.
-
-## Pendiente
-
-- Confirmar la licencia web de Helvetica Neue Condensed. Si no la hay, `Roboto Condensed` ya está como alternativa en `--f`.
-- Modelo 3D de la Digicen 22 cuando lleguen los CAD (STEP por piezas).
-- Resto de páginas: fichas de producto, Elegir centrífuga, Distribuidores, Servicio técnico, Empresa.
-- Versiones en inglés y francés (el enrutado por idioma ya está configurado).
-- Redirecciones 301 de las URLs de la web antigua.
+Todo está en [`docs/`](docs/README.md): objetivo y alcance, hoja de ruta, arquitectura y carpetas, marca,
+reglas de contenido, antes y después, lo pendiente de la empresa y el registro de decisiones.
+Los cambios de cada versión están en el [CHANGELOG](CHANGELOG.md).
