@@ -18,13 +18,16 @@ En la propia web, el botón **Ver antes y después** muestra estas mismas notas 
 
 ## Toda la web
 
-| Zona             | Antes                                          | Ahora                                                                     | Por qué es mejor                                          |
-| ---------------- | ---------------------------------------------- | ------------------------------------------------------------------------- | --------------------------------------------------------- |
-| Cabecera (PR #3) | Diez entradas de menú al mismo nivel           | Seis entradas; teléfono, correo comercial e idiomas en una barra superior | Menos opciones, más claras; el contacto siempre a mano    |
-| Cabecera (PR #3) | Fija ocupando pantalla al leer                 | Se aparta al bajar y vuelve al subir                                      | Más espacio para el contenido, sobre todo en móvil        |
-| Móvil (PR #3)    | Menú pequeño                                   | Menú a pantalla completa con Contacto, teléfono e idiomas                 | Se usa con el pulgar; el distribuidor llama en un toque   |
-| Rendimiento      | WordPress con plugins                          | Web estática                                                              | Carga casi instantánea, más segura y más barata de alojar |
-| Datos            | Garantía de 2 y de 3 años; 70 y 75 años        | Un solo dato, del Catálogo 2025                                           | La web no se contradice                                   |
-| Google           | Se ve el WordPress interno (wp.ortoalresa.com) | Solo la web pública                                                       | Imagen profesional en los resultados                      |
+| Zona        | Antes                                            | Ahora                                                                                    | Por qué es mejor                                          |
+| ----------- | ------------------------------------------------ | ---------------------------------------------------------------------------------------- | --------------------------------------------------------- |
+| Cabecera    | Diez entradas de menú al mismo nivel             | Seis entradas con el mismo hueco a cada lado y Contacto en rojo                          | Menos opciones, más claras, y la barra se ve equilibrada  |
+| Cabecera    | Fija ocupando pantalla al leer                   | Se aparta al bajar y vuelve al subir                                                     | Más espacio para el contenido, sobre todo en móvil        |
+| Idioma      | En texto                                         | Banderas                                                                                 | Se reconoce de un vistazo, sin leer                       |
+| Buscar      | Recorrer menús y desplegables                    | Lupa: se escribe el modelo y aparece                                                     | Un distribuidor que sabe lo que quiere llega directo      |
+| Sellos      | ODS y Empresa Solidaria apretados en la cabecera | En el pie, en todas las pantallas                                                        | Se ven enteros y la cabecera queda para navegar           |
+| Móvil       | Menú pequeño                                     | Banderas y lupa siempre arriba; menú a pantalla completa con Contacto, teléfono y correo | Se usa con el pulgar; el distribuidor llama en un toque   |
+| Rendimiento | WordPress con plugins                            | Web estática                                                                             | Carga casi instantánea, más segura y más barata de alojar |
+| Datos       | Garantía de 2 y de 3 años; 70 y 75 años          | Un solo dato, del Catálogo 2025                                                          | La web no se contradice                                   |
+| Google      | Se ve el WordPress interno (wp.ortoalresa.com)   | Solo la web pública                                                                      | Imagen profesional en los resultados                      |
 
 Cuando se añada una sección o página nueva, se añade aquí su fila.
