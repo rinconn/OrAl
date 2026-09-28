@@ -1,8 +1,9 @@
 ---
-// Cabecera: logo en dos líneas, menú, banderas de idioma y Contacto.
+// Cabecera: logo en dos líneas, menú, banderas de idioma, lupa y Contacto.
 // Se aparta al bajar y vuelve al subir. En móvil el menú ocupa la pantalla, se cierra con Esc
 // y mantiene el foco dentro mientras está abierto.
 import Bandera from './ui/Bandera.astro';
+import Buscador from './Buscador.astro';
 import { principal, contacto, idiomas } from '../data/navegacion';
 
 const ruta = Astro.url.pathname;
@@ -59,6 +60,7 @@ const actual = (href: string) => !href.startsWith('/#') && ruta.startsWith(href)
           ),
         )}
       </div>
+      <Buscador />
       <a class="btn red contacto" href={contacto.href}>
         Contacto
       </a>
@@ -82,7 +84,7 @@ const actual = (href: string) => !href.startsWith('/#') && ruta.startsWith(href)
   const top = document.getElementById('top');
   const nav = document.getElementById('nav');
   const btn = document.getElementById('menuBtn');
-  const movil = window.matchMedia('(max-width: 1150px)');
+  const movil = window.matchMedia('(max-width: 1220px)');
 
   // Menú móvil
   const abrir = (abierto: boolean) => {
@@ -230,7 +232,7 @@ const actual = (href: string) => !href.startsWith('/#') && ruta.startsWith(href)
     margin-left: auto;
   }
   /* Escritorio: el mismo hueco a cada lado del menú, entre el logo y las banderas */
-  @media (min-width: 1151px) {
+  @media (min-width: 1221px) {
     .bar {
       justify-content: space-between;
     }
@@ -349,7 +351,7 @@ const actual = (href: string) => !href.startsWith('/#') && ruta.startsWith(href)
     }
   }
 
-  @media (max-width: 1150px) {
+  @media (max-width: 1220px) {
     .bar {
       height: 72px;
       gap: 20px;
@@ -360,7 +362,7 @@ const actual = (href: string) => !href.startsWith('/#') && ruta.startsWith(href)
     /* En móvil solo quedan las banderas a la vista; Contacto va dentro del menú */
     .der {
       margin-left: auto;
-      gap: 0;
+      gap: 12px;
     }
     .der .contacto {
       display: none;
@@ -423,6 +425,30 @@ const actual = (href: string) => !href.startsWith('/#') && ruta.startsWith(href)
     }
     :global(html.menu-abierto .notas-btn) {
       display: none;
+    }
+  }
+
+  /* Móviles: el botón de menú se queda en icono para que quepan banderas y lupa */
+  @media (max-width: 480px) {
+    .bar {
+      gap: 12px;
+    }
+    .der {
+      gap: 4px;
+    }
+    .der .banderas {
+      gap: 8px;
+    }
+    .menu-btn {
+      padding: 9px 10px;
+    }
+    .menu-btn .txt {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
     }
   }
 
