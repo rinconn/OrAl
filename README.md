@@ -3,6 +3,12 @@
 Web de Orto Alresa (Álvarez Redondo, S.A.), fabricantes de centrífugas de laboratorio desde 1949.
 Hecha con [Astro](https://astro.build) y React para las partes interactivas.
 
+## Abrir en GitHub Codespaces (recomendado en equipos de empresa)
+
+En el repositorio: **Code → Codespaces → Create codespace on main**. Se abre VS Code en el navegador,
+instala todo solo y arranca la web; cuando termine, se abre una pestaña con la vista previa.
+Si la cierras, está en la pestaña **Ports** (puerto 4321).
+
 ## Arrancar en local
 
 Necesitas Node 22 o superior.
