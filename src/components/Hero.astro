@@ -1,11 +1,25 @@
 ---
-// Portada: quiénes sois en diez segundos y dos caminos claros (producto y distribuidor).
-// La figura de la Digicen 22 es el hueco reservado al futuro modelo 3D.
+// Portada: quiénes sois, por qué fiarse y dos caminos claros (producto y distribuidor), todo en la primera pantalla.
+// La figura de la Digicen 22 es el hueco reservado al futuro modelo 3D: el visor ocupará este mismo sitio.
+import { cifras } from '../data/cifras';
+
+// Notas técnicas sobre la foto. Posición en % de la imagen; en móvil se muestran como lista bajo la foto.
+const notas = [
+  { titulo: 'SmartConnect', detalle: 'vigílala desde el móvil', x: 62, y: 9, linea: 56 },
+  { titulo: 'REI System', detalle: 'cambio de rotor sin herramientas', x: 44.6, y: 51.5, linea: 150 },
+  { titulo: 'Pantalla TFT táctil', detalle: '', x: 62, y: 78, linea: 56 },
+];
+
+// Ficha corta del equipo de la foto, sobre su "estante" como en el catálogo. Catálogo General 2025, Serie Digicen 22 (pág. 52).
+const equipo = {
+  nombre: 'Digicen 22',
+  datos: ['16.500 rpm', '26.480 xg', '4 × 125 ml'],
+};
 ---
 
 <section class="hero">
   <div class="wrap grid">
-    <div>
+    <div class="texto">
       <span class="eyebrow">Fabricantes en Madrid desde 1949</span>
       <h1>
         Expertos en{' '}
@@ -17,6 +31,14 @@
         Diseñamos y fabricamos centrífugas de laboratorio en Daganzo y las llevamos a todo el mundo a través de una red
         de distribuidores especializados.
       </p>
+      <dl class="cifras">
+        {cifras.map((c) => (
+          <div>
+            <dt>{c.valor}</dt>
+            <dd>{c.texto}</dd>
+          </div>
+        ))}
+      </dl>
       <div class="ctas">
         <a class="btn red" href="#gama">
           Ver la gama
@@ -26,57 +48,75 @@
         </a>
       </div>
       <p class="why">
-        <b>Antes:</b> un carrusel de 7 novedades, con el titular cortado bajo el menú. <b>Ahora:</b> en diez segundos se
-        entiende quiénes sois y hay dos caminos claros, uno para ver producto y otro para el distribuidor.
+        <b>Antes:</b> un carrusel de 7 novedades, con el titular cortado bajo el menú. <b>Ahora:</b> en una sola
+        pantalla se entiende quiénes sois, por qué fiarse (respuesta en 48 h, entrega en una semana, 3 años de garantía,
+        ISO 13485) y hay dos caminos claros, uno para ver producto y otro para el distribuidor.
       </p>
     </div>
-    <figure class="figure">
-      <img
-        src="/img/productos/digicen-22.webp"
-        alt="Centrífuga Digicen 22 con la tapa abierta y el rotor a la vista"
-        width="1400"
-        height="1830"
-        fetchpriority="high"
-      />
-      <span class="spin" aria-hidden="true"></span>
-      <span class="call c-lid">
-        <i class="ln"></i>
-        <span>
-          SmartConnect<small>vigílala desde el móvil</small>
-        </span>
-      </span>
-      <span class="call c-rotor">
-        <i class="ln"></i>
-        <span>
-          REI System<small>cambio de rotor sin herramientas</small>
-        </span>
-      </span>
-      <span class="call c-screen">
-        <i class="ln"></i>
-        <span>Pantalla TFT táctil</span>
-      </span>
-      <figcaption>Digicen 22 · aquí irá el modelo 3D interactivo</figcaption>
-    </figure>
+
+    <div class="foto">
+      <figure class="figure">
+        <div class="lienzo">
+          <img
+            src="/img/productos/digicen-22.webp"
+            alt="Centrífuga Digicen 22 con la tapa abierta y el rotor a la vista"
+            width="1400"
+            height="1830"
+            fetchpriority="high"
+          />
+          <span class="spin" aria-hidden="true"></span>
+          {notas.map((n, i) => (
+            <span class="call" style={`left:${n.x}%;top:${n.y}%;--len:${n.linea}px;--i:${i}`} aria-hidden="true">
+              <i class="ln"></i>
+              <span>
+                {n.titulo}
+                {n.detalle && <small>{n.detalle}</small>}
+              </span>
+            </span>
+          ))}
+        </div>
+      </figure>
+      <div class="estante">
+        <a class="ficha" href="#gama">
+          <b>{equipo.nombre}</b>
+          <span>{equipo.datos.join(' · ')}</span>
+          <span class="arrow">Ver en la gama</span>
+        </a>
+      </div>
+      <ul class="notas">
+        {notas.map((n) => (
+          <li>
+            <b>{n.titulo}</b>
+            {n.detalle && <span>{n.detalle}</span>}
+          </li>
+        ))}
+      </ul>
+    </div>
   </div>
 </section>
 
 <style>
   .hero {
+    --estante: 104px;
     position: relative;
     overflow: hidden;
-    background: linear-gradient(90deg, var(--white) 0 52%, var(--panel) 52% 100%);
+    border-bottom: 1px solid var(--line);
   }
+  /* Una pantalla de alto (menos la cabecera), sin pasarse en monitores muy altos */
   .grid {
     display: grid;
-    grid-template-columns: 1.05fr 1fr;
-    gap: 24px;
+    grid-template-columns: 1.1fr 1fr;
     align-items: center;
-    padding-block: clamp(40px, 7vw, 96px) clamp(32px, 5vw, 72px);
+    min-height: min(calc(100svh - 96px), 900px);
+  }
+  .texto {
+    padding-block: clamp(32px, 5vh, 64px);
+    padding-right: clamp(32px, 5vw, 96px);
   }
   h1 {
-    margin-top: 22px;
+    margin-top: 18px;
     font-weight: 300;
-    font-size: clamp(48px, 7.4vw, 112px);
+    font-size: clamp(48px, 5.4vw, 84px);
     line-height: 0.94;
   }
   h1 b {
@@ -87,33 +127,113 @@
     color: var(--red);
   }
   .lead {
-    margin-top: 28px;
-    font-size: clamp(18px, 1.6vw, 22px);
-    max-width: 34ch;
+    margin-top: 22px;
+    font-size: clamp(18px, 1.5vw, 21px);
+    max-width: 36ch;
     color: var(--body);
   }
+
+  .cifras {
+    margin: 28px 0 0;
+    display: grid;
+    grid-template-columns: repeat(4, auto);
+    justify-content: start;
+    border-block: 1px solid var(--line);
+  }
+  .cifras div {
+    padding: 12px 20px;
+    border-left: 1px solid var(--line);
+  }
+  .cifras div:first-child {
+    padding-left: 0;
+    border-left: 0;
+  }
+  dt {
+    font-weight: 700;
+    font-size: clamp(22px, 1.9vw, 28px);
+    line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  dd {
+    margin: 2px 0 0;
+    font-size: 14px;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
   .ctas {
-    margin-top: 36px;
+    margin-top: 28px;
     display: flex;
     flex-wrap: wrap;
     gap: 12px;
   }
+
+  /* La columna de la foto lleva el fondo gris hasta el borde derecho de la pantalla */
+  .foto {
+    align-self: stretch;
+    display: flex;
+    flex-direction: column;
+    background: var(--panel);
+    box-shadow: 0 0 0 100vmax var(--panel);
+    clip-path: inset(0 -100vmax 0 0);
+    padding-top: 32px;
+  }
   .figure {
     position: relative;
-    justify-self: center;
-    width: min(100%, 620px);
-    margin: 0;
+    z-index: 1;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-self: center;
+    /* Las patas se apoyan un poco dentro del estante */
+    margin: 0 0 -14px;
+    /* La foto se ajusta al alto disponible para que la primera pantalla entre entera */
+    width: min(84%, calc((min(100svh - 96px, 900px) - 32px - var(--estante)) * 1400 / 1830));
+  }
+
+  /* El "estante" gris del catálogo: la máquina se posa encima y debajo va su ficha corta */
+  .estante {
+    position: relative;
+    height: var(--estante);
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    padding: 0 0 22px 32px;
+    background: var(--estante-gris, #e6e6e6);
+    box-shadow: 0 0 0 100vmax var(--estante-gris, #e6e6e6);
+    clip-path: inset(0 -100vmax 0 0);
+  }
+  .ficha {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    text-decoration: none;
+  }
+  .ficha b {
+    color: var(--red);
+    font-size: 15px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .ficha span {
+    font-size: 15px;
+    color: var(--body);
+    font-variant-numeric: tabular-nums;
+  }
+  .ficha .arrow {
+    margin-top: 4px;
+    color: var(--ink);
+  }
+  /* Foto y notas comparten caja para que las posiciones en % sean sobre la imagen */
+  .lienzo {
+    position: relative;
   }
   .figure img {
     width: 100%;
     height: auto;
     filter: drop-shadow(0 30px 40px rgba(0, 0, 0, 0.18));
-  }
-  figcaption {
-    margin-top: 14px;
-    font-size: 13px;
-    color: var(--muted);
-    text-align: right;
   }
 
   /* Anotaciones técnicas sobre la foto, como en un plano */
@@ -156,21 +276,6 @@
     font-size: 14px;
     color: var(--body);
   }
-  .c-rotor {
-    left: 44.6%;
-    top: 51.5%;
-    --len: 150px;
-  }
-  .c-screen {
-    left: 62%;
-    top: 78%;
-    --len: 56px;
-  }
-  .c-lid {
-    left: 62%;
-    top: 9%;
-    --len: 56px;
-  }
   .spin {
     position: absolute;
     left: 44.6%;
@@ -189,20 +294,166 @@
     }
   }
 
-  @media (max-width: 900px) {
-    .hero {
-      background: var(--white);
+  /* La lista de notas solo se ve en móvil; en escritorio las notas están sobre la foto */
+  .notas {
+    display: none;
+  }
+
+  @media (max-width: 1220px) {
+    .grid {
+      min-height: min(calc(100svh - 72px), 900px);
     }
+    /* Más estrecho: la foto deja sitio a las notas para que no se salgan */
+    .figure {
+      width: min(80%, calc((min(100svh - 72px, 900px) - 32px - var(--estante)) * 1400 / 1830));
+    }
+  }
+
+  @media (max-width: 1366px) {
+    .ln {
+      width: min(var(--len, 90px), 48px);
+    }
+  }
+
+  @media (max-width: 1024px) {
     .grid {
       grid-template-columns: 1fr;
+      min-height: 0;
+    }
+    .texto {
+      padding-right: 0;
+    }
+    .cifras {
+      grid-template-columns: 1fr 1fr;
+      width: 100%;
+    }
+    .cifras div {
+      padding: 12px 0;
+      border-left: 0;
+    }
+    .cifras div:nth-child(n + 3) {
+      border-top: 1px solid var(--line);
+    }
+    .cifras div:nth-child(even) {
+      padding-left: 16px;
+      border-left: 1px solid var(--line);
+    }
+    .foto {
+      box-shadow: none;
+      clip-path: none;
+      margin-inline: calc(var(--gut) * -1);
+      padding: 24px 0 24px;
     }
     .figure {
-      background: var(--panel);
-      padding: 24px;
+      width: min(calc(100% - 2 * var(--gut)), 420px);
+      flex: none;
     }
-    .call span,
-    .ln {
+    .estante {
+      --estante: 100px;
+      box-shadow: none;
+      clip-path: none;
+      padding-inline: var(--gut);
+    }
+    .call {
       display: none;
+    }
+    .notas {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      list-style: none;
+      margin: 20px 0 0;
+      padding: 0 var(--gut);
+    }
+    .notas li {
+      display: flex;
+      flex-direction: column;
+      background: #fff;
+      padding: 8px 12px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+      line-height: 1.25;
+    }
+    .notas b {
+      font-size: 13px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .notas span {
+      font-size: 14px;
+      color: var(--body);
+    }
+  }
+
+  /* Entrada al cargar: el texto sube por partes, la máquina entra y las notas se dibujan una a una
+     desde la máquina, como las cotas de un plano. Solo si el sistema no pide menos movimiento. */
+  @media (prefers-reduced-motion: no-preference) {
+    .texto > * {
+      animation: sube 0.7s var(--ease) both;
+    }
+    .texto > :nth-child(2) {
+      animation-delay: 0.08s;
+    }
+    .texto > :nth-child(3) {
+      animation-delay: 0.16s;
+    }
+    .texto > :nth-child(4) {
+      animation-delay: 0.24s;
+    }
+    .texto > :nth-child(5) {
+      animation-delay: 0.32s;
+    }
+    .lienzo img {
+      animation: entra-foto 1s var(--ease) 0.15s both;
+    }
+    .ficha {
+      animation: sube 0.6s var(--ease) 0.5s both;
+    }
+    .spin {
+      animation:
+        spin 14s linear infinite,
+        aparece 0.6s ease 0.9s both;
+    }
+    .call::before {
+      animation: punto 0.4s var(--ease) calc(0.9s + var(--i) * 0.25s) both;
+    }
+    .ln {
+      transform-origin: left;
+      animation: linea 0.45s var(--ease) calc(1.05s + var(--i) * 0.25s) both;
+    }
+    .call > span {
+      animation: aparece 0.4s ease calc(1.35s + var(--i) * 0.25s) both;
+    }
+  }
+  @keyframes sube {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+  }
+  @keyframes entra-foto {
+    from {
+      opacity: 0;
+      transform: translateX(40px);
+    }
+  }
+  @keyframes aparece {
+    from {
+      opacity: 0;
+    }
+  }
+  @keyframes punto {
+    from {
+      transform: scale(0);
+    }
+  }
+  @keyframes linea {
+    from {
+      transform: scaleX(0);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .spin {
+      animation: none;
     }
   }
 </style>
