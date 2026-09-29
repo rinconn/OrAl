@@ -189,6 +189,11 @@ Ponerlos antes haría que todos los enlaces llevaran a la portada.
 - **Ahora:**
   - El titular empieza a una distancia fija bajo el menú (entre 56 y 88 px según la altura de la pantalla), con
     la frase y los dos botones justo debajo.
+  - El titular crece hasta llenar el ancho de su columna (hasta 92 px, antes 84) y la frase se ensancha, así el
+    bloque de texto ocupa su espacio en vez de quedarse pequeño en una esquina. En pantallas bajas se ajusta
+    para que todo quepa sin pasar de una pantalla.
+  - El margen de la izquierda no se toca: el texto empieza en la misma vertical que el logo, igual que todas las
+    secciones de la web.
   - Las cifras (48 h, 1 semana, 3 años, ISO 13485) bajan al pie de la pantalla, a la misma altura que la ficha
     oscura de la Digicen 22: su raya de arriba continúa la línea de la ficha de lado a lado.
   - En móvil no cambia.
