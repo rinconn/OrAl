@@ -1,344 +1,308 @@
-/* Filtros: pestañas por familia, con una barra roja que se desliza, e interruptores de temperatura */
-.filtros {
+/* Filtros por uso: control segmentado con un bloque negro que se desliza; se queda pegado arriba al bajar */
+#gama {
+  --cab: 97px;
+}
+#gama .fija {
   position: sticky;
   top: 0;
-  z-index: 10;
-  display: flex;
-  align-items: flex-end;
-  gap: 16px 24px;
+  z-index: 5;
+  margin-top: 52px;
+  padding-block: 12px;
   background: var(--white);
-  border-bottom: 1px solid var(--line);
-}
-.pestanas {
-  position: relative;
-  display: flex;
-  align-items: flex-end;
-  gap: 22px;
-}
-.grupo {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-.grupo > span {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--muted);
-  white-space: nowrap;
-}
-.grupo.especial > span {
-  color: var(--red);
-}
-.grupo > div {
-  display: flex;
-  gap: 18px;
-}
-.pestanas button {
-  font: 400 19px/1 var(--f);
-  color: var(--muted);
-  background: none;
-  border: 0;
-  padding: 10px 0 16px;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: color 0.2s var(--ease);
-}
-.pestanas button sup {
-  margin-left: 3px;
-  font-size: 11px;
-  font-weight: 700;
-}
-.pestanas button:hover {
-  color: var(--ink);
-}
-.pestanas button[aria-pressed='true'] {
-  color: var(--ink);
-  font-weight: 700;
-}
-.pestanas button[aria-pressed='true'] sup {
-  color: var(--red);
-}
-.barra {
-  position: absolute;
-  left: 0;
-  bottom: -1px;
-  width: 0;
-  height: 3px;
-  background: var(--red);
   transition:
-    transform 0.35s var(--ease),
-    width 0.35s var(--ease);
+    top 0.35s var(--ease),
+    box-shadow 0.3s var(--ease);
 }
-
-.temperatura {
-  margin-left: auto;
-  display: flex;
-  gap: 8px;
-  padding-bottom: 12px;
+/* Mientras la cabecera está a la vista, los filtros se colocan justo debajo */
+body:has(.top:not(.oculta)) #gama .fija {
+  top: var(--cab);
 }
-.temperatura button {
-  --c: #2c6fa5;
-  font: 400 14px var(--f);
-  color: var(--ink);
-  background: var(--white);
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  padding: 6px 14px 6px 10px;
+#gama .fija.pegada {
+  box-shadow: 0 12px 20px -16px rgba(0, 0, 0, 0.25);
+}
+#gama .tabs {
+  position: relative;
+  display: inline-flex;
+  max-width: 100%;
+  gap: 2px;
+  padding: 6px;
+  background: var(--panel);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+#gama .tabs::-webkit-scrollbar {
+  display: none;
+}
+#gama .tabs button {
+  position: relative;
+  z-index: 1;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
+  font: 400 18px/1 var(--f);
+  color: var(--ink);
+  background: none;
+  border: 0;
+  padding: 16px 22px;
   cursor: pointer;
   white-space: nowrap;
-  transition: border-color 0.2s var(--ease);
+  transition: color 0.3s var(--ease);
 }
-.temperatura button.calefactada {
-  --c: #c25a1d;
-}
-.temperatura i {
-  position: relative;
-  width: 26px;
-  height: 14px;
-  border-radius: 999px;
-  background: var(--line);
-  transition: background 0.2s var(--ease);
-}
-.temperatura i::after {
-  content: '';
-  position: absolute;
-  top: 2px;
-  left: 2px;
+#gama .tabs button i {
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: var(--white);
-  transition: transform 0.2s var(--ease);
-}
-.temperatura button[aria-pressed='true'] {
-  border-color: var(--c);
-}
-.temperatura button[aria-pressed='true'] i {
   background: var(--c);
+  transition: box-shadow 0.3s var(--ease);
 }
-.temperatura button[aria-pressed='true'] i::after {
-  transform: translateX(12px);
+#gama .tabs button:hover {
+  color: #000;
+}
+#gama .tabs button[aria-pressed='true'] {
+  color: #fff;
+  font-weight: 700;
+}
+#gama .tabs button[aria-pressed='true'] i {
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.25);
+}
+#gama .tabs button:focus-visible {
+  outline-offset: -2px;
+}
+#gama .barra {
+  position: absolute;
+  top: 6px;
+  bottom: 6px;
+  left: 0;
+  width: 0;
+  background: var(--ink);
+  transition:
+    transform 0.45s var(--ease),
+    width 0.45s var(--ease);
 }
 
-.resumen {
-  margin-top: 18px;
-  font-size: 14px;
-  color: var(--muted);
-  font-variant-numeric: tabular-nums;
-}
-
-/* Fichas */
-.series {
-  margin-top: 20px;
+/* Fichas: color de la familia en la franja de la foto y en su nombre */
+#gama .rejilla {
+  margin-top: 56px;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 40px 24px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 72px 32px;
 }
-.serie {
+#gama .rejilla.cuatro {
+  grid-template-columns: repeat(4, 1fr);
+  gap: 72px 24px;
+}
+#gama .serie {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  animation: entra 0.45s var(--ease) both;
-  animation-delay: calc(var(--n, 0) * 35ms);
+  color: inherit;
+  text-decoration: none;
+  scroll-margin-top: 200px;
+  animation: gama-sube 0.5s var(--ease) both;
+  animation-delay: calc(var(--n, 0) * 45ms);
 }
-@keyframes entra {
+.js #gama:not(.vista) .serie {
+  animation-play-state: paused;
+}
+@keyframes gama-sube {
   from {
     opacity: 0;
-    transform: translateY(14px);
+    transform: translateY(16px);
   }
 }
 /* Las fotos del catálogo son primeros planos cortados arriba y a la izquierda: se anclan ahí */
-.foto {
+#gama .foto {
   position: relative;
   aspect-ratio: 1;
   overflow: hidden;
-  background: var(--white);
-  border: 1px solid var(--line);
+  background: var(--panel);
 }
-.foto img {
+#gama .foto::before {
+  content: '';
+  position: absolute;
+  z-index: 1;
+  inset: 0 0 auto;
+  height: 5px;
+  background: var(--c);
+  transition: height 0.35s var(--ease);
+}
+#gama .foto img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   object-position: left top;
-  transform-origin: 30% 30%;
-  transition: transform 0.5s var(--ease);
+  transform-origin: 20% 20%;
+  transition: transform 0.7s var(--ease);
 }
-.serie:hover .foto img {
-  transform: scale(1.04);
-}
-.familia {
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  padding: 5px 9px;
-  background: var(--ink);
-  color: var(--white);
-  font-size: 11px;
+#gama .familia {
+  margin-top: 22px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
   font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+  color: var(--c);
 }
-.familia.especial {
-  background: var(--red);
+#gama .familia::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
 }
-.serie h3 {
+#gama .serie h3 {
   margin-top: 6px;
-  font-size: 24px;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  font-size: 30px;
   font-weight: 700;
   line-height: 1.05;
 }
-.serie h3 span {
+#gama .serie h3 span {
   font-weight: 300;
 }
-.uso {
-  margin-top: -4px;
-  font-size: 15px;
-  color: var(--body);
+#gama .serie h3::after {
+  content: '»';
+  margin-left: auto;
+  color: var(--red);
+  transition: transform 0.3s var(--ease);
 }
-.datos {
-  margin: 0;
-  display: grid;
-  grid-template-columns: 1.2fr 1fr 1fr;
-  gap: 8px;
-  padding-top: 10px;
+#gama .rejilla.cuatro h3 {
+  font-size: 26px;
+}
+#gama .frase {
+  margin: 8px 0 16px;
+  max-width: 34ch;
+  font-size: 17px;
+  color: var(--body);
+  transition: color 0.3s var(--ease);
+}
+#gama .spec {
+  margin-top: auto;
+  padding-top: 14px;
   border-top: 1px solid var(--line);
+  font-size: 15px;
+  color: var(--muted);
   font-variant-numeric: tabular-nums;
 }
-.datos div {
-  display: flex;
-  flex-direction: column-reverse;
-  justify-content: flex-end;
+#gama .spec b {
+  color: var(--ink);
 }
-.datos dt {
-  font-size: 12px;
-  color: var(--muted);
+#gama .serie:hover .foto img {
+  transform: scale(1.05);
 }
-.datos dd {
-  margin: 0;
-  font-size: 17px;
-  font-weight: 700;
-  line-height: 1.15;
+#gama .serie:hover .foto::before {
+  height: 9px;
 }
-.tipo {
-  margin: 0;
-  padding: 0;
-  list-style: none;
+#gama .serie:hover h3::after {
+  transform: translateX(6px);
+}
+#gama .serie:hover .frase {
+  color: var(--ink);
+}
+
+/* Temperatura: icono en un círculo de color y la palabra, sin caja */
+#gama .temps {
+  margin-top: 12px;
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
-  font-size: 13px;
-  color: var(--muted);
+  gap: 18px;
 }
-.tipo li {
-  padding: 1px 7px;
-  border: 1px solid var(--line);
+#gama .temp {
+  --tc: #6e6e6e;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--tc);
 }
-.tipo li.refrigerada {
-  color: #2c6fa5;
-  border-color: #7fb0d8;
+#gama .temp.refrigerada {
+  --tc: #4a86b0;
 }
-.tipo li.calefactada {
-  color: #b4531d;
-  border-color: #e8a27f;
+#gama .temp.calefactada {
+  --tc: #c46f45;
+}
+#gama .temp svg {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  padding: 5px;
+  border-radius: 50%;
+  background: var(--tc);
+  color: #fff;
 }
 
-.ayuda {
+#gama .mas {
+  margin-top: 72px;
   display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  gap: 20px;
-  padding: 28px;
-  background: var(--panel);
+  justify-content: center;
 }
-.ayuda b {
-  display: block;
-  font-size: 26px;
-  line-height: 1.1;
+#gama .mas button {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 16px 28px;
+  font: 700 17px var(--f);
+  color: var(--ink);
+  background: none;
+  border: 1px solid var(--ink);
+  cursor: pointer;
+  transition:
+    background 0.2s var(--ease),
+    color 0.2s var(--ease);
 }
-.ayuda p {
-  margin-top: 8px;
-  color: var(--body);
+#gama .mas button::after {
+  content: '»';
+  color: var(--red);
 }
-.vacia {
-  grid-column: 1 / -1;
-  padding-block: 40px;
-  color: var(--muted);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .serie {
-    animation: none;
-  }
-  .barra,
-  .foto img {
-    transition: none;
-  }
+#gama .mas button:hover {
+  background: var(--ink);
+  color: #fff;
 }
 
 @media (max-width: 1220px) {
-  .filtros {
-    flex-wrap: wrap;
-  }
-  .temperatura {
-    margin-left: 0;
-  }
-  .series {
-    grid-template-columns: repeat(3, 1fr);
+  #gama {
+    --cab: 73px;
   }
 }
-
-@media (max-width: 760px) {
-  .filtros {
-    display: block;
+@media (max-width: 1000px) {
+  #gama .rejilla,
+  #gama .rejilla.cuatro {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 56px 24px;
+  }
+}
+@media (max-width: 620px) {
+  #gama .fija {
+    margin-top: 28px;
     margin-inline: calc(var(--gut) * -1);
-  }
-  .pestanas {
-    width: 100%;
-    overflow-x: auto;
-    scrollbar-width: none;
     padding-inline: var(--gut);
-    gap: 22px;
-    mask-image: linear-gradient(90deg, #000 85%, transparent);
   }
-  .pestanas button {
-    font-size: 17px;
+  #gama .tabs {
+    display: flex;
   }
-  .temperatura {
-    padding: 12px var(--gut);
-    border-top: 1px solid var(--line);
+  #gama .tabs button {
+    font-size: 16px;
+    padding: 13px 16px;
   }
-  .series {
-    grid-template-columns: 1fr 1fr;
-    gap: 28px 14px;
-  }
-  .serie h3 {
-    font-size: 19px;
-  }
-  .datos {
+  #gama .rejilla,
+  #gama .rejilla.cuatro {
     grid-template-columns: 1fr;
-    gap: 4px;
+    gap: 48px;
+    margin-top: 36px;
   }
-  .datos div {
-    flex-direction: row-reverse;
-    justify-content: flex-end;
-    align-items: baseline;
-    gap: 5px;
+  #gama .serie h3,
+  #gama .rejilla.cuatro h3 {
+    margin-top: 6px;
+    font-size: 26px;
   }
-  .datos dd {
-    font-size: 15px;
+  #gama .mas {
+    margin-top: 48px;
   }
-  .datos div:first-child dt {
-    display: none;
-  }
-  .ayuda {
-    padding: 18px;
-  }
-  .ayuda b {
-    font-size: 20px;
+  #gama .mas button {
+    width: 100%;
+    justify-content: center;
   }
 }

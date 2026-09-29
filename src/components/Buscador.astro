@@ -1,7 +1,7 @@
 ---
 // Lupa de la cabecera. Busca en el navegador, sin servidor, entre los modelos y las secciones de la web.
 // Cuando entre el catálogo completo basta con que el índice lo lea de ahí.
-import { productos } from '../data/productos';
+import { familias, productos } from '../data/productos';
 import { principal } from '../data/navegacion';
 
 interface Entrada {
@@ -14,9 +14,9 @@ interface Entrada {
 const indice: Entrada[] = [
   ...productos.map((p) => ({
     titulo: p.variantes ? `${p.nombre} · ${p.variantes}` : p.nombre,
-    detalle: `Centrífuga · ${p.uso ?? p.familia}`,
+    detalle: `Centrífuga · ${p.uso ?? familias[p.familia].nombre}`,
     href: `/#${p.slug}`,
-    texto: [p.nombre, p.variantes, p.familia, p.uso, p.descripcion, p.capacidad, ...p.temperatura].join(' '),
+    texto: [p.nombre, p.variantes, familias[p.familia].nombre, p.uso, p.frase, p.capacidad, ...p.temperatura].join(' '),
   })),
   ...principal.map((e) => ({ titulo: e.texto, detalle: 'Sección', href: e.href, texto: e.texto })),
 ];
