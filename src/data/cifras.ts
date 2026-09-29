@@ -1,5 +1,5 @@
 // Cifras de la primera pantalla. Todas salen del Catálogo General 2025 ("¿Qué nos diferencia?") o de ortoalresa.com.
-// 1949 no va aquí: ya lo dice la línea "Fabricantes en Madrid desde 1949" encima del titular.
+// 1949 no va aquí: ya lo dice la frase bajo el titular ("Desde 1949 diseñamos y fabricamos…").
 
 export interface Cifra {
   valor: string;
