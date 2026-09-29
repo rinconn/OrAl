@@ -29,7 +29,8 @@ Astro 7 (web estática) + React 19 solo para islas interactivas + TypeScript est
 Todo el proyecto está documentado en `docs/` (empieza por `docs/README.md`). Cada PR actualiza
 `CHANGELOG.md` y los documentos que toque; cada decisión que cueste deshacer va en `docs/decisiones/`
 (numerada, no se borra, se sustituye); cada mejora visible frente a la web actual va en
-`docs/antes-y-despues.md`. Un cambio sin su documentación no está terminado.
+`docs/antes-y-despues.md`, y cada pieza aprobada se explica a fondo en `docs/por-que.md` (qué había, qué hay, por qué
+es mejor y qué se descartó). Un cambio sin su documentación no está terminado.
 
 ## Antes de subir cambios
 
