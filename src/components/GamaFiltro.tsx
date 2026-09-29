@@ -155,31 +155,33 @@ export default function GamaFiltro({ productos }: Props) {
                 decoding="async"
               />
             </div>
-            <span className="familia">{familias[p.familia].nombre}</span>
-            <h3>
-              {p.nombre}
-              {p.variantes && <span>· {p.variantes}</span>}
-            </h3>
-            <p className="frase">{p.frase}</p>
-            <p className="spec">
-              <b>{p.capacidad}</b> · {p.rpm} rpm · {p.xg} xg
-            </p>
-            <div className="temps">
-              {p.temperatura.map((t) => (
-                <span key={t} className={`temp ${t}`}>
-                  <svg
-                    viewBox="0 0 16 16"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.6"
-                    strokeLinecap="round"
-                    aria-hidden="true"
-                  >
-                    {temperaturas[t].icono}
-                  </svg>
-                  {temperaturas[t].nombre}
-                </span>
-              ))}
+            <div className="cuerpo">
+              <span className="familia">{familias[p.familia].nombre}</span>
+              <h3>
+                {p.nombre}
+                {p.variantes && <span>· {p.variantes}</span>}
+              </h3>
+              <p className="frase">{p.frase}</p>
+              <p className="spec">
+                <b>{p.capacidad}</b> · {p.rpm} rpm · {p.xg} xg
+              </p>
+              <div className="temps">
+                {p.temperatura.map((t) => (
+                  <span key={t} className={`temp ${t}`}>
+                    <svg
+                      viewBox="0 0 16 16"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.6"
+                      strokeLinecap="round"
+                      aria-hidden="true"
+                    >
+                      {temperaturas[t].icono}
+                    </svg>
+                    {temperaturas[t].nombre}
+                  </span>
+                ))}
+              </div>
             </div>
           </a>
         ))}

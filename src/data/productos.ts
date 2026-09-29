@@ -5,7 +5,7 @@ export type Temperatura = 'ventilada' | 'refrigerada' | 'calefactada';
 
 /** Familias por uso, en el orden en que se muestran. Colores suaves para no competir con el rojo de marca */
 export const familias = {
-  peq: { nombre: 'Pequeñas y micro', color: '#8a7bb0' },
+  peq: { nombre: 'Compactas', color: '#8a7bb0' },
   uni: { nombre: 'Universales', color: '#5e9487' },
   gran: { nombre: 'Gran capacidad', color: '#b08a52' },
   cli: { nombre: 'Clínica', color: '#9c5664' },
