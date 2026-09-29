@@ -13,6 +13,9 @@ en la web y, cuando llegue, solo hay que añadirla.
 | Licencia web de Helvetica Neue Condensed          | Usar la tipografía de marca en la web               | `global.css` (si no, Roboto Condensed)         | Fase 5             | Pendiente de pedir     |
 | Dominio y alojamiento                             | Publicar                                            | Configuración de despliegue                    | Fase 5             | Pendiente de pedir     |
 | ¿Sellos ODS y Empresa Solidaria en la cabecera?   | Hoy van en el pie; saber si les dais más peso       | `src/components/Header.astro`                  | —                  | Pendiente de preguntar |
+| ¿La Plasma 22 lleva REI System?                   | El catálogo dice que sí; la web antigua no la pone  | `src/data/tecnologia.ts`                       | —                  | Preguntado             |
+| ¿Son 175 o 125 rampas de frenado (PCBS)?          | Catálogo 175; la web antigua dice 125 y 175         | `src/data/tecnologia.ts`                       | —                  | Preguntado             |
+| ¿La Biocen 22 R lleva ULS?                        | La tabla del catálogo sí; su ficha no               | `src/data/tecnologia.ts`                       | —                  | Preguntado             |
 
 Formatos preferidos:
 

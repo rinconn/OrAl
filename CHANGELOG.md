@@ -24,6 +24,10 @@ Hasta que se publique la web, todo va en "Sin publicar"; al publicar se cierra l
 
 ### Cambiado
 
+- Tecnología propia: REI System y SmartConnect a lo grande con foto real, pasos y vídeo; pantalla táctil, PCBS
+  y ULS en tarjetas con esquema y cifra; qué modelos lleva cada sistema, enlazados a la gama; entradas suaves,
+  esquemas que se dibujan y efectos al pasar el ratón. Datos en `src/data/tecnologia.ts`. Documentado en
+  `docs/por-que.md`.
 - Primera pantalla: fuera el antetítulo "Fabricantes en Madrid desde 1949" (el dato pasa a la frase); el
   recuadro de la Digicen 22 pasa a gris oscuro con retícula de plano y la cota de su ancho real (410 mm);
   la máquina se apoya en la ficha con sombra; efectos al pasar el ratón en los botones, "Ver en la gama" y la
