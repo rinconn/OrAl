@@ -24,6 +24,10 @@ Hasta que se publique la web, todo va en "Sin publicar"; al publicar se cierra l
 
 ### Cambiado
 
+- Primera pantalla: fuera el antetítulo "Fabricantes en Madrid desde 1949" (el dato pasa a la frase); el
+  recuadro de la Digicen 22 pasa a gris oscuro con retícula de plano y la cota de su ancho real (410 mm);
+  la máquina se apoya en la ficha con sombra; efectos al pasar el ratón en los botones, "Ver en la gama" y la
+  máquina. Documentado en `docs/por-que.md`.
 - Gama de la portada: las 17 series del Catálogo 2025 (23 modelos) con foto del catálogo, frase, capacidad,
   rpm, xg y temperatura. Filtro por uso (Compactas, Universales, Gran capacidad, Clínica, Industria) en una
   banda gris oscura que se queda pegada bajo el menú; cada familia con su color suave; fichas en tarjeta con

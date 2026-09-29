@@ -11,16 +11,17 @@ const notas = [
 ];
 
 // Ficha corta del equipo de la foto, sobre su "estante" como en el catálogo. Catálogo General 2025, Serie Digicen 22 (pág. 52).
+// El ancho (410 mm) sale de la tabla de versiones de la misma serie y se dibuja como la cota de un plano.
 const equipo = {
   nombre: 'Digicen 22',
   datos: ['16.500 rpm', '26.480 xg', '4 × 125 ml'],
+  ancho: '410 mm',
 };
 ---
 
 <section class="hero">
   <div class="wrap grid">
     <div class="texto">
-      <span class="eyebrow">Fabricantes en Madrid desde 1949</span>
       <h1>
         Expertos en{' '}
         <b>
@@ -28,8 +29,8 @@ const equipo = {
         </b>
       </h1>
       <p class="lead">
-        Diseñamos y fabricamos centrífugas de laboratorio en Daganzo y las llevamos a todo el mundo a través de una red
-        de distribuidores especializados.
+        Desde 1949 diseñamos y fabricamos centrífugas de laboratorio en Daganzo (Madrid) y las llevamos a todo el mundo
+        a través de una red de distribuidores especializados.
       </p>
       <dl class="cifras">
         {cifras.map((c) => (
@@ -50,7 +51,8 @@ const equipo = {
       <p class="why">
         <b>Antes:</b> un carrusel de 7 novedades, con el titular cortado bajo el menú. <b>Ahora:</b> en una sola
         pantalla se entiende quiénes sois, por qué fiarse (respuesta en 48 h, entrega en una semana, 3 años de garantía,
-        ISO 13485) y hay dos caminos claros, uno para ver producto y otro para el distribuidor.
+        ISO 13485) y hay dos caminos claros. La Digicen 22 va sobre un recuadro oscuro con retícula y la cota de su
+        ancho real, como en un plano.
       </p>
     </div>
 
@@ -65,6 +67,11 @@ const equipo = {
             fetchpriority="high"
           />
           <span class="spin" aria-hidden="true"></span>
+          <span class="cota" aria-hidden="true">
+            <i></i>
+            <i></i>
+            <span>{equipo.ancho}</span>
+          </span>
           {notas.map((n, i) => (
             <span class="call" style={`left:${n.x}%;top:${n.y}%;--len:${n.linea}px;--i:${i}`} aria-hidden="true">
               <i class="ln"></i>
@@ -97,7 +104,9 @@ const equipo = {
 
 <style>
   .hero {
-    --estante: 104px;
+    --estante: 132px;
+    --oscuro: #3b4045;
+    --mas-oscuro: #2c3034;
     position: relative;
     overflow: hidden;
     border-bottom: 1px solid var(--line);
@@ -114,7 +123,6 @@ const equipo = {
     padding-right: clamp(32px, 5vw, 96px);
   }
   h1 {
-    margin-top: 18px;
     font-weight: 300;
     font-size: clamp(48px, 5.4vw, 84px);
     line-height: 0.94;
@@ -169,15 +177,28 @@ const equipo = {
     gap: 12px;
   }
 
-  /* La columna de la foto lleva el fondo gris hasta el borde derecho de la pantalla */
+  /* La columna de la foto es un recuadro gris oscuro, el mismo tono de la barra de filtros de la gama,
+     con una retícula fina como la de un plano. Llega hasta el borde derecho de la pantalla. */
   .foto {
+    position: relative;
     align-self: stretch;
     display: flex;
     flex-direction: column;
-    background: var(--panel);
-    box-shadow: 0 0 0 100vmax var(--panel);
-    clip-path: inset(0 -100vmax 0 0);
     padding-top: 32px;
+    /* En pantallas más anchas que la retícula, la columna llega hasta el borde para que la máquina
+       quede centrada en todo el recuadro oscuro, no solo en su mitad izquierda */
+    margin-right: calc(-1 * (var(--gut) + max(0px, (100vw - var(--wrap)) / 2)));
+  }
+  .foto::before {
+    content: '';
+    position: absolute;
+    inset: 0 -100vmax 0 0;
+    background-color: var(--oscuro);
+    background-image:
+      linear-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+    background-size: 40px 40px;
+    background-position: left bottom;
   }
   .figure {
     position: relative;
@@ -187,8 +208,9 @@ const equipo = {
     flex-direction: column;
     justify-content: flex-end;
     align-self: center;
-    /* Las patas se apoyan un poco dentro del estante */
-    margin: 0 0 -14px;
+    /* Las patas se apoyan justo en el estante */
+    margin: 0;
+    transition: transform 0.5s var(--ease);
     /* La foto se ajusta al alto disponible para que la primera pantalla entre entera */
     width: min(84%, calc((min(100svh - 96px, 900px) - 32px - var(--estante)) * 1400 / 1830));
   }
@@ -201,8 +223,8 @@ const equipo = {
     align-items: flex-end;
     justify-content: space-between;
     padding: 0 0 22px 32px;
-    background: var(--estante-gris, #e6e6e6);
-    box-shadow: 0 0 0 100vmax var(--estante-gris, #e6e6e6);
+    background: var(--mas-oscuro);
+    box-shadow: 0 0 0 100vmax var(--mas-oscuro);
     clip-path: inset(0 -100vmax 0 0);
   }
   .ficha {
@@ -212,19 +234,40 @@ const equipo = {
     text-decoration: none;
   }
   .ficha b {
-    color: var(--red);
+    color: #fff;
     font-size: 15px;
     letter-spacing: 0.1em;
     text-transform: uppercase;
   }
   .ficha span {
     font-size: 15px;
-    color: var(--body);
+    color: #c9ced2;
     font-variant-numeric: tabular-nums;
   }
   .ficha .arrow {
+    position: relative;
+    align-self: flex-start;
     margin-top: 4px;
-    color: var(--ink);
+    padding-bottom: 3px;
+    color: #fff;
+  }
+  /* Al pasar el ratón, "Ver en la gama" se subraya en rojo y la máquina sube un poco */
+  .ficha .arrow::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 0;
+    height: 2px;
+    background: var(--red);
+    transition: width 0.3s var(--ease);
+  }
+  .ficha:hover .arrow::before,
+  .ficha:focus-visible .arrow::before {
+    width: calc(100% - 16px);
+  }
+  .foto:hover .figure {
+    transform: translateY(-4px);
   }
   /* Foto y notas comparten caja para que las posiciones en % sean sobre la imagen */
   .lienzo {
@@ -233,7 +276,75 @@ const equipo = {
   .figure img {
     width: 100%;
     height: auto;
-    filter: drop-shadow(0 30px 40px rgba(0, 0, 0, 0.18));
+    filter: drop-shadow(0 30px 40px rgba(0, 0, 0, 0.45));
+  }
+  /* Sombra de contacto: la máquina se apoya, no flota */
+  .lienzo::after {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    left: 18%;
+    right: 8%;
+    bottom: -6px;
+    height: 14px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.55);
+    filter: blur(8px);
+  }
+  /* Cota del ancho real, como en un plano, sobre el estante */
+  .cota {
+    position: absolute;
+    left: 14.6%;
+    right: 5%;
+    bottom: -22px;
+    display: flex;
+    justify-content: center;
+    color: #c9ced2;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+  }
+  .cota::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    height: 1px;
+    background: currentColor;
+  }
+  .cota i {
+    position: absolute;
+    top: 50%;
+    width: 1px;
+    height: 12px;
+    background: currentColor;
+    translate: 0 -50%;
+  }
+  .cota i:first-child {
+    left: 0;
+  }
+  .cota i:nth-child(2) {
+    right: 0;
+  }
+  .cota span {
+    position: relative;
+    padding: 0 10px;
+    background: var(--mas-oscuro);
+    line-height: 1.2;
+  }
+
+  /* Los dos botones mueven su » al pasar el ratón */
+  .ctas .btn::after {
+    content: '»';
+    color: var(--red);
+    transition: transform 0.25s var(--ease);
+  }
+  .ctas .btn.red::after {
+    color: #fff;
+  }
+  .ctas .btn:hover::after {
+    transform: translateX(5px);
   }
 
   /* Anotaciones técnicas sobre la foto, como en un plano */
@@ -260,7 +371,7 @@ const equipo = {
     display: block;
     width: var(--len, 90px);
     height: 1px;
-    background: var(--ink);
+    background: #fff;
   }
   .call span {
     background: #fff;
@@ -296,6 +407,7 @@ const equipo = {
 
   /* La lista de notas solo se ve en móvil; en escritorio las notas están sobre la foto */
   .notas {
+    position: relative;
     display: none;
   }
 
@@ -339,17 +451,18 @@ const equipo = {
       border-left: 1px solid var(--line);
     }
     .foto {
-      box-shadow: none;
-      clip-path: none;
       margin-inline: calc(var(--gut) * -1);
       padding: 24px 0 24px;
+    }
+    .foto::before {
+      inset: 0;
     }
     .figure {
       width: min(calc(100% - 2 * var(--gut)), 420px);
       flex: none;
     }
     .estante {
-      --estante: 100px;
+      --estante: 140px;
       box-shadow: none;
       clip-path: none;
       padding-inline: var(--gut);

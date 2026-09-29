@@ -121,13 +121,13 @@ Ponerlos antes haría que todos los enlaces llevaran a la portada.
 - **Antes:** un carrusel de 7 novedades (mesas móviles, pantalla nueva, ISO 14001…), con el titular cortado
   bajo el menú.
 - **Ahora:** en una sola pantalla, sin bajar:
-  - **Quiénes sois:** "Expertos en **centrifugación**" y una frase: diseñáis y fabricáis en Daganzo y
-    vendéis en todo el mundo a través de distribuidores.
+  - **Quiénes sois:** "Expertos en **centrifugación**" y una frase: desde 1949 diseñáis y fabricáis en
+    Daganzo (Madrid) y vendéis en todo el mundo a través de distribuidores.
   - **Por qué fiarse**, con cuatro cifras reales: respuesta en **48 h**, entrega en **1 semana**,
     **3 años** de garantía e **ISO 13485**.
   - **Dos caminos:** "Ver la gama" (en rojo) y "Soy distribuidor".
   - **Un equipo real:** la Digicen 22 sobre su estante, como en el catálogo, con sus cifras y tres notas
-    técnicas (SmartConnect, REI System y pantalla TFT) que se dibujan al entrar.
+    técnicas (SmartConnect, REI System y pantalla TFT) que se dibujan al entrar (ver 4.2).
 - **Por qué es mejor:**
   - Un carrusel obliga a esperar y casi nadie ve más allá de la primera diapositiva. Aquí todo se entiende
     en diez segundos.
@@ -138,6 +138,48 @@ Ponerlos antes haría que todos los enlaces llevaran a la portada.
 - **Preparado para después:** el hueco de la foto es el del futuro modelo 3D interactivo de la Digicen 22.
   Cuando lleguen los archivos CAD, el visor ocupará ese sitio sin mover nada más.
 - En móvil, las notas técnicas pasan a una lista bajo la foto para que no tapen el equipo.
+
+### 4.1 Sin antetítulo: "desde 1949" pasa a la frase
+
+- **Antes (primera versión nueva):** una línea pequeña en mayúsculas encima del titular, "FABRICANTES EN MADRID
+  DESDE 1949".
+- **Ahora:** fuera. El dato no se pierde: la frase de debajo empieza por "Desde 1949 diseñamos y fabricamos
+  centrífugas de laboratorio en Daganzo (Madrid)…", y la pestaña roja lateral sigue diciendo "desde 1949".
+- **Por qué:** un texto pequeño encima de un titular enorme compite con él y recarga la pantalla. Es el mismo
+  criterio que en la gama: una sola jerarquía, el titular manda.
+
+### 4.2 El recuadro de la Digicen 22: oscuro y con retícula de plano
+
+- **Antes (primera versión nueva):** fondo gris claro y ficha en un gris algo más oscuro. Se diferenciaba poco
+  del resto de la pantalla y la máquina, que también es clara, se perdía.
+- **Ahora:**
+  - **Fondo gris oscuro**, el mismo de la barra de filtros de la gama, y la ficha de abajo en un gris aún más
+    oscuro con letra blanca.
+  - **Retícula fina** de fondo, como el papel de un plano.
+  - **La cota del ancho real** de la máquina, **410 mm** (tabla de versiones de la serie Digicen 22 del
+    catálogo), dibujada bajo la máquina como en un plano técnico.
+  - **Las patas se apoyan justo en la ficha**, con una sombra de contacto, en lugar de pisarla.
+  - **La máquina se centra en todo el recuadro oscuro**, también en monitores anchos, donde el recuadro llega
+    hasta el borde de la pantalla.
+- **Por qué es mejor:**
+  - El contraste separa la foto del texto sin necesidad de bordes, y la máquina clara destaca sobre el oscuro.
+  - La retícula y la cota dicen, sin palabras, que sois fabricantes: es el lenguaje de ingeniería de quien
+    diseña la máquina, no de quien la revende. Casan con las notas técnicas que ya se dibujan sobre la foto.
+  - El mismo gris oscuro en la portada y en la gama hace que la web se vea como un conjunto.
+- **Descartados:**
+  - **Solo la ficha oscura** con el fondo claro: mejoraba la base, pero la foto seguía sin destacar.
+  - **Recuadro con borde** como las tarjetas de la gama: ordenado, pero con poco contraste para una primera
+    pantalla.
+  - **Luz de estudio detrás de la máquina:** bonita, pero genérica; cualquier web de producto la tiene.
+  - **Fondo oscuro sin nada más:** correcto, pero desaprovechaba la ocasión de mostrar oficio.
+
+### 4.3 Efectos al pasar el ratón
+
+- Los botones "Ver la gama" y "Soy distribuidor" llevan su `»` y lo desplazan; el rojo se oscurece y el de
+  borde se rellena de negro.
+- "Ver en la gama" se subraya en rojo y la máquina sube un poco.
+- **Por qué:** dejan claro qué se puede pulsar y dan sensación de web cuidada, sin distraer. Si el sistema pide
+  menos movimiento, no hay animaciones.
 
 ---
 
