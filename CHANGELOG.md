@@ -22,6 +22,11 @@ Hasta que se publique la web, todo va en "Sin publicar"; al publicar se cierra l
 
 ### Cambiado
 
+- Gama de la portada: las 17 series del Catálogo 2025 (23 modelos) con foto del catálogo, frase, capacidad,
+  rpm, xg y temperatura. Filtro por uso (Compactas, Universales, Gran capacidad, Clínica, Industria) en una
+  banda gris oscura que se queda pegada bajo el menú; cada familia con su color suave; fichas en tarjeta con
+  borde; se ven 6 y el resto con "Ver las 17 series". Titular "La gama completa, siempre en stock", sin
+  antetítulo. La lupa abre la gama y lleva a la ficha buscada. (#10)
 - Primera pantalla de la portada: cabe entera en la pantalla, con las cifras (48 h, 1 semana, 3 años, ISO 13485)
   junto al titular y sin la franja de cifras aparte; la Digicen 22 se posa sobre su estante con una ficha corta;
   entrada animada breve (texto, máquina y notas dibujándose), desactivada si el sistema pide menos movimiento;
