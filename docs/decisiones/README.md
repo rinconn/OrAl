@@ -15,3 +15,4 @@ Así, dentro de un año, nadie tiene que adivinar por qué la web es como es.
 | 0004 | [La marca como base, no como regla](0004-marca-como-base.md)                                | Aceptada | 2026-09-28 |
 | 0005 | [Ramas, PRs y comprobación automática](0005-ramas-pr-y-ci.md)                               | Aceptada | 2026-09-28 |
 | 0006 | [Datos solo de fuentes oficiales, validados al compilar](0006-datos-oficiales-validados.md) | Aceptada | 2026-09-28 |
+| 0007 | [La gama se agrupa por uso, con un color por familia](0007-gama-por-uso.md)                 | Aceptada | 2026-09-29 |

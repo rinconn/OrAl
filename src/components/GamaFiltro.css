@@ -1,123 +1,326 @@
-.fam {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 28px;
+/* Filtros por uso: control segmentado con un bloque negro que se desliza; se queda pegado arriba al bajar */
+#gama {
+  --cab: 97px;
 }
-.fam button {
-  font: 400 15px var(--f);
+#gama .fija {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  margin-top: 52px;
+  transition:
+    top 0.35s var(--ease),
+    box-shadow 0.3s var(--ease);
+}
+/* Mientras la cabecera está a la vista, los filtros se colocan justo debajo */
+body:has(.top:not(.oculta)) #gama .fija {
+  top: var(--cab);
+}
+#gama .fija.pegada {
+  box-shadow: 0 14px 24px -14px rgba(0, 0, 0, 0.35);
+}
+/* Banda gris oscura a todo el ancho, seis huecos iguales; la elegida, en blanco con la raya roja */
+#gama .tabs {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  background: #3b4045;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+#gama .tabs::-webkit-scrollbar {
+  display: none;
+}
+#gama .tabs button {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font: 400 18px/1 var(--f);
+  color: #d3d7da;
   background: none;
-  border: 1px solid var(--line);
-  padding: 8px 14px;
+  border: 0;
+  padding: 24px 18px;
   cursor: pointer;
-  color: var(--ink);
+  white-space: nowrap;
+  transition: color 0.3s var(--ease);
 }
-.fam button[aria-pressed='true'] {
-  background: var(--ink);
+#gama .tabs button i {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--c);
+}
+#gama .tabs button:hover,
+#gama .tabs button[aria-pressed='true'] {
   color: #fff;
-  border-color: var(--ink);
+}
+#gama .tabs button[aria-pressed='true'] {
+  font-weight: 700;
+}
+#gama .tabs button:focus-visible {
+  outline-color: #fff;
+  outline-offset: -4px;
+}
+#gama .barra {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 4px;
+  background: var(--red);
+  transition:
+    transform 0.45s var(--ease),
+    width 0.45s var(--ease);
 }
 
-.range {
+/* Fichas: color de la familia en la franja de la foto y en su nombre */
+#gama .rejilla {
+  margin-top: 56px;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 48px 28px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 32px;
 }
-.item {
+#gama .rejilla.cuatro {
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+}
+#gama .serie {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  color: inherit;
   text-decoration: none;
+  background: var(--white);
+  border: 2px solid #3b4045;
+  scroll-margin-top: 200px;
+  transition: border-color 0.3s var(--ease);
+  animation: gama-sube 0.5s var(--ease) both;
+  animation-delay: calc(var(--n, 0) * 45ms);
 }
-
-/* Cada equipo sobre su "estante" gris, como en el catálogo */
-.shelf {
+.js #gama:not(.vista) .serie {
+  animation-play-state: paused;
+}
+@keyframes gama-sube {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+}
+/* Las fotos del catálogo son primeros planos cortados arriba y a la izquierda: se anclan ahí */
+#gama .foto {
   position: relative;
-  isolation: isolate;
-  height: 250px;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  padding-inline: 18px;
+  aspect-ratio: 1;
+  overflow: hidden;
+  background: var(--panel);
+  border-bottom: 2px solid #3b4045;
+  transition: border-color 0.3s var(--ease);
 }
-.shelf::after {
+/* Tarjeta con borde gris oscuro, el mismo tono de la barra de filtros */
+#gama .cuerpo {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  padding: 22px 26px 24px;
+}
+#gama .foto::before {
   content: '';
   position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 16px;
-  background: var(--panel);
-  z-index: -1;
+  z-index: 1;
+  inset: 0 0 auto;
+  height: 5px;
+  background: var(--c);
+  transition: height 0.35s var(--ease);
 }
-.shelf em {
-  position: absolute;
-  right: 0;
-  bottom: 22px;
-  font-style: normal;
-  font-size: 11px;
+#gama .foto img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: left top;
+  transform-origin: 20% 20%;
+  transition: transform 0.7s var(--ease);
+}
+#gama .familia {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
   font-weight: 700;
-  letter-spacing: 0.16em;
-  color: #9b9b9b;
-  text-transform: uppercase;
-  writing-mode: vertical-rl;
+  color: var(--c);
 }
-.shelf img {
-  max-height: 228px;
-  width: auto;
-  height: auto;
-  margin-bottom: 8px;
-  mix-blend-mode: multiply;
+#gama .familia::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+}
+#gama .serie h3 {
+  margin-top: 6px;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1.05;
+}
+#gama .serie h3 span {
+  font-weight: 300;
+}
+#gama .serie h3::after {
+  content: '»';
+  margin-left: auto;
+  color: var(--red);
   transition: transform 0.3s var(--ease);
 }
-.item:hover .shelf img {
-  transform: translateY(-6px);
+#gama .rejilla.cuatro h3 {
+  font-size: 26px;
 }
-.item h3 {
-  font-size: 24px;
-  font-weight: 700;
-  line-height: 1.1;
+#gama .rejilla.cuatro .cuerpo {
+  padding-inline: 20px;
 }
-.item p {
-  font-size: 15px;
+#gama .frase {
+  margin: 8px 0 16px;
+  max-width: 34ch;
+  font-size: 17px;
   color: var(--body);
+  transition: color 0.3s var(--ease);
 }
-.chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-.chips span {
-  font-size: 13px;
-  font-weight: 700;
-  padding: 4px 8px;
-  background: var(--panel);
+#gama .spec {
+  margin-top: auto;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+  font-size: 15px;
+  color: var(--muted);
   font-variant-numeric: tabular-nums;
 }
-.chips span.r {
-  background: var(--red);
+#gama .spec b {
+  color: var(--ink);
+}
+#gama .serie:hover .foto img {
+  transform: scale(1.05);
+}
+#gama .serie:hover,
+#gama .serie:hover .foto {
+  border-color: var(--ink);
+}
+#gama .serie:hover .foto::before {
+  height: 9px;
+}
+#gama .serie:hover h3::after {
+  transform: translateX(6px);
+}
+#gama .serie:hover .frase {
+  color: var(--ink);
+}
+
+/* Temperatura: icono en un círculo de color y la palabra, sin caja */
+#gama .temps {
+  margin-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+}
+#gama .temp {
+  --tc: #6e6e6e;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--tc);
+}
+#gama .temp.refrigerada {
+  --tc: #4a86b0;
+}
+#gama .temp.calefactada {
+  --tc: #c46f45;
+}
+#gama .temp svg {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  padding: 5px;
+  border-radius: 50%;
+  background: var(--tc);
   color: #fff;
 }
 
-@media (max-width: 520px) {
-  .range {
+#gama .mas {
+  margin-top: 72px;
+  display: flex;
+  justify-content: center;
+}
+#gama .mas button {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 16px 28px;
+  font: 700 17px var(--f);
+  color: var(--ink);
+  background: none;
+  border: 1px solid var(--ink);
+  cursor: pointer;
+  transition:
+    background 0.2s var(--ease),
+    color 0.2s var(--ease);
+}
+#gama .mas button::after {
+  content: '»';
+  color: var(--red);
+}
+#gama .mas button:hover {
+  background: var(--ink);
+  color: #fff;
+}
+
+@media (max-width: 1220px) {
+  #gama {
+    --cab: 73px;
+  }
+}
+@media (max-width: 1000px) {
+  #gama .tabs {
+    display: flex;
+  }
+  #gama .tabs button {
+    flex: none;
+  }
+  #gama .rejilla,
+  #gama .rejilla.cuatro {
     grid-template-columns: repeat(2, 1fr);
-    gap: 36px 16px;
+    gap: 24px;
   }
-  .shelf {
-    height: 170px;
-    padding-inline: 8px;
+}
+@media (max-width: 620px) {
+  #gama .fija {
+    margin-top: 28px;
+    margin-inline: calc(var(--gut) * -1);
   }
-  .shelf img {
-    max-height: 150px;
+  #gama .tabs button {
+    font-size: 16px;
+    padding: 18px 16px;
   }
-  .shelf em {
-    display: none;
+  #gama .rejilla,
+  #gama .rejilla.cuatro {
+    grid-template-columns: 1fr;
+    gap: 24px;
+    margin-top: 28px;
   }
-  .item h3 {
-    font-size: 20px;
+  #gama .serie h3,
+  #gama .rejilla.cuatro h3 {
+    margin-top: 6px;
+    font-size: 26px;
   }
-  .item p {
-    font-size: 14px;
+  #gama .cuerpo {
+    padding: 18px 20px 20px;
+  }
+  #gama .mas {
+    margin-top: 48px;
+  }
+  #gama .mas button {
+    width: 100%;
+    justify-content: center;
   }
 }
