@@ -1,44 +1,42 @@
 ---
 import GamaFiltro from './GamaFiltro';
-import { productos } from '../data/productos';
+import { productos, totalModelos } from '../data/productos';
+import { contacto } from '../data/navegacion';
 ---
 
 <section class="sec" id="gama">
   <div class="wrap">
     <div class="head">
-      <h2>
-        Una centrífuga para <b>cada laboratorio</b>
-      </h2>
+      <div>
+        <span class="eyebrow">La gama</span>
+        <h2>
+          Una centrífuga para <b>cada laboratorio</b>
+        </h2>
+      </div>
       <p>
-        Más de 25 modelos, de la minicentrífuga personal a los equipos de suelo, y series específicas para petróleo,
-        tejidos, lácteos y veterinaria.
+        {totalModelos} modelos en {productos.length} series, de la minicentrífuga personal a los equipos de suelo, y
+        series propias para petróleo, lácteos, citología, plasma y veterinaria.
       </p>
     </div>
-    <GamaFiltro client:visible productos={productos} />
-    <div class="range-foot">
-      <a class="arrow" href="#gama">
-        Ver las 25 centrífugas
-      </a>
-      <a class="arrow" href="#gama">
-        ¿No sabes cuál? Configúrala en 6 pasos
-      </a>
-    </div>
+    <GamaFiltro client:visible productos={productos} contacto={contacto.href} />
+    <p class="otros">También fabricamos destiladores, molino de bolas y tamizadora.</p>
     <p class="why">
-      <b>Antes:</b> una rejilla plana y el configurador, la guía y la comparativa en tres sitios distintos.{' '}
-      <b>Ahora:</b>
-      cada equipo sobre su "estante", como en vuestro catálogo, con sus cifras a la vista y un único camino para elegir.
+      <b>Antes:</b> una rejilla plana con parte de la gama, y el configurador, la guía y la comparativa en tres sitios.{' '}
+      <b>Ahora:</b> las 17 series del catálogo con su foto y sus cifras, filtradas por familia y por temperatura en un
+      solo sitio.
     </p>
   </div>
 </section>
 
 <style>
-  .range-foot {
+  h2 {
+    margin-top: 16px;
+  }
+  .otros {
     margin-top: 48px;
-    display: flex;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 16px;
+    padding-top: 18px;
     border-top: 1px solid var(--line);
-    padding-top: 20px;
+    font-size: 15px;
+    color: var(--muted);
   }
 </style>
