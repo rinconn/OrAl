@@ -7,8 +7,6 @@
   top: 0;
   z-index: 5;
   margin-top: 52px;
-  padding-block: 12px;
-  background: var(--white);
   transition:
     top 0.35s var(--ease),
     box-shadow 0.3s var(--ease);
@@ -18,15 +16,14 @@ body:has(.top:not(.oculta)) #gama .fija {
   top: var(--cab);
 }
 #gama .fija.pegada {
-  box-shadow: 0 12px 20px -16px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 14px 24px -14px rgba(0, 0, 0, 0.35);
 }
+/* Banda gris oscura a todo el ancho, seis huecos iguales; la elegida, en blanco con la raya roja */
 #gama .tabs {
   position: relative;
-  display: inline-flex;
-  max-width: 100%;
-  gap: 2px;
-  padding: 6px;
-  background: var(--panel);
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  background: #3b4045;
   overflow-x: auto;
   scrollbar-width: none;
 }
@@ -38,12 +35,13 @@ body:has(.top:not(.oculta)) #gama .fija {
   z-index: 1;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 10px;
   font: 400 18px/1 var(--f);
-  color: var(--ink);
+  color: #d3d7da;
   background: none;
   border: 0;
-  padding: 16px 22px;
+  padding: 24px 18px;
   cursor: pointer;
   white-space: nowrap;
   transition: color 0.3s var(--ease);
@@ -53,28 +51,25 @@ body:has(.top:not(.oculta)) #gama .fija {
   height: 10px;
   border-radius: 50%;
   background: var(--c);
-  transition: box-shadow 0.3s var(--ease);
 }
-#gama .tabs button:hover {
-  color: #000;
-}
+#gama .tabs button:hover,
 #gama .tabs button[aria-pressed='true'] {
   color: #fff;
+}
+#gama .tabs button[aria-pressed='true'] {
   font-weight: 700;
 }
-#gama .tabs button[aria-pressed='true'] i {
-  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.25);
-}
 #gama .tabs button:focus-visible {
-  outline-offset: -2px;
+  outline-color: #fff;
+  outline-offset: -4px;
 }
 #gama .barra {
   position: absolute;
-  top: 6px;
-  bottom: 6px;
+  bottom: 0;
   left: 0;
   width: 0;
-  background: var(--ink);
+  height: 4px;
+  background: var(--red);
   transition:
     transform 0.45s var(--ease),
     width 0.45s var(--ease);
@@ -268,6 +263,12 @@ body:has(.top:not(.oculta)) #gama .fija {
   }
 }
 @media (max-width: 1000px) {
+  #gama .tabs {
+    display: flex;
+  }
+  #gama .tabs button {
+    flex: none;
+  }
   #gama .rejilla,
   #gama .rejilla.cuatro {
     grid-template-columns: repeat(2, 1fr);
@@ -278,14 +279,10 @@ body:has(.top:not(.oculta)) #gama .fija {
   #gama .fija {
     margin-top: 28px;
     margin-inline: calc(var(--gut) * -1);
-    padding-inline: var(--gut);
-  }
-  #gama .tabs {
-    display: flex;
   }
   #gama .tabs button {
     font-size: 16px;
-    padding: 13px 16px;
+    padding: 18px 16px;
   }
   #gama .rejilla,
   #gama .rejilla.cuatro {
