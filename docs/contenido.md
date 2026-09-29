@@ -21,6 +21,14 @@ se usan literalmente (ver `sistema-diseno/catalogo/CONTENIDO-MARCA.md`).
 | Menú "Guías"      | Enlace roto (404)                       | Integrado en Elegir centrífuga                  | —             |
 | wp.ortoalresa.com | Indexado en Google con títulos internos | Redirigido o desindexado al publicar            | —             |
 
+## Gama
+
+- **23 modelos en 17 series** (no "más de 25", como decía la web actual). Cyto 22: 866 xg máx.
+- Las fotos de la gama son recortes del propio catálogo (`public/img/gama/`) hasta que lleguen las originales.
+- La frase de cada ficha resume su ficha del catálogo; el titular "siempre en stock" sale de "continuo stock
+  de nuestros productos" (Catálogo 2025, pág. 12).
+- Garantía: 3 años en todo salvo Minicen y destiladores, que tienen 14 meses (dato de la empresa).
+
 ## Notación
 
 - Velocidad en **RPM** y fuerza en **xg** (FCR). Capacidad como "**4 x 100 ml**".
