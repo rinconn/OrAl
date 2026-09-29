@@ -181,6 +181,34 @@ Ponerlos antes haría que todos los enlaces llevaran a la portada.
 - **Por qué:** dejan claro qué se puede pulsar y dan sensación de web cuidada, sin distraer. Si el sistema pide
   menos movimiento, no hay animaciones.
 
+### 4.4 El texto llena la pantalla: titular arriba, cifras grandes abajo
+
+- **Antes:** el texto estaba centrado en vertical frente al recuadro oscuro, que ocupa toda la pantalla. Al
+  quitar el antetítulo el texto quedó más corto, y lo que perdió se convirtió en un hueco blanco grande entre
+  el menú y "Expertos en centrifugación".
+- **Ahora:**
+  - El titular empieza a una distancia fija bajo el menú (entre 56 y 88 px según la altura de la pantalla) y
+    crece hasta llenar el ancho de su columna (hasta 92 px, antes 84). La frase se ensancha y los dos botones
+    van justo debajo.
+  - Las cuatro cifras (48 h, 1 semana, 3 años, ISO 13485) pasan a ser grandes, en una rejilla de 2 × 2 con
+    rayas finas, y ocupan todo lo que queda de columna hasta el pie de la portada, a la altura de la ficha de la
+    Digicen 22.
+  - En pantallas bajas (portátiles de 720–820 px de alto) las cifras vuelven a una sola fila, con el tamaño
+    ajustado al ancho de la columna, para que todo quepa en una pantalla sin cortar nada.
+  - El margen de la izquierda no se toca: el texto empieza en la misma vertical que el logo, igual que todas las
+    secciones de la web.
+  - En móvil no cambia.
+- **Por qué es mejor:**
+  - No queda ningún hueco blanco que parezca un error, en ninguna pantalla.
+  - El espacio lo ocupan los cuatro argumentos que un distribuidor quiere ver (respuesta, entrega, garantía,
+    certificación), ahora a un tamaño que se lee de un vistazo, en lugar de aire vacío.
+  - Titular, frase y botones arriba: quiénes sois y los dos caminos, sin bajar.
+- **Descartados (probados con capturas):**
+  - **Solo subir el texto:** el hueco pasaba abajo.
+  - **Cifras abajo en fila pequeña:** el hueco pasaba al medio, entre los botones y las cifras.
+  - **Portada menos alta con todo junto:** sin hueco, pero la máquina se hacía más pequeña, y ahí irá el modelo
+    3D.
+
 ---
 
 ## 5. La gama (portada)
