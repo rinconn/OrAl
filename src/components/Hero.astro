@@ -115,11 +115,13 @@ const equipo = {
   .grid {
     display: grid;
     grid-template-columns: 1.1fr 1fr;
-    align-items: center;
+    align-items: start;
     min-height: min(calc(100svh - 96px), 900px);
   }
+  /* El texto arranca a una distancia fija del menú, no centrado: sin eyebrow es más
+     corto y, centrado, dejaba un hueco blanco grande bajo la cabecera */
   .texto {
-    padding-block: clamp(32px, 5vh, 64px);
+    padding-block: clamp(56px, 9vh, 88px) clamp(32px, 5vh, 64px);
     padding-right: clamp(32px, 5vw, 96px);
   }
   h1 {
@@ -433,6 +435,7 @@ const equipo = {
       min-height: 0;
     }
     .texto {
+      padding-block: clamp(32px, 5vh, 64px);
       padding-right: 0;
     }
     .cifras {

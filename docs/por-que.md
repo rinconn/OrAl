@@ -181,6 +181,20 @@ Ponerlos antes haría que todos los enlaces llevaran a la portada.
 - **Por qué:** dejan claro qué se puede pulsar y dan sensación de web cuidada, sin distraer. Si el sistema pide
   menos movimiento, no hay animaciones.
 
+### 4.4 El titular arranca arriba, no centrado
+
+- **Antes:** el texto estaba centrado en vertical frente al recuadro oscuro, que ocupa toda la pantalla. Al
+  quitar el antetítulo el texto quedó más corto, y lo que perdió se convirtió en un hueco blanco grande entre
+  el menú y "Expertos en centrifugación", mayor cuanto más ancha y baja es la pantalla.
+- **Ahora:** el titular empieza a una distancia fija bajo el menú (entre 56 y 88 px según la altura de la
+  pantalla). El aire sobrante queda debajo de los botones, donde no separa nada. En móvil no cambia.
+- **Por qué es mejor:** lo primero que se lee queda pegado a la marca y siempre en el mismo sitio, en cualquier
+  pantalla. Es como se compone una página impresa: se empieza por arriba, no por el medio.
+- **Descartados:**
+  - **Portada menos alta:** reducía el hueco, pero quitaba altura al recuadro de la máquina, donde irá el modelo
+    3D, y el texto seguiría centrado.
+  - **Centrado pero algo más arriba:** un apaño que quedaría distinto en cada pantalla.
+
 ---
 
 ## 5. La gama (portada)
