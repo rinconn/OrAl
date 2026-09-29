@@ -1,44 +1,75 @@
 ---
 import GamaFiltro from './GamaFiltro';
-import { productos } from '../data/productos';
+import { productos, totalModelos } from '../data/productos';
 ---
 
 <section class="sec" id="gama">
   <div class="wrap">
-    <div class="head">
-      <h2>
-        Una centrífuga para <b>cada laboratorio</b>
-      </h2>
-      <p>
-        Más de 25 modelos, de la minicentrífuga personal a los equipos de suelo, y series específicas para petróleo,
-        tejidos, lácteos y veterinaria.
-      </p>
-    </div>
+    <h2>
+      La gama completa, <b>siempre en stock</b>
+    </h2>
+    <p class="lead">
+      {totalModelos} modelos en {productos.length} series, de la minicentrífuga personal a los equipos de suelo, con
+      series propias para clínica e industria.
+    </p>
     <GamaFiltro client:visible productos={productos} />
-    <div class="range-foot">
-      <a class="arrow" href="#gama">
-        Ver las 25 centrífugas
-      </a>
-      <a class="arrow" href="#gama">
-        ¿No sabes cuál? Configúrala en 6 pasos
-      </a>
-    </div>
     <p class="why">
-      <b>Antes:</b> una rejilla plana y el configurador, la guía y la comparativa en tres sitios distintos.{' '}
-      <b>Ahora:</b>
-      cada equipo sobre su "estante", como en vuestro catálogo, con sus cifras a la vista y un único camino para elegir.
+      <b>Antes:</b> una rejilla plana con parte de la gama, y el configurador, la guía y la comparativa en tres sitios.{' '}
+      <b>Ahora:</b> las 17 series del catálogo con su foto, su frase y sus cifras, ordenadas por uso y con un color por
+      familia para encontrar la adecuada de un vistazo. El titular recoge el stock continuo que promete el catálogo.
     </p>
   </div>
 </section>
 
+<script>
+  // Entrada suave del titular, los filtros y las fichas la primera vez que se ve la sección
+  const seccion = document.getElementById('gama');
+  if (seccion && 'IntersectionObserver' in window) {
+    document.documentElement.classList.add('js');
+    const obs = new IntersectionObserver(
+      (entradas) => {
+        if (entradas.some((e) => e.isIntersecting)) {
+          seccion.classList.add('vista');
+          obs.disconnect();
+        }
+      },
+      { threshold: 0.12 },
+    );
+    obs.observe(seccion);
+  }
+</script>
+
 <style>
-  .range-foot {
-    margin-top: 48px;
-    display: flex;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 16px;
-    border-top: 1px solid var(--line);
-    padding-top: 20px;
+  h2 {
+    max-width: 19ch;
+    font-size: clamp(44px, 6vw, 84px);
+    font-weight: 300;
+    line-height: 0.95;
+    letter-spacing: -0.015em;
+  }
+  .lead {
+    margin-top: 28px;
+    max-width: 52ch;
+    font-size: 20px;
+    color: var(--body);
+  }
+  h2,
+  .lead {
+    transition:
+      opacity 0.7s var(--ease),
+      transform 0.7s var(--ease);
+  }
+  .lead {
+    transition-delay: 0.1s;
+  }
+  :global(.js) #gama:not(.vista) h2,
+  :global(.js) #gama:not(.vista) .lead {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  @media (max-width: 620px) {
+    .lead {
+      font-size: 18px;
+    }
   }
 </style>

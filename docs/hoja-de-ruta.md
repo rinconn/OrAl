@@ -4,18 +4,18 @@ Cada fase se entrega en una o varias PRs y queda **terminada** antes de pasar a 
 Lo que depende de la empresa se construye con su hueco preparado, de forma que cuando llegue el material
 solo haya que añadirlo, sin rehacer nada.
 
-Estado a 28 de septiembre de 2026.
+Estado a 29 de septiembre de 2026.
 
-| Fase | Qué                            | Estado              | Depende de la empresa                        |
-| ---- | ------------------------------ | ------------------- | -------------------------------------------- |
-| 0    | Base del proyecto              | Hecha               | —                                            |
-| 0b   | Cabecera definitiva            | Hecha (PRs #3 y #8) | —                                            |
-| 1    | Catálogo completo y fichas     | Siguiente           | Fotos de todos los modelos (hay 6 de ~25)    |
-| 2    | Elegir centrífuga              | Pendiente           | —                                            |
-| 3    | Resto de páginas               | Pendiente           | Código de WordPress, lista de distribuidores |
-| 4    | Portada definitiva y modelo 3D | Pendiente           | Archivos CAD (STEP por piezas)               |
-| 5    | Inglés, francés y publicación  | Pendiente           | Dominio, alojamiento, licencia tipográfica   |
-| 6    | Área privada de distribuidores | Segunda etapa       | Aprobación de la web pública                 |
+| Fase | Qué                            | Estado              | Depende de la empresa                           |
+| ---- | ------------------------------ | ------------------- | ----------------------------------------------- |
+| 0    | Base del proyecto              | Hecha               | —                                               |
+| 0b   | Cabecera definitiva            | Hecha (PRs #3 y #8) | —                                               |
+| 1    | Catálogo completo y fichas     | En marcha (PR #10)  | Fotos originales (ahora, recortes del catálogo) |
+| 2    | Elegir centrífuga              | Pendiente           | —                                               |
+| 3    | Resto de páginas               | Pendiente           | Código de WordPress, lista de distribuidores    |
+| 4    | Portada definitiva y modelo 3D | Pendiente           | Archivos CAD (STEP por piezas)                  |
+| 5    | Inglés, francés y publicación  | Pendiente           | Dominio, alojamiento, licencia tipográfica      |
+| 6    | Área privada de distribuidores | Segunda etapa       | Aprobación de la web pública                    |
 
 ## 0 · Base del proyecto (hecha)
 
@@ -34,6 +34,9 @@ Quedan dos cosas que llegan con otras fases: el desplegable de Centrífugas y qu
 tener enlaces que lleven todos a la portada.
 
 ## 1 · Catálogo completo
+
+La gama de la portada ya muestra las 17 series con filtro por uso y lleva a cada ficha desde la lupa (PR #10).
+Falta la página de cada modelo; cuando exista, solo cambia el enlace de la tarjeta.
 
 Los modelos del Catálogo General 2025 transcritos a datos validados en cada build, el listado de
 Centrífugas por familias, la plantilla de ficha y el desplegable de Centrífugas en la cabecera.
