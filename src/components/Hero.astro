@@ -118,10 +118,14 @@ const equipo = {
     align-items: start;
     min-height: min(calc(100svh - 96px), 900px);
   }
-  /* El texto arranca a una distancia fija del menú, no centrado: sin eyebrow es más
-     corto y, centrado, dejaba un hueco blanco grande bajo la cabecera */
+  /* El titular arranca a una distancia fija del menú y las cifras bajan a la altura de la ficha
+     oscura de la máquina: su raya de arriba sigue la línea de la ficha. Así el texto ocupa toda la
+     pantalla sin huecos blancos arriba ni abajo, sea cual sea su altura. */
   .texto {
-    padding-block: clamp(56px, 9vh, 88px) clamp(32px, 5vh, 64px);
+    align-self: stretch;
+    display: flex;
+    flex-direction: column;
+    padding-top: clamp(56px, 9vh, 88px);
     padding-right: clamp(32px, 5vw, 96px);
   }
   h1 {
@@ -177,6 +181,21 @@ const equipo = {
     display: flex;
     flex-wrap: wrap;
     gap: 12px;
+  }
+  @media (min-width: 1025px) {
+    .cifras {
+      order: 1;
+      margin-top: auto;
+      height: var(--estante);
+      align-content: center;
+      border-bottom: 0;
+    }
+    .texto > .ctas {
+      margin-bottom: 40px;
+    }
+    .texto > .why {
+      order: 2;
+    }
   }
 
   /* La columna de la foto es un recuadro gris oscuro, el mismo tono de la barra de filtros de la gama,
@@ -435,6 +454,7 @@ const equipo = {
       min-height: 0;
     }
     .texto {
+      display: block;
       padding-block: clamp(32px, 5vh, 64px);
       padding-right: 0;
     }

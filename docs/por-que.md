@@ -181,18 +181,25 @@ Ponerlos antes haría que todos los enlaces llevaran a la portada.
 - **Por qué:** dejan claro qué se puede pulsar y dan sensación de web cuidada, sin distraer. Si el sistema pide
   menos movimiento, no hay animaciones.
 
-### 4.4 El titular arranca arriba, no centrado
+### 4.4 El texto ocupa toda la altura: titular arriba, cifras a la altura de la ficha
 
 - **Antes:** el texto estaba centrado en vertical frente al recuadro oscuro, que ocupa toda la pantalla. Al
   quitar el antetítulo el texto quedó más corto, y lo que perdió se convirtió en un hueco blanco grande entre
-  el menú y "Expertos en centrifugación", mayor cuanto más ancha y baja es la pantalla.
-- **Ahora:** el titular empieza a una distancia fija bajo el menú (entre 56 y 88 px según la altura de la
-  pantalla). El aire sobrante queda debajo de los botones, donde no separa nada. En móvil no cambia.
-- **Por qué es mejor:** lo primero que se lee queda pegado a la marca y siempre en el mismo sitio, en cualquier
-  pantalla. Es como se compone una página impresa: se empieza por arriba, no por el medio.
+  el menú y "Expertos en centrifugación". Subir solo el texto pasaba el hueco abajo.
+- **Ahora:**
+  - El titular empieza a una distancia fija bajo el menú (entre 56 y 88 px según la altura de la pantalla), con
+    la frase y los dos botones justo debajo.
+  - Las cifras (48 h, 1 semana, 3 años, ISO 13485) bajan al pie de la pantalla, a la misma altura que la ficha
+    oscura de la Digicen 22: su raya de arriba continúa la línea de la ficha de lado a lado.
+  - En móvil no cambia.
+- **Por qué es mejor:**
+  - El texto llena la pantalla de arriba abajo, sin huecos que parezcan un error, en cualquier tamaño.
+  - Lo importante queda arriba y a la vista: quiénes sois y los dos caminos (ver la gama o hacerse distribuidor).
+  - Las cifras y la ficha forman una sola franja de datos a lo ancho, como el pie de un plano: el espacio entre
+    los botones y las cifras es intencionado, no sobrante.
 - **Descartados:**
-  - **Portada menos alta:** reducía el hueco, pero quitaba altura al recuadro de la máquina, donde irá el modelo
-    3D, y el texto seguiría centrado.
+  - **Solo subir el texto:** el hueco se iba abajo (probado).
+  - **Portada menos alta:** quitaba altura al recuadro de la máquina, donde irá el modelo 3D.
   - **Centrado pero algo más arriba:** un apaño que quedaría distinto en cada pantalla.
 
 ---
