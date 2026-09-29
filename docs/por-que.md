@@ -181,31 +181,33 @@ Ponerlos antes haría que todos los enlaces llevaran a la portada.
 - **Por qué:** dejan claro qué se puede pulsar y dan sensación de web cuidada, sin distraer. Si el sistema pide
   menos movimiento, no hay animaciones.
 
-### 4.4 El texto ocupa toda la altura: titular arriba, cifras a la altura de la ficha
+### 4.4 El texto llena la pantalla: titular arriba, cifras grandes abajo
 
 - **Antes:** el texto estaba centrado en vertical frente al recuadro oscuro, que ocupa toda la pantalla. Al
   quitar el antetítulo el texto quedó más corto, y lo que perdió se convirtió en un hueco blanco grande entre
-  el menú y "Expertos en centrifugación". Subir solo el texto pasaba el hueco abajo.
+  el menú y "Expertos en centrifugación".
 - **Ahora:**
-  - El titular empieza a una distancia fija bajo el menú (entre 56 y 88 px según la altura de la pantalla), con
-    la frase y los dos botones justo debajo.
-  - El titular crece hasta llenar el ancho de su columna (hasta 92 px, antes 84) y la frase se ensancha, así el
-    bloque de texto ocupa su espacio en vez de quedarse pequeño en una esquina. En pantallas bajas se ajusta
-    para que todo quepa sin pasar de una pantalla.
+  - El titular empieza a una distancia fija bajo el menú (entre 56 y 88 px según la altura de la pantalla) y
+    crece hasta llenar el ancho de su columna (hasta 92 px, antes 84). La frase se ensancha y los dos botones
+    van justo debajo.
+  - Las cuatro cifras (48 h, 1 semana, 3 años, ISO 13485) pasan a ser grandes, en una rejilla de 2 × 2 con
+    rayas finas, y ocupan todo lo que queda de columna hasta el pie de la portada, a la altura de la ficha de la
+    Digicen 22.
+  - En pantallas bajas (portátiles de 720–820 px de alto) las cifras vuelven a una sola fila, con el tamaño
+    ajustado al ancho de la columna, para que todo quepa en una pantalla sin cortar nada.
   - El margen de la izquierda no se toca: el texto empieza en la misma vertical que el logo, igual que todas las
     secciones de la web.
-  - Las cifras (48 h, 1 semana, 3 años, ISO 13485) bajan al pie de la pantalla, a la misma altura que la ficha
-    oscura de la Digicen 22: su raya de arriba continúa la línea de la ficha de lado a lado.
   - En móvil no cambia.
 - **Por qué es mejor:**
-  - El texto llena la pantalla de arriba abajo, sin huecos que parezcan un error, en cualquier tamaño.
-  - Lo importante queda arriba y a la vista: quiénes sois y los dos caminos (ver la gama o hacerse distribuidor).
-  - Las cifras y la ficha forman una sola franja de datos a lo ancho, como el pie de un plano: el espacio entre
-    los botones y las cifras es intencionado, no sobrante.
-- **Descartados:**
-  - **Solo subir el texto:** el hueco se iba abajo (probado).
-  - **Portada menos alta:** quitaba altura al recuadro de la máquina, donde irá el modelo 3D.
-  - **Centrado pero algo más arriba:** un apaño que quedaría distinto en cada pantalla.
+  - No queda ningún hueco blanco que parezca un error, en ninguna pantalla.
+  - El espacio lo ocupan los cuatro argumentos que un distribuidor quiere ver (respuesta, entrega, garantía,
+    certificación), ahora a un tamaño que se lee de un vistazo, en lugar de aire vacío.
+  - Titular, frase y botones arriba: quiénes sois y los dos caminos, sin bajar.
+- **Descartados (probados con capturas):**
+  - **Solo subir el texto:** el hueco pasaba abajo.
+  - **Cifras abajo en fila pequeña:** el hueco pasaba al medio, entre los botones y las cifras.
+  - **Portada menos alta con todo junto:** sin hueco, pero la máquina se hacía más pequeña, y ahí irá el modelo
+    3D.
 
 ---
 

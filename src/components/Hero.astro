@@ -114,19 +114,19 @@ const equipo = {
   /* Una pantalla de alto (menos la cabecera), sin pasarse en monitores muy altos */
   .grid {
     display: grid;
-    grid-template-columns: 1.1fr 1fr;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
     align-items: start;
     min-height: min(calc(100svh - 96px), 900px);
   }
-  /* El titular arranca a una distancia fija del menú y las cifras bajan a la altura de la ficha
-     oscura de la máquina: su raya de arriba sigue la línea de la ficha. Así el texto ocupa toda la
-     pantalla sin huecos blancos arriba ni abajo, sea cual sea su altura. */
+  /* El titular arranca a una distancia fija del menú y el texto ocupa toda la altura de la portada:
+     sin huecos blancos arriba ni abajo, sea cual sea la pantalla. */
   .texto {
     align-self: stretch;
     display: flex;
     flex-direction: column;
     padding-top: clamp(56px, 9vh, 88px);
     padding-right: clamp(32px, 5vw, 96px);
+    container-type: inline-size;
   }
   h1 {
     font-weight: 300;
@@ -183,20 +183,66 @@ const equipo = {
     flex-wrap: wrap;
     gap: 12px;
   }
+  /* Escritorio: las cifras, en grande y en 2 × 2, llenan la columna desde los botones hasta el pie,
+     alineadas con la ficha de la máquina. En pantallas bajas pasan a una fila para que todo quepa. */
   @media (min-width: 1025px) {
     .cifras {
       order: 1;
-      margin-top: auto;
-      height: var(--estante);
-      align-content: center;
+      flex: 1;
+      margin-top: clamp(32px, 5vh, 48px);
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
       border-bottom: 0;
     }
-    .texto > .ctas {
-      margin-top: clamp(28px, 4vh, 44px);
-      margin-bottom: clamp(24px, 4vh, 40px);
+    .cifras div {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 0 28px;
+    }
+    .cifras div:nth-child(odd) {
+      padding-left: 0;
+      border-left: 0;
+    }
+    .cifras div:nth-child(n + 3) {
+      border-top: 1px solid var(--line);
+    }
+    .cifras dt {
+      font-size: clamp(40px, 4.2vw, 64px);
+      line-height: 1;
+    }
+    .cifras dd {
+      margin-top: 8px;
+      font-size: 16px;
     }
     .texto > .why {
       order: 2;
+    }
+  }
+  @media (min-width: 1025px) and (max-height: 820px) {
+    .cifras {
+      margin-top: 32px;
+      grid-template-columns: repeat(4, auto);
+      grid-template-rows: 1fr;
+    }
+    .cifras div,
+    .cifras div:nth-child(odd) {
+      padding: 0 18px;
+      border-left: 1px solid var(--line);
+    }
+    .cifras div:first-child {
+      padding-left: 0;
+      border-left: 0;
+    }
+    .cifras div:nth-child(n + 3) {
+      border-top: 0;
+    }
+    .cifras dt {
+      /* Según el ancho de la columna, para que las cuatro quepan siempre en una fila */
+      font-size: clamp(22px, calc(7.2cqi - 10px), 34px);
+    }
+    .cifras dd {
+      font-size: 14px;
     }
   }
 
