@@ -80,18 +80,21 @@ body:has(.top:not(.oculta)) #gama .fija {
   margin-top: 56px;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 72px 32px;
+  gap: 32px;
 }
 #gama .rejilla.cuatro {
   grid-template-columns: repeat(4, 1fr);
-  gap: 72px 24px;
+  gap: 24px;
 }
 #gama .serie {
   display: flex;
   flex-direction: column;
   color: inherit;
   text-decoration: none;
+  background: var(--white);
+  border: 2px solid #3b4045;
   scroll-margin-top: 200px;
+  transition: border-color 0.3s var(--ease);
   animation: gama-sube 0.5s var(--ease) both;
   animation-delay: calc(var(--n, 0) * 45ms);
 }
@@ -110,6 +113,15 @@ body:has(.top:not(.oculta)) #gama .fija {
   aspect-ratio: 1;
   overflow: hidden;
   background: var(--panel);
+  border-bottom: 2px solid #3b4045;
+  transition: border-color 0.3s var(--ease);
+}
+/* Tarjeta con borde gris oscuro, el mismo tono de la barra de filtros */
+#gama .cuerpo {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  padding: 22px 26px 24px;
 }
 #gama .foto::before {
   content: '';
@@ -129,7 +141,6 @@ body:has(.top:not(.oculta)) #gama .fija {
   transition: transform 0.7s var(--ease);
 }
 #gama .familia {
-  margin-top: 22px;
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -165,6 +176,9 @@ body:has(.top:not(.oculta)) #gama .fija {
 #gama .rejilla.cuatro h3 {
   font-size: 26px;
 }
+#gama .rejilla.cuatro .cuerpo {
+  padding-inline: 20px;
+}
 #gama .frase {
   margin: 8px 0 16px;
   max-width: 34ch;
@@ -185,6 +199,10 @@ body:has(.top:not(.oculta)) #gama .fija {
 }
 #gama .serie:hover .foto img {
   transform: scale(1.05);
+}
+#gama .serie:hover,
+#gama .serie:hover .foto {
+  border-color: var(--ink);
 }
 #gama .serie:hover .foto::before {
   height: 9px;
@@ -272,7 +290,7 @@ body:has(.top:not(.oculta)) #gama .fija {
   #gama .rejilla,
   #gama .rejilla.cuatro {
     grid-template-columns: repeat(2, 1fr);
-    gap: 56px 24px;
+    gap: 24px;
   }
 }
 @media (max-width: 620px) {
@@ -287,13 +305,16 @@ body:has(.top:not(.oculta)) #gama .fija {
   #gama .rejilla,
   #gama .rejilla.cuatro {
     grid-template-columns: 1fr;
-    gap: 48px;
-    margin-top: 36px;
+    gap: 24px;
+    margin-top: 28px;
   }
   #gama .serie h3,
   #gama .rejilla.cuatro h3 {
     margin-top: 6px;
     font-size: 26px;
+  }
+  #gama .cuerpo {
+    padding: 18px 20px 20px;
   }
   #gama .mas {
     margin-top: 48px;
