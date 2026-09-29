@@ -1,40 +1,69 @@
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { familias, type Familia, type Serie, type Temperatura } from '../data/productos';
 import './GamaFiltro.css';
 
-type Filtro = 'Todas' | Familia;
+type Pestana = 'todas' | Familia;
 
-const temperaturas: { valor: Temperatura; texto: string; resumen: string }[] = [
-  { valor: 'refrigerada', texto: 'Refrigeradas', resumen: 'refrigeradas' },
-  { valor: 'calefactada', texto: 'Calefactadas', resumen: 'calefactadas' },
+const pestanas: { clave: Pestana; nombre: string }[] = [
+  { clave: 'todas', nombre: 'Todas' },
+  ...(Object.keys(familias) as Familia[]).map((clave) => ({ clave, nombre: familias[clave].nombre })),
 ];
 
-const nombreTemperatura: Record<Temperatura, string> = {
-  ventilada: 'Ventilada',
-  refrigerada: 'Refrigerada',
-  calefactada: 'Calefactada',
+/** Series que se ven en "Todas" antes de pulsar "Ver las 17 series" */
+const INICIALES = 6;
+
+const temperaturas: Record<Temperatura, { nombre: string; icono: ReactNode }> = {
+  ventilada: {
+    nombre: 'Ventilada',
+    icono: (
+      <>
+        <path d="M2 5.5h8.5a2 2 0 1 0-2-2" />
+        <path d="M2 8.5h11a2 2 0 1 1-2 2" />
+        <path d="M2 11.5h5" />
+      </>
+    ),
+  },
+  refrigerada: {
+    nombre: 'Refrigerada',
+    icono: (
+      <>
+        <path d="M8 1.5v13M2.4 4.75l11.2 6.5M2.4 11.25l11.2-6.5" />
+        <path d="M6.3 2.6 8 4.2l1.7-1.6M6.3 13.4 8 11.8l1.7 1.6" />
+      </>
+    ),
+  },
+  calefactada: {
+    nombre: 'Calefactada',
+    icono: (
+      <>
+        <circle cx="8" cy="8" r="3" />
+        <path d="M8 1.5v1.6M8 12.9v1.6M1.5 8h1.6M12.9 8h1.6M3.4 3.4l1.1 1.1M11.5 11.5l1.1 1.1M3.4 12.6l1.1-1.1M11.5 4.5l1.1-1.1" />
+      </>
+    ),
+  },
 };
+
+const color = (f: Familia) => ({ '--c': familias[f].color }) as CSSProperties;
 
 interface Props {
   productos: Serie[];
-  contacto: string;
 }
 
-export default function GamaFiltro({ productos, contacto }: Props) {
-  const [familia, setFamilia] = useState<Filtro>('Todas');
-  const [temperatura, setTemperatura] = useState<Temperatura | null>(null);
-  const pestanas = useRef<HTMLDivElement>(null);
+export default function GamaFiltro({ productos }: Props) {
+  const [pestana, setPestana] = useState<Pestana>('todas');
+  const [abierta, setAbierta] = useState(false);
+  const fija = useRef<HTMLDivElement>(null);
+  const tabs = useRef<HTMLDivElement>(null);
   const barra = useRef<HTMLSpanElement>(null);
+  const rejilla = useRef<HTMLDivElement>(null);
 
-  const visibles = productos.filter(
-    (p) => (familia === 'Todas' || p.familia === familia) && (!temperatura || p.temperatura.includes(temperatura)),
-  );
-  const cuenta = (f: Filtro) => (f === 'Todas' ? productos.length : productos.filter((p) => p.familia === f).length);
+  const deLaPestana = productos.filter((p) => pestana === 'todas' || p.familia === pestana);
+  const visibles = pestana === 'todas' && !abierta ? deLaPestana.slice(0, INICIALES) : deLaPestana;
 
-  // La barra roja se coloca bajo la pestaña activa y se desliza al cambiar
+  // El bloque negro se desliza hasta la pestaña activa
   useLayoutEffect(() => {
     const colocar = () => {
-      const activa = pestanas.current?.querySelector<HTMLButtonElement>('[aria-pressed="true"]');
+      const activa = tabs.current?.querySelector<HTMLButtonElement>('[aria-pressed="true"]');
       if (!activa || !barra.current) return;
       barra.current.style.transform = `translateX(${activa.offsetLeft}px)`;
       barra.current.style.width = `${activa.offsetWidth}px`;
@@ -43,72 +72,79 @@ export default function GamaFiltro({ productos, contacto }: Props) {
     void document.fonts?.ready.then(colocar);
     window.addEventListener('resize', colocar);
     return () => window.removeEventListener('resize', colocar);
-  }, [familia]);
+  }, [pestana]);
 
-  const pestana = (f: Filtro) => (
-    <button
-      key={f}
-      type="button"
-      aria-pressed={familia === f}
-      onClick={(e) => {
-        setFamilia(f);
-        e.currentTarget.scrollIntoView({ block: 'nearest', inline: 'center' });
-      }}
-    >
-      {f}
-      <sup>{cuenta(f)}</sup>
-    </button>
-  );
+  // Sombra bajo los filtros cuando se quedan pegados arriba
+  useEffect(() => {
+    const el = fija.current;
+    if (!el) return;
+    const mirar = () =>
+      el.classList.toggle('pegada', el.getBoundingClientRect().top <= parseFloat(getComputedStyle(el).top) + 1);
+    mirar();
+    window.addEventListener('scroll', mirar, { passive: true });
+    return () => window.removeEventListener('scroll', mirar);
+  }, []);
 
-  const resumen = [
-    `${visibles.length} ${visibles.length === 1 ? 'serie' : 'series'}`,
-    familia !== 'Todas' && familia,
-    temperatura && temperaturas.find((t) => t.valor === temperatura)?.resumen,
-  ]
-    .filter(Boolean)
-    .join(' · ');
+  // Un enlace a /#serie (desde la lupa, por ejemplo) abre la gama entera y lleva a esa ficha
+  useEffect(() => {
+    const irA = () => {
+      const slug = decodeURIComponent(location.hash.slice(1));
+      if (!productos.some((p) => p.slug === slug) || document.getElementById(slug)) return;
+      setPestana('todas');
+      setAbierta(true);
+      requestAnimationFrame(() => document.getElementById(slug)?.scrollIntoView({ block: 'start' }));
+    };
+    irA();
+    window.addEventListener('hashchange', irA);
+    return () => window.removeEventListener('hashchange', irA);
+  }, [productos]);
+
+  const elegir = (clave: Pestana, boton: HTMLButtonElement) => {
+    setPestana(clave);
+    tabs.current?.scrollTo({ left: boton.offsetLeft - 40, behavior: 'smooth' });
+    // Si los filtros ya van pegados arriba, se vuelve al principio de las fichas
+    const el = fija.current;
+    if (el?.classList.contains('pegada') && rejilla.current) {
+      const arriba =
+        rejilla.current.getBoundingClientRect().top + window.scrollY - el.getBoundingClientRect().bottom - 24;
+      window.scrollTo({ top: arriba, behavior: 'smooth' });
+    }
+  };
 
   return (
     <>
-      <div className="filtros">
-        <div className="pestanas" ref={pestanas} role="group" aria-label="Filtrar por familia">
-          <div className="grupo">
-            <span aria-hidden="true">&nbsp;</span>
-            <div>{pestana('Todas')}</div>
-          </div>
-          <div className="grupo">
-            <span>Aplicaciones generales</span>
-            <div>{familias.general.map(pestana)}</div>
-          </div>
-          <div className="grupo especial">
-            <span>Especiales</span>
-            <div>{familias.especial.map(pestana)}</div>
-          </div>
-          <span className="barra" ref={barra} aria-hidden="true" />
-        </div>
-        <div className="temperatura" role="group" aria-label="Filtrar por temperatura">
-          {temperaturas.map((t) => (
+      <div className="fija" ref={fija}>
+        <div className="tabs" ref={tabs} role="group" aria-label="Filtrar la gama por uso">
+          {pestanas.map(({ clave, nombre }) => (
             <button
-              key={t.valor}
+              key={clave}
               type="button"
-              className={t.valor}
-              aria-pressed={temperatura === t.valor}
-              onClick={() => setTemperatura(temperatura === t.valor ? null : t.valor)}
+              aria-pressed={pestana === clave}
+              style={clave === 'todas' ? undefined : color(clave)}
+              onClick={(e) => elegir(clave, e.currentTarget)}
             >
-              <i aria-hidden="true" />
-              {t.texto}
+              {clave !== 'todas' && <i aria-hidden="true" />}
+              {nombre}
             </button>
           ))}
+          <span className="barra" ref={barra} aria-hidden="true" />
         </div>
       </div>
 
-      <p className="resumen" aria-live="polite">
-        {resumen}
-      </p>
-
-      <div className="series" key={`${familia}-${temperatura}`}>
+      <div
+        className={deLaPestana.length === 4 && pestana !== 'todas' ? 'rejilla cuatro' : 'rejilla'}
+        ref={rejilla}
+        key={pestana}
+        aria-live="polite"
+      >
         {visibles.map((p, i) => (
-          <article className="serie" id={p.slug} key={p.slug} style={{ '--n': i } as React.CSSProperties}>
+          <a
+            className="serie"
+            id={p.slug}
+            key={p.slug}
+            href={`#${p.slug}`}
+            style={{ ...color(p.familia), '--n': i % INICIALES } as CSSProperties}
+          >
             <div className="foto">
               <img
                 src={p.imagen.src}
@@ -118,50 +154,44 @@ export default function GamaFiltro({ productos, contacto }: Props) {
                 loading="lazy"
                 decoding="async"
               />
-              <span className={p.uso ? 'familia especial' : 'familia'}>{p.familia}</span>
             </div>
+            <span className="familia">{familias[p.familia].nombre}</span>
             <h3>
               {p.nombre}
-              {p.variantes && <span> · {p.variantes}</span>}
+              {p.variantes && <span>· {p.variantes}</span>}
             </h3>
-            {p.uso && <p className="uso">{p.uso}</p>}
-            <dl className="datos">
-              <div>
-                <dt>capacidad máx.</dt>
-                <dd>{p.capacidad}</dd>
-              </div>
-              <div>
-                <dt>rpm</dt>
-                <dd>{p.rpm}</dd>
-              </div>
-              <div>
-                <dt>xg</dt>
-                <dd>{p.xg}</dd>
-              </div>
-            </dl>
-            <ul className="tipo">
+            <p className="frase">{p.frase}</p>
+            <p className="spec">
+              <b>{p.capacidad}</b> · {p.rpm} rpm · {p.xg} xg
+            </p>
+            <div className="temps">
               {p.temperatura.map((t) => (
-                <li key={t} className={t}>
-                  {nombreTemperatura[t]}
-                </li>
+                <span key={t} className={`temp ${t}`}>
+                  <svg
+                    viewBox="0 0 16 16"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.6"
+                    strokeLinecap="round"
+                    aria-hidden="true"
+                  >
+                    {temperaturas[t].icono}
+                  </svg>
+                  {temperaturas[t].nombre}
+                </span>
               ))}
-            </ul>
-          </article>
-        ))}
-        {visibles.length > 0 ? (
-          <div className="ayuda">
-            <div>
-              <b>¿No sabes cuál ofrecer?</b>
-              <p>Cuéntanos el laboratorio y los tubos, y te decimos qué modelo encaja. Respondemos en 48 h.</p>
             </div>
-            <a className="arrow" href={contacto}>
-              Pedir consejo
-            </a>
-          </div>
-        ) : (
-          <p className="vacia">Ninguna serie cumple los dos filtros. Prueba a quitar uno.</p>
-        )}
+          </a>
+        ))}
       </div>
+
+      {pestana === 'todas' && !abierta && (
+        <div className="mas">
+          <button type="button" onClick={() => setAbierta(true)}>
+            Ver las {productos.length} series
+          </button>
+        </div>
+      )}
     </>
   );
 }
