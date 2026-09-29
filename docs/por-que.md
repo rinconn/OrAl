@@ -159,6 +159,8 @@ Ponerlos antes haría que todos los enlaces llevaran a la portada.
   - **La cota del ancho real** de la máquina, **410 mm** (tabla de versiones de la serie Digicen 22 del
     catálogo), dibujada bajo la máquina como en un plano técnico.
   - **Las patas se apoyan justo en la ficha**, con una sombra de contacto, en lugar de pisarla.
+  - **La máquina se centra en todo el recuadro oscuro**, también en monitores anchos, donde el recuadro llega
+    hasta el borde de la pantalla.
 - **Por qué es mejor:**
   - El contraste separa la foto del texto sin necesidad de bordes, y la máquina clara destaca sobre el oscuro.
   - La retícula y la cota dicen, sin palabras, que sois fabricantes: es el lenguaje de ingeniería de quien

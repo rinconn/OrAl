@@ -185,6 +185,9 @@ const equipo = {
     display: flex;
     flex-direction: column;
     padding-top: 32px;
+    /* En pantallas más anchas que la retícula, la columna llega hasta el borde para que la máquina
+       quede centrada en todo el recuadro oscuro, no solo en su mitad izquierda */
+    margin-right: calc(-1 * (var(--gut) + max(0px, (100vw - var(--wrap)) / 2)));
   }
   .foto::before {
     content: '';
