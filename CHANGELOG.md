@@ -7,6 +7,8 @@ Hasta que se publique la web, todo va en "Sin publicar"; al publicar se cierra l
 
 ### Añadido
 
+- `docs/por-que.md`: el porqué de cada decisión de la web desde el principio, frente a la web actual, como
+  guion para presentarla a la dirección. (#10)
 - Lupa en la cabecera: busca modelos y secciones al escribir, sin tildes ni mayúsculas, y sin servidor. (#8)
 - Sellos ODS y Empresa Solidaria en el pie, en todas las pantallas. (#8)
 - Documentación del proyecto en `docs/`: objetivo, hoja de ruta, arquitectura, marca, contenido, antes y después,
