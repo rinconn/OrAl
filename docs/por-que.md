@@ -516,8 +516,9 @@ estándar"; en la portada va un poco más corta para que se lea de un golpe.
 - **Antes:** en la portada de la web actual no había notas de aplicación. Solo estaban dentro de Noticias,
   en una rejilla de fotos con una etiqueta roja ("Artículos y novedades") encima y el título tapando la imagen,
   mezcladas con ferias y retrospectivas.
-- **Ahora:** las tres últimas notas en la portada, como una baraja de fotos impresas apiladas. Al pasar el ratón
-  se abre en abanico y quedan las tres en fila, cada una con su foto limpia y la fecha y el título debajo. En móvil,
+- **Ahora:** las cinco últimas notas en la portada, como una baraja de cartas apiladas. Al pasar el ratón se
+  abre en abanico y quedan las cinco en fila. Cada carta lleva la foto limpia, la fecha y el título debajo, y una
+  franja gris oscuro con "Leer la nota". En móvil,
   sin ratón, la baraja se abre sola al llegar a ella y quedan una debajo de otra. Botón "Ver todas las notas".
 
 ### 9.2 Por qué es mejor
@@ -532,6 +533,8 @@ estándar"; en la portada va un poco más corta para que se lea de un golpe.
 ### 9.3 Movimiento y efectos
 
 - La baraja se abre en abanico con un pequeño rebote, una carta detrás de otra.
+- Carta con borde gris oscuro marcado y marcas de esquina grises, como las de un plano técnico. Al pasar el ratón
+  el borde, las marcas y la franja inferior se ponen rojos.
 - Sobre cada foto, la carta sube, la foto se acerca un poco y el título se pone rojo.
 - Con "reducir movimiento" activado en el sistema, las fotos aparecen ya abiertas y sin animación.
 
@@ -539,7 +542,7 @@ estándar"; en la portada va un poco más corta para que se lea de un golpe.
 
 - **Índice grande sobre fondo oscuro con la foto al pasar el ratón:** se llegó a montar, pero junto al pie, que
   también es oscuro, las dos cosas se fundían.
-- **Tres tarjetas con borde y esquina roja:** repetía el molde de las secciones de arriba.
+- **Tres tarjetas iguales a las de Distribuidores:** repetía el molde de las secciones de arriba.
 - **Nota destacada con foto y dos tarjetas al lado:** menos visual que la baraja.
 - **Tres tarjetas con la fecha grande:** poco visual.
 - **Rejilla de fotos con el título encima, como el blog actual:** el texto sobre la foto se lee mal y tapa la imagen.
@@ -549,6 +552,8 @@ estándar"; en la portada va un poco más corta para que se lea de un golpe.
 ### 9.5 Lo que viene después
 
 - **Fotos originales** de cada nota (ahora hay fotos de la empresa en su hueco).
+- **Fechas** de las notas de células NK y Helicobacter pylori: mientras no se confirmen, esas dos cartas no
+  enseñan fecha (campo `fechaPendiente`).
 - La **página de Noticias** con todas las notas y cada nota con su página. Hasta que exista, los enlaces llevan
   a la página de error.
 - Más adelante, un editor web sencillo para que la empresa publique notas sin tocar código.
