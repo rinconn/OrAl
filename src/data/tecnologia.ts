@@ -1,5 +1,7 @@
 // Tecnología propia: textos y modelos sacados del Catálogo General 2025 (págs. 28-29, 58 y 60)
 // y de la web actual. Inventario completo con fuentes: /mnt/project-files/analisis/tecnologia-contenido.md
+// Confirmado por la empresa (30-09-2026): 175 rampas; REI solo Digicen 22/22 R y Cyto 22 (la Plasma 22 no);
+// la Biocen 22 R no lleva ULS. El catálogo 2025 se equivoca en esos dos últimos puntos.
 import { productos } from './productos';
 
 export interface Modelo {
