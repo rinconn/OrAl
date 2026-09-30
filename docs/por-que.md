@@ -583,7 +583,8 @@ el pie. Cada una se añadirá aquí cuando esté aprobada.
 ### 12.2 Las cuatro cifras del inicio como fichas
 
 - **Antes:** 48 h, 1 semana, 3 años e ISO 13485 separadas por líneas finas grises.
-- **Ahora:** cada cifra en su ficha con borde gris oscuro y esquina oscura, como las tarjetas de Distribuidores y
-  Empresa. Al pasar el ratón la ficha sube un poco y el borde y la esquina se ponen rojos.
+- **Ahora:** cada cifra en su ficha con borde gris oscuro y esquina oscura, con el mismo efecto que las tarjetas
+  de Distribuidores: al pasar el ratón la ficha sube un poco, le crece una raya roja por arriba y la esquina se
+  pone roja.
 - **Por qué:** son los cuatro motivos para fiarse de la empresa; como fichas destacan más y siguen el mismo
   lenguaje que el resto de la portada.

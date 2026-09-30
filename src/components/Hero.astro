@@ -148,7 +148,8 @@ const equipo = {
     color: var(--body);
   }
 
-  /* Cuatro fichas con borde oscuro y esquina oscura, como las tarjetas de Distribuidores; se ponen rojas al pasar el ratón */
+  /* Cuatro fichas iguales a las tarjetas de Distribuidores: al pasar el ratón suben, les crece la raya roja
+     de arriba y la esquina se pone roja */
   .cifras {
     margin: 28px 0 0;
     display: grid;
@@ -162,9 +163,18 @@ const equipo = {
     border: 2px solid #3b4045;
     background: #fff;
     transition:
-      border-color 0.3s var(--ease),
-      transform 0.3s var(--ease),
-      box-shadow 0.3s var(--ease);
+      transform 0.35s var(--ease),
+      box-shadow 0.35s var(--ease);
+  }
+  .cifras div::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    height: 4px;
+    width: 0;
+    background: var(--red);
+    transition: width 0.4s var(--ease);
   }
   .cifras div::after {
     content: '';
@@ -178,9 +188,11 @@ const equipo = {
     transition: background 0.3s var(--ease);
   }
   .cifras div:hover {
-    border-color: var(--red);
     transform: translateY(-4px);
     box-shadow: 0 14px 30px -18px rgba(0, 0, 0, 0.35);
+  }
+  .cifras div:hover::before {
+    width: calc(100% + 4px);
   }
   .cifras div:hover::after {
     background: var(--red);
