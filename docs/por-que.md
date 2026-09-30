@@ -469,7 +469,7 @@ estándar"; en la portada va un poco más corta para que se lea de un golpe.
     (fábrica propia en Madrid con sus tres ISO). Llevan el borde y la esquina de las tarjetas de Distribuidores.
   - Un botón **"Conoce la empresa"** que llevará a la página de Empresa, para quien quiera saber más.
   - Una franja gris con **los nueve certificados y normas** en una rueda: el del centro se destaca en gris
-    oscuro y debajo se explica en una frase qué significa. Avanza sola, se para al pasar el ratón y se puede
+    oscuro y debajo se explica en negrita qué significa. En el título, "cumplimos" va en rojo, igual que el nombre del certificado. Avanza sola, se para al pasar el ratón y se puede
     mover con las flechas o pulsando cualquier certificado.
 
 ### 8.2 Por qué es mejor
