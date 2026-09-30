@@ -7,7 +7,7 @@ Hasta que se publique la web, todo va en "Sin publicar"; al publicar se cierra l
 
 ### Añadido
 
-- Aplicaciones en la portada: las cinco últimas notas como una baraja de fotos que se abre en abanico al pasar el ratón (en móvil, sola al llegar). Las notas son archivos en `src/content/notas/` y la portada se actualiza sola.
+- Aplicaciones en la portada: las cinco últimas notas como una baraja de fotos que se reparte sola al llegar a ella y se queda abierta. Las notas son archivos en `src/content/notas/` y la portada se actualiza sola.
 - Distribuidores en la portada: las razones como el recorrido de un pedido, con línea que se dibuja al
   verla, franja oscura con OEM y un solo botón "Hazte distribuidor" más un enlace para laboratorios. (#14)
 - `docs/por-que.md`: el porqué de cada decisión de la web desde el principio, frente a la web actual, como
