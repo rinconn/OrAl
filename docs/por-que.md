@@ -400,7 +400,7 @@ entrega).
      se ponen los años para que no se quede vieja.
   3. **48 h:** si tienes una duda, tienes respuesta, con puesta en marcha, reparaciones y formación online.
   4. **3 años:** tu cliente queda cubierto por la garantía, salvo la Minicen, que tiene 14 meses.
-- Debajo, una franja oscura remata la sección con el **OEM** ("¿Necesitas equipos con tu marca?") y **un solo
+- Debajo, una franja oscura remata la sección con el **OEM** ("¿Necesitas un equipo a medida?", tal como lo cuenta el catálogo) y **un solo
   botón fuerte**, "Hazte distribuidor".
 - Pegada debajo de la franja, en gris claro, una línea para el laboratorio que llega por error: "¿Eres un laboratorio? Vendemos a
   través de distribuidores especializados. Encuentra el de tu país". Le explica por qué no puede comprar aquí
