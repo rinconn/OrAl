@@ -448,7 +448,68 @@ Hasta entonces, los dos enlaces llevan al contacto del pie.
 
 ---
 
-## 8. Secciones que faltan por revisar
+## 8. Empresa (portada)
+
+La frase, los datos y los certificados salen del Catálogo General 2025. La frase completa del catálogo es
+"Nuestro objetivo no es ser una opción más, sino ser una empresa que destaca del resto por ir más allá de lo
+estándar"; en la portada va un poco más corta para que se lea de un golpe.
+
+### 8.1 Qué había y qué hay
+
+- **Antes:** la web actual presenta la empresa con valores genéricos ("integridad, dinamismo") y deja los
+  certificados en otra página. El prototipo de la portada nueva seguía el molde de siempre: foto a un lado,
+  texto al otro, una etiqueta pequeña "La empresa" encima, los certificados como etiquetas sueltas y un enlace
+  que llevaba a la misma sección.
+- **Ahora:**
+  - La foto va **a todo el ancho**, encuadrada para que se vean la mano y la pantalla, y la frase del catálogo
+    va **centrada** en la zona clara de arriba, con "más allá de lo estándar" en negrita y mayúsculas y
+    subrayado en rojo, como los titulares del catálogo.
+  - **Tres tarjetas sueltas** que se montan sobre el borde de la foto: 1949 (fabricantes de centrífugas y
+    referente europeo), Familiar (una empresa de familia que integra a socios, usuarios y asociados) y Daganzo
+    (fábrica propia en Madrid con sus tres ISO). Llevan el borde y la esquina de las tarjetas de Distribuidores.
+  - Un botón **"Conoce la empresa"** que llevará a la página de Empresa, para quien quiera saber más.
+  - Una franja gris con **los nueve certificados y normas** en una rueda: el del centro se destaca en gris
+    oscuro y debajo se explica en negrita qué significa. En el título, "cumplimos" va en rojo, igual que el nombre del certificado. Avanza sola, se para al pasar el ratón y se puede
+    mover con las flechas o pulsando cualquier certificado.
+
+### 8.2 Por qué es mejor
+
+- La frase es de la propia empresa, no un eslogan inventado, y ahora es lo primero que se lee.
+- La foto a todo el ancho rompe con las secciones anteriores, que son de columnas y tarjetas, y las tarjetas
+  montadas sobre ella dan profundidad sin recargar.
+- Las tarjetas cuentan tres cosas distintas de la empresa (historia, familia y fábrica). No se repiten las 48 h
+  ni los 3 años, que ya están en Distribuidores.
+- Los certificados dejan de ser siglas: el distribuidor lee qué garantiza cada uno, que es lo que tendrá que
+  explicar a su cliente.
+- Bordes, esquina y botón repiten los de secciones anteriores, así que la portada se lee como un conjunto.
+
+### 8.3 Movimiento y efectos
+
+- Al llegar, la foto se acerca despacio hasta su sitio, la frase sube y las tarjetas entran una tras otra.
+- Al pasar el ratón por una tarjeta, sube un poco, le crece la raya roja arriba y la cifra y la esquina se
+  ponen rojas. La flecha del botón se desplaza.
+- La rueda gira cada pocos segundos y la explicación cambia con un fundido corto.
+- Si el sistema pide menos movimiento, no hay animaciones y la rueda no avanza sola; se mueve con las flechas.
+  Sin JavaScript, los certificados se ven todos en filas centradas.
+
+### 8.4 Descartados
+
+- **Foto y ficha con sellos (B):** ordenada, pero seguía siendo el reparto en dos mitades de siempre.
+- **Línea del tiempo en panel oscuro (C):** cuenta más historia, pero repetía el tono oscuro de la primera
+  pantalla y de Tecnología.
+- **Primera versión de la A**, revisada con el usuario: frase a la izquierda, tres datos pegados en una sola
+  ficha, sin botón y con los certificados pasando en una cinta continua. La ficha parecía una tabla, los datos
+  se quedaban cortos y la cinta daba vueltas sin decir nada.
+
+### 8.5 Lo que viene después
+
+- Cuando lleguen **fotos de la fábrica y del equipo**, van en el mismo hueco de la foto.
+- La **página de Empresa** (historia, fábrica, calidad y medio ambiente) es el destino del botón "Conoce la
+  empresa". Hasta que exista, el botón lleva a la página de error.
+
+---
+
+## 9. Secciones que faltan por revisar
 
 Las siguientes piezas de la portada existen como prototipo y se revisarán una a una, en este orden:
-Empresa y el pie. Cada una se añadirá aquí cuando esté aprobada.
+Aplicaciones y el pie. Cada una se añadirá aquí cuando esté aprobada.
