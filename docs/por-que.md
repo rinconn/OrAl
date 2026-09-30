@@ -565,3 +565,25 @@ estándar"; en la portada va un poco más corta para que se lea de un golpe.
 
 Las siguientes piezas de la portada existen como prototipo y se revisarán una a una, en este orden:
 el pie. Cada una se añadirá aquí cuando esté aprobada.
+
+---
+
+## 12. Ajustes de toda la portada
+
+### 12.1 Un tamaño para los títulos y otro para los subtítulos
+
+- **Antes:** cada sección tenía su propio tamaño de título (de 60 a 92 px) y de subtítulo (de 17 a 24 px).
+- **Ahora:** todos los títulos de sección miden lo mismo que el del inicio ("Expertos en centrifugación") y todos los
+  subtítulos lo mismo que su texto de entrada. Son dos variables en `global.css` (`--t-titulo` y `--t-sub`).
+- **Por qué:** la página se lee como una sola pieza, cada sección se reconoce igual de rápido y los subtítulos,
+  más grandes, se leen mejor.
+- **Excepción:** la frase de Empresa ("Nuestro objetivo no es ser una opción más...") mantiene su tamaño. Es una
+  cita larga sobre una foto: a tamaño de título ocupaba tres líneas enormes y tapaba la imagen.
+
+### 12.2 Las cuatro cifras del inicio como fichas
+
+- **Antes:** 48 h, 1 semana, 3 años e ISO 13485 separadas por líneas finas grises.
+- **Ahora:** cada cifra en su ficha con borde gris oscuro y esquina oscura, como las tarjetas de Distribuidores y
+  Empresa. Al pasar el ratón la ficha sube un poco y el borde y la esquina se ponen rojos.
+- **Por qué:** son los cuatro motivos para fiarse de la empresa; como fichas destacan más y siguen el mismo
+  lenguaje que el resto de la portada.

@@ -27,6 +27,7 @@ Hasta que se publique la web, todo va en "Sin publicar"; al publicar se cierra l
 
 ### Cambiado
 
+- Toda la portada: un solo tamaño para los títulos de sección y otro para los subtítulos, los del inicio. Las cuatro cifras del inicio pasan a fichas con borde y esquina oscuros que se ponen rojos al pasar el ratón.
 - Empresa en la portada: foto a todo el ancho con la frase del catálogo centrada, tres tarjetas sobre la foto
   (1949, familia y Daganzo), botón "Conoce la empresa" y rueda con los nueve certificados explicados. (#15)
 - Tecnología propia: REI System y SmartConnect a lo grande con foto real, pasos y vídeo; pantalla táctil, PCBS

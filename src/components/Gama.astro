@@ -42,7 +42,7 @@ import { productos, totalModelos } from '../data/productos';
 <style>
   h2 {
     max-width: 19ch;
-    font-size: clamp(44px, 6vw, 84px);
+    font-size: var(--t-titulo);
     font-weight: 300;
     line-height: 0.95;
     letter-spacing: -0.015em;
@@ -50,7 +50,7 @@ import { productos, totalModelos } from '../data/productos';
   .lead {
     margin-top: 28px;
     max-width: 52ch;
-    font-size: 20px;
+    font-size: var(--t-sub);
     color: var(--body);
   }
   h2,
@@ -66,10 +66,5 @@ import { productos, totalModelos } from '../data/productos';
   :global(.js) #gama:not(.vista) .lead {
     opacity: 0;
     transform: translateY(24px);
-  }
-  @media (max-width: 620px) {
-    .lead {
-      font-size: 18px;
-    }
   }
 </style>
