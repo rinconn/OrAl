@@ -382,7 +382,73 @@ Esta sección es el escaparate. Lo que en la web antigua se usaba, y no solo se 
 
 ---
 
-## 7. Secciones que faltan por revisar
+## 7. Distribuidores (portada)
+
+Los datos salen del Catálogo General 2025 ("¿Qué nos diferencia?", garantía y OEM) y de la web actual (plazo de
+entrega).
+
+### 7.1 Qué había y qué hay
+
+- **Antes:** la web no tenía nada para distribuidores. El formulario de contacto ponía "Cliente final" como
+  primera opción. El prototipo de esta sección llevaba una etiqueta pequeña en mayúsculas, cuatro casillas
+  iguales y dos botones del mismo peso, que además iban al mismo sitio.
+- **Ahora:** las razones para trabajar con Orto Alresa se cuentan como **el recorrido de un pedido**, en
+  cuatro tarjetas colgadas de una línea. Llevan el mismo borde gris oscuro que las tarjetas de la gama y una
+  esquina gris oscuro arriba a la derecha, que recuerda a las pestañas del catálogo:
+  1. **Stock:** haces el pedido y hay existencias de toda la gama.
+  2. **1 semana:** te llega al almacén. Es el plazo medio de 2024 y 2025 según la web actual; en la tarjeta no
+     se ponen los años para que no se quede vieja.
+  3. **48 h:** si tienes una duda, tienes respuesta, con puesta en marcha, reparaciones y formación online.
+  4. **3 años:** tu cliente queda cubierto por la garantía, salvo la Minicen, que tiene 14 meses.
+- Debajo, una franja oscura remata la sección con el **OEM** ("¿Necesitas un equipo a medida?", tal como lo cuenta el catálogo) y **un solo
+  botón fuerte**, "Hazte distribuidor".
+- Arriba, bajo la entradilla, un enlace para el laboratorio que llega por error: "¿Eres un laboratorio?
+  Encuentra tu distribuidor". Lo ve antes de empezar a leer lo que no va con él, y no compite con el botón
+  del distribuidor. Se probó también en una franja gris bajo la oscura, pero quedaba como una tarjeta suelta.
+
+### 7.2 Por qué es mejor
+
+- Habla al cliente real con lo que vive en su día a día: pedir, recibir, resolver dudas y responder ante su
+  cliente. Una lista de ventajas se lee y se olvida; un recorrido se entiende.
+- Un solo botón principal, porque la sección es para el distribuidor. El laboratorio que entra por error tiene
+  su salida, pero no le quita protagonismo.
+- Sin etiqueta pequeña encima del título: la jerarquía la marca el titular, como en el resto de la web.
+- Cada cifra tiene fuente. Se quitó "una marca europea que se vende sola", que no aparece en ningún documento.
+- La garantía dice la verdad completa, con la excepción de la Minicen, para que el distribuidor no se lleve
+  sorpresas.
+- La franja oscura repite el gris de la portada y de Tecnología, así que la sección encaja en el conjunto y el
+  botón queda donde acaba la lectura.
+
+### 7.3 Movimiento y efectos
+
+- Al llegar a la sección, la línea roja se dibuja de izquierda a derecha y las cuatro paradas aparecen una
+  detrás de otra, como un pedido que avanza. En el móvil la línea es vertical y se dibuja hacia abajo.
+- Al pasar el ratón por una tarjeta, sube un poco, le crece la raya roja arriba (como las tarjetas de
+  Tecnología), la esquina se pone roja y su cuadrado de la línea se rellena de rojo. La flecha del
+  botón se desplaza y el enlace del laboratorio se subraya en rojo, como los enlaces de Tecnología.
+- Si el sistema pide menos movimiento, no hay animaciones y todo se ve desde el principio.
+
+### 7.4 Descartados
+
+- **Cuatro cifras a lo ancho (A):** limpia, pero es la misma idea de siempre, una fila de ventajas.
+- **Panel oscuro y lista (C):** elegante, pero después de la sección oscura de Tecnología pesaba demasiado.
+- **Contadores que suben** (0 → 48): es de los recursos que más delatan una web hecha con plantilla.
+- **Registro con usuario y contraseña:** "Hazte distribuidor" es una solicitud que se contesta por correo. La
+  zona privada, con tarifas y material, queda para una etapa posterior (hoja de ruta, fase 6).
+
+### 7.5 Lo que viene después
+
+La sección es el escaparate de una página de Distribuidores con:
+
+- **Encuentra un distribuidor:** lista o mapa por país. Hace falta la lista publicable.
+- **Hazte distribuidor:** un formulario de solicitud que llega por correo. Hace falta saber qué correo lo recibe
+  y qué datos quieren pedir.
+
+Hasta entonces, los dos enlaces llevan al contacto del pie.
+
+---
+
+## 8. Secciones que faltan por revisar
 
 Las siguientes piezas de la portada existen como prototipo y se revisarán una a una, en este orden:
-Distribuidores, Empresa y el pie. Cada una se añadirá aquí cuando esté aprobada.
+Empresa y el pie. Cada una se añadirá aquí cuando esté aprobada.
