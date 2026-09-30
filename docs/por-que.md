@@ -393,14 +393,17 @@ entrega).
   primera opción. El prototipo de esta sección llevaba una etiqueta pequeña en mayúsculas, cuatro casillas
   iguales y dos botones del mismo peso, que además iban al mismo sitio.
 - **Ahora:** las razones para trabajar con Orto Alresa se cuentan como **el recorrido de un pedido**, en
-  cuatro paradas sobre una línea:
+  cuatro tarjetas colgadas de una línea:
   1. **Stock:** haces el pedido y hay existencias de toda la gama.
-  2. **1 semana:** te llega al almacén, que es el plazo medio de 2024 y 2025.
+  2. **1 semana:** te llega al almacén. Es el plazo medio de 2024 y 2025 según la web actual; en la tarjeta no
+     se ponen los años para que no se quede vieja.
   3. **48 h:** si tienes una duda, tienes respuesta, con puesta en marcha, reparaciones y formación online.
   4. **3 años:** tu cliente queda cubierto por la garantía, salvo la Minicen, que tiene 14 meses.
-- Debajo, una franja oscura remata la sección con el **OEM** ("¿Necesitas equipos con tu marca?"), **un solo
-  botón fuerte**, "Hazte distribuidor", y un enlace discreto para el laboratorio: "¿Eres un laboratorio?
-  Encuentra tu distribuidor".
+- Debajo, una franja oscura remata la sección con el **OEM** ("¿Necesitas equipos con tu marca?") y **un solo
+  botón fuerte**, "Hazte distribuidor".
+- Fuera de la franja, una línea para el laboratorio que llega por error: "¿Eres un laboratorio? Vendemos a
+  través de distribuidores especializados. Encuentra el de tu país". Le explica por qué no puede comprar aquí
+  y le da la salida, sin competir con el botón del distribuidor.
 
 ### 7.2 Por qué es mejor
 
@@ -419,7 +422,8 @@ entrega).
 
 - Al llegar a la sección, la línea roja se dibuja de izquierda a derecha y las cuatro paradas aparecen una
   detrás de otra, como un pedido que avanza. En el móvil la línea es vertical y se dibuja hacia abajo.
-- Al pasar el ratón por una parada, su cuadrado se rellena de rojo y la cifra sube un poco. La flecha del
+- Al pasar el ratón por una tarjeta, sube un poco, le crece la raya roja arriba (como las tarjetas de
+  Tecnología) y su cuadrado de la línea se rellena de rojo. La flecha del
   botón se desplaza y el enlace del laboratorio se subraya en rojo, como los enlaces de Tecnología.
 - Si el sistema pide menos movimiento, no hay animaciones y todo se ve desde el principio.
 
