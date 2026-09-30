@@ -561,7 +561,65 @@ estándar"; en la portada va un poco más corta para que se lea de un golpe.
 
 ---
 
-## 10. Secciones que faltan por revisar
+## 10. Pie de página
 
-Las siguientes piezas de la portada existen como prototipo y se revisarán una a una, en este orden:
-el pie. Cada una se añadirá aquí cuando esté aprobada.
+### 10.1 Qué había y qué hay
+
+- **Antes:** encima del pie, una pared de logos de ayudas públicas (FEDER, NextGenerationEU, FSE+, SEPE, Comunidad de
+  Madrid...) en cinco bloques centrados, con los mismos logos repetidos y un párrafo largo debajo de cada bloque.
+  Después, un pie gris en dos colores con "Contacta" y un texto largo, iconos redondos de redes, "Sobre nosotros",
+  un texto de RGPD y un dibujo de una centrífuga de fondo. Al final, "© 2021 Ankaa Studio".
+- **Ahora:** un pie oscuro de principio a fin en tres pisos:
+  1. Logo, empresa, dirección y los sellos ODS y Empresa Solidaria a la izquierda; el teléfono en grande y el
+     correo comercial a la derecha.
+  2. Cuatro columnas de enlaces: Centrífugas, Empresa, Contacto (servicio técnico e información, cada correo con
+     para qué sirve) y Síguenos.
+  3. Todos los logos de las ayudas, sin repetir, en una cinta que pasa despacio a todo el ancho. Debajo, © con el
+     año en curso y Aviso legal, Privacidad y Cookies.
+
+### 10.2 Por qué es mejor
+
+- **Las ayudas siguen con todo su peso**, pero ordenadas: cada logo una vez, a la misma altura, en su ficha blanca
+  (los logos oficiales llevan letra oscura). La cinta llama la atención sin ocupar media pantalla.
+- **El teléfono es lo más visible del pie.** Un distribuidor que llega al final de la página busca cómo hablar con
+  la empresa, no un párrafo que le invite a contactar.
+- **Cada correo dice para qué es**: pedidos y distribuidores, servicio técnico, información general.
+- **Limpio y ordenado:** todo en un solo tono oscuro, sin cambios de color ni dibujos de fondo, y separado de la
+  sección de Aplicaciones (clara) de un vistazo.
+- **Sin datos viejos:** el año del © se pone solo y ya no firma el estudio de diseño anterior.
+- Todo sale de `src/data/navegacion.ts`: cambiar un correo, un enlace o un logo es tocar una línea.
+
+### 10.3 Movimiento y efectos
+
+- La cinta de logos avanza sola, sin saltos, y se para al poner el ratón encima para poder mirar uno.
+- Los bordes de la cinta se desvanecen en el negro.
+- El teléfono se subraya en rojo al pasar el ratón; los enlaces se aclaran.
+- Con "reducir movimiento" activado en el sistema, los logos quedan quietos en varias filas centradas.
+
+### 10.4 Descartados
+
+- **Contacto protagonista con frase grande ("¿Hablamos de tu próximo pedido?"), cajetín de plano técnico y franja de
+  catálogo con columnas:** primera tanda de maquetas; ninguna convenció.
+- **Quitar los logos del pie y llevarlos a una página aparte:** la empresa les da mucha importancia y se quedan a la
+  vista.
+- **Sección propia con cada ayuda en una fila desplegable o un muro de logos:** demasiadas cosas para un pie.
+- **Franja blanca para los logos:** un cambio de color dentro del pie se veía raro; ahora cada logo lleva su ficha
+  blanca dentro del pie oscuro.
+- **Enlace "Proyectos financiados":** sobraba; el pie queda más limpio sin él.
+
+### 10.5 Lo que viene después
+
+- **Logo FEDER** ("Fondo Europeo de Desarrollo Regional · Una manera de hacer Europa"): de momento es un hueco con
+  la bandera y el nombre.
+- **Logos oficiales** en buena calidad: los actuales están recortados de las filas de la web antigua.
+- **Textos oficiales de cada ayuda** (ICEX-Next y Cheque Innovación, OA SmartConnect + LADS, solución digital,
+  empleo joven FSE+): preguntar a la empresa si deben seguir publicados en la web y dónde.
+- **Direcciones de LinkedIn y Facebook**: hasta tenerlas se muestran sin enlace. YouTube ya enlaza al canal.
+- Páginas de Aviso legal, Privacidad, Cookies, Descargas y Empresa: los enlaces ya están puestos.
+
+---
+
+## 11. Portada terminada
+
+Con el pie quedan revisadas y aprobadas todas las piezas de la portada. Queda pendiente decidir, con la página
+entera delante, si se ensancha el contenido de 1280 a 1440 px.

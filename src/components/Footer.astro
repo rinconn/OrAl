@@ -1,75 +1,108 @@
 ---
-import { sellos } from '../data/navegacion';
+import { contacto, pie, redes, ayudas, sellos } from '../data/navegacion';
 
 const year = new Date().getFullYear();
 ---
 
+<!-- Pie oscuro de principio a fin: quiénes somos y teléfono, enlaces, cinta de ayudas y línea legal -->
 <footer class="foot" id="contacto">
-  <div class="wrap cols">
+  <div class="wrap top">
     <div>
-      <img class="logo-w" src="/img/marca/logo-ortoalresa-white.svg" alt="orto alresa" width="98" height="44" />
+      <img class="logo" src="/img/marca/logo-ortoalresa-white.svg" alt="orto alresa" width="98" height="44" />
       <p>
-        Álvarez Redondo, S.A.
+        {contacto.empresa}
         <br />
-        Los Frailes, 121 · Pol. Ind. Los Frailes
-        <br />
-        28814 Daganzo · Madrid · España
+        {contacto.direccion}
       </p>
-      <p class="tel">+34 91 884 40 16</p>
       <div class="sellos">
         {sellos.map((s) => (
           <img src={s.src} alt={s.alt} width={s.ancho} height={s.alto} loading="lazy" />
         ))}
       </div>
     </div>
+    <div class="llamar">
+      <a class="tel" href={contacto.telefonoHref}>
+        {contacto.telefono}
+      </a>
+      <p>
+        Pedidos y distribuidores: <a href={`mailto:${contacto.comercial}`}>{contacto.comercial}</a>
+      </p>
+    </div>
+  </div>
+
+  <div class="wrap cols">
+    {pie.map((c) => (
+      <div>
+        <h2>{c.titulo}</h2>
+        <ul>
+          {c.enlaces.map((e) => (
+            <li>
+              <a href={e.href}>{e.texto}</a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    ))}
     <div>
-      <h4>Contacto</h4>
+      <h2>Contacto</h2>
       <ul>
-        <li>info@ortoalresa.com</li>
-        <li>sales@ortoalresa.com</li>
-        <li>sat@ortoalresa.com</li>
+        <li>
+          <a href={`mailto:${contacto.tecnico}`}>{contacto.tecnico}</a>
+          <small>Servicio técnico</small>
+        </li>
+        <li>
+          <a href={`mailto:${contacto.general}`}>{contacto.general}</a>
+          <small>Información general</small>
+        </li>
       </ul>
     </div>
     <div>
-      <h4>Gama</h4>
+      <h2>Síguenos</h2>
       <ul>
-        <li>
-          <a href="/#gama">Aplicaciones generales</a>
-        </li>
-        <li>
-          <a href="/#gama">Aplicaciones especiales</a>
-        </li>
-        <li>
-          <a href="/#gama">Accesorios</a>
-        </li>
-        <li>
-          <a href="/#gama">Otros equipos</a>
-        </li>
-      </ul>
-    </div>
-    <div>
-      <h4>Recursos</h4>
-      <ul>
-        <li>
-          <a href="/#contacto">Catálogos y descargas</a>
-        </li>
-        <li>
-          <a href="/#contacto">Servicio técnico</a>
-        </li>
-        <li>
-          <a href="/#contacto">Certificados</a>
-        </li>
-        <li>
-          <a href="/#aplicaciones">Noticias</a>
-        </li>
+        {redes.map((r) => (
+          <li>{r.href ? <a href={r.href}>{r.nombre}</a> : <span>{r.nombre}</span>}</li>
+        ))}
       </ul>
     </div>
   </div>
-  <div class="legal">
-    <div class="wrap">
-      <span>© {year} Álvarez Redondo, S.A.</span>
-      <span>Aviso legal · Privacidad · Cookies · Financiación europea</span>
-    </div>
+
+  <!-- Cinta de las ayudas públicas: la lista va dos veces seguidas para que el bucle no tenga salto -->
+  <div class="cinta" role="region" aria-label="Ayudas públicas recibidas">
+    <ul class="pista">
+      {[0, 1].map((vuelta) =>
+        ayudas.map((a) => (
+          <li class="ayuda" aria-hidden={vuelta === 1 ? 'true' : undefined}>
+            {a.src ? (
+              <img src={a.src} alt={vuelta === 0 ? a.nombre : ''} width={a.ancho} height={a.alto} loading="lazy" />
+            ) : (
+              <>
+                {a.bandera && <img class="bandera" src="/img/ayudas/bandera-ue.svg" alt="" width="60" height="40" />}
+                <span>{a.nombre}</span>
+              </>
+            )}
+          </li>
+        )),
+      )}
+    </ul>
+  </div>
+
+  <div class="wrap legal">
+    <span>
+      © {year} {contacto.empresa}
+    </span>
+    <nav aria-label="Legal">
+      <a href="/aviso-legal/">Aviso legal</a>
+      <a href="/privacidad/">Privacidad</a>
+      <a href="/cookies/">Cookies</a>
+    </nav>
+  </div>
+
+  <div class="wrap">
+    <p class="why">
+      <b>Antes:</b> un bloque gris con texto largo, iconos redondos y un dibujo de fondo, y encima una pared de logos de
+      ayudas repetidos con sus párrafos. <b>Ahora:</b> un pie oscuro en tres pisos (quiénes somos y teléfono, enlaces,
+      ayudas) y todos los logos de las ayudas en una cinta que pasa despacio, sin repetirlos.
+    </p>
   </div>
 </footer>
 
@@ -77,73 +110,207 @@ const year = new Date().getFullYear();
   .foot {
     background: var(--carbon);
     color: var(--on-dark);
-    font-size: 15px;
+    font-size: 16px;
   }
-  .cols {
-    padding-block: 56px 32px;
-    display: grid;
-    grid-template-columns: 1.4fr 1fr 1fr 1fr;
-    gap: 32px;
+  a {
+    text-decoration: none;
+    transition: color 0.2s;
   }
-  h4 {
-    margin: 0 0 12px;
+  a:hover {
     color: #fff;
-    font-size: 14px;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
+  }
+
+  /* Piso 1: quiénes somos y cómo llamarnos */
+  .top {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 32px 48px;
+    padding-block: 72px 48px;
+    border-bottom: 1px solid var(--carbon-line);
+  }
+  .logo {
+    height: 52px;
+    width: auto;
+  }
+  .top p {
+    margin: 18px 0 0;
+    line-height: 1.6;
+  }
+  .sellos {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-top: 22px;
+  }
+  .sellos img {
+    height: 56px;
+    width: auto;
+  }
+  .llamar {
+    text-align: right;
+  }
+  .tel {
+    display: inline-block;
+    position: relative;
+    color: #fff;
+    font-size: clamp(30px, 3.4vw, 44px);
+    font-weight: 700;
+  }
+  /* Subrayado rojo que se dibuja al pasar el ratón */
+  .tel::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 100%;
+    bottom: -6px;
+    height: 3px;
+    background: var(--red);
+    transition: right 0.35s var(--ease);
+  }
+  .tel:hover::after {
+    right: 0;
+  }
+  .llamar p {
+    margin-top: 14px;
+  }
+  .llamar p a {
+    color: #fff;
+  }
+  .llamar p a:hover {
+    color: var(--red);
+  }
+
+  /* Piso 2: enlaces */
+  .cols {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 32px;
+    padding-block: 48px 56px;
+  }
+  h2 {
+    margin: 0 0 16px;
+    color: #fff;
+    font-size: 18px;
+    font-weight: 700;
   }
   ul {
     list-style: none;
     margin: 0;
     padding: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
+    display: grid;
+    gap: 10px;
   }
-  a {
-    text-decoration: none;
-  }
-  a:hover {
-    color: #fff;
-  }
-  .logo-w {
-    height: 44px;
-    width: auto;
-    margin-bottom: 16px;
-  }
-  .tel {
-    margin-top: 12px;
-    color: #fff;
-    font-weight: 700;
-  }
-  .sellos {
-    display: flex;
-    gap: 12px;
-    margin-top: 20px;
-  }
-  .sellos img {
-    height: 44px;
-    width: auto;
-  }
-  .legal {
-    border-top: 1px solid var(--carbon-line);
-  }
-  .legal .wrap {
-    padding-block: 18px;
-    display: flex;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 12px;
+  small {
+    display: block;
+    color: var(--steel);
     font-size: 13px;
   }
-  @media (max-width: 900px) {
-    .cols {
-      grid-template-columns: 1fr 1fr;
+
+  /* Piso 3: cinta de ayudas, a todo el ancho y desvanecida por los lados */
+  .cinta {
+    border-block: 1px solid var(--carbon-line);
+    padding-block: 26px;
+    overflow: hidden;
+    mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+  }
+  .pista {
+    display: flex;
+    gap: 20px;
+    width: max-content;
+    animation: cinta 45s linear infinite;
+  }
+  .cinta:hover .pista {
+    animation-play-state: paused;
+  }
+  @keyframes cinta {
+    to {
+      /* media pista más medio hueco: la segunda vuelta queda justo donde empezó la primera */
+      transform: translateX(calc(-50% - 10px));
     }
   }
-  @media (max-width: 520px) {
+  /* Los logos oficiales llevan letra oscura: cada uno va en su ficha blanca, todas a la misma altura */
+  .ayuda {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    height: 76px;
+    padding: 0 20px;
+    background: #fff;
+  }
+  .ayuda img {
+    height: 48px;
+    width: auto;
+  }
+  .ayuda .bandera {
+    height: 40px;
+  }
+  .ayuda span {
+    max-width: 12ch;
+    color: var(--ink);
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.15;
+  }
+
+  .legal {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 10px 24px;
+    padding-block: 22px;
+    color: var(--steel);
+    font-size: 14px;
+  }
+  .legal nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 26px;
+  }
+  .why {
+    margin: 0 0 28px;
+  }
+
+  @media (max-width: 900px) {
+    .cols {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .llamar {
+      text-align: left;
+    }
+  }
+  @media (max-width: 480px) {
     .cols {
       grid-template-columns: 1fr;
+    }
+    .ayuda {
+      height: 60px;
+      padding: 0 14px;
+    }
+    .ayuda img {
+      height: 36px;
+    }
+    .ayuda .bandera {
+      height: 30px;
+    }
+    .legal {
+      flex-direction: column;
+    }
+  }
+  /* Sin movimiento: los logos quedan quietos y en varias filas, sin la copia del bucle */
+  @media (prefers-reduced-motion: reduce) {
+    .pista {
+      flex-wrap: wrap;
+      justify-content: center;
+      width: auto;
+      padding-inline: var(--gut);
+    }
+    .ayuda[aria-hidden='true'] {
+      display: none;
+    }
+    .cinta {
+      mask-image: none;
     }
   }
 </style>
