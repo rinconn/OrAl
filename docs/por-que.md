@@ -509,7 +509,59 @@ estándar"; en la portada va un poco más corta para que se lea de un golpe.
 
 ---
 
-## 9. Secciones que faltan por revisar
+## 9. Aplicaciones en el laboratorio (portada)
+
+### 9.1 Qué había y qué hay
+
+- **Antes:** en la portada de la web actual no había notas de aplicación. Solo estaban dentro de Noticias,
+  en una rejilla de fotos con una etiqueta roja ("Artículos y novedades") encima y el título tapando la imagen,
+  mezcladas con ferias y retrospectivas.
+- **Ahora:** las cinco últimas notas en la portada, como una baraja de cartas apiladas que se reparte sola
+  al llegar a ella y se queda abierta, con las cinco en fila. Cada carta lleva la foto limpia, la fecha y el título debajo, y una
+  franja gris oscuro con "Leer la nota". En móvil,
+  sin ratón, la baraja se abre sola al llegar a ella y quedan una debajo de otra. Botón "Ver todas las notas".
+
+### 9.2 Por qué es mejor
+
+- Enseña al distribuidor que la empresa sabe de centrifugación, no solo que vende centrífugas.
+- La portada se actualiza sola: cada nota es un archivo (`src/content/notas/`) y la portada coge las tres
+  últimas. Nadie tiene que tocar la portada al publicar.
+- La foto se ve entera y limpia, sin etiquetas ni texto encima, y el título se lee bien porque va debajo.
+- Rompe el ritmo de la portada: arriba ya hay tarjetas con borde (Distribuidores, Empresa); repetirlas quitaba
+  riqueza visual. La baraja es un gesto propio de esta sección y se recuerda.
+
+### 9.3 Movimiento y efectos
+
+- La baraja se reparte una sola vez, con un pequeño rebote y una carta detrás de otra, y se queda abierta. Al
+  principio se abría al pasar el ratón y se cerraba al salir, pero cerrada dejaba un hueco vacío en la página.
+- Carta con borde gris oscuro marcado y marcas de esquina grises, como las de un plano técnico. Al pasar el ratón
+  el borde, las marcas y la franja inferior se ponen rojos.
+- Sobre cada foto, la carta sube, la foto se acerca un poco y el título se pone rojo.
+- Con "reducir movimiento" activado en el sistema, las fotos aparecen ya abiertas y sin animación.
+
+### 9.4 Descartados
+
+- **Índice grande sobre fondo oscuro con la foto al pasar el ratón:** se llegó a montar, pero junto al pie, que
+  también es oscuro, las dos cosas se fundían.
+- **Tres tarjetas iguales a las de Distribuidores:** repetía el molde de las secciones de arriba.
+- **Nota destacada con foto y dos tarjetas al lado:** menos visual que la baraja.
+- **Tres tarjetas con la fecha grande:** poco visual.
+- **Rejilla de fotos con el título encima, como el blog actual:** el texto sobre la foto se lee mal y tapa la imagen.
+- **Quitar las fechas por si dejan de publicar:** se mantienen porque la empresa publica una nota al mes y la
+  portada siempre enseña las últimas.
+
+### 9.5 Lo que viene después
+
+- **Fotos originales** de cada nota (ahora hay fotos de la empresa en su hueco).
+- **Fechas** de las notas de células NK y Helicobacter pylori: mientras no se confirmen, esas dos cartas no
+  enseñan fecha (campo `fechaPendiente`).
+- La **página de Noticias** con todas las notas y cada nota con su página. Hasta que exista, los enlaces llevan
+  a la página de error.
+- Más adelante, un editor web sencillo para que la empresa publique notas sin tocar código.
+
+---
+
+## 10. Secciones que faltan por revisar
 
 Las siguientes piezas de la portada existen como prototipo y se revisarán una a una, en este orden:
-Aplicaciones y el pie. Cada una se añadirá aquí cuando esté aprobada.
+el pie. Cada una se añadirá aquí cuando esté aprobada.
