@@ -509,7 +509,47 @@ estándar"; en la portada va un poco más corta para que se lea de un golpe.
 
 ---
 
-## 9. Secciones que faltan por revisar
+## 9. Aplicaciones en el laboratorio (portada)
+
+### 9.1 Qué había y qué hay
+
+- **Antes:** en la portada de la web actual no había notas de aplicación. Solo estaban dentro de Noticias,
+  en una rejilla de fotos con una etiqueta roja ("Artículos y novedades") encima y el título tapando la imagen,
+  mezcladas con ferias y retrospectivas.
+- **Ahora:** las tres últimas notas en la portada, como un índice grande sobre fondo oscuro. Al pasar el ratón
+  por cada título aparece su foto al lado. En móvil cada nota lleva su foto encima. Botón "Ver todas las notas".
+
+### 9.2 Por qué es mejor
+
+- Enseña al distribuidor que la empresa sabe de centrifugación, no solo que vende centrífugas.
+- La portada se actualiza sola: cada nota es un archivo (`src/content/notas/`) y la portada coge las tres
+  últimas. Nadie tiene que tocar la portada al publicar.
+- La banda oscura corta el ritmo de las secciones blancas anteriores y da un final con fuerza antes del pie.
+- La foto se ve entera y limpia, sin etiquetas ni texto encima.
+
+### 9.3 Movimiento y efectos
+
+- Raya roja que crece sobre la nota activa, título en negrita y flecha roja.
+- La foto cambia con un fundido suave. Entrada suave del bloque al verlo, como el resto de la portada.
+
+### 9.4 Descartados
+
+- **Nota destacada con foto y dos tarjetas al lado:** correcta, pero repetía el molde de otras secciones.
+- **Tres tarjetas con la fecha grande:** poco visual.
+- **Rejilla de fotos con el título encima, como el blog actual:** el texto sobre la foto se lee mal y tapa la imagen.
+- **Quitar las fechas por si dejan de publicar:** se mantienen porque la empresa publica una nota al mes y la
+  portada siempre enseña las últimas.
+
+### 9.5 Lo que viene después
+
+- **Fotos originales** de cada nota (ahora hay fotos de la empresa en su hueco).
+- La **página de Noticias** con todas las notas y cada nota con su página. Hasta que exista, los enlaces llevan
+  a la página de error.
+- Más adelante, un editor web sencillo para que la empresa publique notas sin tocar código.
+
+---
+
+## 10. Secciones que faltan por revisar
 
 Las siguientes piezas de la portada existen como prototipo y se revisarán una a una, en este orden:
-Aplicaciones y el pie. Cada una se añadirá aquí cuando esté aprobada.
+el pie. Cada una se añadirá aquí cuando esté aprobada.
