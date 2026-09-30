@@ -14,20 +14,15 @@ const fmt = new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'long', ye
       Aplicaciones <b>en el laboratorio</b>
     </h2>
 
-    <ul class="notas ap">
+    <ul class="baraja ap">
       {notas.map((n) => (
         <li>
-          <a class="tarjeta" href={`/noticias/${n.id}/`}>
+          <a class="carta" href={`/noticias/${n.id}/`}>
             <div class="foto">
               <img src={n.data.foto} alt={n.data.alt} loading="lazy" decoding="async" />
             </div>
-            <div class="texto">
-              <time datetime={n.data.fecha.toISOString().slice(0, 10)}>{fmt.format(n.data.fecha)}</time>
-              <h3>{n.data.titulo}</h3>
-              <span class="leer">
-                Leer la nota <i aria-hidden="true">»</i>
-              </span>
-            </div>
+            <time datetime={n.data.fecha.toISOString().slice(0, 10)}>{fmt.format(n.data.fecha)}</time>
+            <h3>{n.data.titulo}</h3>
           </a>
         </li>
       ))}
@@ -64,6 +59,21 @@ const fmt = new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'long', ye
       { threshold: 0.2 },
     );
     bloques.forEach((b) => obs.observe(b));
+
+    // Sin ratón (móvil y tableta) la baraja se abre sola al llegar a ella
+    const baraja = document.querySelector('#aplicaciones .baraja');
+    if (baraja && !window.matchMedia('(hover: hover)').matches) {
+      const abrir = new IntersectionObserver(
+        (entradas) => {
+          if (entradas[0]?.isIntersecting) {
+            window.setTimeout(() => baraja.classList.add('abierta'), 500);
+            abrir.disconnect();
+          }
+        },
+        { threshold: 0.35 },
+      );
+      abrir.observe(baraja);
+    }
   }
 </script>
 
@@ -76,74 +86,80 @@ const fmt = new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'long', ye
     line-height: 1;
   }
 
-  .notas {
+  /* La baraja: tres fotos en fila que, mientras está cerrada, se apilan en el centro un poco giradas */
+  .baraja {
+    --gap: clamp(20px, 2.4vw, 32px);
     list-style: none;
-    margin: 0;
+    margin: 0 auto;
     padding: 0;
+    max-width: 1080px;
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: clamp(20px, 2.4vw, 32px);
+    gap: var(--gap);
+  }
+  .baraja li {
+    position: relative;
+    transition: transform 0.7s cubic-bezier(0.25, 0.9, 0.3, 1.1);
+  }
+  .baraja li:nth-child(1) {
+    z-index: 3;
+  }
+  .baraja li:nth-child(2) {
+    z-index: 2;
+    transition-delay: 0.05s;
+  }
+  .baraja li:nth-child(3) {
+    z-index: 1;
+    transition-delay: 0.1s;
+  }
+  :global(.js) .baraja:not(.abierta) li:nth-child(1) {
+    transform: translateX(calc(100% + var(--gap))) rotate(-3deg);
+  }
+  :global(.js) .baraja:not(.abierta) li:nth-child(2) {
+    transform: rotate(4deg);
+  }
+  :global(.js) .baraja:not(.abierta) li:nth-child(3) {
+    transform: translateX(calc(-100% - var(--gap))) rotate(-8deg);
+  }
+  /* Con ratón, se abre en abanico al pasar por encima o al llegar con el teclado */
+  @media (hover: hover) {
+    :global(.js) .baraja:not(.abierta):is(:hover, :focus-within) li {
+      transform: none;
+    }
   }
 
-  /* Tarjeta como las de Distribuidores y Empresa: borde oscuro, esquina que se pone roja y raya roja que crece */
-  .tarjeta {
-    position: relative;
+  /* Cada nota es una foto impresa: marco blanco, sombra, y la fecha y el título debajo */
+  .carta {
     display: flex;
     flex-direction: column;
+    gap: 8px;
     height: 100%;
+    padding: 12px 12px 22px;
     background: var(--white);
-    border: 2px solid #3b4045;
+    box-shadow:
+      0 1px 2px rgba(0, 0, 0, 0.12),
+      0 18px 40px -22px rgba(0, 0, 0, 0.45);
     color: var(--ink);
     text-decoration: none;
     transition:
       transform 0.35s var(--ease),
       box-shadow 0.35s var(--ease);
   }
-  .tarjeta::before {
-    content: '';
-    position: absolute;
-    top: -2px;
-    left: -2px;
-    z-index: 2;
-    height: 4px;
-    width: 0;
-    background: var(--red);
-    transition: width 0.4s var(--ease);
+  .carta:hover,
+  .carta:focus-visible {
+    transform: translateY(-6px);
+    box-shadow:
+      0 1px 2px rgba(0, 0, 0, 0.12),
+      0 26px 50px -24px rgba(0, 0, 0, 0.5);
   }
-  .tarjeta::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    right: 0;
-    z-index: 2;
-    width: 28px;
-    height: 28px;
-    background: #3b4045;
-    clip-path: polygon(0 0, 100% 0, 100% 100%);
-    transition: background 0.3s var(--ease);
-  }
-  .tarjeta:hover,
-  .tarjeta:focus-visible {
-    transform: translateY(-4px);
-    box-shadow: 0 14px 30px -18px rgba(0, 0, 0, 0.35);
-  }
-  .tarjeta:hover::before,
-  .tarjeta:focus-visible::before {
-    width: calc(100% + 4px);
-  }
-  .tarjeta:hover::after,
-  .tarjeta:focus-visible::after {
-    background: var(--red);
-  }
-  .tarjeta:focus-visible {
+  .carta:focus-visible {
     outline: 2px solid var(--red);
     outline-offset: 4px;
   }
-
-  /* Foto vertical, limpia, sin nada encima */
   .foto {
     aspect-ratio: 4 / 5;
     overflow: hidden;
+    margin-bottom: 8px;
     background: var(--panel);
   }
   .foto img {
@@ -153,46 +169,34 @@ const fmt = new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'long', ye
     object-fit: cover;
     transition: transform 0.8s var(--ease);
   }
-  .tarjeta:hover .foto img {
+  .carta:hover .foto img {
     transform: scale(1.05);
   }
-
-  .texto {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    flex: 1;
-    padding: 22px 26px 26px;
-  }
   time {
+    padding-inline: 8px;
     font-size: 15px;
     color: var(--muted);
   }
   h3 {
     margin: 0;
-    font-size: clamp(21px, 1.8vw, 25px);
+    padding-inline: 8px;
+    font-size: clamp(20px, 1.7vw, 24px);
     line-height: 1.15;
     font-weight: 700;
     text-wrap: balance;
+    transition: color 0.3s var(--ease);
   }
-  .leer {
-    margin-top: auto;
-    padding-top: 8px;
-    font-weight: 700;
-  }
-  .leer i {
-    font-style: normal;
+  .carta:hover h3 {
     color: var(--red);
   }
 
   .cta {
-    margin-top: clamp(32px, 4vw, 48px);
+    margin-top: clamp(40px, 5vw, 64px);
     text-align: center;
   }
 
-  /* Entrada suave: las tarjetas llegan una detrás de otra */
-  .ap,
-  .notas li {
+  /* Entrada suave, como en el resto de la portada */
+  .ap {
     transition:
       opacity 0.7s var(--ease),
       transform 0.7s var(--ease);
@@ -201,34 +205,34 @@ const fmt = new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'long', ye
     opacity: 0;
     transform: translateY(24px);
   }
-  :global(.js) #aplicaciones .notas.ap:not(.vista) {
-    opacity: 1;
-    transform: none;
-  }
-  :global(.js) #aplicaciones .notas:not(.vista) li {
-    opacity: 0;
-    transform: translateY(24px);
-  }
-  .notas.vista li:nth-child(2) {
-    transition-delay: 0.15s;
-  }
-  .notas.vista li:nth-child(3) {
-    transition-delay: 0.3s;
-  }
 
+  /* En móvil van una debajo de otra; cerrada, la baraja se apila sobre la primera */
   @media (max-width: 900px) {
-    .notas {
+    .baraja {
       grid-template-columns: 1fr;
+      max-width: 440px;
     }
     .foto {
       aspect-ratio: 16 / 10;
     }
+    :global(.js) .baraja:not(.abierta) li:nth-child(1) {
+      transform: rotate(-2deg);
+    }
+    :global(.js) .baraja:not(.abierta) li:nth-child(2) {
+      transform: translateY(calc(-100% - var(--gap))) rotate(3deg);
+    }
+    :global(.js) .baraja:not(.abierta) li:nth-child(3) {
+      transform: translateY(calc(-200% - 2 * var(--gap))) rotate(-4deg);
+    }
   }
 
   @media (prefers-reduced-motion: reduce) {
+    :global(.js) .baraja li {
+      transform: none !important;
+      transition: none;
+    }
     .ap,
-    .notas li,
-    .tarjeta,
+    .carta,
     .foto img {
       transition: none;
     }
