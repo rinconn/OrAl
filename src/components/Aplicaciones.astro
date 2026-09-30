@@ -14,28 +14,24 @@ const fmt = new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'long', ye
       Aplicaciones <b>en el laboratorio</b>
     </h2>
 
-    <div class="indice ap">
-      <ol>
-        {notas.map((n, i) => (
-          <li>
-            <a class:list={['fila', { on: i === 0 }]} href={`/noticias/${n.id}/`} data-i={i}>
-              <img class="mini" src={n.data.foto} alt="" loading="lazy" decoding="async" />
+    <ul class="notas ap">
+      {notas.map((n) => (
+        <li>
+          <a class="tarjeta" href={`/noticias/${n.id}/`}>
+            <div class="foto">
+              <img src={n.data.foto} alt={n.data.alt} loading="lazy" decoding="async" />
+            </div>
+            <div class="texto">
               <time datetime={n.data.fecha.toISOString().slice(0, 10)}>{fmt.format(n.data.fecha)}</time>
               <h3>{n.data.titulo}</h3>
-              <span class="flecha" aria-hidden="true">
-                »
+              <span class="leer">
+                Leer la nota <i aria-hidden="true">»</i>
               </span>
-            </a>
-          </li>
-        ))}
-      </ol>
-
-      <div class="fotos" aria-hidden="true">
-        {notas.map((n, i) => (
-          <img class:list={{ on: i === 0 }} src={n.data.foto} alt={n.data.alt} loading="lazy" decoding="async" />
-        ))}
-      </div>
-    </div>
+            </div>
+          </a>
+        </li>
+      ))}
+    </ul>
 
     <div class="cta ap">
       <a class="btn ghost" href="/noticias/">
@@ -44,26 +40,14 @@ const fmt = new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'long', ye
     </div>
 
     <p class="why">
-      <b>Antes:</b> las notas solo estaban en Noticias, en rejilla de fotos con una etiqueta roja encima y el título
-      tapando la imagen. <b>Ahora:</b> las tres últimas en la portada, como un índice grande sobre fondo oscuro; al
-      pasar el ratón por cada una aparece su foto. Se actualiza sola al publicar una nota nueva.
+      <b>Antes:</b> las notas solo estaban en Noticias, en una rejilla de fotos con una etiqueta roja encima y el título
+      tapando la imagen. <b>Ahora:</b> las tres últimas en la portada, cada una con su foto limpia y el título debajo,
+      con el mismo estilo de tarjeta que el resto de la portada. Se actualiza sola al publicar una nota nueva.
     </p>
   </div>
 </section>
 
 <script>
-  // Al pasar el ratón (o el foco del teclado) por una fila, se muestra su foto al lado
-  const filas = document.querySelectorAll<HTMLAnchorElement>('#aplicaciones .fila');
-  const fotos = document.querySelectorAll<HTMLImageElement>('#aplicaciones .fotos img');
-  const activar = (i: number) => {
-    filas.forEach((f, j) => f.classList.toggle('on', i === j));
-    fotos.forEach((f, j) => f.classList.toggle('on', i === j));
-  };
-  filas.forEach((f, i) => {
-    f.addEventListener('mouseenter', () => activar(i));
-    f.addEventListener('focus', () => activar(i));
-  });
-
   // Entrada suave la primera vez que se ve, como en el resto de la portada
   const bloques = document.querySelectorAll('#aplicaciones .ap');
   if (bloques.length && 'IntersectionObserver' in window) {
@@ -84,144 +68,131 @@ const fmt = new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'long', ye
 </script>
 
 <style>
-  .apl {
-    background: var(--carbon);
-    color: var(--white);
-  }
   h2 {
     margin: 0 0 clamp(32px, 4vw, 56px);
     text-align: center;
     font-weight: 300;
     font-size: clamp(34px, 4.4vw, 60px);
     line-height: 1;
-    color: var(--white);
   }
 
-  /* Índice a la izquierda y la foto de la nota activa a la derecha */
-  .indice {
-    display: grid;
-    grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
-    gap: clamp(28px, 4vw, 64px);
-    align-items: stretch;
-  }
-  ol {
+  .notas {
     list-style: none;
     margin: 0;
     padding: 0;
-    border-bottom: 1px solid var(--carbon-line);
-  }
-  .fila {
-    position: relative;
     display: grid;
-    grid-template-columns: 150px minmax(0, 1fr) auto;
-    gap: 24px;
-    align-items: baseline;
-    padding: 30px 0;
-    border-top: 1px solid var(--carbon-line);
-    color: var(--white);
-    text-decoration: none;
-  }
-  /* Raya roja que crece sobre la fila activa */
-  .fila::before {
-    content: '';
-    position: absolute;
-    top: -1px;
-    left: 0;
-    height: 2px;
-    width: 0;
-    background: var(--red);
-    transition: width 0.45s var(--ease);
-  }
-  .fila.on::before {
-    width: 100%;
-  }
-  time {
-    font-size: 15px;
-    color: var(--on-dark);
-  }
-  h3 {
-    margin: 0;
-    font-size: clamp(22px, 2.2vw, 30px);
-    line-height: 1.15;
-    font-weight: 300;
-    text-wrap: balance;
-    color: var(--on-dark);
-    transition: color 0.3s var(--ease);
-  }
-  .fila.on h3 {
-    color: var(--white);
-    font-weight: 700;
-  }
-  .flecha {
-    font-size: 24px;
-    color: var(--steel);
-    transition:
-      color 0.3s var(--ease),
-      transform 0.3s var(--ease);
-  }
-  .fila.on .flecha {
-    color: var(--red);
-    transform: translateX(4px);
-  }
-  .fila:focus-visible {
-    outline: 2px solid var(--red);
-    outline-offset: 4px;
-  }
-  .mini {
-    display: none;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: clamp(20px, 2.4vw, 32px);
   }
 
-  /* Marco de la foto: borde y esquina como las tarjetas de Distribuidores y Empresa */
-  .fotos {
+  /* Tarjeta como las de Distribuidores y Empresa: borde oscuro, esquina que se pone roja y raya roja que crece */
+  .tarjeta {
     position: relative;
-    min-height: 360px;
-    border: 2px solid var(--carbon-line);
-    overflow: hidden;
-    background: #0e1011;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background: var(--white);
+    border: 2px solid #3b4045;
+    color: var(--ink);
+    text-decoration: none;
+    transition:
+      transform 0.35s var(--ease),
+      box-shadow 0.35s var(--ease);
   }
-  .fotos::after {
+  .tarjeta::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    z-index: 2;
+    height: 4px;
+    width: 0;
+    background: var(--red);
+    transition: width 0.4s var(--ease);
+  }
+  .tarjeta::after {
     content: '';
     position: absolute;
     top: 0;
     right: 0;
-    z-index: 1;
+    z-index: 2;
     width: 28px;
     height: 28px;
-    background: var(--red);
+    background: #3b4045;
     clip-path: polygon(0 0, 100% 0, 100% 100%);
+    transition: background 0.3s var(--ease);
   }
-  .fotos img {
-    position: absolute;
-    inset: 0;
+  .tarjeta:hover,
+  .tarjeta:focus-visible {
+    transform: translateY(-4px);
+    box-shadow: 0 14px 30px -18px rgba(0, 0, 0, 0.35);
+  }
+  .tarjeta:hover::before,
+  .tarjeta:focus-visible::before {
+    width: calc(100% + 4px);
+  }
+  .tarjeta:hover::after,
+  .tarjeta:focus-visible::after {
+    background: var(--red);
+  }
+  .tarjeta:focus-visible {
+    outline: 2px solid var(--red);
+    outline-offset: 4px;
+  }
+
+  /* Foto vertical, limpia, sin nada encima */
+  .foto {
+    aspect-ratio: 4 / 5;
+    overflow: hidden;
+    background: var(--panel);
+  }
+  .foto img {
+    display: block;
     width: 100%;
     height: 100%;
     object-fit: cover;
-    opacity: 0;
-    transform: scale(1.04);
-    transition:
-      opacity 0.5s var(--ease),
-      transform 0.8s var(--ease);
+    transition: transform 0.8s var(--ease);
   }
-  .fotos img.on {
-    opacity: 1;
-    transform: none;
+  .tarjeta:hover .foto img {
+    transform: scale(1.05);
+  }
+
+  .texto {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex: 1;
+    padding: 22px 26px 26px;
+  }
+  time {
+    font-size: 15px;
+    color: var(--muted);
+  }
+  h3 {
+    margin: 0;
+    font-size: clamp(21px, 1.8vw, 25px);
+    line-height: 1.15;
+    font-weight: 700;
+    text-wrap: balance;
+  }
+  .leer {
+    margin-top: auto;
+    padding-top: 8px;
+    font-weight: 700;
+  }
+  .leer i {
+    font-style: normal;
+    color: var(--red);
   }
 
   .cta {
     margin-top: clamp(32px, 4vw, 48px);
     text-align: center;
   }
-  .apl .btn.ghost {
-    color: var(--white);
-    border-color: var(--white);
-  }
-  .apl .btn.ghost:hover {
-    background: var(--white);
-    color: var(--ink);
-  }
 
-  /* Entrada suave */
-  .ap {
+  /* Entrada suave: las tarjetas llegan una detrás de otra */
+  .ap,
+  .notas li {
     transition:
       opacity 0.7s var(--ease),
       transform 0.7s var(--ease);
@@ -230,50 +201,35 @@ const fmt = new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'long', ye
     opacity: 0;
     transform: translateY(24px);
   }
+  :global(.js) #aplicaciones .notas.ap:not(.vista) {
+    opacity: 1;
+    transform: none;
+  }
+  :global(.js) #aplicaciones .notas:not(.vista) li {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  .notas.vista li:nth-child(2) {
+    transition-delay: 0.15s;
+  }
+  .notas.vista li:nth-child(3) {
+    transition-delay: 0.3s;
+  }
 
-  /* En móvil no hay ratón: cada nota lleva su foto encima y la foto grande desaparece */
   @media (max-width: 900px) {
-    .indice {
+    .notas {
       grid-template-columns: 1fr;
     }
-    .fotos {
-      display: none;
-    }
-    ol {
-      border-bottom: 0;
-      display: grid;
-      gap: 28px;
-    }
-    .fila {
-      grid-template-columns: 1fr;
-      gap: 10px;
-      padding: 0 0 4px;
-      border-top: 0;
-    }
-    .fila::before {
-      display: none;
-    }
-    .mini {
-      display: block;
-      width: 100%;
-      aspect-ratio: 16 / 9;
-      object-fit: cover;
-      margin-bottom: 8px;
-      border: 2px solid var(--carbon-line);
-    }
-    .fila h3 {
-      color: var(--white);
-      font-weight: 700;
-    }
-    .flecha {
-      display: none;
+    .foto {
+      aspect-ratio: 16 / 10;
     }
   }
 
   @media (prefers-reduced-motion: reduce) {
     .ap,
-    .fotos img,
-    .fila::before {
+    .notas li,
+    .tarjeta,
+    .foto img {
       transition: none;
     }
   }

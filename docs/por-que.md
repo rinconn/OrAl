@@ -516,25 +516,27 @@ estándar"; en la portada va un poco más corta para que se lea de un golpe.
 - **Antes:** en la portada de la web actual no había notas de aplicación. Solo estaban dentro de Noticias,
   en una rejilla de fotos con una etiqueta roja ("Artículos y novedades") encima y el título tapando la imagen,
   mezcladas con ferias y retrospectivas.
-- **Ahora:** las tres últimas notas en la portada, como un índice grande sobre fondo oscuro. Al pasar el ratón
-  por cada título aparece su foto al lado. En móvil cada nota lleva su foto encima. Botón "Ver todas las notas".
+- **Ahora:** las tres últimas notas en la portada, en tres tarjetas verticales: la foto limpia arriba y la fecha y
+  el título debajo. Botón "Ver todas las notas". En móvil, una debajo de otra.
 
 ### 9.2 Por qué es mejor
 
 - Enseña al distribuidor que la empresa sabe de centrifugación, no solo que vende centrífugas.
 - La portada se actualiza sola: cada nota es un archivo (`src/content/notas/`) y la portada coge las tres
   últimas. Nadie tiene que tocar la portada al publicar.
-- La banda oscura corta el ritmo de las secciones blancas anteriores y da un final con fuerza antes del pie.
-- La foto se ve entera y limpia, sin etiquetas ni texto encima.
+- La foto se ve entera y limpia, sin etiquetas ni texto encima, y el título se lee bien porque va debajo.
+- Mismo estilo de tarjeta que Distribuidores y Empresa: la portada se lee como un conjunto.
 
 ### 9.3 Movimiento y efectos
 
-- Raya roja que crece sobre la nota activa, título en negrita y flecha roja.
-- La foto cambia con un fundido suave. Entrada suave del bloque al verlo, como el resto de la portada.
+- Al pasar el ratón la tarjeta sube, crece la raya roja de arriba, la esquina se pone roja y la foto se acerca un poco.
+- Las tres tarjetas entran una detrás de otra al verlas, como el resto de la portada.
 
 ### 9.4 Descartados
 
-- **Nota destacada con foto y dos tarjetas al lado:** correcta, pero repetía el molde de otras secciones.
+- **Índice grande sobre fondo oscuro con la foto al pasar el ratón:** se llegó a montar, pero junto al pie, que
+  también es oscuro, las dos cosas se fundían.
+- **Nota destacada con foto y dos tarjetas al lado:** menos visual que tres fotos iguales.
 - **Tres tarjetas con la fecha grande:** poco visual.
 - **Rejilla de fotos con el título encima, como el blog actual:** el texto sobre la foto se lee mal y tapa la imagen.
 - **Quitar las fechas por si dejan de publicar:** se mantienen porque la empresa publica una nota al mes y la
