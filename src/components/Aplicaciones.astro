@@ -1,65 +1,280 @@
 ---
-// Últimas notas de aplicación del blog actual. Más adelante vendrán del gestor de contenidos.
-const notas = [
-  { fecha: '2026-08-21', titulo: 'Purificación de anticuerpos monoclonales mediante centrifugación y HPLC' },
-  { fecha: '2026-07-28', titulo: 'Detección de microorganismos en agua según la norma UNE-EN ISO 8199' },
-  { fecha: '2026-05-25', titulo: 'Aplicaciones específicas de centrifugación en alimentación animal' },
-];
+import { getCollection } from 'astro:content';
+
+// Las tres últimas notas del blog; al publicar una nueva, la portada se actualiza sola.
+const notas = (await getCollection('notas'))
+  .sort((a, b) => b.data.fecha.valueOf() - a.data.fecha.valueOf())
+  .slice(0, 3);
 const fmt = new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
 ---
 
-<section class="sec" id="aplicaciones">
+<section class="sec apl" id="aplicaciones">
   <div class="wrap">
-    <div class="head">
-      <h2>
-        Aplicaciones <b>en el laboratorio</b>
-      </h2>
-      <a class="arrow" href="#aplicaciones">
-        Todas las notas
+    <h2 class="ap">
+      Aplicaciones <b>en el laboratorio</b>
+    </h2>
+
+    <div class="indice ap">
+      <ol>
+        {notas.map((n, i) => (
+          <li>
+            <a class:list={['fila', { on: i === 0 }]} href={`/noticias/${n.id}/`} data-i={i}>
+              <img class="mini" src={n.data.foto} alt="" loading="lazy" decoding="async" />
+              <time datetime={n.data.fecha.toISOString().slice(0, 10)}>{fmt.format(n.data.fecha)}</time>
+              <h3>{n.data.titulo}</h3>
+              <span class="flecha" aria-hidden="true">
+                »
+              </span>
+            </a>
+          </li>
+        ))}
+      </ol>
+
+      <div class="fotos" aria-hidden="true">
+        {notas.map((n, i) => (
+          <img class:list={{ on: i === 0 }} src={n.data.foto} alt={n.data.alt} loading="lazy" decoding="async" />
+        ))}
+      </div>
+    </div>
+
+    <div class="cta ap">
+      <a class="btn ghost" href="/noticias/">
+        Ver todas las notas <span aria-hidden="true">»</span>
       </a>
     </div>
-    <div class="apps">
-      {notas.map((n) => (
-        <a class="app" href="#aplicaciones">
-          <time datetime={n.fecha}>{fmt.format(new Date(n.fecha))}</time>
-          <h3>{n.titulo}</h3>
-        </a>
-      ))}
-    </div>
+
+    <p class="why">
+      <b>Antes:</b> las notas solo estaban en Noticias, en rejilla de fotos con una etiqueta roja encima y el título
+      tapando la imagen. <b>Ahora:</b> las tres últimas en la portada, como un índice grande sobre fondo oscuro; al
+      pasar el ratón por cada una aparece su foto. Se actualiza sola al publicar una nota nueva.
+    </p>
   </div>
 </section>
 
-<style>
-  .apps {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 28px;
+<script>
+  // Al pasar el ratón (o el foco del teclado) por una fila, se muestra su foto al lado
+  const filas = document.querySelectorAll<HTMLAnchorElement>('#aplicaciones .fila');
+  const fotos = document.querySelectorAll<HTMLImageElement>('#aplicaciones .fotos img');
+  const activar = (i: number) => {
+    filas.forEach((f, j) => f.classList.toggle('on', i === j));
+    fotos.forEach((f, j) => f.classList.toggle('on', i === j));
+  };
+  filas.forEach((f, i) => {
+    f.addEventListener('mouseenter', () => activar(i));
+    f.addEventListener('focus', () => activar(i));
+  });
+
+  // Entrada suave la primera vez que se ve, como en el resto de la portada
+  const bloques = document.querySelectorAll('#aplicaciones .ap');
+  if (bloques.length && 'IntersectionObserver' in window) {
+    document.documentElement.classList.add('js');
+    const obs = new IntersectionObserver(
+      (entradas) => {
+        for (const e of entradas) {
+          if (e.isIntersecting) {
+            e.target.classList.add('vista');
+            obs.unobserve(e.target);
+          }
+        }
+      },
+      { threshold: 0.2 },
+    );
+    bloques.forEach((b) => obs.observe(b));
   }
-  .app {
-    border-top: 2px solid var(--ink);
-    padding-top: 18px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+</script>
+
+<style>
+  .apl {
+    background: var(--carbon);
+    color: var(--white);
+  }
+  h2 {
+    margin: 0 0 clamp(32px, 4vw, 56px);
+    text-align: center;
+    font-weight: 300;
+    font-size: clamp(34px, 4.4vw, 60px);
+    line-height: 1;
+    color: var(--white);
+  }
+
+  /* Índice a la izquierda y la foto de la nota activa a la derecha */
+  .indice {
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+    gap: clamp(28px, 4vw, 64px);
+    align-items: stretch;
+  }
+  ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-bottom: 1px solid var(--carbon-line);
+  }
+  .fila {
+    position: relative;
+    display: grid;
+    grid-template-columns: 150px minmax(0, 1fr) auto;
+    gap: 24px;
+    align-items: baseline;
+    padding: 30px 0;
+    border-top: 1px solid var(--carbon-line);
+    color: var(--white);
     text-decoration: none;
   }
+  /* Raya roja que crece sobre la fila activa */
+  .fila::before {
+    content: '';
+    position: absolute;
+    top: -1px;
+    left: 0;
+    height: 2px;
+    width: 0;
+    background: var(--red);
+    transition: width 0.45s var(--ease);
+  }
+  .fila.on::before {
+    width: 100%;
+  }
   time {
-    font-size: 13px;
-    color: var(--muted);
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
+    font-size: 15px;
+    color: var(--on-dark);
   }
   h3 {
-    font-size: 22px;
+    margin: 0;
+    font-size: clamp(22px, 2.2vw, 30px);
     line-height: 1.15;
+    font-weight: 300;
+    text-wrap: balance;
+    color: var(--on-dark);
+    transition: color 0.3s var(--ease);
+  }
+  .fila.on h3 {
+    color: var(--white);
     font-weight: 700;
   }
-  .app:hover h3 {
-    color: var(--red);
+  .flecha {
+    font-size: 24px;
+    color: var(--steel);
+    transition:
+      color 0.3s var(--ease),
+      transform 0.3s var(--ease);
   }
+  .fila.on .flecha {
+    color: var(--red);
+    transform: translateX(4px);
+  }
+  .fila:focus-visible {
+    outline: 2px solid var(--red);
+    outline-offset: 4px;
+  }
+  .mini {
+    display: none;
+  }
+
+  /* Marco de la foto: borde y esquina como las tarjetas de Distribuidores y Empresa */
+  .fotos {
+    position: relative;
+    min-height: 360px;
+    border: 2px solid var(--carbon-line);
+    overflow: hidden;
+    background: #0e1011;
+  }
+  .fotos::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 1;
+    width: 28px;
+    height: 28px;
+    background: var(--red);
+    clip-path: polygon(0 0, 100% 0, 100% 100%);
+  }
+  .fotos img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    transform: scale(1.04);
+    transition:
+      opacity 0.5s var(--ease),
+      transform 0.8s var(--ease);
+  }
+  .fotos img.on {
+    opacity: 1;
+    transform: none;
+  }
+
+  .cta {
+    margin-top: clamp(32px, 4vw, 48px);
+    text-align: center;
+  }
+  .apl .btn.ghost {
+    color: var(--white);
+    border-color: var(--white);
+  }
+  .apl .btn.ghost:hover {
+    background: var(--white);
+    color: var(--ink);
+  }
+
+  /* Entrada suave */
+  .ap {
+    transition:
+      opacity 0.7s var(--ease),
+      transform 0.7s var(--ease);
+  }
+  :global(.js) #aplicaciones .ap:not(.vista) {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+
+  /* En móvil no hay ratón: cada nota lleva su foto encima y la foto grande desaparece */
   @media (max-width: 900px) {
-    .apps {
+    .indice {
       grid-template-columns: 1fr;
+    }
+    .fotos {
+      display: none;
+    }
+    ol {
+      border-bottom: 0;
+      display: grid;
+      gap: 28px;
+    }
+    .fila {
+      grid-template-columns: 1fr;
+      gap: 10px;
+      padding: 0 0 4px;
+      border-top: 0;
+    }
+    .fila::before {
+      display: none;
+    }
+    .mini {
+      display: block;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      object-fit: cover;
+      margin-bottom: 8px;
+      border: 2px solid var(--carbon-line);
+    }
+    .fila h3 {
+      color: var(--white);
+      font-weight: 700;
+    }
+    .flecha {
+      display: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ap,
+    .fotos img,
+    .fila::before {
+      transition: none;
     }
   }
 </style>

@@ -7,6 +7,8 @@ Hasta que se publique la web, todo va en "Sin publicar"; al publicar se cierra l
 
 ### Añadido
 
+- Aplicaciones en la portada: índice grande de las tres últimas notas sobre fondo oscuro, con la foto de
+  cada una al pasar el ratón. Las notas son archivos en `src/content/notas/` y la portada se actualiza sola.
 - Distribuidores en la portada: las razones como el recorrido de un pedido, con línea que se dibuja al
   verla, franja oscura con OEM y un solo botón "Hazte distribuidor" más un enlace para laboratorios. (#14)
 - `docs/por-que.md`: el porqué de cada decisión de la web desde el principio, frente a la web actual, como
