@@ -1,10 +1,10 @@
 ---
 import { getCollection } from 'astro:content';
 
-// Las tres últimas notas del blog; al publicar una nueva, la portada se actualiza sola.
+// Las cinco últimas notas del blog; al publicar una nueva, la portada se actualiza sola.
 const notas = (await getCollection('notas'))
   .sort((a, b) => b.data.fecha.valueOf() - a.data.fecha.valueOf())
-  .slice(0, 3);
+  .slice(0, 5);
 const fmt = new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
 ---
 
@@ -18,11 +18,19 @@ const fmt = new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'long', ye
       {notas.map((n) => (
         <li>
           <a class="carta" href={`/noticias/${n.id}/`}>
+            <span class="marcas" aria-hidden="true" />
             <div class="foto">
               <img src={n.data.foto} alt={n.data.alt} loading="lazy" decoding="async" />
             </div>
-            <time datetime={n.data.fecha.toISOString().slice(0, 10)}>{fmt.format(n.data.fecha)}</time>
-            <h3>{n.data.titulo}</h3>
+            <div class="texto">
+              {!n.data.fechaPendiente && (
+                <time datetime={n.data.fecha.toISOString().slice(0, 10)}>{fmt.format(n.data.fecha)}</time>
+              )}
+              <h3>{n.data.titulo}</h3>
+            </div>
+            <span class="leer">
+              Leer la nota <i aria-hidden="true">»</i>
+            </span>
           </a>
         </li>
       ))}
@@ -36,8 +44,8 @@ const fmt = new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'long', ye
 
     <p class="why">
       <b>Antes:</b> las notas solo estaban en Noticias, en una rejilla de fotos con una etiqueta roja encima y el título
-      tapando la imagen. <b>Ahora:</b> las tres últimas en la portada, cada una con su foto limpia y el título debajo,
-      con el mismo estilo de tarjeta que el resto de la portada. Se actualiza sola al publicar una nota nueva.
+      tapando la imagen. <b>Ahora:</b> las cinco últimas en la portada, como una baraja de fotos que se abre en abanico
+      al pasar el ratón (en móvil, al llegar a ella). Se actualiza sola al publicar una nota nueva.
     </p>
   </div>
 </section>
@@ -86,40 +94,54 @@ const fmt = new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'long', ye
     line-height: 1;
   }
 
-  /* La baraja: tres fotos en fila que, mientras está cerrada, se apilan en el centro un poco giradas */
+  /* La baraja: cinco fotos en fila que, mientras está cerrada, se apilan en el centro un poco giradas */
   .baraja {
-    --gap: clamp(20px, 2.4vw, 32px);
+    --gap: clamp(14px, 1.6vw, 24px);
+    --paso: calc(100% + var(--gap));
     list-style: none;
-    margin: 0 auto;
+    margin: 0;
     padding: 0;
-    max-width: 1080px;
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: var(--gap);
   }
   .baraja li {
     position: relative;
-    transition: transform 0.7s cubic-bezier(0.25, 0.9, 0.3, 1.1);
+    transition: transform 0.75s cubic-bezier(0.25, 0.9, 0.3, 1.1);
   }
   .baraja li:nth-child(1) {
-    z-index: 3;
+    z-index: 5;
   }
   .baraja li:nth-child(2) {
-    z-index: 2;
-    transition-delay: 0.05s;
+    z-index: 4;
+    transition-delay: 0.04s;
   }
   .baraja li:nth-child(3) {
+    z-index: 3;
+    transition-delay: 0.08s;
+  }
+  .baraja li:nth-child(4) {
+    z-index: 2;
+    transition-delay: 0.12s;
+  }
+  .baraja li:nth-child(5) {
     z-index: 1;
-    transition-delay: 0.1s;
+    transition-delay: 0.16s;
   }
   :global(.js) .baraja:not(.abierta) li:nth-child(1) {
-    transform: translateX(calc(100% + var(--gap))) rotate(-3deg);
+    transform: translateX(calc(2 * var(--paso))) rotate(-2deg);
   }
   :global(.js) .baraja:not(.abierta) li:nth-child(2) {
-    transform: rotate(4deg);
+    transform: translateX(var(--paso)) rotate(4deg);
   }
   :global(.js) .baraja:not(.abierta) li:nth-child(3) {
-    transform: translateX(calc(-100% - var(--gap))) rotate(-8deg);
+    transform: rotate(-6deg);
+  }
+  :global(.js) .baraja:not(.abierta) li:nth-child(4) {
+    transform: translateX(calc(-1 * var(--paso))) rotate(7deg);
+  }
+  :global(.js) .baraja:not(.abierta) li:nth-child(5) {
+    transform: translateX(calc(-2 * var(--paso))) rotate(-9deg);
   }
   /* Con ratón, se abre en abanico al pasar por encima o al llegar con el teclado */
   @media (hover: hover) {
@@ -128,39 +150,69 @@ const fmt = new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'long', ye
     }
   }
 
-  /* Cada nota es una foto impresa: marco blanco, sombra, y la fecha y el título debajo */
+  /* La carta: borde gris oscuro marcado, marcas de esquina grises y franja inferior; todo se pone rojo al pasar */
   .carta {
+    position: relative;
     display: flex;
     flex-direction: column;
-    gap: 8px;
     height: 100%;
-    padding: 12px 12px 22px;
     background: var(--white);
-    box-shadow:
-      0 1px 2px rgba(0, 0, 0, 0.12),
-      0 18px 40px -22px rgba(0, 0, 0, 0.45);
+    border: 2px solid #3b4045;
+    box-shadow: 0 18px 40px -24px rgba(0, 0, 0, 0.45);
     color: var(--ink);
     text-decoration: none;
     transition:
       transform 0.35s var(--ease),
-      box-shadow 0.35s var(--ease);
+      box-shadow 0.35s var(--ease),
+      border-color 0.3s var(--ease);
   }
-  .carta:hover,
-  .carta:focus-visible {
+  .marcas {
+    position: absolute;
+    inset: -9px;
+    z-index: 1;
+    pointer-events: none;
+    --c: var(--steel);
+    background:
+      linear-gradient(var(--c), var(--c)) top left / 16px 2px,
+      linear-gradient(var(--c), var(--c)) top left / 2px 16px,
+      linear-gradient(var(--c), var(--c)) top right / 16px 2px,
+      linear-gradient(var(--c), var(--c)) top right / 2px 16px,
+      linear-gradient(var(--c), var(--c)) bottom left / 16px 2px,
+      linear-gradient(var(--c), var(--c)) bottom left / 2px 16px,
+      linear-gradient(var(--c), var(--c)) bottom right / 16px 2px,
+      linear-gradient(var(--c), var(--c)) bottom right / 2px 16px;
+    background-repeat: no-repeat;
+    opacity: 0;
+    transition:
+      opacity 0.3s var(--ease),
+      inset 0.3s var(--ease);
+  }
+  .carta:is(:hover, :focus-visible) {
     transform: translateY(-6px);
-    box-shadow:
-      0 1px 2px rgba(0, 0, 0, 0.12),
-      0 26px 50px -24px rgba(0, 0, 0, 0.5);
+    border-color: var(--red);
+    box-shadow: 0 26px 50px -24px rgba(0, 0, 0, 0.5);
+  }
+  .carta:is(:hover, :focus-visible) .marcas {
+    --c: var(--red);
+    opacity: 1;
+    inset: -12px;
+  }
+  .baraja.abierta .marcas,
+  .baraja:hover .marcas {
+    opacity: 1;
   }
   .carta:focus-visible {
-    outline: 2px solid var(--red);
-    outline-offset: 4px;
+    outline: none;
   }
   .foto {
     aspect-ratio: 4 / 5;
     overflow: hidden;
-    margin-bottom: 8px;
     background: var(--panel);
+    border-bottom: 2px solid #3b4045;
+    transition: border-color 0.3s var(--ease);
+  }
+  .carta:is(:hover, :focus-visible) .foto {
+    border-color: var(--red);
   }
   .foto img {
     display: block;
@@ -170,24 +222,47 @@ const fmt = new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'long', ye
     transition: transform 0.8s var(--ease);
   }
   .carta:hover .foto img {
-    transform: scale(1.05);
+    transform: scale(1.06);
+  }
+  .texto {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1;
+    padding: 16px 16px 18px;
   }
   time {
-    padding-inline: 8px;
-    font-size: 15px;
+    font-size: 14px;
     color: var(--muted);
   }
   h3 {
     margin: 0;
-    padding-inline: 8px;
-    font-size: clamp(20px, 1.7vw, 24px);
-    line-height: 1.15;
+    font-size: clamp(17px, 1.35vw, 20px);
+    line-height: 1.18;
     font-weight: 700;
     text-wrap: balance;
-    transition: color 0.3s var(--ease);
   }
-  .carta:hover h3 {
-    color: var(--red);
+  /* Franja inferior: gris oscuro que se pone roja */
+  .leer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 11px 16px;
+    background: #3b4045;
+    color: var(--white);
+    font-weight: 700;
+    font-size: 15px;
+    transition: background 0.3s var(--ease);
+  }
+  .leer i {
+    font-style: normal;
+    transition: transform 0.3s var(--ease);
+  }
+  .carta:is(:hover, :focus-visible) .leer {
+    background: var(--red);
+  }
+  .carta:is(:hover, :focus-visible) .leer i {
+    transform: translateX(4px);
   }
 
   .cta {
@@ -207,22 +282,43 @@ const fmt = new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'long', ye
   }
 
   /* En móvil van una debajo de otra; cerrada, la baraja se apila sobre la primera */
+  /* Tableta: dos filas no quedan bien, así que las cartas se deslizan de lado */
+  @media (max-width: 1100px) and (min-width: 901px) {
+    .baraja {
+      grid-template-columns: repeat(5, 240px);
+      overflow-x: auto;
+      padding: 14px 4px 20px;
+    }
+  }
+  /* En móvil van una debajo de otra; cerrada, la baraja se apila sobre la primera */
   @media (max-width: 900px) {
     .baraja {
+      --paso: calc(100% + var(--gap));
+      --gap: 28px;
       grid-template-columns: 1fr;
       max-width: 440px;
+      margin: 0 auto;
     }
     .foto {
       aspect-ratio: 16 / 10;
+    }
+    .marcas {
+      opacity: 1;
     }
     :global(.js) .baraja:not(.abierta) li:nth-child(1) {
       transform: rotate(-2deg);
     }
     :global(.js) .baraja:not(.abierta) li:nth-child(2) {
-      transform: translateY(calc(-100% - var(--gap))) rotate(3deg);
+      transform: translateY(calc(-1 * var(--paso))) rotate(3deg);
     }
     :global(.js) .baraja:not(.abierta) li:nth-child(3) {
-      transform: translateY(calc(-200% - 2 * var(--gap))) rotate(-4deg);
+      transform: translateY(calc(-2 * var(--paso))) rotate(-4deg);
+    }
+    :global(.js) .baraja:not(.abierta) li:nth-child(4) {
+      transform: translateY(calc(-3 * var(--paso))) rotate(5deg);
+    }
+    :global(.js) .baraja:not(.abierta) li:nth-child(5) {
+      transform: translateY(calc(-4 * var(--paso))) rotate(-6deg);
     }
   }
 

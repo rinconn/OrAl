@@ -8,6 +8,8 @@ const notas = defineCollection({
   schema: z.object({
     titulo: z.string(),
     fecha: z.coerce.date(),
+    // true mientras no se sepa la fecha exacta: la nota se ordena con la aproximada pero no se enseña
+    fechaPendiente: z.boolean().default(false),
     // Foto de la nota, dentro de public/ (por ejemplo /img/notas/mi-nota.webp)
     foto: z.string(),
     alt: z.string(),
