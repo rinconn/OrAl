@@ -461,44 +461,51 @@ estándar"; en la portada va un poco más corta para que se lea de un golpe.
   texto al otro, una etiqueta pequeña "La empresa" encima, los certificados como etiquetas sueltas y un enlace
   que llevaba a la misma sección.
 - **Ahora:**
-  - La foto va **a todo el ancho** y la frase del catálogo, grande, se apoya en la zona clara de la foto, con
-    "más allá de lo estándar" en negrita y mayúsculas, subrayado en rojo, como los titulares del catálogo.
-  - Pegada al pie de la foto, una ficha con **tres datos**: 1949, Daganzo y 48 h. Cada casilla lleva la esquina
-    gris oscuro de las tarjetas de Distribuidores.
-  - Debajo, centrada, una **franja con los certificados y normas** (ISO 9001, ISO 13485, ISO 14001, IVDR, CE,
-    EN 61010, RoHS, RAEE y expedidor conocido) que pasa sola y se para al pasar el ratón.
-  - Sin etiqueta pequeña encima y sin enlace a una página que todavía no existe.
+  - La foto va **a todo el ancho**, encuadrada para que se vean la mano y la pantalla, y la frase del catálogo
+    va **centrada** en la zona clara de arriba, con "más allá de lo estándar" en negrita y mayúsculas y
+    subrayado en rojo, como los titulares del catálogo.
+  - **Tres tarjetas sueltas** que se montan sobre el borde de la foto: 1949 (fabricantes de centrífugas y
+    referente europeo), Familiar (una empresa de familia que integra a socios, usuarios y asociados) y Daganzo
+    (fábrica propia en Madrid con sus tres ISO). Llevan el borde y la esquina de las tarjetas de Distribuidores.
+  - Un botón **"Conoce la empresa"** que llevará a la página de Empresa, para quien quiera saber más.
+  - Una franja gris con **los nueve certificados y normas** en una rueda: el del centro se destaca en gris
+    oscuro y debajo se explica en una frase qué significa. Avanza sola, se para al pasar el ratón y se puede
+    mover con las flechas o pulsando cualquier certificado.
 
 ### 8.2 Por qué es mejor
 
 - La frase es de la propia empresa, no un eslogan inventado, y ahora es lo primero que se lee.
-- La foto a todo el ancho rompe con las secciones anteriores, que son de columnas y tarjetas, y da aire justo
-  antes del final de la portada.
-- Tres datos concretos dicen más que cualquier lista de valores: desde cuándo, dónde y cuánto se tarda en
-  responder.
-- La franja deja ver los nueve certificados y normas sin ocupar sitio. Antes cabían cinco y como etiquetas.
-- La esquina y los bordes repiten los de Distribuidores, así que la portada se lee como un conjunto.
+- La foto a todo el ancho rompe con las secciones anteriores, que son de columnas y tarjetas, y las tarjetas
+  montadas sobre ella dan profundidad sin recargar.
+- Las tarjetas cuentan tres cosas distintas de la empresa (historia, familia y fábrica). No se repiten las 48 h
+  ni los 3 años, que ya están en Distribuidores.
+- Los certificados dejan de ser siglas: el distribuidor lee qué garantiza cada uno, que es lo que tendrá que
+  explicar a su cliente.
+- Bordes, esquina y botón repiten los de secciones anteriores, así que la portada se lee como un conjunto.
 
 ### 8.3 Movimiento y efectos
 
-- Al llegar, la foto se acerca despacio hasta su sitio, la frase sube y los tres datos entran uno tras otro.
-- Al pasar el ratón por un dato, le crece la raya roja arriba, la cifra y la esquina se ponen rojas y el fondo
-  se aclara. Cada certificado sube un poco y su borde se pone rojo.
-- Si el sistema pide menos movimiento, no hay animaciones: la franja se queda quieta y los certificados se
-  colocan centrados en varias filas.
+- Al llegar, la foto se acerca despacio hasta su sitio, la frase sube y las tarjetas entran una tras otra.
+- Al pasar el ratón por una tarjeta, sube un poco, le crece la raya roja arriba y la cifra y la esquina se
+  ponen rojas. La flecha del botón se desplaza.
+- La rueda gira cada pocos segundos y la explicación cambia con un fundido corto.
+- Si el sistema pide menos movimiento, no hay animaciones y la rueda no avanza sola; se mueve con las flechas.
+  Sin JavaScript, los certificados se ven todos en filas centradas.
 
 ### 8.4 Descartados
 
 - **Foto y ficha con sellos (B):** ordenada, pero seguía siendo el reparto en dos mitades de siempre.
 - **Línea del tiempo en panel oscuro (C):** cuenta más historia, pero repetía el tono oscuro de la primera
   pantalla y de Tecnología.
-- **La frase sobre la derecha de la foto:** tapaba la máquina. Va arriba a la izquierda, donde la foto es clara.
+- **Primera versión de la A**, revisada con el usuario: frase a la izquierda, tres datos pegados en una sola
+  ficha, sin botón y con los certificados pasando en una cinta continua. La ficha parecía una tabla, los datos
+  se quedaban cortos y la cinta daba vueltas sin decir nada.
 
 ### 8.5 Lo que viene después
 
 - Cuando lleguen **fotos de la fábrica y del equipo**, van en el mismo hueco de la foto.
-- El enlace "Conoce la empresa" vuelve cuando exista la página de Empresa (historia, fábrica, calidad y
-  medio ambiente).
+- La **página de Empresa** (historia, fábrica, calidad y medio ambiente) es el destino del botón "Conoce la
+  empresa". Hasta que exista, el botón lleva a la página de error.
 
 ---
 
