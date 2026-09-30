@@ -402,9 +402,9 @@ entrega).
   4. **3 años:** tu cliente queda cubierto por la garantía, salvo la Minicen, que tiene 14 meses.
 - Debajo, una franja oscura remata la sección con el **OEM** ("¿Necesitas un equipo a medida?", tal como lo cuenta el catálogo) y **un solo
   botón fuerte**, "Hazte distribuidor".
-- Pegada debajo de la franja, en gris claro, una línea para el laboratorio que llega por error: "¿Eres un laboratorio? Vendemos a
-  través de distribuidores especializados. Encuentra el de tu país". Le explica por qué no puede comprar aquí
-  y le da la salida, sin competir con el botón del distribuidor.
+- Arriba, bajo la entradilla, un enlace para el laboratorio que llega por error: "¿Eres un laboratorio?
+  Encuentra tu distribuidor". Lo ve antes de empezar a leer lo que no va con él, y no compite con el botón
+  del distribuidor. Se probó también en una franja gris bajo la oscura, pero quedaba como una tarjeta suelta.
 
 ### 7.2 Por qué es mejor
 
