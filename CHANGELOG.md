@@ -26,6 +26,8 @@ Hasta que se publique la web, todo va en "Sin publicar"; al publicar se cierra l
 
 ### Cambiado
 
+- Empresa en la portada: foto a todo el ancho con la frase del catálogo, ficha con 1949, Daganzo y 48 h con
+  esquina que se pone roja, franja centrada con los nueve certificados y normas, y entradas suaves. (#15)
 - Tecnología propia: REI System y SmartConnect a lo grande con foto real, pasos y vídeo; pantalla táctil, PCBS
   y ULS en tarjetas con esquema y cifra; qué modelos lleva cada sistema, enlazados a la gama; entradas suaves,
   esquemas que se dibujan y efectos al pasar el ratón. Datos en `src/data/tecnologia.ts`. Documentado en

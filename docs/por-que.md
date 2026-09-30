@@ -448,7 +448,61 @@ Hasta entonces, los dos enlaces llevan al contacto del pie.
 
 ---
 
-## 8. Secciones que faltan por revisar
+## 8. Empresa (portada)
+
+La frase, los datos y los certificados salen del Catálogo General 2025. La frase completa del catálogo es
+"Nuestro objetivo no es ser una opción más, sino ser una empresa que destaca del resto por ir más allá de lo
+estándar"; en la portada va un poco más corta para que se lea de un golpe.
+
+### 8.1 Qué había y qué hay
+
+- **Antes:** la web actual presenta la empresa con valores genéricos ("integridad, dinamismo") y deja los
+  certificados en otra página. El prototipo de la portada nueva seguía el molde de siempre: foto a un lado,
+  texto al otro, una etiqueta pequeña "La empresa" encima, los certificados como etiquetas sueltas y un enlace
+  que llevaba a la misma sección.
+- **Ahora:**
+  - La foto va **a todo el ancho** y la frase del catálogo, grande, se apoya en la zona clara de la foto, con
+    "más allá de lo estándar" en negrita y mayúsculas, subrayado en rojo, como los titulares del catálogo.
+  - Pegada al pie de la foto, una ficha con **tres datos**: 1949, Daganzo y 48 h. Cada casilla lleva la esquina
+    gris oscuro de las tarjetas de Distribuidores.
+  - Debajo, centrada, una **franja con los certificados y normas** (ISO 9001, ISO 13485, ISO 14001, IVDR, CE,
+    EN 61010, RoHS, RAEE y expedidor conocido) que pasa sola y se para al pasar el ratón.
+  - Sin etiqueta pequeña encima y sin enlace a una página que todavía no existe.
+
+### 8.2 Por qué es mejor
+
+- La frase es de la propia empresa, no un eslogan inventado, y ahora es lo primero que se lee.
+- La foto a todo el ancho rompe con las secciones anteriores, que son de columnas y tarjetas, y da aire justo
+  antes del final de la portada.
+- Tres datos concretos dicen más que cualquier lista de valores: desde cuándo, dónde y cuánto se tarda en
+  responder.
+- La franja deja ver los nueve certificados y normas sin ocupar sitio. Antes cabían cinco y como etiquetas.
+- La esquina y los bordes repiten los de Distribuidores, así que la portada se lee como un conjunto.
+
+### 8.3 Movimiento y efectos
+
+- Al llegar, la foto se acerca despacio hasta su sitio, la frase sube y los tres datos entran uno tras otro.
+- Al pasar el ratón por un dato, le crece la raya roja arriba, la cifra y la esquina se ponen rojas y el fondo
+  se aclara. Cada certificado sube un poco y su borde se pone rojo.
+- Si el sistema pide menos movimiento, no hay animaciones: la franja se queda quieta y los certificados se
+  colocan centrados en varias filas.
+
+### 8.4 Descartados
+
+- **Foto y ficha con sellos (B):** ordenada, pero seguía siendo el reparto en dos mitades de siempre.
+- **Línea del tiempo en panel oscuro (C):** cuenta más historia, pero repetía el tono oscuro de la primera
+  pantalla y de Tecnología.
+- **La frase sobre la derecha de la foto:** tapaba la máquina. Va arriba a la izquierda, donde la foto es clara.
+
+### 8.5 Lo que viene después
+
+- Cuando lleguen **fotos de la fábrica y del equipo**, van en el mismo hueco de la foto.
+- El enlace "Conoce la empresa" vuelve cuando exista la página de Empresa (historia, fábrica, calidad y
+  medio ambiente).
+
+---
+
+## 9. Secciones que faltan por revisar
 
 Las siguientes piezas de la portada existen como prototipo y se revisarán una a una, en este orden:
-Empresa y el pie. Cada una se añadirá aquí cuando esté aprobada.
+Aplicaciones y el pie. Cada una se añadirá aquí cuando esté aprobada.
