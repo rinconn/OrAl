@@ -516,8 +516,8 @@ estándar"; en la portada va un poco más corta para que se lea de un golpe.
 - **Antes:** en la portada de la web actual no había notas de aplicación. Solo estaban dentro de Noticias,
   en una rejilla de fotos con una etiqueta roja ("Artículos y novedades") encima y el título tapando la imagen,
   mezcladas con ferias y retrospectivas.
-- **Ahora:** las cinco últimas notas en la portada, como una baraja de cartas apiladas. Al pasar el ratón se
-  abre en abanico y quedan las cinco en fila. Cada carta lleva la foto limpia, la fecha y el título debajo, y una
+- **Ahora:** las cinco últimas notas en la portada, como una baraja de cartas apiladas que se reparte sola
+  al llegar a ella y se queda abierta, con las cinco en fila. Cada carta lleva la foto limpia, la fecha y el título debajo, y una
   franja gris oscuro con "Leer la nota". En móvil,
   sin ratón, la baraja se abre sola al llegar a ella y quedan una debajo de otra. Botón "Ver todas las notas".
 
@@ -532,7 +532,8 @@ estándar"; en la portada va un poco más corta para que se lea de un golpe.
 
 ### 9.3 Movimiento y efectos
 
-- La baraja se abre en abanico con un pequeño rebote, una carta detrás de otra.
+- La baraja se reparte una sola vez, con un pequeño rebote y una carta detrás de otra, y se queda abierta. Al
+  principio se abría al pasar el ratón y se cerraba al salir, pero cerrada dejaba un hueco vacío en la página.
 - Carta con borde gris oscuro marcado y marcas de esquina grises, como las de un plano técnico. Al pasar el ratón
   el borde, las marcas y la franja inferior se ponen rojos.
 - Sobre cada foto, la carta sube, la foto se acerca un poco y el título se pone rojo.
