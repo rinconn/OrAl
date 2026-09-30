@@ -1,91 +1,336 @@
 ---
-const certificados = ['ISO 9001', 'ISO 13485', 'ISO 14001', 'IVDR', 'CE'];
+// Datos confirmados: Catálogo 2025 (frase, 1949, Daganzo, 48 h, certificados y directivas)
+const datos = [
+  { cifra: '1949', texto: 'Nace como fabricante de centrífugas' },
+  { cifra: 'Daganzo', texto: 'Fábrica y oficinas en Madrid' },
+  { cifra: '48 h', texto: 'Respuesta y asesoramiento personalizado' },
+];
+
+const certificados = [
+  { nombre: 'ISO 9001', detalle: 'Gestión de calidad' },
+  { nombre: 'ISO 13485', detalle: 'Producto sanitario' },
+  { nombre: 'ISO 14001', detalle: 'Medio ambiente' },
+  { nombre: 'IVDR', detalle: '2017/746/UE' },
+  { nombre: 'CE', detalle: 'Marcado europeo' },
+  { nombre: 'EN 61010', detalle: 'Seguridad eléctrica' },
+  { nombre: 'RoHS', detalle: '2011/65/UE' },
+  { nombre: 'RAEE', detalle: '2012/19/UE' },
+  { nombre: 'KC', detalle: 'Expedidor conocido' },
+];
 ---
 
 <section class="company" id="empresa">
-  <div class="ph" role="img" aria-label="Mano con guante negro usando la pantalla de una centrífuga Orto Alresa"></div>
-  <div class="tx">
-    <span class="eyebrow">La empresa</span>
-    <blockquote>
-      "Nuestro objetivo no es ser una opción más, sino una empresa que destaca por ir <b>más allá de lo estándar</b>."
-    </blockquote>
-    <div class="since">
-      <span>
-        <b>1949</b>Nace como fabricante de centrífugas
-      </span>
-      <span>
-        <b>Daganzo</b>Fábrica y oficinas en Madrid
-      </span>
-      <span>
-        <b>Familiar</b>Integramos a socios y usuarios
-      </span>
+  <div class="foto ap">
+    <div
+      class="ph"
+      role="img"
+      aria-label="Mano con guante negro usando la pantalla de una centrífuga Orto Alresa"
+    ></div>
+    <div class="wrap">
+      <h2>
+        Nuestro objetivo no es ser una opción más, sino ir <b>más allá de lo estándar</b>
+      </h2>
     </div>
-    <div class="certs">
-      {certificados.map((c) => (
-        <span>{c}</span>
+  </div>
+
+  <div class="wrap">
+    <ul class="datos ap">
+      {datos.map((d) => (
+        <li>
+          <b>{d.cifra}</b>
+          <span>{d.texto}</span>
+        </li>
       ))}
+    </ul>
+  </div>
+
+  <div class="certs ap" aria-label="Certificados y normas">
+    <div class="pista">
+      <ul>
+        {certificados.map((c) => (
+          <li>
+            <b>{c.nombre}</b>
+            <span>{c.detalle}</span>
+          </li>
+        ))}
+      </ul>
+      <ul aria-hidden="true">
+        {certificados.map((c) => (
+          <li>
+            <b>{c.nombre}</b>
+            <span>{c.detalle}</span>
+          </li>
+        ))}
+      </ul>
     </div>
-    <a class="arrow" href="#empresa">
-      Conoce nuestra historia
-    </a>
+  </div>
+
+  <div class="wrap">
     <p class="why">
-      <b>Antes:</b> valores genéricos ("integridad, dinamismo"). <b>Ahora:</b> vuestra propia frase del catálogo, datos
-      concretos y personas reales.
+      <b>Antes:</b> valores genéricos ("integridad, dinamismo") y certificados perdidos en otra página. <b>Ahora:</b> la
+      frase del propio catálogo sobre una foto real, tres datos concretos y todos los certificados pasando en una
+      franja.
     </p>
   </div>
 </section>
 
+<script>
+  // La foto se acerca, la frase sube y los datos entran uno tras otro la primera vez que se ven
+  const bloques = document.querySelectorAll('#empresa .ap');
+  if (bloques.length && 'IntersectionObserver' in window) {
+    document.documentElement.classList.add('js');
+    const obs = new IntersectionObserver(
+      (entradas) => {
+        for (const e of entradas) {
+          if (e.isIntersecting) {
+            e.target.classList.add('vista');
+            obs.unobserve(e.target);
+          }
+        }
+      },
+      { threshold: 0.25 },
+    );
+    bloques.forEach((b) => obs.observe(b));
+  }
+</script>
+
 <style>
   .company {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    min-height: 520px;
+    padding-bottom: clamp(56px, 7vw, 96px);
+  }
+
+  /* Foto a todo el ancho; la frase va en la zona clara de arriba a la izquierda */
+  .foto {
+    position: relative;
+    overflow: hidden;
+    min-height: clamp(380px, 42vw, 600px);
+    display: flex;
+    align-items: flex-start;
   }
   .ph {
-    background: url('/img/fotos/lab-114.webp') center / cover;
-    min-height: 320px;
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(90deg, rgba(255, 255, 255, 0.75), rgba(255, 255, 255, 0) 60%),
+      url('/img/fotos/lab-114.webp') center / cover;
   }
-  .tx {
-    padding: clamp(40px, 6vw, 88px) var(--gut);
-    display: flex;
-    flex-direction: column;
-    gap: 22px;
-    justify-content: center;
-    max-width: 640px;
+  .foto .wrap {
+    position: relative;
+    width: 100%;
+    padding-top: clamp(40px, 6vw, 88px);
   }
-  blockquote {
+  h2 {
     margin: 0;
-    font-size: clamp(24px, 2.4vw, 32px);
-    line-height: 1.2;
+    max-width: 15em;
     font-weight: 300;
+    font-size: clamp(30px, 3.6vw, 52px);
+    line-height: 1.08;
+    text-wrap: balance;
   }
-  .since {
-    display: flex;
-    gap: 28px;
-    flex-wrap: wrap;
-    font-size: 15px;
+  h2 b {
+    font-weight: 700;
+    text-transform: uppercase;
+    background: linear-gradient(var(--red), var(--red)) left bottom / 100% 3px no-repeat;
+    padding-bottom: 2px;
+  }
+
+  /* Tres datos en fila, con la esquina oscura de las tarjetas de Distribuidores */
+  .datos {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    background: #fff;
+    border: 2px solid #3b4045;
+    border-top: 0;
+  }
+  .datos li {
+    position: relative;
+    display: grid;
+    gap: 6px;
+    padding: 32px clamp(20px, 3vw, 40px) 34px;
+    border-right: 1px solid var(--line);
+    transition: background 0.3s var(--ease);
+  }
+  .datos li:last-child {
+    border-right: 0;
+  }
+  .datos li::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 3px;
+    width: 0;
+    background: var(--red);
+    transition: width 0.4s var(--ease);
+  }
+  .datos li::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 22px;
+    height: 22px;
+    background: #3b4045;
+    clip-path: polygon(0 0, 100% 0, 100% 100%);
+    transition: background 0.3s var(--ease);
+  }
+  .datos li:hover {
+    background: var(--band);
+  }
+  .datos li:hover::before {
+    width: 100%;
+  }
+  .datos li:hover::after {
+    background: var(--red);
+  }
+  .datos b {
+    font-size: clamp(34px, 3.4vw, 46px);
+    line-height: 1;
+    transition: color 0.3s var(--ease);
+  }
+  .datos li:hover b {
+    color: var(--red);
+  }
+  .datos span {
     color: var(--body);
   }
-  .since b {
-    display: block;
-    font-size: 22px;
-    color: var(--ink);
-  }
+
+  /* Certificados: franja centrada que pasa sola y se para al pasar el ratón */
   .certs {
+    max-width: 960px;
+    margin: clamp(40px, 5vw, 64px) auto 0;
+    overflow: hidden;
+    mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+  }
+  .pista {
     display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
+    width: max-content;
+    animation: pasar 36s linear infinite;
+  }
+  .certs:hover .pista {
+    animation-play-state: paused;
+  }
+  .certs ul {
+    list-style: none;
+    margin: 0;
+    padding: 0 6px;
+    display: flex;
+    gap: 12px;
+  }
+  .certs li {
+    display: grid;
+    gap: 2px;
+    min-width: 132px;
+    padding: 12px 16px;
+    border: 2px solid #3b4045;
+    text-align: center;
+    transition:
+      border-color 0.25s var(--ease),
+      transform 0.25s var(--ease);
+  }
+  .certs li:hover {
+    border-color: var(--red);
+    transform: translateY(-3px);
+  }
+  .certs b {
+    font-size: 18px;
   }
   .certs span {
-    border: 1px solid var(--ink);
-    padding: 6px 10px;
     font-size: 13px;
-    font-weight: 700;
-    letter-spacing: 0.06em;
+    color: var(--muted);
   }
-  @media (max-width: 900px) {
-    .company {
+  @keyframes pasar {
+    to {
+      transform: translateX(-50%);
+    }
+  }
+
+  /* Entrada: todo visible sin JS; con JS la foto se acerca y lo demás sube */
+  .ap,
+  .ph,
+  h2,
+  .datos li {
+    transition:
+      opacity 0.8s var(--ease),
+      transform 0.8s var(--ease),
+      background 0.3s var(--ease);
+  }
+  .ph {
+    transition: transform 1.6s var(--ease);
+  }
+  :global(.js) #empresa .foto:not(.vista) .ph {
+    transform: scale(1.08);
+  }
+  :global(.js) #empresa .foto:not(.vista) h2 {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  :global(.js) #empresa .datos:not(.vista) li,
+  :global(.js) #empresa .certs:not(.vista) {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  h2 {
+    transition-delay: 0.2s;
+  }
+  .datos li:nth-child(2) {
+    transition-delay: 0.1s;
+  }
+  .datos li:nth-child(3) {
+    transition-delay: 0.2s;
+  }
+  .datos.vista li {
+    transition-delay: 0s;
+  }
+
+  @media (max-width: 760px) {
+    .foto {
+      min-height: 0;
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .ph {
+      position: relative;
+      inset: auto;
+      aspect-ratio: 3 / 2;
+      background: url('/img/fotos/lab-114.webp') center / cover;
+    }
+    .foto .wrap {
+      padding-top: 28px;
+    }
+    .datos {
       grid-template-columns: 1fr;
+      border-top: 2px solid #3b4045;
+      margin-top: 24px;
+    }
+    .datos li {
+      border-right: 0;
+      border-bottom: 1px solid var(--line);
+      padding: 22px 20px 24px;
+    }
+    .datos li:last-child {
+      border-bottom: 0;
+    }
+  }
+
+  /* Sin movimiento: los certificados se quedan quietos y centrados */
+  @media (prefers-reduced-motion: reduce) {
+    .certs {
+      mask-image: none;
+    }
+    .pista {
+      width: auto;
+      justify-content: center;
+    }
+    .certs ul {
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .certs ul[aria-hidden] {
+      display: none;
     }
   }
 </style>
