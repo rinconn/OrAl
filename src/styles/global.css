@@ -36,6 +36,9 @@
 
   --f: 'Helvetica Neue Cond', 'Roboto Condensed', 'Arial Narrow', Arial, sans-serif;
   --wrap: 1280px;
+  /* Un solo tamaño para los títulos de sección y otro para su subtítulo, los del inicio */
+  --t-titulo: clamp(44px, min(7.2vw, 12vh), 92px);
+  --t-sub: clamp(18px, 1.6vw, 24px);
   --gut: clamp(16px, 4vw, 48px);
   --ease: cubic-bezier(0.2, 0.6, 0.2, 1);
 }
@@ -173,12 +176,13 @@ button:focus-visible {
 }
 .head h2 {
   font-weight: 300;
-  font-size: clamp(34px, 4.4vw, 60px);
-  line-height: 1;
+  font-size: var(--t-titulo);
+  line-height: 0.95;
 }
 .head p {
   max-width: 44ch;
   color: var(--body);
+  font-size: var(--t-sub);
 }
 
 /* Notas de "antes y después" para presentar la propuesta; se activan con NotasToggle */
