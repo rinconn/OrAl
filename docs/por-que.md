@@ -393,7 +393,8 @@ entrega).
   primera opción. El prototipo de esta sección llevaba una etiqueta pequeña en mayúsculas, cuatro casillas
   iguales y dos botones del mismo peso, que además iban al mismo sitio.
 - **Ahora:** las razones para trabajar con Orto Alresa se cuentan como **el recorrido de un pedido**, en
-  cuatro tarjetas colgadas de una línea:
+  cuatro tarjetas colgadas de una línea. Llevan el mismo borde gris oscuro que las tarjetas de la gama y una
+  esquina gris oscuro arriba a la derecha, que recuerda a las pestañas del catálogo:
   1. **Stock:** haces el pedido y hay existencias de toda la gama.
   2. **1 semana:** te llega al almacén. Es el plazo medio de 2024 y 2025 según la web actual; en la tarjeta no
      se ponen los años para que no se quede vieja.
@@ -401,7 +402,7 @@ entrega).
   4. **3 años:** tu cliente queda cubierto por la garantía, salvo la Minicen, que tiene 14 meses.
 - Debajo, una franja oscura remata la sección con el **OEM** ("¿Necesitas equipos con tu marca?") y **un solo
   botón fuerte**, "Hazte distribuidor".
-- Fuera de la franja, una línea para el laboratorio que llega por error: "¿Eres un laboratorio? Vendemos a
+- Pegada debajo de la franja, en gris claro, una línea para el laboratorio que llega por error: "¿Eres un laboratorio? Vendemos a
   través de distribuidores especializados. Encuentra el de tu país". Le explica por qué no puede comprar aquí
   y le da la salida, sin competir con el botón del distribuidor.
 
@@ -423,7 +424,7 @@ entrega).
 - Al llegar a la sección, la línea roja se dibuja de izquierda a derecha y las cuatro paradas aparecen una
   detrás de otra, como un pedido que avanza. En el móvil la línea es vertical y se dibuja hacia abajo.
 - Al pasar el ratón por una tarjeta, sube un poco, le crece la raya roja arriba (como las tarjetas de
-  Tecnología) y su cuadrado de la línea se rellena de rojo. La flecha del
+  Tecnología), la esquina se pone roja y su cuadrado de la línea se rellena de rojo. La flecha del
   botón se desplaza y el enlace del laboratorio se subraya en rojo, como los enlaces de Tecnología.
 - Si el sistema pide menos movimiento, no hay animaciones y todo se ve desde el principio.
 

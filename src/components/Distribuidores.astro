@@ -71,12 +71,14 @@ const pasos = [
       </a>
     </div>
 
-    <p class="labo ap">
-      <b>¿Eres un laboratorio?</b> Vendemos a través de distribuidores especializados.
+    <div class="labo ap">
+      <p>
+        <b>¿Eres un laboratorio?</b> Vendemos a través de distribuidores especializados.
+      </p>
       <a class="lab" href="#contacto">
         Encuentra el de tu país <i aria-hidden="true">»</i>
       </a>
-    </p>
+    </div>
 
     <p class="why">
       <b>Antes:</b> no había nada para distribuidores y el formulario ponía "Cliente final" primero.
@@ -184,7 +186,7 @@ const pasos = [
     height: 100%;
     padding: 26px 26px 30px;
     background: #fff;
-    border: 1px solid var(--line);
+    border: 2px solid #3b4045;
     transition:
       transform 0.35s var(--ease),
       box-shadow 0.35s var(--ease);
@@ -192,8 +194,8 @@ const pasos = [
   .tarjeta::before {
     content: '';
     position: absolute;
-    top: -1px;
-    left: -1px;
+    top: -2px;
+    left: -2px;
     height: 4px;
     width: 0;
     background: var(--red);
@@ -204,7 +206,22 @@ const pasos = [
     box-shadow: 0 14px 30px -18px rgba(0, 0, 0, 0.35);
   }
   li:hover .tarjeta::before {
-    width: calc(100% + 2px);
+    width: calc(100% + 4px);
+  }
+  /* Esquina gris oscuro, como una pestaña del catálogo; se pone roja al pasar el ratón */
+  .tarjeta::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 28px;
+    height: 28px;
+    background: #3b4045;
+    clip-path: polygon(0 0, 100% 0, 100% 100%);
+    transition: background 0.3s var(--ease);
+  }
+  li:hover .tarjeta::after {
+    background: var(--red);
   }
   .cuando {
     font-size: 15px;
@@ -264,16 +281,25 @@ const pasos = [
   .btn:hover span {
     transform: translateX(5px);
   }
+  /* El laboratorio, pegado bajo la franja: se ve, pero no compite con el botón */
   .labo {
-    margin: 28px 0 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px 32px;
+    padding: 20px clamp(28px, 4vw, 48px);
+    background: #e4e6e7;
     font-size: 17px;
     color: var(--body);
+  }
+  .labo p {
+    margin: 0;
   }
   .labo b {
     color: var(--ink);
   }
   .lab {
-    margin-left: 6px;
     padding-bottom: 2px;
     font-weight: 700;
     color: var(--ink);
