@@ -30,6 +30,6 @@ En la propia web, el botón **Ver antes y después** muestra estas mismas notas 
 | Rendimiento  | WordPress con plugins                                      | Web estática                                                                             | Carga casi instantánea, más segura y más barata de alojar        |
 | Datos        | Garantía de 2 y de 3 años; 70 y 75 años                    | Un solo dato, del Catálogo 2025                                                          | La web no se contradice                                          |
 | Google       | Se ve el WordPress interno (wp.ortoalresa.com)             | Solo la web pública                                                                      | Imagen profesional en los resultados                             |
-| Aplicaciones | Notas solo en Noticias, con etiqueta y texto sobre la foto | Las tres últimas en la portada, en tarjetas con la foto limpia y el título debajo        | Se ve que saben de centrifugación y la portada se actualiza sola |
+| Aplicaciones | Notas solo en Noticias, con etiqueta y texto sobre la foto | Las tres últimas en la portada, en una baraja de fotos que se abre en abanico            | Se ve que saben de centrifugación y la portada se actualiza sola |
 
 Cuando se añada una sección o página nueva, se añade aquí su fila.

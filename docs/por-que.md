@@ -516,8 +516,9 @@ estándar"; en la portada va un poco más corta para que se lea de un golpe.
 - **Antes:** en la portada de la web actual no había notas de aplicación. Solo estaban dentro de Noticias,
   en una rejilla de fotos con una etiqueta roja ("Artículos y novedades") encima y el título tapando la imagen,
   mezcladas con ferias y retrospectivas.
-- **Ahora:** las tres últimas notas en la portada, en tres tarjetas verticales: la foto limpia arriba y la fecha y
-  el título debajo. Botón "Ver todas las notas". En móvil, una debajo de otra.
+- **Ahora:** las tres últimas notas en la portada, como una baraja de fotos impresas apiladas. Al pasar el ratón
+  se abre en abanico y quedan las tres en fila, cada una con su foto limpia y la fecha y el título debajo. En móvil,
+  sin ratón, la baraja se abre sola al llegar a ella y quedan una debajo de otra. Botón "Ver todas las notas".
 
 ### 9.2 Por qué es mejor
 
@@ -525,18 +526,21 @@ estándar"; en la portada va un poco más corta para que se lea de un golpe.
 - La portada se actualiza sola: cada nota es un archivo (`src/content/notas/`) y la portada coge las tres
   últimas. Nadie tiene que tocar la portada al publicar.
 - La foto se ve entera y limpia, sin etiquetas ni texto encima, y el título se lee bien porque va debajo.
-- Mismo estilo de tarjeta que Distribuidores y Empresa: la portada se lee como un conjunto.
+- Rompe el ritmo de la portada: arriba ya hay tarjetas con borde (Distribuidores, Empresa); repetirlas quitaba
+  riqueza visual. La baraja es un gesto propio de esta sección y se recuerda.
 
 ### 9.3 Movimiento y efectos
 
-- Al pasar el ratón la tarjeta sube, crece la raya roja de arriba, la esquina se pone roja y la foto se acerca un poco.
-- Las tres tarjetas entran una detrás de otra al verlas, como el resto de la portada.
+- La baraja se abre en abanico con un pequeño rebote, una carta detrás de otra.
+- Sobre cada foto, la carta sube, la foto se acerca un poco y el título se pone rojo.
+- Con "reducir movimiento" activado en el sistema, las fotos aparecen ya abiertas y sin animación.
 
 ### 9.4 Descartados
 
 - **Índice grande sobre fondo oscuro con la foto al pasar el ratón:** se llegó a montar, pero junto al pie, que
   también es oscuro, las dos cosas se fundían.
-- **Nota destacada con foto y dos tarjetas al lado:** menos visual que tres fotos iguales.
+- **Tres tarjetas con borde y esquina roja:** repetía el molde de las secciones de arriba.
+- **Nota destacada con foto y dos tarjetas al lado:** menos visual que la baraja.
 - **Tres tarjetas con la fecha grande:** poco visual.
 - **Rejilla de fotos con el título encima, como el blog actual:** el texto sobre la foto se lee mal y tapa la imagen.
 - **Quitar las fechas por si dejan de publicar:** se mantienen porque la empresa publica una nota al mes y la
