@@ -13,7 +13,10 @@ const fmt = new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'long', ye
     <h2 class="ap">
       Aplicaciones <b>en el laboratorio</b>
     </h2>
+  </div>
 
+  <!-- La baraja usa más ancho que el resto de la página para que cinco cartas no queden estrechas -->
+  <div class="ancho">
     <ul class="baraja ap">
       {notas.map((n) => (
         <li>
@@ -35,7 +38,9 @@ const fmt = new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'long', ye
         </li>
       ))}
     </ul>
+  </div>
 
+  <div class="wrap">
     <div class="cta ap">
       <a class="btn ghost" href="/noticias/">
         Ver todas las notas <span aria-hidden="true">»</span>
@@ -95,8 +100,13 @@ const fmt = new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'long', ye
   }
 
   /* La baraja: cinco fotos en fila que, mientras está cerrada, se apilan en el centro un poco giradas */
+  .ancho {
+    max-width: 1560px;
+    margin: 0 auto;
+    padding-inline: var(--gut);
+  }
   .baraja {
-    --gap: clamp(14px, 1.6vw, 24px);
+    --gap: clamp(14px, 1.4vw, 22px);
     --paso: calc(100% + var(--gap));
     list-style: none;
     margin: 0;
@@ -205,7 +215,7 @@ const fmt = new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'long', ye
     outline: none;
   }
   .foto {
-    aspect-ratio: 4 / 5;
+    aspect-ratio: 1 / 1;
     overflow: hidden;
     background: var(--panel);
     border-bottom: 2px solid #3b4045;
@@ -229,7 +239,7 @@ const fmt = new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'long', ye
     flex-direction: column;
     gap: 8px;
     flex: 1;
-    padding: 16px 16px 18px;
+    padding: 18px 20px 20px;
   }
   time {
     font-size: 14px;
@@ -237,7 +247,7 @@ const fmt = new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'long', ye
   }
   h3 {
     margin: 0;
-    font-size: clamp(17px, 1.35vw, 20px);
+    font-size: clamp(18px, 1.4vw, 21px);
     line-height: 1.18;
     font-weight: 700;
     text-wrap: balance;
@@ -247,7 +257,7 @@ const fmt = new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'long', ye
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 11px 16px;
+    padding: 13px 20px;
     background: #3b4045;
     color: var(--white);
     font-weight: 700;
