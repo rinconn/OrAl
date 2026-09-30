@@ -1,91 +1,529 @@
 ---
-const certificados = ['ISO 9001', 'ISO 13485', 'ISO 14001', 'IVDR', 'CE'];
+// Todo sale del Catálogo General 2025: la frase, la historia, la empresa familiar, la fábrica y las normas
+const tarjetas = [
+  {
+    cifra: '1949',
+    titulo: 'Fabricantes de centrífugas',
+    texto: 'Más de 75 años después, somos referente entre los fabricantes europeos.',
+  },
+  {
+    cifra: 'Familiar',
+    titulo: 'Una empresa de familia',
+    texto: 'Buscamos integrar a nuestros socios, usuarios y asociados.',
+  },
+  {
+    cifra: 'Daganzo',
+    titulo: 'Fábrica propia en Madrid',
+    texto: 'Fabricamos y atendemos desde aquí, con ISO 9001, ISO 13485 e ISO 14001.',
+  },
+];
+
+const certificados = [
+  { nombre: 'ISO 9001', detalle: 'Calidad', texto: 'Gestión de la calidad en toda la empresa.' },
+  {
+    nombre: 'ISO 13485',
+    detalle: 'Producto sanitario',
+    texto: 'Sistema de calidad específico para productos sanitarios.',
+  },
+  { nombre: 'ISO 14001', detalle: 'Medio ambiente', texto: 'Gestión ambiental de la fábrica y de sus procesos.' },
+  { nombre: 'IVDR', detalle: '(UE) 2017/746', texto: 'Conformes con el Reglamento europeo de diagnóstico in vitro.' },
+  {
+    nombre: 'CE',
+    detalle: 'Marcado europeo',
+    texto: 'Cumplen las directivas europeas de baja tensión y compatibilidad electromagnética.',
+  },
+  {
+    nombre: 'EN 61010',
+    detalle: 'Seguridad',
+    texto: 'Seguridad de equipos de laboratorio, con su parte específica para centrífugas.',
+  },
+  {
+    nombre: 'RoHS',
+    detalle: '2011/65/UE',
+    texto: 'Componentes sin las sustancias peligrosas que restringe la Unión Europea.',
+  },
+  { nombre: 'RAEE', detalle: '2012/19/UE', texto: 'El equipo se recoge y se recicla al final de su vida útil.' },
+  {
+    nombre: 'KC',
+    detalle: 'Expedidor conocido',
+    texto: 'Los envíos por avión salen con los controles de seguridad ya hechos.',
+  },
+];
+const primero = certificados[1];
 ---
 
 <section class="company" id="empresa">
-  <div class="ph" role="img" aria-label="Mano con guante negro usando la pantalla de una centrífuga Orto Alresa"></div>
-  <div class="tx">
-    <span class="eyebrow">La empresa</span>
-    <blockquote>
-      "Nuestro objetivo no es ser una opción más, sino una empresa que destaca por ir <b>más allá de lo estándar</b>."
-    </blockquote>
-    <div class="since">
-      <span>
-        <b>1949</b>Nace como fabricante de centrífugas
-      </span>
-      <span>
-        <b>Daganzo</b>Fábrica y oficinas en Madrid
-      </span>
-      <span>
-        <b>Familiar</b>Integramos a socios y usuarios
-      </span>
+  <div class="foto ap">
+    <div
+      class="ph"
+      role="img"
+      aria-label="Mano con guante negro usando la pantalla de una centrífuga Orto Alresa"
+    ></div>
+    <div class="wrap">
+      <h2>
+        Nuestro objetivo no es ser una opción más, sino ir <b>más allá de lo estándar</b>
+      </h2>
     </div>
-    <div class="certs">
-      {certificados.map((c) => (
-        <span>{c}</span>
+  </div>
+
+  <div class="wrap">
+    <ul class="tarjetas ap">
+      {tarjetas.map((t) => (
+        <li>
+          <b class="cifra">{t.cifra}</b>
+          <h3>{t.titulo}</h3>
+          <p>{t.texto}</p>
+        </li>
       ))}
+    </ul>
+    <div class="cta ap">
+      <a class="btn ghost" href="/empresa/">
+        Conoce la empresa <span aria-hidden="true">»</span>
+      </a>
     </div>
-    <a class="arrow" href="#empresa">
-      Conoce nuestra historia
-    </a>
+  </div>
+
+  <div class="sellos ap">
+    <div class="wrap">
+      <h3 class="st">
+        Certificados y normas que <b>cumplimos</b>
+      </h3>
+      <div class="rueda" data-rueda>
+        <button class="flecha ant" type="button" aria-label="Certificado anterior">
+          ‹
+        </button>
+        <ul>
+          {certificados.map((c, i) => (
+            <li>
+              <button type="button" data-i={i} data-texto={c.texto} aria-label={`${c.nombre}: ${c.texto}`}>
+                <b>{c.nombre}</b>
+                <span>{c.detalle}</span>
+              </button>
+            </li>
+          ))}
+        </ul>
+        <button class="flecha sig" type="button" aria-label="Certificado siguiente">
+          ›
+        </button>
+      </div>
+      <p class="expl" aria-live="polite">
+        <b>{primero?.nombre}</b>
+        <span>{primero?.texto}</span>
+      </p>
+    </div>
+  </div>
+
+  <div class="wrap">
     <p class="why">
-      <b>Antes:</b> valores genéricos ("integridad, dinamismo"). <b>Ahora:</b> vuestra propia frase del catálogo, datos
-      concretos y personas reales.
+      <b>Antes:</b> valores genéricos ("integridad, dinamismo") y los certificados en otra página. <b>Ahora:</b> la
+      frase del propio catálogo sobre una foto real, tres tarjetas con historia, familia y fábrica, un botón para
+      conocer la empresa a fondo y los certificados explicados uno a uno.
     </p>
   </div>
 </section>
 
+<script>
+  // Entradas suaves la primera vez que se ve cada bloque
+  const bloques = document.querySelectorAll('#empresa .ap');
+  if (bloques.length && 'IntersectionObserver' in window) {
+    document.documentElement.classList.add('js');
+    const obs = new IntersectionObserver(
+      (entradas) => {
+        for (const e of entradas) {
+          if (e.isIntersecting) {
+            e.target.classList.add('vista');
+            obs.unobserve(e.target);
+          }
+        }
+      },
+      { threshold: 0.2 },
+    );
+    bloques.forEach((b) => obs.observe(b));
+  }
+
+  // Rueda de certificados: el del centro se destaca y se explica debajo; avanza sola y se para al pasar el ratón
+  const rueda = document.querySelector<HTMLElement>('[data-rueda]');
+  const expl = document.querySelector<HTMLElement>('#empresa .expl');
+  if (rueda && expl) {
+    const botones = [...rueda.querySelectorAll<HTMLButtonElement>('li button')];
+    const n = botones.length;
+    const quieto = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let activo = 1;
+    let reloj = 0;
+
+    const pintar = () => {
+      botones.forEach((b, i) => {
+        let d = (((i - activo) % n) + n) % n;
+        if (d > n / 2) d -= n;
+        const li = b.parentElement as HTMLElement;
+        li.style.setProperty('--d', String(d));
+        li.style.setProperty('--a', String(Math.min(Math.abs(d), 3)));
+        li.classList.toggle('activo', d === 0);
+        li.classList.toggle('lejos', Math.abs(d) > 3);
+        b.tabIndex = Math.abs(d) > 2 ? -1 : 0;
+      });
+      const b = botones[activo];
+      const nombre = document.createElement('b');
+      nombre.textContent = b?.querySelector('b')?.textContent ?? '';
+      const texto = document.createElement('span');
+      texto.textContent = b?.dataset.texto ?? '';
+      expl.replaceChildren(nombre, texto);
+      expl.classList.remove('cambio');
+      void expl.offsetWidth;
+      expl.classList.add('cambio');
+    };
+    const ir = (i: number) => {
+      activo = (i + n) % n;
+      pintar();
+    };
+    const arrancar = () => {
+      if (quieto) return;
+      clearInterval(reloj);
+      reloj = window.setInterval(() => ir(activo + 1), 3200);
+    };
+    const parar = () => clearInterval(reloj);
+
+    rueda.classList.add('viva');
+    botones.forEach((b, i) => b.addEventListener('click', () => ir(i)));
+    rueda.querySelector('.ant')?.addEventListener('click', () => ir(activo - 1));
+    rueda.querySelector('.sig')?.addEventListener('click', () => ir(activo + 1));
+    rueda.addEventListener('mouseenter', parar);
+    rueda.addEventListener('mouseleave', arrancar);
+    rueda.addEventListener('focusin', parar);
+    rueda.addEventListener('focusout', arrancar);
+    pintar();
+    arrancar();
+  }
+</script>
+
 <style>
-  .company {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    min-height: 520px;
+  /* Foto a todo el ancho con la frase centrada arriba, en la zona clara */
+  .foto {
+    position: relative;
+    overflow: hidden;
+    height: clamp(420px, 40vw, 580px);
   }
   .ph {
-    background: url('/img/fotos/lab-114.webp') center / cover;
-    min-height: 320px;
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 70% 55% at 50% 12%, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0) 70%),
+      url('/img/fotos/lab-114.webp') center 62% / cover;
+    transition: transform 1.6s var(--ease);
   }
-  .tx {
-    padding: clamp(40px, 6vw, 88px) var(--gut);
-    display: flex;
-    flex-direction: column;
-    gap: 22px;
-    justify-content: center;
-    max-width: 640px;
+  .foto .wrap {
+    position: relative;
+    padding-top: clamp(40px, 5vw, 72px);
+    text-align: center;
   }
-  blockquote {
-    margin: 0;
-    font-size: clamp(24px, 2.4vw, 32px);
-    line-height: 1.2;
+  h2 {
+    margin: 0 auto;
+    max-width: 17em;
     font-weight: 300;
+    font-size: clamp(30px, 3.6vw, 52px);
+    line-height: 1.08;
+    text-wrap: balance;
+    transition:
+      opacity 0.8s var(--ease) 0.2s,
+      transform 0.8s var(--ease) 0.2s;
   }
-  .since {
-    display: flex;
-    gap: 28px;
-    flex-wrap: wrap;
-    font-size: 15px;
+  h2 b {
+    font-weight: 700;
+    text-transform: uppercase;
+    background: linear-gradient(var(--red), var(--red)) left bottom / 100% 3px no-repeat;
+    padding-bottom: 2px;
+  }
+
+  /* Tres tarjetas sueltas que se montan sobre el borde de la foto */
+  .tarjetas {
+    list-style: none;
+    margin: -88px 0 0;
+    padding: 0;
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: clamp(16px, 2vw, 28px);
+  }
+  .tarjetas li {
+    position: relative;
+    display: grid;
+    align-content: start;
+    gap: 8px;
+    padding: 30px 28px 32px;
+    background: #fff;
+    border: 2px solid #3b4045;
+    transition:
+      opacity 0.8s var(--ease),
+      transform 0.35s var(--ease),
+      box-shadow 0.35s var(--ease);
+  }
+  .tarjetas li:nth-child(2) {
+    transition-delay: 0.1s, 0s, 0s;
+  }
+  .tarjetas li:nth-child(3) {
+    transition-delay: 0.2s, 0s, 0s;
+  }
+  .tarjetas li::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    height: 4px;
+    width: 0;
+    background: var(--red);
+    transition: width 0.4s var(--ease);
+  }
+  .tarjetas li::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 28px;
+    height: 28px;
+    background: #3b4045;
+    clip-path: polygon(0 0, 100% 0, 100% 100%);
+    transition: background 0.3s var(--ease);
+  }
+  .tarjetas li:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 18px 36px -20px rgba(0, 0, 0, 0.4);
+  }
+  .tarjetas li:hover::before {
+    width: calc(100% + 4px);
+  }
+  .tarjetas li:hover::after {
+    background: var(--red);
+  }
+  .cifra {
+    font-size: clamp(38px, 3.6vw, 52px);
+    line-height: 1;
+    transition: color 0.3s var(--ease);
+  }
+  .tarjetas li:hover .cifra {
+    color: var(--red);
+  }
+  .tarjetas h3 {
+    margin: 10px 0 0;
+    font-size: 20px;
+  }
+  .tarjetas p {
+    margin: 0;
     color: var(--body);
+    line-height: 1.45;
   }
-  .since b {
+
+  .cta {
+    display: flex;
+    justify-content: center;
+    margin-top: clamp(32px, 4vw, 48px);
+  }
+  .btn span {
+    transition: transform 0.25s var(--ease);
+  }
+  .btn:hover span {
+    transform: translateX(5px);
+  }
+
+  /* Certificados: franja gris con una rueda centrada; el del medio manda y se explica debajo */
+  .sellos {
+    margin-top: clamp(28px, 3vw, 40px);
+    padding-block: clamp(32px, 4vw, 48px) clamp(40px, 5vw, 64px);
+    background: var(--band);
+    text-align: center;
+  }
+  .st {
+    margin: 0 0 20px;
+    font-weight: 300;
+    font-size: clamp(24px, 2.4vw, 32px);
+  }
+  .st b {
+    color: var(--red);
+  }
+  .rueda {
+    position: relative;
+    max-width: 980px;
+    margin: 0 auto;
+    transition:
+      opacity 0.8s var(--ease),
+      transform 0.8s var(--ease);
+  }
+  .rueda ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+  }
+  .rueda li button {
+    display: grid;
+    gap: 2px;
+    width: 150px;
+    padding: 14px 10px;
+    background: #fff;
+    border: 2px solid #3b4045;
+    font: inherit;
+    color: var(--ink);
+    cursor: pointer;
+    transition:
+      border-color 0.3s var(--ease),
+      background 0.3s var(--ease),
+      color 0.3s var(--ease);
+  }
+  .rueda li b {
+    font-size: 20px;
+  }
+  .rueda li span {
+    font-size: 13px;
+    color: var(--muted);
+    transition: color 0.3s var(--ease);
+  }
+  .flecha {
+    display: none;
+  }
+
+  /* Con JS la lista se convierte en rueda */
+  .rueda.viva {
+    height: 108px;
+    overflow: hidden;
+  }
+  .rueda.viva ul {
+    mask-image: linear-gradient(90deg, transparent, #000 15%, #000 85%, transparent);
     display: block;
-    font-size: 22px;
+    position: relative;
+    height: 100%;
+  }
+  .rueda.viva li {
+    --paso: 170px;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(calc(-50% + var(--d) * var(--paso)), -50%) scale(calc(1.1 - var(--a) * 0.1));
+    opacity: calc(1 - var(--a) * 0.25);
+    transition:
+      transform 0.6s var(--ease),
+      opacity 0.6s var(--ease);
+  }
+  .rueda.viva li.lejos {
+    opacity: 0;
+    pointer-events: none;
+  }
+  .rueda.viva li.activo button {
+    background: #3b4045;
+    border-color: #3b4045;
+    color: #fff;
+  }
+  .rueda.viva li.activo span {
+    color: #c9ced2;
+  }
+  .rueda.viva li:not(.activo) button:hover {
+    border-color: var(--red);
+  }
+  .rueda.viva .flecha {
+    display: grid;
+    place-items: center;
+    position: absolute;
+    top: 50%;
+    z-index: 2;
+    width: 40px;
+    height: 40px;
+    transform: translateY(-50%);
+    background: transparent;
+    border: 0;
+    font: 300 40px/1 var(--f);
+    color: var(--ink);
+    cursor: pointer;
+    transition: color 0.2s var(--ease);
+  }
+  .flecha:hover {
+    color: var(--red);
+  }
+  .ant {
+    left: 0;
+  }
+  .sig {
+    right: 0;
+  }
+  .expl {
+    display: none;
+  }
+  .rueda.viva + .expl {
+    display: flex;
+    justify-content: center;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 6px 12px;
+    margin: 24px auto 0;
+    max-width: 60ch;
+    min-height: 3em;
+    font-size: 18px;
+    font-weight: 700;
     color: var(--ink);
   }
-  .certs {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
+  .expl :global(b) {
+    color: var(--red);
   }
-  .certs span {
-    border: 1px solid var(--ink);
-    padding: 6px 10px;
-    font-size: 13px;
-    font-weight: 700;
-    letter-spacing: 0.06em;
+  .expl.cambio {
+    animation: aparecer 0.5s var(--ease);
   }
-  @media (max-width: 900px) {
-    .company {
+  @keyframes aparecer {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+  }
+
+  /* Entrada: todo visible sin JS; con JS la foto se acerca y lo demás sube */
+  .cta {
+    transition:
+      opacity 0.8s var(--ease),
+      transform 0.8s var(--ease);
+  }
+  :global(.js) #empresa .foto:not(.vista) .ph {
+    transform: scale(1.08);
+  }
+  :global(.js) #empresa .foto:not(.vista) h2 {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  :global(.js) #empresa .tarjetas:not(.vista) li {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+  :global(.js) #empresa .cta:not(.vista),
+  :global(.js) #empresa .sellos:not(.vista) .rueda {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  @media (max-width: 860px) {
+    .foto {
+      height: auto;
+      display: flex;
+      flex-direction: column-reverse;
+    }
+    .ph {
+      position: relative;
+      inset: auto;
+      aspect-ratio: 3 / 2;
+      background: url('/img/fotos/lab-114.webp') center / cover;
+    }
+    .foto .wrap {
+      padding-block: 8px 28px;
+    }
+    .tarjetas {
+      margin-top: 24px;
       grid-template-columns: 1fr;
+    }
+    .rueda.viva li {
+      --paso: 132px;
+    }
+    .rueda.viva li button {
+      width: 120px;
+    }
+    .rueda.viva ul {
+      mask-image: linear-gradient(90deg, transparent, #000 22%, #000 78%, transparent);
     }
   }
 </style>
