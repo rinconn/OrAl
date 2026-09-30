@@ -38,9 +38,14 @@ const pasos = [
       <h2>
         Crece con <b>nosotros</b>
       </h2>
-      <p class="lead">
-        Una empresa familiar que trata a cada distribuidor como socio. Así funciona un pedido con Orto Alresa.
-      </p>
+      <div>
+        <p class="lead">
+          Una empresa familiar que trata a cada distribuidor como socio. Así funciona un pedido con Orto Alresa.
+        </p>
+        <a class="lab" href="#contacto">
+          ¿Eres un laboratorio? Encuentra tu distribuidor <i aria-hidden="true">»</i>
+        </a>
+      </div>
     </div>
 
     <ol class="ruta ap">
@@ -68,15 +73,6 @@ const pasos = [
       </div>
       <a class="btn red" href="#contacto">
         Hazte distribuidor <span aria-hidden="true">»</span>
-      </a>
-    </div>
-
-    <div class="labo ap">
-      <p>
-        <b>¿Eres un laboratorio?</b> Vendemos a través de distribuidores especializados.
-      </p>
-      <a class="lab" href="#contacto">
-        Encuentra el de tu país <i aria-hidden="true">»</i>
       </a>
     </div>
 
@@ -281,25 +277,10 @@ const pasos = [
   .btn:hover span {
     transform: translateX(5px);
   }
-  /* El laboratorio, pegado bajo la franja: se ve, pero no compite con el botón */
-  .labo {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px 32px;
-    padding: 20px clamp(28px, 4vw, 48px);
-    background: #e4e6e7;
-    font-size: 17px;
-    color: var(--body);
-  }
-  .labo p {
-    margin: 0;
-  }
-  .labo b {
-    color: var(--ink);
-  }
+  /* El laboratorio tiene su salida arriba, antes de que empiece lo del distribuidor */
   .lab {
+    display: inline-block;
+    margin-top: 18px;
     padding-bottom: 2px;
     font-weight: 700;
     color: var(--ink);
