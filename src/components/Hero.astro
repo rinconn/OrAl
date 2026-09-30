@@ -131,7 +131,7 @@ const equipo = {
   h1 {
     font-weight: 300;
     /* Grande hasta llenar el ancho de la columna, sin pasarse en pantallas bajas */
-    font-size: clamp(48px, min(7.2vw, 12vh), 92px);
+    font-size: var(--t-titulo);
     line-height: 0.94;
   }
   h1 b {
@@ -143,25 +143,59 @@ const equipo = {
   }
   .lead {
     margin-top: clamp(22px, 3vh, 32px);
-    font-size: clamp(18px, 1.6vw, 24px);
+    font-size: var(--t-sub);
     max-width: 40ch;
     color: var(--body);
   }
 
+  /* Cuatro fichas iguales a las tarjetas de Distribuidores: al pasar el ratón suben, les crece la raya roja
+     de arriba y la esquina se pone roja */
   .cifras {
     margin: 28px 0 0;
     display: grid;
     grid-template-columns: repeat(4, auto);
     justify-content: start;
-    border-block: 1px solid var(--line);
+    gap: 12px;
   }
   .cifras div {
+    position: relative;
     padding: 12px 20px;
-    border-left: 1px solid var(--line);
+    border: 2px solid #3b4045;
+    background: #fff;
+    transition:
+      transform 0.35s var(--ease),
+      box-shadow 0.35s var(--ease);
   }
-  .cifras div:first-child {
-    padding-left: 0;
-    border-left: 0;
+  .cifras div::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    height: 4px;
+    width: 0;
+    background: var(--red);
+    transition: width 0.4s var(--ease);
+  }
+  .cifras div::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 22px;
+    height: 22px;
+    background: #3b4045;
+    clip-path: polygon(0 0, 100% 0, 100% 100%);
+    transition: background 0.3s var(--ease);
+  }
+  .cifras div:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 14px 30px -18px rgba(0, 0, 0, 0.35);
+  }
+  .cifras div:hover::before {
+    width: calc(100% + 4px);
+  }
+  .cifras div:hover::after {
+    background: var(--red);
   }
   dt {
     font-weight: 700;
@@ -190,22 +224,16 @@ const equipo = {
       order: 1;
       flex: 1;
       margin-top: clamp(32px, 5vh, 48px);
+      margin-bottom: 32px;
       grid-template-columns: 1fr 1fr;
       grid-template-rows: 1fr 1fr;
-      border-bottom: 0;
+      gap: 16px;
     }
     .cifras div {
       display: flex;
       flex-direction: column;
       justify-content: center;
-      padding: 0 28px;
-    }
-    .cifras div:nth-child(odd) {
-      padding-left: 0;
-      border-left: 0;
-    }
-    .cifras div:nth-child(n + 3) {
-      border-top: 1px solid var(--line);
+      padding: 20px 28px;
     }
     .cifras dt {
       font-size: clamp(40px, 4.2vw, 64px);
@@ -224,18 +252,10 @@ const equipo = {
       margin-top: 32px;
       grid-template-columns: repeat(4, auto);
       grid-template-rows: 1fr;
+      gap: 10px;
     }
-    .cifras div,
-    .cifras div:nth-child(odd) {
-      padding: 0 18px;
-      border-left: 1px solid var(--line);
-    }
-    .cifras div:first-child {
-      padding-left: 0;
-      border-left: 0;
-    }
-    .cifras div:nth-child(n + 3) {
-      border-top: 0;
+    .cifras div {
+      padding: 10px 16px;
     }
     .cifras dt {
       /* Según el ancho de la columna, para que las cuatro quepan siempre en una fila */
@@ -511,15 +531,7 @@ const equipo = {
       width: 100%;
     }
     .cifras div {
-      padding: 12px 0;
-      border-left: 0;
-    }
-    .cifras div:nth-child(n + 3) {
-      border-top: 1px solid var(--line);
-    }
-    .cifras div:nth-child(even) {
-      padding-left: 16px;
-      border-left: 1px solid var(--line);
+      padding: 12px 16px;
     }
     .foto {
       margin-inline: calc(var(--gut) * -1);
