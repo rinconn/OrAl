@@ -1,139 +1,377 @@
 ---
-const razones = [
+// Las razones para el distribuidor, contadas como el recorrido de un pedido.
+// Fuentes: catálogo 2025 ("¿Qué nos diferencia?", garantía, OEM) y web actual (plazo de entrega).
+const pasos = [
   {
+    cuando: 'Haces el pedido',
+    cifra: 'Stock',
+    titulo: 'Siempre disponible',
+    texto: 'Stock continuo de toda la gama.',
+  },
+  {
+    cuando: 'Llega a tu almacén en',
     cifra: '1',
     unidad: 'semana',
     titulo: 'Entrega rápida',
-    texto: 'Plazo medio de entrega en 2024 y 2025, gracias al stock continuo.',
+    texto: 'Plazo medio de entrega, gracias al stock continuo.',
   },
   {
+    cuando: 'Si tienes una duda, respuesta en',
     cifra: '48',
     unidad: 'h',
-    titulo: 'Soporte que responde',
-    texto: 'Asesoramiento, puesta en marcha y formación técnica online.',
+    titulo: 'Asesoramiento',
+    texto: 'Puesta en marcha, incidencias, reparaciones y formación técnica online.',
   },
   {
+    cuando: 'Tu cliente, cubierto durante',
     cifra: '3',
     unidad: 'años',
     titulo: 'Garantía sin sorpresas',
-    texto: 'En equipos nuevos. Menos incidencias para tu equipo comercial.',
-  },
-  {
-    cifra: 'OEM',
-    titulo: 'Equipos a medida',
-    texto: 'Fabricación con tu marca, análisis de riesgos y trazabilidad completa.',
+    texto: 'En todas las centrífugas nuevas, salvo la Minicen (14 meses).',
   },
 ];
 ---
 
 <section class="sec dist" id="distribuidores">
-  <div class="wrap grid">
-    <div>
-      <span class="eyebrow">Para distribuidores</span>
+  <div class="wrap">
+    <div class="cab ap">
       <h2>
         Crece con <b>nosotros</b>
       </h2>
-      <p class="intro">
-        Somos una empresa familiar y tratamos a cada distribuidor como un socio. Stock continuo, respuesta rápida y una
-        marca europea que se vende sola en el laboratorio.
-      </p>
-      <div class="ctas">
-        <a class="btn red" href="#contacto">
-          Hazte distribuidor
-        </a>
-        <a class="btn ghost" href="#contacto">
-          Encuentra un distribuidor
+      <div>
+        <p class="lead">
+          Una empresa familiar que trata a cada distribuidor como socio. Así funciona un pedido con Orto Alresa.
+        </p>
+        <a class="lab" href="#contacto">
+          ¿Eres un laboratorio? Encuentra tu distribuidor <i aria-hidden="true">»</i>
         </a>
       </div>
     </div>
-    <div class="reasons">
-      {razones.map((r) => (
-        <div>
-          <strong>
-            {r.cifra}
-            {r.unidad && <small>{r.unidad}</small>}
-          </strong>
-          <h3>{r.titulo}</h3>
-          <p>{r.texto}</p>
-        </div>
+
+    <ol class="ruta ap">
+      {pasos.map((p) => (
+        <li>
+          <div class="tarjeta">
+            <span class="cuando">{p.cuando}</span>
+            <strong>
+              {p.cifra}
+              {p.unidad && <small>{p.unidad}</small>}
+            </strong>
+            <h3>{p.titulo}</h3>
+            <p>{p.texto}</p>
+          </div>
+        </li>
       ))}
+    </ol>
+
+    <div class="pie ap">
+      <div>
+        <h3>
+          ¿Necesitas un equipo <b>a medida</b>?
+        </h3>
+        <p>Fabricación OEM a medida, con análisis de riesgos y trazabilidad de origen a usuario.</p>
+      </div>
+      <a class="btn red" href="#contacto">
+        Hazte distribuidor <span aria-hidden="true">»</span>
+      </a>
     </div>
-  </div>
-  <div class="wrap">
+
     <p class="why">
-      <b>Antes:</b> no había ni una página para distribuidores y el formulario ponía "Cliente final" primero.
-      <b>Ahora:</b> una sección que habla a vuestro cliente real, con los argumentos que le importan.
+      <b>Antes:</b> no había nada para distribuidores y el formulario ponía "Cliente final" primero.
+      <b>Ahora:</b> una sección que habla al cliente real, con las razones contadas como el recorrido de su pedido y un
+      solo botón claro.
     </p>
   </div>
 </section>
+
+<script>
+  // Cada bloque entra suave la primera vez que se ve; la línea del recorrido se dibuja sola
+  const bloques = document.querySelectorAll('#distribuidores .ap');
+  if (bloques.length && 'IntersectionObserver' in window) {
+    document.documentElement.classList.add('js');
+    const obs = new IntersectionObserver(
+      (entradas) => {
+        for (const e of entradas) {
+          if (e.isIntersecting) {
+            e.target.classList.add('vista');
+            obs.unobserve(e.target);
+          }
+        }
+      },
+      { threshold: 0.2 },
+    );
+    bloques.forEach((b) => obs.observe(b));
+  }
+</script>
 
 <style>
   .dist {
     background: var(--band);
   }
-  .grid {
+
+  /* Cabecera: título grande a la izquierda, entradilla a la derecha */
+  .cab {
     display: grid;
-    grid-template-columns: 1fr 1.3fr;
-    gap: clamp(28px, 5vw, 80px);
+    grid-template-columns: 1fr minmax(0, 440px);
+    gap: 24px 64px;
+    align-items: end;
   }
   h2 {
-    margin-top: 18px;
+    margin: 0;
     font-weight: 300;
-    font-size: clamp(34px, 4.4vw, 60px);
-    line-height: 1;
+    font-size: clamp(40px, 5.2vw, 72px);
+    line-height: 0.95;
+    text-wrap: balance;
   }
   h2 b {
     color: var(--red);
   }
-  .intro {
-    margin-top: 20px;
+  .lead {
+    margin: 0;
     color: var(--body);
-    max-width: 40ch;
+    font-size: clamp(17px, 1.4vw, 20px);
+    max-width: 44ch;
   }
-  .ctas {
-    margin-top: 28px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-  }
-  .reasons {
+
+  /* El recorrido: una línea con cuatro paradas */
+  .ruta {
+    position: relative;
+    list-style: none;
+    margin: clamp(56px, 7vw, 96px) 0 0;
+    padding: 0;
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1px;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+  }
+  .ruta::before,
+  .ruta::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 11px;
+    height: 2px;
     background: var(--line);
-    border: 1px solid var(--line);
   }
-  .reasons > div {
+  .ruta::after {
+    background: var(--red);
+    transform-origin: left;
+  }
+  li {
+    position: relative;
+    padding-top: 48px;
+  }
+  li::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+    width: 24px;
+    height: 24px;
     background: #fff;
-    padding: 26px 24px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+    border: 2px solid var(--red);
+    transition: background 0.3s var(--ease);
   }
-  .reasons strong {
-    font-size: 40px;
-    line-height: 1;
-    font-variant-numeric: tabular-nums;
+  li:hover::before {
+    background: var(--red);
   }
-  .reasons small {
-    font-size: 18px;
-    font-weight: 300;
-    margin-left: 4px;
+  /* Cada parada es una tarjeta: al pasar el ratón sube y le crece la raya roja, como en Tecnología */
+  .tarjeta {
+    position: relative;
+    height: 100%;
+    padding: 26px 26px 30px;
+    background: #fff;
+    border: 2px solid #3b4045;
+    transition:
+      transform 0.35s var(--ease),
+      box-shadow 0.35s var(--ease);
   }
-  .reasons h3 {
-    font-size: 18px;
+  .tarjeta::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    height: 4px;
+    width: 0;
+    background: var(--red);
+    transition: width 0.4s var(--ease);
   }
-  .reasons p {
+  li:hover .tarjeta {
+    transform: translateY(-4px);
+    box-shadow: 0 14px 30px -18px rgba(0, 0, 0, 0.35);
+  }
+  li:hover .tarjeta::before {
+    width: calc(100% + 4px);
+  }
+  /* Esquina gris oscuro, como una pestaña del catálogo; se pone roja al pasar el ratón */
+  .tarjeta::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 28px;
+    height: 28px;
+    background: #3b4045;
+    clip-path: polygon(0 0, 100% 0, 100% 100%);
+    transition: background 0.3s var(--ease);
+  }
+  li:hover .tarjeta::after {
+    background: var(--red);
+  }
+  .cuando {
     font-size: 15px;
-    color: var(--body);
+    color: var(--muted);
   }
+  strong {
+    display: block;
+    margin-top: 4px;
+    font-size: clamp(48px, 5vw, 76px);
+    line-height: 0.95;
+    letter-spacing: -0.02em;
+  }
+  strong small {
+    margin-left: 6px;
+    font-size: 0.38em;
+    font-weight: 300;
+    letter-spacing: 0;
+  }
+  li h3 {
+    margin: 14px 0 6px;
+    font-size: 20px;
+  }
+  li p {
+    margin: 0;
+    color: var(--body);
+    max-width: 28ch;
+  }
+
+  /* Remate oscuro: OEM y el botón */
+  .pie {
+    margin-top: clamp(56px, 7vw, 88px);
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 32px;
+    align-items: center;
+    padding: clamp(28px, 4vw, 48px);
+    background: #3b4045;
+    color: #fff;
+  }
+  .pie h3 {
+    margin: 0;
+    font-weight: 300;
+    font-size: clamp(28px, 3vw, 40px);
+    line-height: 1.05;
+  }
+  .pie h3 b {
+    font-weight: 700;
+  }
+  .pie p {
+    margin: 10px 0 0;
+    color: #c9ced2;
+    max-width: 52ch;
+  }
+  .btn span {
+    transition: transform 0.25s var(--ease);
+  }
+  .btn:hover span {
+    transform: translateX(5px);
+  }
+  /* El laboratorio tiene su salida arriba, antes de que empiece lo del distribuidor */
+  .lab {
+    display: inline-block;
+    margin-top: 18px;
+    padding-bottom: 2px;
+    font-weight: 700;
+    color: var(--ink);
+    text-decoration: none;
+    background: linear-gradient(var(--red), var(--red)) 0 100% / 0 2px no-repeat;
+    transition: background-size 0.3s var(--ease);
+  }
+  .lab:hover,
+  .lab:focus-visible {
+    background-size: 100% 2px;
+  }
+  .lab i {
+    font-style: normal;
+    font-weight: 700;
+    color: var(--red);
+  }
+  .why {
+    margin-top: 32px;
+  }
+
+  /* Movimiento: todo visible sin JS; con JS entra al verse */
+  :global(.js) #distribuidores .ap:not(.vista) {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  .ap {
+    transition:
+      opacity 0.7s var(--ease),
+      transform 0.7s var(--ease);
+  }
+  /* La ruta en sí no se desplaza: entran sus paradas una tras otra y la línea se dibuja */
+  :global(.js) #distribuidores .ruta.ap:not(.vista) {
+    opacity: 1;
+    transform: none;
+  }
+  :global(.js) .ruta::after {
+    transform: scaleX(0);
+    transition: transform 1.8s var(--ease) 0.3s;
+  }
+  :global(.js) .ruta.vista::after {
+    transform: scaleX(1);
+  }
+  :global(.js) .ruta li {
+    transition:
+      opacity 0.7s var(--ease),
+      transform 0.7s var(--ease);
+  }
+  :global(.js) .ruta:not(.vista) li {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  .ruta.vista li:nth-child(2) {
+    transition-delay: 0.5s;
+  }
+  .ruta.vista li:nth-child(3) {
+    transition-delay: 1s;
+  }
+  .ruta.vista li:nth-child(4) {
+    transition-delay: 1.5s;
+  }
+
   @media (max-width: 900px) {
-    .grid {
+    .cab {
       grid-template-columns: 1fr;
     }
-  }
-  @media (max-width: 520px) {
-    .reasons {
+    .ruta {
+      grid-template-columns: 1fr;
+      gap: 0;
+    }
+    .ruta::before,
+    .ruta::after {
+      left: 11px;
+      right: auto;
+      top: 0;
+      bottom: 40px;
+      width: 2px;
+      height: auto;
+    }
+    .ruta::after {
+      transform-origin: top;
+    }
+    :global(.js) .ruta::after {
+      transform: scaleY(0);
+    }
+    :global(.js) .ruta.vista::after {
+      transform: scaleY(1);
+    }
+    li {
+      padding: 0 0 40px 52px;
+    }
+    .pie {
       grid-template-columns: 1fr;
     }
   }

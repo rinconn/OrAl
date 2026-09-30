@@ -7,6 +7,8 @@ Hasta que se publique la web, todo va en "Sin publicar"; al publicar se cierra l
 
 ### Añadido
 
+- Distribuidores en la portada: las razones como el recorrido de un pedido, con línea que se dibuja al
+  verla, franja oscura con OEM y un solo botón "Hazte distribuidor" más un enlace para laboratorios. (#14)
 - `docs/por-que.md`: el porqué de cada decisión de la web desde el principio, frente a la web actual, como
   guion para presentarla a la dirección. (#10)
 - Lupa en la cabecera: busca modelos y secciones al escribir, sin tildes ni mayúsculas, y sin servidor. (#8)
