@@ -318,7 +318,71 @@ De arriba abajo:
 
 ---
 
-## 6. Secciones que faltan por revisar
+## 6. Tecnología propia (portada)
+
+Todo el contenido sale del Catálogo General 2025 (págs. 12-13, 28-31, 58 y 60) y de la web actual. El
+inventario completo, con cada frase y su fuente, está en `analisis/tecnologia-contenido.md` de la carpeta del
+proyecto.
+
+### 6.1 Qué había y qué hay
+
+- **Antes:** la tecnología estaba repartida en cuatro sitios que no se enlazaban entre sí:
+  - REI System y SmartConnect eran entradas sueltas del menú principal, al mismo nivel que Empresa.
+  - PCBS, ULS, GRS y las pantallas estaban dentro de una "Guía de equipos", y el enlace del menú a esa guía da
+    error (404).
+  - Las siglas solo se explicaban en las preguntas frecuentes.
+  - Ninguna página decía qué modelos llevan cada sistema. Web y catálogo se contradicen en varias cifras.
+- **Ahora:** una sección de la portada lo reúne todo en tres niveles:
+  1. **REI System y SmartConnect, a lo grande.** Son lo que más diferencia a Orto Alresa, y cada uno va con su
+     foto real del catálogo. El REI explica en 3 pasos cómo se pone y se quita el rotor y enlaza al vídeo
+     oficial. SmartConnect cuenta en 4 puntos lo que ve el laboratorio y el servicio técnico.
+  2. **Pantalla táctil, PCBS y ULS, en tres tarjetas.** Cada una lleva una imagen o un esquema, una frase y
+     una cifra: 100 memorias, 175 rampas de frenado y el nº del vaso en pantalla.
+  3. **"Y además, según el modelo":** reconocimiento del rotor, tapa segura, de −20 a 80 °C y menos de 60 dB.
+- **Cada sistema dice qué modelos lo llevan**, y cada nombre enlaza con su tarjeta de la gama.
+
+### 6.2 Por qué es mejor
+
+- Un distribuidor entiende en segundos qué hace cada sistema y en qué equipos está, sin buscar en tres páginas
+  ni en una FAQ.
+- Se explica con palabras de uso ("se levanta el tirador rojo", "dice qué vaso lo ha causado"), no con siglas.
+- Las fotos son reales del catálogo. PCBS y ULS no se ven en una foto, así que llevan un esquema dibujado con
+  el mismo estilo de plano que la portada (retícula y rojo de marca): una curva de velocidad con frenado brusco
+  y progresivo, y un rotor visto desde arriba con el vaso señalado.
+- La sección es oscura, como la franja de filtros de la gama y el recuadro de la portada, para que la web se
+  vea como un conjunto y la sección destaque entre las blancas.
+
+### 6.3 Movimiento y efectos
+
+- Cada bloque entra suave la primera vez que se ve. Los pasos del REI aparecen uno detrás de otro.
+- En el esquema del PCBS la curva se dibuja sola y el frenado progresivo, en rojo, llega el último. En el del
+  ULS el vaso con desequilibrio late dos veces y aparece el aviso.
+- Al pasar el ratón, las fotos se acercan un poco y las tarjetas suben con una raya roja arriba, como la barra
+  del filtro de la gama. "Ver el vídeo" y los nombres de modelo se subrayan en rojo, como "Ver en la gama" en
+  la portada.
+- **Por qué:** guían la vista hacia lo importante y hacen que la sección se sienta cuidada, sin distraer. Si
+  el sistema pide menos movimiento, no hay animaciones y todo se ve desde el principio.
+
+### 6.4 Descartados
+
+- **Pestañas** (como el filtro de la gama): ocupaban poco, pero lo que no se pulsa no se ve, y aquí interesa
+  que se vea todo.
+- **Recorrido al bajar** (imagen fija que cambia): muy vistoso, pero ocupaba unas cinco pantallas de alto en la
+  portada.
+- **GRS en la portada:** solo lo lleva la serie Digtor 22 C, como opción. Irá en la página de Tecnología a
+  fondo y en su ficha.
+
+### 6.5 Lo que viene después
+
+Esta sección es el escaparate. Lo que en la web antigua se usaba, y no solo se leía, tendrá su página:
+
+- **Tecnología a fondo:** el vídeo del REI dentro de la página, el paso a paso con fotos, el acceso a
+  SmartConnect, los PDF, el GRS y las preguntas frecuentes.
+- **Elegir centrífuga:** el configurador por pasos, la guía de tubos y la tabla comparativa.
+
+---
+
+## 7. Secciones que faltan por revisar
 
 Las siguientes piezas de la portada existen como prototipo y se revisarán una a una, en este orden:
-Tecnología, Distribuidores, Empresa y el pie. Cada una se añadirá aquí cuando esté aprobada.
+Distribuidores, Empresa y el pie. Cada una se añadirá aquí cuando esté aprobada.
