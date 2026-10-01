@@ -28,7 +28,7 @@ Hasta que se publique la web, todo va en "Sin publicar"; al publicar se cierra l
 
 ### Cambiado
 
-- Portada nueva, como un cartel: "centrifugación" a todo el ancho y, delante, cinco centrífugas reales de la gama (Digicen 22, Dilitcen 22 R, Digtor 22 C, Cyto 22 y Plasma 22) que se turnan solas, a escala entre sí y con sus cifras del catálogo. Se puede elegir cuál ver, también deslizando el dedo en el móvil. Fondo gris claro de borde a borde, sin recuadro oscuro ni retícula. Fotos recortadas con fondo transparente en `public/img/productos/hero-*.webp`.
+- Portada nueva: una foto real de laboratorio a pantalla completa con el titular, la frase, los dos botones y las cuatro razones (48 h, 1 semana, 3 años, ISO 13485) encima, sin cajas. Fuera el recuadro oscuro con retícula, la Digicen recortada y las notas técnicas.
 - Distribuidores: fuera los cuadrados sobre la línea y las tarjetas. Ahora una ruta en onda, como un tubo que se llena de sangre con burbujas que lo recorren, se dibuja sobre un fondo
   de laboratorio oscuro con la silueta de un rotor girando despacio, y en cada parada un haz de luz proyecta un rotor que gira, con
   4, 6, 8 y 12 tubos. Hueco preparado para cambiarlos por los rotores reales en 3D.
