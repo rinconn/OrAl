@@ -250,8 +250,13 @@ Ponerlos antes haría que todos los enlaces llevaran a la portada.
   - Gris oscuro y no negro: el negro hacía demasiado contraste con el resto de la página.
   - A todo el ancho y con huecos iguales, no sobra barra vacía al final.
   - La raya roja es el rojo de la marca, usado en lo único que hay que ver: qué está elegido.
-- **Al bajar, el filtro se queda pegado** justo debajo del menú, y sube cuando el menú se aparta. Si se
-  cambia de pestaña con el filtro pegado, la página vuelve al principio de las fichas.
+- **El filtro se queda en su sitio**, encima de las fichas, y no baja con la página.
+  - Antes iba pegado debajo del menú al bajar, pero flotaba sobre las fotos y cortaba las fichas por la
+    mitad: quedaba feo y tapaba justo el producto.
+  - El filtro se usa al llegar a la gama, no a mitad de ella, y la lista es corta (seis fichas, o las de una
+    familia), así que volver a él cuesta poco.
+  - Descartado: dejarlo pegado con una banda a todo el ancho. Tapa menos, pero sigue quitando sitio a las
+    fotos en el móvil.
 - **Descartados:**
   - **Filtro por temperatura:** casi todas son ventiladas; la temperatura va en cada ficha.
   - **Las ocho familias del catálogo:** filtro largo y pestañas con una sola serie.
