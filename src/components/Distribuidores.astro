@@ -38,15 +38,15 @@ const pasos = [
   },
 ];
 
-// La ruta, en tramos rectos y diagonales como un plano de metro (lienzo de 1200 x 640: el ancho se estira, el alto es fijo en píxeles) y el punto exacto de cada parada sobre ella.
+// La ruta en zigzag: una recta de parada a parada, sin curvas (lienzo de 1200 x 685: el ancho se estira, el alto es fijo en píxeles) y el punto exacto de cada parada sobre ella.
 // Las paradas están al 16, 39, 63 y 84 % del recorrido; la línea se dibuja a ritmo constante,
 // así que cada rotor sale justo cuando la línea llega a él.
-const ruta = 'M0,300 H330 L375,345 H610 L655,300 H880 L925,345 H1200';
+const ruta = 'M0,305 L196.7,305 L470.9,385 L757.6,305 L1006.3,385 H1200';
 const paradas = [
-  { x: 196.7, y: 300, t: 0.157 },
-  { x: 470.9, y: 345, t: 0.39 },
-  { x: 757.6, y: 300, t: 0.633 },
-  { x: 1006.3, y: 345, t: 0.846 },
+  { x: 196.7, y: 305, t: 0.159 },
+  { x: 470.9, y: 385, t: 0.391 },
+  { x: 757.6, y: 305, t: 0.632 },
+  { x: 1006.3, y: 385, t: 0.843 },
 ];
 const DIBUJO = 2.6; // segundos que tarda la línea
 
@@ -106,7 +106,7 @@ function silueta(n: number) {
     </div>
 
     <div class="ruta" style={`--dibujo:${DIBUJO}s`}>
-      <svg class="linea" viewBox="0 0 1200 640" preserveAspectRatio="none" aria-hidden="true">
+      <svg class="linea" viewBox="0 0 1200 685" preserveAspectRatio="none" aria-hidden="true">
         <path class="guia" d={ruta}></path>
         <path class="traz" d={ruta}></path>
       </svg>
@@ -301,14 +301,14 @@ function silueta(n: number) {
     max-width: 44ch;
   }
 
-  /* La ruta: 640 px de alto; en horizontal, rotores y textos colocados en porcentajes */
+  /* La ruta: 685 px de alto; en horizontal, rotores y textos colocados en porcentajes */
   .ruta {
     position: relative;
     margin-top: clamp(24px, 3vw, 40px);
   }
   @media (min-width: 901px) {
     .ruta {
-      height: 640px;
+      height: 685px;
     }
     li {
       display: contents;
@@ -333,7 +333,7 @@ function silueta(n: number) {
     }
     li:nth-child(2) .texto {
       left: 30%;
-      top: 455px;
+      top: 495px;
     }
     li:nth-child(3) .texto {
       left: 56%;
@@ -341,7 +341,7 @@ function silueta(n: number) {
     }
     li:nth-child(4) .texto {
       left: 77%;
-      top: 455px;
+      top: 495px;
     }
   }
   .linea {
