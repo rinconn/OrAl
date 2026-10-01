@@ -38,16 +38,15 @@ const pasos = [
   },
 ];
 
-// La ruta (lienzo de 1200 x 640: el ancho se estira, el alto es fijo en píxeles) y el punto exacto de cada parada sobre ella.
+// La ruta, en tramos rectos y diagonales como un plano de metro (lienzo de 1200 x 640: el ancho se estira, el alto es fijo en píxeles) y el punto exacto de cada parada sobre ella.
 // Las paradas están al 16, 39, 63 y 84 % del recorrido; la línea se dibuja a ritmo constante,
 // así que cada rotor sale justo cuando la línea llega a él.
-const ruta =
-  'M0,300 C120,300 150,300 190,300 C340,300 360,345 470,345 C580,345 600,300 760,300 C880,300 900,345 1010,345 C1100,345 1150,335 1200,325';
+const ruta = 'M0,300 H330 L375,345 H610 L655,300 H880 L925,345 H1200';
 const paradas = [
-  { x: 196.7, y: 300, t: 0.16 },
+  { x: 196.7, y: 300, t: 0.157 },
   { x: 470.9, y: 345, t: 0.39 },
-  { x: 757.6, y: 300, t: 0.63 },
-  { x: 1006.3, y: 345, t: 0.84 },
+  { x: 757.6, y: 300, t: 0.633 },
+  { x: 1006.3, y: 345, t: 0.846 },
 ];
 const DIBUJO = 2.6; // segundos que tarda la línea
 
@@ -356,6 +355,7 @@ function silueta(n: number) {
   .traz {
     fill: none;
     stroke-linecap: round;
+    stroke-linejoin: round;
   }
   .guia {
     stroke: rgba(255, 255, 255, 0.18);
@@ -530,8 +530,8 @@ function silueta(n: number) {
   }
   :global(.js) .traz {
     /* algo más que el largo de la ruta en el lienzo */
-    stroke-dasharray: 1250;
-    stroke-dashoffset: 1250;
+    stroke-dasharray: 1280;
+    stroke-dashoffset: 1280;
   }
   .ruta.vista .traz {
     animation: dibuja var(--dibujo) linear forwards;
