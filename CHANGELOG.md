@@ -28,7 +28,7 @@ Hasta que se publique la web, todo va en "Sin publicar"; al publicar se cierra l
 
 ### Cambiado
 
-- Distribuidores: fuera los cuadrados sobre la línea y las tarjetas. Ahora una ruta en tramos rectos y diagonales se dibuja sobre un fondo
+- Distribuidores: fuera los cuadrados sobre la línea y las tarjetas. Ahora una ruta en zigzag se dibuja sobre un fondo
   de laboratorio oscuro con la silueta de un rotor girando despacio, y en cada parada un haz de luz proyecta un rotor que gira, con
   4, 6, 8 y 12 tubos. Hueco preparado para cambiarlos por los rotores reales en 3D.
 - Portada: Distribuidores pasa detrás de Empresa para que las dos secciones oscuras no vayan seguidas.
