@@ -1,12 +1,16 @@
 ---
 // Las razones para el distribuidor, contadas como el recorrido de un pedido.
 // Fuentes: catálogo 2025 ("¿Qué nos diferencia?", garantía, OEM) y web actual (plazo de entrega).
+// Cada parada proyecta un rotor; cada rotor lleva más tubos que el anterior, como el pedido que avanza.
+// Hueco preparado: cuando la empresa pase los CAD, el dibujo de cada rotor se cambia por su modelo real
+// (ver docs/pendiente-empresa.md) sin tocar la ruta ni los textos.
 const pasos = [
   {
     cuando: 'Haces el pedido',
     cifra: 'Stock',
     titulo: 'Siempre disponible',
     texto: 'Stock continuo de toda la gama.',
+    tubos: 4,
   },
   {
     cuando: 'Llega a tu almacén en',
@@ -14,6 +18,7 @@ const pasos = [
     unidad: 'semana',
     titulo: 'Entrega rápida',
     texto: 'Plazo medio de entrega, gracias al stock continuo.',
+    tubos: 6,
   },
   {
     cuando: 'Si tienes una duda, respuesta en',
@@ -21,6 +26,7 @@ const pasos = [
     unidad: 'h',
     titulo: 'Asesoramiento',
     texto: 'Puesta en marcha, incidencias, reparaciones y formación técnica online.',
+    tubos: 8,
   },
   {
     cuando: 'Tu cliente, cubierto durante',
@@ -28,11 +34,63 @@ const pasos = [
     unidad: 'años',
     titulo: 'Garantía sin sorpresas',
     texto: 'En todas las centrífugas nuevas, salvo la Minicen (14 meses).',
+    tubos: 12,
   },
 ];
+
+// La ruta (lienzo de 1200 x 640: el ancho se estira, el alto es fijo en píxeles) y el punto exacto de cada parada sobre ella.
+// Las paradas están al 16, 39, 63 y 84 % del recorrido; la línea se dibuja a ritmo constante,
+// así que cada rotor sale justo cuando la línea llega a él.
+const ruta =
+  'M0,300 C120,300 150,300 190,300 C340,300 360,345 470,345 C580,345 600,300 760,300 C880,300 900,345 1010,345 C1100,345 1150,335 1200,325';
+const paradas = [
+  { x: 196.7, y: 300, t: 0.16 },
+  { x: 470.9, y: 345, t: 0.39 },
+  { x: 757.6, y: 300, t: 0.63 },
+  { x: 1006.3, y: 345, t: 0.84 },
+];
+const DIBUJO = 2.6; // segundos que tarda la línea
+
+// Rotor visto desde arriba: aro, radios, tubos y eje rojo.
+function rotor(n: number) {
+  const r = n > 8 ? 6 : 8;
+  const d = n > 8 ? 31 : 29;
+  let s =
+    '<circle cx="50" cy="50" r="48" fill="rgba(255,255,255,.04)" stroke="rgba(255,255,255,.85)" stroke-width="1.6"/>' +
+    '<circle cx="50" cy="50" r="41" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="1"/>';
+  for (let i = 0; i < n; i++) {
+    const a = (i / n) * 2 * Math.PI;
+    const c = Math.cos(a);
+    const sn = Math.sin(a);
+    s +=
+      `<line x1="50" y1="50" x2="${(50 + 40 * c).toFixed(1)}" y2="${(50 + 40 * sn).toFixed(1)}" stroke="rgba(255,255,255,.18)"/>` +
+      `<circle cx="${(50 + d * c).toFixed(1)}" cy="${(50 + d * sn).toFixed(1)}" r="${r}" fill="rgba(21,24,27,.6)" stroke="#fff" stroke-width="1.4"/>`;
+  }
+  return s + '<circle cx="50" cy="50" r="11" fill="#dd040a"/><circle cx="50" cy="50" r="4" fill="#fff"/>';
+}
+
+// Siluetas de rotor del fondo: una grande a la derecha (12 tubos) y otra menor a la izquierda (6 tubos)
+// que gira al revés. Aro, eje y uno de cada tres tubos en rojo.
+function silueta(n: number) {
+  let s =
+    '<circle class="aro" cx="50" cy="50" r="49"/><circle cx="50" cy="50" r="45"/>' +
+    '<circle class="eje" cx="50" cy="50" r="9"/><circle cx="50" cy="50" r="4"/>';
+  for (let i = 0; i < n; i++) {
+    const a = (i / n) * 2 * Math.PI;
+    const c = Math.cos(a);
+    const sn = Math.sin(a);
+    s +=
+      `<circle${i % 3 ? '' : ' class="tubo"'} cx="${(50 + 32 * c).toFixed(2)}" cy="${(50 + 32 * sn).toFixed(2)}" r="${n > 8 ? 6.5 : 8}"/>` +
+      `<line x1="${(50 + 11 * c).toFixed(2)}" y1="${(50 + 11 * sn).toFixed(2)}" x2="${(50 + 24 * c).toFixed(2)}" y2="${(50 + 24 * sn).toFixed(2)}"/>`;
+  }
+  return s;
+}
 ---
 
 <section class="sec dist" id="distribuidores">
+  <div class="fondo" aria-hidden="true"></div>
+  <svg class="silueta dcha" viewBox="0 0 100 100" aria-hidden="true" set:html={silueta(12)} />
+  <svg class="silueta izq" viewBox="0 0 100 100" aria-hidden="true" set:html={silueta(6)} />
   <div class="wrap">
     <div class="cab ap">
       <h2>
@@ -48,21 +106,47 @@ const pasos = [
       </div>
     </div>
 
-    <ol class="ruta ap">
-      {pasos.map((p) => (
-        <li>
-          <div class="tarjeta">
-            <span class="cuando">{p.cuando}</span>
-            <strong>
-              {p.cifra}
-              {p.unidad && <small>{p.unidad}</small>}
-            </strong>
-            <h3>{p.titulo}</h3>
-            <p>{p.texto}</p>
-          </div>
-        </li>
-      ))}
-    </ol>
+    <div class="ruta" style={`--dibujo:${DIBUJO}s`}>
+      <svg class="linea" viewBox="0 0 1200 640" preserveAspectRatio="none" aria-hidden="true">
+        <path class="pared" d={ruta}></path>
+        <path class="hueco" d={ruta}></path>
+        <path class="traz" d={ruta}></path>
+        <path class="pompa" d={ruta}></path>
+        <path class="pompa chica" d={ruta}></path>
+      </svg>
+      <ol>
+        {pasos.map((p, i) => {
+          const q = paradas[i];
+          const t = (DIBUJO * q.t - 0.1).toFixed(2);
+          return (
+            <li
+              class={i % 2 ? 'abajo' : 'arriba'}
+              style={`--x:${((q.x / 1200) * 100).toFixed(2)}%;--y:${q.y}px;--t:${t}s;--w:${84 + i * 8}px;--i:${i}`}
+            >
+              <div class="rotor" aria-hidden="true" data-tubos={p.tubos}>
+                <div class="haz" />
+                <div class="suelo" />
+                <div class="escena">
+                  <div class="plato">
+                    <svg class="bajo" viewBox="0 0 100 100" set:html={rotor(p.tubos)} />
+                    <svg viewBox="0 0 100 100" set:html={rotor(p.tubos)} />
+                  </div>
+                </div>
+              </div>
+              <div class="texto">
+                <span class="cuando">{p.cuando}</span>
+                <strong>
+                  {p.cifra}
+                  {p.unidad && <small>{p.unidad}</small>}
+                </strong>
+                <h3>{p.titulo}</h3>
+                <p>{p.texto}</p>
+              </div>
+            </li>
+          );
+        })}
+      </ol>
+    </div>
 
     <div class="pie ap">
       <div>
@@ -78,17 +162,18 @@ const pasos = [
 
     <p class="why">
       <b>Antes:</b> no había nada para distribuidores y el formulario ponía "Cliente final" primero.
-      <b>Ahora:</b> una sección que habla al cliente real, con las razones contadas como el recorrido de su pedido y un
-      solo botón claro.
+      <b>Ahora:</b> una sección que habla al cliente real: el recorrido de su pedido se dibuja sobre un fondo de
+      laboratorio y cada parada proyecta un rotor, con un solo botón claro.
     </p>
   </div>
 </section>
 
 <script>
-  // Cada bloque entra suave la primera vez que se ve; la línea del recorrido se dibuja sola
-  const bloques = document.querySelectorAll('#distribuidores .ap');
-  if (bloques.length && 'IntersectionObserver' in window) {
+  const sec = document.getElementById('distribuidores');
+  if (sec && 'IntersectionObserver' in window) {
     document.documentElement.classList.add('js');
+
+    // Cada bloque entra la primera vez que se ve; la ruta se dibuja y proyecta sus rotores
     const obs = new IntersectionObserver(
       (entradas) => {
         for (const e of entradas) {
@@ -100,13 +185,100 @@ const pasos = [
       },
       { threshold: 0.2 },
     );
-    bloques.forEach((b) => obs.observe(b));
+    sec.querySelectorAll('.ap, .ruta').forEach((b) => obs.observe(b));
+    // Las siluetas del fondo solo giran mientras la sección se ve
+    new IntersectionObserver(([e]) => sec.classList.toggle('activa', e.isIntersecting)).observe(sec);
   }
 </script>
 
 <style>
+  /* Sección oscura: foto de laboratorio, dos siluetas de rotor girando despacio y el contenido delante */
   .dist {
-    background: var(--band);
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    background: #15181b;
+    color: #fff;
+  }
+  .fondo {
+    position: absolute;
+    inset: -20px;
+    z-index: -1;
+    background: url('/img/fotos/lab-235.webp') center / cover;
+    filter: blur(4px) grayscale(0.4) brightness(0.5);
+  }
+  .dist::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(120% 90% at 70% 45%, rgba(21, 24, 27, 0.35), rgba(21, 24, 27, 0.85));
+  }
+  .silueta {
+    position: absolute;
+    aspect-ratio: 1;
+    fill: none;
+    stroke: rgba(255, 255, 255, 0.12);
+    stroke-width: 0.14;
+    will-change: transform;
+    /* Giro muy lento y una respiración suave encima: se nota sin llamar la atención */
+    animation:
+      gira 360s linear infinite,
+      respira 16s ease-in-out infinite alternate;
+  }
+  .silueta :global(.aro),
+  .silueta :global(.tubo) {
+    stroke: rgba(221, 4, 10, 0.38);
+    stroke-width: 0.22;
+  }
+  .silueta :global(.eje) {
+    stroke: rgba(221, 4, 10, 0.5);
+  }
+  /* El rojo se aviva y se apaga muy despacio */
+  .silueta :global(.aro),
+  .silueta :global(.tubo),
+  .silueta :global(.eje) {
+    animation: late 9s ease-in-out infinite alternate;
+  }
+  @keyframes respira {
+    from {
+      scale: 1;
+    }
+    to {
+      scale: 1.04;
+    }
+  }
+  @keyframes late {
+    from {
+      stroke-opacity: 0.45;
+    }
+    to {
+      stroke-opacity: 1;
+    }
+  }
+  /* Solo gira mientras la sección está a la vista */
+  .dist:not(:global(.activa)) .silueta,
+  .dist:not(:global(.activa)) .silueta :global(*) {
+    animation-play-state: paused;
+  }
+  .dcha {
+    top: 50%;
+    right: -16%;
+    width: clamp(560px, 70vw, 1100px);
+    translate: 0 -50%;
+  }
+  .izq {
+    left: -9%;
+    bottom: -6%;
+    width: clamp(260px, 30vw, 460px);
+    animation-duration: 240s, 16s;
+    animation-direction: reverse, alternate;
+    animation-delay:
+      0s,
+      -8s;
+  }
+  .wrap {
+    position: relative;
+    z-index: 1;
   }
 
   /* Cabecera: título grande a la izquierda, entradilla a la derecha */
@@ -128,105 +300,189 @@ const pasos = [
   }
   .lead {
     margin: 0;
-    color: var(--body);
+    color: #c9ced2;
     font-size: var(--t-sub);
     max-width: 44ch;
   }
 
-  /* El recorrido: una línea con cuatro paradas */
+  /* La ruta: 640 px de alto; en horizontal, rotores y textos colocados en porcentajes */
   .ruta {
     position: relative;
-    list-style: none;
-    margin: clamp(56px, 7vw, 96px) 0 0;
-    padding: 0;
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 24px;
+    margin-top: clamp(24px, 3vw, 40px);
   }
-  .ruta::before,
-  .ruta::after {
-    content: '';
+  @media (min-width: 901px) {
+    .ruta {
+      height: 640px;
+    }
+    li {
+      display: contents;
+    }
+    .rotor {
+      position: absolute;
+      left: var(--x);
+      top: var(--y);
+      width: var(--w);
+      transform: translate(-50%, -100%);
+    }
+    .abajo .rotor {
+      transform: translate(-50%, 0);
+    }
+    .texto {
+      position: absolute;
+      width: 22%;
+    }
+    li:nth-child(1) .texto {
+      left: 3%;
+      top: 0;
+    }
+    li:nth-child(2) .texto {
+      left: 30%;
+      top: 455px;
+    }
+    li:nth-child(3) .texto {
+      left: 56%;
+      top: 0;
+    }
+    li:nth-child(4) .texto {
+      left: 77%;
+      top: 455px;
+    }
+  }
+  .linea {
     position: absolute;
-    left: 0;
-    right: 0;
-    top: 11px;
-    height: 2px;
-    background: var(--line);
-  }
-  .ruta::after {
-    background: var(--red);
-    transform-origin: left;
-  }
-  li {
-    position: relative;
-    padding-top: 48px;
-  }
-  li::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    z-index: 1;
-    width: 24px;
-    height: 24px;
-    background: #fff;
-    border: 2px solid var(--red);
-    transition: background 0.3s var(--ease);
-  }
-  li:hover::before {
-    background: var(--red);
-  }
-  /* Cada parada es una tarjeta: al pasar el ratón sube y le crece la raya roja, como en Tecnología */
-  .tarjeta {
-    position: relative;
+    inset: 0;
+    width: 100%;
     height: 100%;
-    padding: 26px 26px 30px;
-    background: #fff;
-    border: 2px solid #3b4045;
-    transition:
-      transform 0.35s var(--ease),
-      box-shadow 0.35s var(--ease);
+    overflow: visible;
   }
-  .tarjeta::before {
-    content: '';
+  .pared,
+  .hueco,
+  .traz,
+  .pompa {
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  /* La ruta es un tubo transparente y grueso (pared clara, interior oscuro) que se va llenando de sangre */
+  .pared {
+    stroke: rgba(255, 255, 255, 0.24);
+    stroke-width: 17;
+  }
+  .hueco {
+    stroke: rgba(12, 14, 16, 0.75);
+    stroke-width: 13;
+  }
+  .traz {
+    stroke: #8e0307;
+    stroke-width: 11;
+  }
+  /* Una vez lleno, unas burbujas de un rojo más vivo lo recorren despacio.
+     Son trazos de largo 0 con punta redonda: círculos perfectos aunque el lienzo se estire */
+  .pompa {
+    vector-effect: non-scaling-stroke;
+    stroke: #ff2b30;
+    stroke-width: 7;
+    stroke-dasharray: 0 64;
+    opacity: 0;
+    transition: opacity 1s var(--ease) var(--dibujo);
+    animation: circula 16s linear infinite;
+  }
+  .pompa.chica {
+    stroke: #ff6a6e;
+    stroke-width: 4;
+    stroke-dasharray: 0 80;
+    animation-duration: 22s;
+  }
+  .ruta.vista .pompa {
+    opacity: 1;
+  }
+  .dist:not(:global(.activa)) .pompa {
+    animation-play-state: paused;
+  }
+  @keyframes circula {
+    to {
+      stroke-dashoffset: -1280;
+    }
+  }
+  ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Rotor proyectado: haz de luz desde la línea, brillo en el suelo y el rotor girando en 3D */
+  .haz {
     position: absolute;
-    top: -2px;
-    left: -2px;
-    height: 4px;
-    width: 0;
-    background: var(--red);
-    transition: width 0.4s var(--ease);
+    left: 50%;
+    bottom: 0;
+    width: 70%;
+    height: 100%;
+    transform: translateX(-50%);
+    transform-origin: bottom;
+    background: linear-gradient(to top, rgba(221, 4, 10, 0.55), rgba(221, 4, 10, 0.12) 55%, transparent);
+    clip-path: polygon(44% 100%, 56% 100%, 100% 42%, 0 42%);
   }
-  li:hover .tarjeta {
-    transform: translateY(-4px);
-    box-shadow: 0 14px 30px -18px rgba(0, 0, 0, 0.35);
-  }
-  li:hover .tarjeta::before {
-    width: calc(100% + 4px);
-  }
-  /* Esquina gris oscuro, como una pestaña del catálogo; se pone roja al pasar el ratón */
-  .tarjeta::after {
-    content: '';
+  .suelo {
     position: absolute;
+    left: 50%;
+    bottom: -7px;
+    width: 44px;
+    height: 14px;
+    margin-left: -22px;
+    border-radius: 50%;
+    background: radial-gradient(rgba(255, 80, 80, 0.9), rgba(221, 4, 10, 0) 70%);
+  }
+  .escena {
+    position: relative;
+    aspect-ratio: 1;
+    margin-bottom: 20%;
+    perspective: 500px;
+  }
+  .plato {
+    position: absolute;
+    inset: 0;
+    transform-style: preserve-3d;
+    transform: rotateX(64deg);
+  }
+  .plato svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    animation: gira 7s linear infinite;
+  }
+  /* Una segunda capa más abajo y más tenue da el grosor del rotor */
+  .plato .bajo {
+    transform: translateZ(-9px);
+    opacity: 0.35;
+  }
+  .abajo .haz {
     top: 0;
-    right: 0;
-    width: 28px;
-    height: 28px;
-    background: #3b4045;
-    clip-path: polygon(0 0, 100% 0, 100% 100%);
-    transition: background 0.3s var(--ease);
+    bottom: auto;
+    transform-origin: top;
+    background: linear-gradient(to bottom, rgba(221, 4, 10, 0.55), rgba(221, 4, 10, 0.12) 55%, transparent);
+    clip-path: polygon(44% 0, 56% 0, 100% 58%, 0 58%);
   }
-  li:hover .tarjeta::after {
-    background: var(--red);
+  .abajo .suelo {
+    top: -7px;
+    bottom: auto;
   }
+  .abajo .escena {
+    margin: 20% 0 0;
+  }
+  li:hover .haz {
+    filter: brightness(1.35);
+  }
+
   .cuando {
     font-size: 15px;
-    color: var(--muted);
+    color: #b9bfc4;
   }
   strong {
     display: block;
     margin-top: 4px;
-    font-size: clamp(48px, 5vw, 76px);
+    font-size: clamp(40px, 4vw, 60px);
     line-height: 0.95;
     letter-spacing: -0.02em;
   }
@@ -236,25 +492,25 @@ const pasos = [
     font-weight: 300;
     letter-spacing: 0;
   }
-  li h3 {
-    margin: 14px 0 6px;
-    font-size: 20px;
+  .texto h3 {
+    margin: 10px 0 4px;
+    font-size: 18px;
   }
-  li p {
+  .texto p {
     margin: 0;
-    color: var(--body);
+    color: #d6dadd;
     max-width: 28ch;
   }
 
-  /* Remate oscuro: OEM y el botón */
+  /* Remate: OEM y el botón, en un panel gris translúcido sobre el fondo */
   .pie {
-    margin-top: clamp(56px, 7vw, 88px);
+    margin-top: clamp(40px, 5vw, 72px);
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
     gap: 32px;
     align-items: center;
     padding: clamp(28px, 4vw, 48px);
-    background: #3b4045;
+    background: rgba(59, 64, 69, 0.72);
     color: #fff;
   }
   .pie h3 {
@@ -283,7 +539,7 @@ const pasos = [
     margin-top: 18px;
     padding-bottom: 2px;
     font-weight: 700;
-    color: var(--ink);
+    color: #fff;
     text-decoration: none;
     background: linear-gradient(var(--red), var(--red)) 0 100% / 0 2px no-repeat;
     transition: background-size 0.3s var(--ease);
@@ -302,74 +558,151 @@ const pasos = [
   }
 
   /* Movimiento: todo visible sin JS; con JS entra al verse */
-  :global(.js) #distribuidores .ap:not(.vista) {
-    opacity: 0;
-    transform: translateY(24px);
-  }
   .ap {
     transition:
       opacity 0.7s var(--ease),
       transform 0.7s var(--ease);
   }
-  /* La ruta en sí no se desplaza: entran sus paradas una tras otra y la línea se dibuja */
-  :global(.js) #distribuidores .ruta.ap:not(.vista) {
-    opacity: 1;
-    transform: none;
-  }
-  :global(.js) .ruta::after {
-    transform: scaleX(0);
-    transition: transform 1.8s var(--ease) 0.3s;
-  }
-  :global(.js) .ruta.vista::after {
-    transform: scaleX(1);
-  }
-  :global(.js) .ruta li {
-    transition:
-      opacity 0.7s var(--ease),
-      transform 0.7s var(--ease);
-  }
-  :global(.js) .ruta:not(.vista) li {
+  :global(.js) #distribuidores .ap:not(.vista) {
     opacity: 0;
     transform: translateY(24px);
   }
-  .ruta.vista li:nth-child(2) {
-    transition-delay: 0.5s;
+  :global(.js) .traz {
+    /* algo más que el largo de la ruta en el lienzo */
+    stroke-dasharray: 1250;
+    stroke-dashoffset: 1250;
   }
-  .ruta.vista li:nth-child(3) {
-    transition-delay: 1s;
+  .ruta.vista .traz {
+    animation: dibuja var(--dibujo) linear forwards;
   }
-  .ruta.vista li:nth-child(4) {
-    transition-delay: 1.5s;
+  :global(.js) .ruta:not(.vista) :is(.haz, .suelo, .escena, .texto) {
+    opacity: 0;
+  }
+  .ruta.vista .haz {
+    animation: haz 0.5s var(--ease) both var(--t);
+  }
+  .ruta.vista .suelo {
+    animation: brota 0.45s cubic-bezier(0.3, 1.6, 0.5, 1) both var(--t);
+  }
+  .ruta.vista .escena {
+    animation:
+      proyecta 0.9s steps(1, end) both calc(var(--t) + 0.25s),
+      sube 0.8s var(--ease) both calc(var(--t) + 0.25s);
+  }
+  .ruta.vista .abajo .escena {
+    animation-name: proyecta, baja;
+  }
+  .ruta.vista .texto {
+    animation: entra 0.6s var(--ease) both calc(var(--t) + 0.5s);
+  }
+  @keyframes dibuja {
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+  @keyframes gira {
+    to {
+      rotate: 360deg;
+    }
+  }
+  @keyframes haz {
+    from {
+      opacity: 0;
+      scale: 1 0;
+    }
+  }
+  @keyframes brota {
+    from {
+      scale: 0;
+    }
+  }
+  /* Parpadeo de proyector al encenderse */
+  @keyframes proyecta {
+    0% {
+      opacity: 0;
+    }
+    15% {
+      opacity: 0.6;
+    }
+    25% {
+      opacity: 0.1;
+    }
+    40% {
+      opacity: 0.8;
+    }
+    50% {
+      opacity: 0.3;
+    }
+    65%,
+    100% {
+      opacity: 1;
+    }
+  }
+  @keyframes sube {
+    from {
+      translate: 0 30px;
+      scale: 0.7;
+    }
+  }
+  @keyframes baja {
+    from {
+      translate: 0 -30px;
+      scale: 0.7;
+    }
+  }
+  @keyframes entra {
+    from {
+      opacity: 0;
+      translate: 0 14px;
+    }
   }
 
+  /* Móvil y tableta: la ruta se apila; cada rotor a la izquierda de su texto */
   @media (max-width: 900px) {
+    .izq {
+      display: none;
+    }
     .cab {
       grid-template-columns: 1fr;
     }
-    .ruta {
-      grid-template-columns: 1fr;
-      gap: 0;
+    .linea {
+      display: none;
     }
-    .ruta::before,
-    .ruta::after {
-      left: 11px;
-      right: auto;
-      top: 0;
-      bottom: 40px;
-      width: 2px;
-      height: auto;
-    }
-    .ruta::after {
-      transform-origin: top;
-    }
-    :global(.js) .ruta::after {
-      transform: scaleY(0);
-    }
-    :global(.js) .ruta.vista::after {
-      transform: scaleY(1);
+    ol {
+      display: grid;
+      gap: 32px;
     }
     li {
-      padding: 0 0 40px 52px;
+      display: grid;
+      grid-template-columns: 96px 1fr;
+      gap: 18px;
+      align-items: center;
+    }
+    .rotor {
+      position: relative;
+    }
+    .ruta.vista li .haz,
+    .ruta.vista li .suelo,
+    .ruta.vista li .escena,
+    .ruta.vista li .texto {
+      animation-delay: calc(var(--i, 0) * 0.35s);
+    }
+    .abajo .haz {
+      top: auto;
+      bottom: 0;
+      transform-origin: bottom;
+      background: linear-gradient(to top, rgba(221, 4, 10, 0.55), rgba(221, 4, 10, 0.12) 55%, transparent);
+      clip-path: polygon(44% 100%, 56% 100%, 100% 42%, 0 42%);
+    }
+    .abajo .suelo {
+      top: auto;
+      bottom: -7px;
+    }
+    .abajo .escena {
+      margin: 0 0 20%;
+    }
+    .ruta.vista .abajo .escena {
+      animation-name: proyecta, sube;
     }
     .pie {
       grid-template-columns: 1fr;
