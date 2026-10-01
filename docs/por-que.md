@@ -431,7 +431,7 @@ entrega).
   despacio. Después entra su texto.
 - Las paradas de arriba proyectan el rotor hacia arriba y las de abajo hacia abajo, colgando de la línea, para
   que cada rotor quede junto a su texto.
-- Detrás, la silueta enorme de un rotor de 12 tubos gira muy despacio (una vuelta cada cuatro minutos), con el aro y
+- Detrás, la silueta enorme de un rotor de 12 tubos gira muy despacio (una vuelta cada seis minutos), con el aro y
   algunos tubos en rojo tenue; abajo a la izquierda, otra menor de 6 tubos gira al revés. Solo giran mientras la
   sección se ve.
 - En el móvil la ruta se apila: cada rotor a la izquierda de su texto, uno detrás de otro.
@@ -482,6 +482,10 @@ Hasta entonces, los dos enlaces llevan al contacto del pie.
 - **Hueco preparado:** cuando la empresa pase los archivos CAD de los rotores, cada dibujo se cambia por su modelo
   real en 3D (unos 200-400 KB cada uno, cargado solo al llegar a la sección) sin tocar la ruta ni los textos.
   También se cambiará la foto de fondo por una buena del laboratorio. Ver `docs/pendiente-empresa.md`.
+- **Orden de la portada:** Distribuidores pasa a ir después de Empresa. Así las dos secciones oscuras (Tecnología y
+  Distribuidores) no van seguidas y la portada alterna claro y oscuro.
+- **Movimiento del fondo:** las siluetas giran muy despacio (una vuelta cada seis minutos la grande), crecen y
+  menguan un poco y su rojo se aviva y se apaga, todo con transiciones suaves.
 - **Efecto al pasar el ratón:** ya no hay tarjetas, así que no se usa el efecto común de las tarjetas. Al pasar
   por una parada, su haz de luz se aviva.
 
