@@ -52,10 +52,8 @@ interface Props {
 export default function GamaFiltro({ productos }: Props) {
   const [pestana, setPestana] = useState<Pestana>('todas');
   const [abierta, setAbierta] = useState(false);
-  const fija = useRef<HTMLDivElement>(null);
   const tabs = useRef<HTMLDivElement>(null);
   const barra = useRef<HTMLSpanElement>(null);
-  const rejilla = useRef<HTMLDivElement>(null);
 
   const deLaPestana = productos.filter((p) => pestana === 'todas' || p.familia === pestana);
   const visibles = pestana === 'todas' && !abierta ? deLaPestana.slice(0, INICIALES) : deLaPestana;
@@ -74,17 +72,6 @@ export default function GamaFiltro({ productos }: Props) {
     return () => window.removeEventListener('resize', colocar);
   }, [pestana]);
 
-  // Sombra bajo los filtros cuando se quedan pegados arriba
-  useEffect(() => {
-    const el = fija.current;
-    if (!el) return;
-    const mirar = () =>
-      el.classList.toggle('pegada', el.getBoundingClientRect().top <= parseFloat(getComputedStyle(el).top) + 1);
-    mirar();
-    window.addEventListener('scroll', mirar, { passive: true });
-    return () => window.removeEventListener('scroll', mirar);
-  }, []);
-
   // Un enlace a /#serie (desde la lupa, por ejemplo) abre la gama entera y lleva a esa ficha
   useEffect(() => {
     const irA = () => {
@@ -102,18 +89,11 @@ export default function GamaFiltro({ productos }: Props) {
   const elegir = (clave: Pestana, boton: HTMLButtonElement) => {
     setPestana(clave);
     tabs.current?.scrollTo({ left: boton.offsetLeft - 40, behavior: 'smooth' });
-    // Si los filtros ya van pegados arriba, se vuelve al principio de las fichas
-    const el = fija.current;
-    if (el?.classList.contains('pegada') && rejilla.current) {
-      const arriba =
-        rejilla.current.getBoundingClientRect().top + window.scrollY - el.getBoundingClientRect().bottom - 24;
-      window.scrollTo({ top: arriba, behavior: 'smooth' });
-    }
   };
 
   return (
     <>
-      <div className="fija" ref={fija}>
+      <div className="filtros">
         <div className="tabs" ref={tabs} role="group" aria-label="Filtrar la gama por uso">
           {pestanas.map(({ clave, nombre }) => (
             <button
@@ -133,7 +113,6 @@ export default function GamaFiltro({ productos }: Props) {
 
       <div
         className={deLaPestana.length === 4 && pestana !== 'todas' ? 'rejilla cuatro' : 'rejilla'}
-        ref={rejilla}
         key={pestana}
         aria-live="polite"
       >
