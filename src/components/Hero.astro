@@ -56,6 +56,15 @@ const equipo = { nombre: 'Digicen 22', datos: ['16.500 rpm', '26.480 × g'] };
           <span>{d}</span>
         ))}
       </a>
+      <figure class="fabrica">
+        <img
+          src="/img/empresa/fabrica-daganzo.webp"
+          alt="Fábrica de Orto Alresa en Daganzo (Madrid)"
+          width="900"
+          height="600"
+        />
+        <figcaption>Fabricadas en Daganzo, Madrid</figcaption>
+      </figure>
     </div>
 
     <p class="why">
@@ -200,14 +209,30 @@ const equipo = { nombre: 'Digicen 22', datos: ['16.500 rpm', '26.480 × g'] };
   }
 
   /* Un solo dato de la máquina, pequeño, junto a su pie */
-  /* Junto al pie de la máquina, su dato */
+  /* Junto al pie de la máquina: su dato y, debajo, la fábrica donde se hace, en pequeño y
+     pisando la máquina por delante */
   .sello {
     position: absolute;
-    left: calc(50% - 40px);
+    left: calc(50% - 150px);
     bottom: clamp(32px, 6vh, 64px);
     display: flex;
     flex-direction: column;
     gap: 22px;
+  }
+  .fabrica {
+    margin: 0;
+    width: clamp(180px, 16vw, 260px);
+  }
+  .fabrica img {
+    display: block;
+    width: 100%;
+    height: auto;
+    box-shadow: 0 18px 40px -20px rgba(0, 0, 0, 0.45);
+  }
+  .fabrica figcaption {
+    margin-top: 8px;
+    font-size: 13px;
+    color: var(--muted);
   }
   .dato {
     display: flex;
@@ -246,12 +271,18 @@ const equipo = { nombre: 'Digicen 22', datos: ['16.500 rpm', '26.480 × g'] };
   }
 
   /* Portátiles estrechos: la máquina algo más a la derecha para que no choque con el titular,
-     y su dato fuera (no cabe sin pisarla) */
+     y su dato fuera (no cabe sin pisarla); la fábrica se queda */
   @media (min-width: 1025px) and (max-width: 1279px) {
     .maquina {
       right: -12vw;
     }
     .sello {
+      left: calc(50% - 30px);
+    }
+    .fabrica {
+      width: 170px;
+    }
+    .dato {
       display: none;
     }
   }
@@ -296,6 +327,10 @@ const equipo = { nombre: 'Digicen 22', datos: ['16.500 rpm', '26.480 × g'] };
       order: 2;
       position: static;
       padding-block: 8px 32px;
+    }
+    .fabrica {
+      margin-top: 20px;
+      width: min(100%, 360px);
     }
     .dato {
       flex-direction: row;
