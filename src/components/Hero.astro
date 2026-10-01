@@ -1,21 +1,23 @@
 ---
-// Portada: una foto real de laboratorio a pantalla completa, con el titular, quiénes sois, los dos caminos
-// (producto y distribuidor) y las cuatro razones para fiarse encima. La foto es de la propia empresa (lab-114).
+// Portada: el rotor RT 286 de cerca a pantalla completa, con el titular, quiénes sois, los dos caminos
+// (producto y distribuidor) y las cuatro razones para fiarse encima. Al cargar, la foto gira y frena como un rotor;
+// después sigue al ratón con un brillo suave.
 import { cifras } from '../data/cifras';
 ---
 
-<section class="hero">
-  <img
-    class="foto"
-    src="/img/fotos/portada-laboratorio.webp"
-    srcset="/img/fotos/portada-laboratorio-1200.webp 1200w, /img/fotos/portada-laboratorio.webp 2400w"
-    sizes="100vw"
-    alt=""
-    width="2400"
-    height="1600"
-    fetchpriority="high"
-    decoding="async"
-  />
+<section class="hero" data-hero>
+  <div class="fondo" aria-hidden="true">
+    <img
+      class="foto"
+      src="/img/fotos/portada-rotor.webp"
+      alt=""
+      width="1372"
+      height="616"
+      fetchpriority="high"
+      decoding="async"
+    />
+    <span class="brillo"></span>
+  </div>
 
   <div class="wrap contenido">
     <div class="texto">
@@ -56,33 +58,94 @@ import { cifras } from '../data/cifras';
   </div>
 </section>
 
+<script>
+  // El fondo sigue al ratón: la foto se desplaza unos píxeles y un brillo suave va donde está el puntero.
+  // Se suaviza en cada fotograma para que nunca dé saltos. Solo con ratón y si no se pide menos movimiento.
+  const hero = document.querySelector<HTMLElement>('[data-hero]');
+  if (hero && matchMedia('(hover: hover) and (prefers-reduced-motion: no-preference)').matches) {
+    let x = 0.5;
+    let y = 0.5;
+    let tx = 0.5;
+    let ty = 0.5;
+    let raf = 0;
+    const paso = () => {
+      x += (tx - x) * 0.08;
+      y += (ty - y) * 0.08;
+      hero.style.setProperty('--mx', x.toFixed(4));
+      hero.style.setProperty('--my', y.toFixed(4));
+      raf = Math.abs(tx - x) + Math.abs(ty - y) > 0.0005 ? requestAnimationFrame(paso) : 0;
+    };
+    hero.addEventListener('pointermove', (e) => {
+      const r = hero.getBoundingClientRect();
+      tx = (e.clientX - r.left) / r.width;
+      ty = (e.clientY - r.top) / r.height;
+      hero.classList.add('vivo');
+      if (!raf) raf = requestAnimationFrame(paso);
+    });
+    hero.addEventListener('pointerleave', () => {
+      tx = 0.5;
+      ty = 0.5;
+      hero.classList.remove('vivo');
+      if (!raf) raf = requestAnimationFrame(paso);
+    });
+  }
+</script>
+
 <style>
   .hero {
+    --mx: 0.5;
+    --my: 0.5;
     position: relative;
     overflow: hidden;
-    background: #1d2124;
+    background: #111315;
     color: #fff;
     isolation: isolate;
   }
-  /* La foto ocupa toda la portada; la mano y la máquina quedan a la derecha, el texto sobre la zona desenfocada */
-  .foto {
+
+  /* Fondo: la foto del rotor, con el buje un poco a la derecha del centro y el texto sobre los tubos de la izquierda */
+  .fondo {
     position: absolute;
     inset: 0;
     z-index: -2;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: 70% 50%;
+    overflow: hidden;
   }
-  /* Velo oscuro solo donde va el texto, para que se lea; la parte de la mano queda casi limpia */
+  .foto {
+    position: absolute;
+    inset: -24px;
+    width: calc(100% + 48px);
+    height: calc(100% + 48px);
+    max-width: none;
+    object-fit: cover;
+    object-position: 0% 45%;
+    /* Sigue al ratón, como mucho 24 px a cada lado */
+    translate: calc((0.5 - var(--mx)) * 48px) calc((0.5 - var(--my)) * 32px);
+    transform-origin: 56% 45%;
+  }
+  /* Brillo que sigue al puntero: ilumina el metal y los tapones rojos al pasar */
+  .brillo {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+      560px circle at calc(var(--mx) * 100%) calc(var(--my) * 100%),
+      rgba(255, 255, 255, 0.16),
+      transparent 70%
+    );
+    mix-blend-mode: soft-light;
+    opacity: 0;
+    transition: opacity 0.6s ease;
+  }
+  .hero.vivo .brillo {
+    opacity: 1;
+  }
+  /* Velo oscuro donde va el texto, para que se lea; el buje y la derecha quedan limpios */
   .hero::before {
     content: '';
     position: absolute;
     inset: 0;
     z-index: -1;
     background:
-      linear-gradient(90deg, rgba(14, 16, 18, 0.82) 0%, rgba(14, 16, 18, 0.62) 42%, rgba(14, 16, 18, 0.12) 78%),
-      linear-gradient(0deg, rgba(14, 16, 18, 0.6) 0%, rgba(14, 16, 18, 0) 32%);
+      linear-gradient(90deg, rgba(10, 11, 12, 0.88) 0%, rgba(10, 11, 12, 0.66) 38%, rgba(10, 11, 12, 0.08) 72%),
+      linear-gradient(0deg, rgba(10, 11, 12, 0.7) 0%, rgba(10, 11, 12, 0) 34%);
   }
 
   .contenido {
@@ -108,82 +171,177 @@ import { cifras } from '../data/cifras';
     margin-top: clamp(22px, 3vh, 32px);
     font-size: var(--t-sub);
     max-width: 36ch;
-    color: rgba(255, 255, 255, 0.86);
+    color: rgba(255, 255, 255, 0.84);
   }
+
+  /* Botones: al pasar el ratón cruza un destello y la » avanza; el blanco se rellena de izquierda a derecha */
   .ctas {
     margin-top: clamp(28px, 4vh, 40px);
     display: flex;
     flex-wrap: wrap;
     gap: 12px;
   }
+  .ctas .btn {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+    transition:
+      color 0.35s var(--ease),
+      border-color 0.35s var(--ease),
+      background-color 0.35s var(--ease),
+      transform 0.35s var(--ease),
+      box-shadow 0.35s var(--ease);
+  }
   .ctas .btn::after {
     content: '»';
-    transition: transform 0.25s var(--ease);
+    transition: transform 0.35s var(--ease);
+  }
+  .ctas .btn:hover {
+    transform: translateY(-2px);
   }
   .ctas .btn:hover::after {
-    transform: translateX(5px);
+    transform: translateX(6px);
+  }
+  .ctas .btn.red:hover {
+    box-shadow: 0 14px 32px -12px rgba(221, 4, 10, 0.7);
+  }
+  .ctas .btn.red::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: linear-gradient(105deg, transparent 30%, rgba(255, 255, 255, 0.35) 50%, transparent 70%);
+    translate: -110% 0;
+  }
+  .ctas .btn.red:hover::before {
+    translate: 110% 0;
+    transition: translate 0.7s var(--ease);
   }
   .ctas .btn.ghost {
     color: #fff;
-    border-color: rgba(255, 255, 255, 0.7);
+    border-color: rgba(255, 255, 255, 0.6);
+    background: transparent;
+  }
+  .ctas .btn.ghost::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: #fff;
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.4s var(--ease);
   }
   .ctas .btn.ghost:hover {
-    background: #fff;
-    border-color: #fff;
     color: var(--ink);
+    border-color: #fff;
+    background: transparent;
+  }
+  .ctas .btn.ghost:hover::before {
+    transform: scaleX(1);
   }
 
-  /* Las cuatro razones al pie, sobre una línea fina */
+  /* Las cuatro razones al pie, sobre una línea fina. Al pasar el ratón, la raya roja de la web crece sobre la que se
+     señala y la cifra sube un poco */
   .cifras {
     display: grid;
     grid-template-columns: repeat(4, auto);
     justify-content: start;
     margin: 48px 0 0;
-    padding: 24px 0 0;
+    padding: 0;
     list-style: none;
     border-top: 1px solid rgba(255, 255, 255, 0.22);
     font-size: 15px;
     line-height: 1.25;
-    color: rgba(255, 255, 255, 0.72);
+    color: rgba(255, 255, 255, 0.7);
   }
   .cifras li {
+    position: relative;
     display: flex;
     flex-direction: column;
-    padding: 0 clamp(20px, 3vw, 48px);
-    border-left: 1px solid rgba(255, 255, 255, 0.22);
+    padding: 24px clamp(20px, 3vw, 48px) 0;
+    transition: color 0.3s var(--ease);
   }
   .cifras li:first-child {
     padding-left: 0;
-    border-left: 0;
+  }
+  .cifras li + li::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 24px;
+    bottom: 0;
+    width: 1px;
+    background: rgba(255, 255, 255, 0.22);
+  }
+  .cifras li::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: 0;
+    height: 3px;
+    width: 0;
+    background: var(--red);
+    transition: width 0.45s var(--ease);
   }
   .cifras b {
     font-size: clamp(20px, 1.8vw, 28px);
     color: #fff;
     white-space: nowrap;
+    transition: transform 0.35s var(--ease);
+  }
+  .cifras li:hover {
+    color: #fff;
+  }
+  .cifras li:hover::before {
+    width: 100%;
+  }
+  .cifras li:hover b {
+    transform: translateY(-3px);
   }
 
-  /* Entrada al cargar: la foto se asienta despacio y el texto sube por partes */
+  /* Entrada: el rotor llega girando y frena hasta pararse, como al final de un ciclo; el texto se descubre línea a
+     línea desde abajo */
   @media (prefers-reduced-motion: no-preference) {
     .foto {
-      animation: asienta 2.2s var(--ease) both;
+      animation: frena 2.6s cubic-bezier(0.16, 0.84, 0.24, 1) both;
     }
     .texto > *,
     .cifras {
-      animation: sube 0.8s var(--ease) both;
+      animation: sube 0.9s var(--ease) both;
+    }
+    h1 {
+      animation-name: descubre;
     }
     .texto > :nth-child(2) {
-      animation-delay: 0.1s;
+      animation-delay: 0.25s;
     }
     .texto > :nth-child(3) {
-      animation-delay: 0.2s;
+      animation-delay: 0.38s;
     }
     .cifras {
-      animation-delay: 0.35s;
+      animation-delay: 0.55s;
     }
   }
-  @keyframes asienta {
+  @keyframes frena {
     from {
-      transform: scale(1.06);
+      transform: rotate(-28deg) scale(1.55);
+      filter: blur(6px) brightness(0.6);
+    }
+    55% {
+      filter: blur(0) brightness(1);
+    }
+    to {
+      transform: none;
+    }
+  }
+  @keyframes descubre {
+    from {
+      clip-path: inset(0 0 100% 0);
+      transform: translateY(24px);
+    }
+    to {
+      clip-path: inset(0 0 -10% 0);
     }
   }
   @keyframes sube {
@@ -193,15 +351,17 @@ import { cifras } from '../data/cifras';
     }
   }
 
-  /* Móvil: la mano queda arriba, a la vista, y el texto abajo sobre el velo */
+  /* Móvil: la foto ocupa la mitad de arriba, con el buje a la vista, y se funde con el fondo oscuro del texto */
   @media (max-width: 1024px) {
-    /* La foto ocupa la mitad de arriba, con la mano a la vista, y se funde con el fondo oscuro del texto */
     .foto {
-      height: 60%;
-      object-position: 82% 50%;
+      inset: 0;
+      width: 100%;
+      height: 58%;
+      object-position: 40% 50%;
+      translate: none;
     }
     .hero::before {
-      background: linear-gradient(0deg, #1d2124 0%, #1d2124 42%, rgba(29, 33, 36, 0.55) 52%, rgba(29, 33, 36, 0) 75%);
+      background: linear-gradient(0deg, #111315 0%, #111315 44%, rgba(17, 19, 21, 0.5) 54%, rgba(17, 19, 21, 0) 74%);
     }
     .contenido {
       min-height: calc(100svh - 72px);
@@ -210,12 +370,14 @@ import { cifras } from '../data/cifras';
     }
     .cifras {
       grid-template-columns: 1fr 1fr;
-      gap: 18px 0;
+      row-gap: 4px;
       margin-top: 36px;
     }
     .cifras li:nth-child(3) {
       padding-left: 0;
-      border-left: 0;
+    }
+    .cifras li:nth-child(3)::after {
+      display: none;
     }
   }
 </style>

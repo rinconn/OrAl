@@ -28,7 +28,7 @@ Hasta que se publique la web, todo va en "Sin publicar"; al publicar se cierra l
 
 ### Cambiado
 
-- Portada nueva: una foto real de laboratorio a pantalla completa con el titular, la frase, los dos botones y las cuatro razones (48 h, 1 semana, 3 años, ISO 13485) encima, sin cajas. Fuera el recuadro oscuro con retícula, la Digicen recortada y las notas técnicas.
+- Portada nueva: un rotor de cerca a pantalla completa que gira y frena al entrar y sigue al ratón con un brillo suave, con el titular, la frase, los dos botones (con destello y relleno al pasar el ratón) y las cuatro razones (48 h, 1 semana, 3 años, ISO 13485) encima, sin cajas. Fuera el recuadro oscuro con retícula, la Digicen recortada y las notas técnicas.
 - Distribuidores: fuera los cuadrados sobre la línea y las tarjetas. Ahora una ruta en onda, como un tubo que se llena de sangre con burbujas que lo recorren, se dibuja sobre un fondo
   de laboratorio oscuro con la silueta de un rotor girando despacio, y en cada parada un haz de luz proyecta un rotor que gira, con
   4, 6, 8 y 12 tubos. Hueco preparado para cambiarlos por los rotores reales en 3D.
