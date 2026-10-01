@@ -38,16 +38,16 @@ const pasos = [
   },
 ];
 
-// La ruta (lienzo de 1200 x 900) y el punto exacto de cada parada sobre ella.
+// La ruta (lienzo de 1200 x 740: el ancho se estira, el alto es fijo en píxeles) y el punto exacto de cada parada sobre ella.
 // Las paradas están al 16, 39, 63 y 84 % del recorrido; la línea se dibuja a ritmo constante,
 // así que cada rotor sale justo cuando la línea llega a él.
 const ruta =
-  'M0,420 C120,420 150,420 190,420 C340,420 360,480 470,480 C580,480 600,420 760,420 C880,420 900,480 1010,480 C1100,480 1150,460 1200,450';
+  'M0,340 C120,340 150,340 190,340 C340,340 360,390 470,390 C580,390 600,340 760,340 C880,340 900,390 1010,390 C1100,390 1150,380 1200,370';
 const paradas = [
-  { x: 196.7, y: 420, t: 0.16 },
-  { x: 470.9, y: 480, t: 0.39 },
-  { x: 757.6, y: 420, t: 0.63 },
-  { x: 1006.3, y: 480, t: 0.84 },
+  { x: 196.7, y: 340, t: 0.16 },
+  { x: 470.9, y: 390, t: 0.39 },
+  { x: 757.6, y: 340, t: 0.63 },
+  { x: 1006.3, y: 390, t: 0.84 },
 ];
 const DIBUJO = 2.6; // segundos que tarda la línea
 
@@ -88,7 +88,7 @@ function rotor(n: number) {
     </div>
 
     <div class="ruta" style={`--dibujo:${DIBUJO}s`}>
-      <svg class="linea" viewBox="0 0 1200 900" aria-hidden="true">
+      <svg class="linea" viewBox="0 0 1200 740" preserveAspectRatio="none" aria-hidden="true">
         <path class="guia" d={ruta}></path>
         <path class="traz" d={ruta}></path>
       </svg>
@@ -99,7 +99,7 @@ function rotor(n: number) {
           return (
             <li
               class={i % 2 ? 'abajo' : 'arriba'}
-              style={`--x:${((q.x / 1200) * 100).toFixed(2)}%;--y:${((q.y / 900) * 100).toFixed(2)}%;--t:${t}s;--w:${110 + i * 12};--i:${i}`}
+              style={`--x:${((q.x / 1200) * 100).toFixed(2)}%;--y:${q.y}px;--t:${t}s;--w:${96 + i * 8}px;--i:${i}`}
             >
               <div class="rotor" aria-hidden="true" data-tubos={p.tubos}>
                 <div class="haz" />
@@ -338,14 +338,14 @@ function rotor(n: number) {
     max-width: 44ch;
   }
 
-  /* La ruta: lienzo de 1200 x 900; rotores y textos colocados sobre él en porcentajes */
+  /* La ruta: 740 px de alto; en horizontal, rotores y textos colocados en porcentajes */
   .ruta {
     position: relative;
     margin-top: clamp(40px, 5vw, 72px);
   }
   @media (min-width: 901px) {
     .ruta {
-      aspect-ratio: 1200 / 900;
+      height: 740px;
     }
     li {
       display: contents;
@@ -354,7 +354,7 @@ function rotor(n: number) {
       position: absolute;
       left: var(--x);
       top: var(--y);
-      width: calc(var(--w) / 1200 * 100%);
+      width: var(--w);
       transform: translate(-50%, -100%);
     }
     .abajo .rotor {
@@ -370,7 +370,7 @@ function rotor(n: number) {
     }
     li:nth-child(2) .texto {
       left: 30%;
-      top: 76%;
+      top: 520px;
     }
     li:nth-child(3) .texto {
       left: 56%;
@@ -378,7 +378,7 @@ function rotor(n: number) {
     }
     li:nth-child(4) .texto {
       left: 77%;
-      top: 76%;
+      top: 520px;
     }
   }
   .linea {
@@ -417,7 +417,7 @@ function rotor(n: number) {
     transform: translateX(-50%);
     transform-origin: bottom;
     background: linear-gradient(to top, rgba(221, 4, 10, 0.55), rgba(221, 4, 10, 0.12) 55%, transparent);
-    clip-path: polygon(44% 100%, 56% 100%, 100% 39%, 0 39%);
+    clip-path: polygon(44% 100%, 56% 100%, 100% 42%, 0 42%);
   }
   .suelo {
     position: absolute;
@@ -432,7 +432,7 @@ function rotor(n: number) {
   .escena {
     position: relative;
     aspect-ratio: 1;
-    margin-bottom: 28%;
+    margin-bottom: 20%;
     perspective: 500px;
   }
   .plato {
@@ -459,14 +459,14 @@ function rotor(n: number) {
     bottom: auto;
     transform-origin: top;
     background: linear-gradient(to bottom, rgba(221, 4, 10, 0.55), rgba(221, 4, 10, 0.12) 55%, transparent);
-    clip-path: polygon(44% 0, 56% 0, 100% 61%, 0 61%);
+    clip-path: polygon(44% 0, 56% 0, 100% 58%, 0 58%);
   }
   .abajo .suelo {
     top: -7px;
     bottom: auto;
   }
   .abajo .escena {
-    margin: 28% 0 0;
+    margin: 20% 0 0;
   }
   li:hover .haz {
     filter: brightness(1.35);
@@ -565,9 +565,9 @@ function rotor(n: number) {
     transform: translateY(24px);
   }
   :global(.js) .traz {
-    /* largo de la ruta en el lienzo: 1229,4 */
-    stroke-dasharray: 1230;
-    stroke-dashoffset: 1230;
+    /* algo más que el largo de la ruta en el lienzo */
+    stroke-dasharray: 1250;
+    stroke-dashoffset: 1250;
   }
   .ruta.vista .traz {
     animation: dibuja var(--dibujo) linear forwards;
@@ -686,14 +686,14 @@ function rotor(n: number) {
       bottom: 0;
       transform-origin: bottom;
       background: linear-gradient(to top, rgba(221, 4, 10, 0.55), rgba(221, 4, 10, 0.12) 55%, transparent);
-      clip-path: polygon(44% 100%, 56% 100%, 100% 39%, 0 39%);
+      clip-path: polygon(44% 100%, 56% 100%, 100% 42%, 0 42%);
     }
     .abajo .suelo {
       top: auto;
       bottom: -7px;
     }
     .abajo .escena {
-      margin: 0 0 28%;
+      margin: 0 0 20%;
     }
     .ruta.vista .abajo .escena {
       animation-name: proyecta, sube;
