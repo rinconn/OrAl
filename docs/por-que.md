@@ -484,7 +484,9 @@ Hasta entonces, los dos enlaces llevan al contacto del pie.
   También se cambiará la foto de fondo por una buena del laboratorio. Ver `docs/pendiente-empresa.md`.
 - **La ruta en zigzag:** primero fue una onda suave, pero las ondas así son de las que más se ven en webs de
   plantilla. Se probó en tramos rectos tipo plano de metro y quedó en un zigzag: una recta larga de cada parada a
-  la siguiente, alternando arriba y abajo, que se lee como un recorrido.
+  la siguiente, alternando arriba y abajo, que se lee como un recorrido. La línea no es un trazo plano: es un tubo transparente (pared clara, interior
+  oscuro) que se va llenando de sangre hasta cada rotor, y una vez lleno unos destellos lo recorren muy despacio.
+  Así la ruta habla del oficio (tubos y muestras) en vez de ser una línea genérica. Se para fuera de pantalla.
 - **Orden de la portada:** Distribuidores pasa a ir después de Empresa. Así las dos secciones oscuras (Tecnología y
   Distribuidores) no van seguidas y la portada alterna claro y oscuro.
 - **Movimiento del fondo:** las siluetas giran muy despacio (una vuelta cada seis minutos la grande), crecen y

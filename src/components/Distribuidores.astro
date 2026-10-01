@@ -107,8 +107,10 @@ function silueta(n: number) {
 
     <div class="ruta" style={`--dibujo:${DIBUJO}s`}>
       <svg class="linea" viewBox="0 0 1200 685" preserveAspectRatio="none" aria-hidden="true">
-        <path class="guia" d={ruta}></path>
+        <path class="pared" d={ruta}></path>
+        <path class="hueco" d={ruta}></path>
         <path class="traz" d={ruta}></path>
+        <path class="flujo" d={ruta}></path>
       </svg>
       <ol>
         {pasos.map((p, i) => {
@@ -351,19 +353,46 @@ function silueta(n: number) {
     height: 100%;
     overflow: visible;
   }
-  .guia,
-  .traz {
+  .pared,
+  .hueco,
+  .traz,
+  .flujo {
     fill: none;
     stroke-linecap: round;
     stroke-linejoin: round;
   }
-  .guia {
-    stroke: rgba(255, 255, 255, 0.18);
-    stroke-width: 2;
+  /* La ruta es un tubo transparente (pared clara, interior oscuro) que se va llenando de sangre */
+  .pared {
+    stroke: rgba(255, 255, 255, 0.22);
+    stroke-width: 11;
+  }
+  .hueco {
+    stroke: rgba(12, 14, 16, 0.7);
+    stroke-width: 8;
   }
   .traz {
-    stroke: var(--red);
-    stroke-width: 2.5;
+    stroke: #b8040a;
+    stroke-width: 6;
+  }
+  /* Una vez lleno, unos destellos recorren el tubo muy despacio, como la sangre que circula */
+  .flujo {
+    stroke: rgba(255, 140, 140, 0.55);
+    stroke-width: 1.6;
+    stroke-dasharray: 10 70;
+    opacity: 0;
+    transition: opacity 1s var(--ease) var(--dibujo);
+    animation: circula 14s linear infinite;
+  }
+  .ruta.vista .flujo {
+    opacity: 1;
+  }
+  .dist:not(:global(.activa)) .flujo {
+    animation-play-state: paused;
+  }
+  @keyframes circula {
+    to {
+      stroke-dashoffset: -800;
+    }
   }
   ol {
     list-style: none;
