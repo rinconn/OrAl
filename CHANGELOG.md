@@ -28,6 +28,7 @@ Hasta que se publique la web, todo va en "Sin publicar"; al publicar se cierra l
 
 ### Cambiado
 
+- Primera pantalla rehecha: la Digicen 22 en grande sobre un plano gris claro, saliendo por encima de él, con sus tres cifras (16.500 rpm, 26.480 × g, 4 × 125 ml) en una ficha al pie. Titular en mayúsculas con "centrifugación" a todo el ancho, antetítulo "Centrifugación de laboratorio · Desde 1949" y frase nueva. Fuera la retícula, el recuadro oscuro, la cota y las notas sobre la foto; las cuatro cifras de confianza pasan a una fila discreta.
 - Distribuidores: fuera los cuadrados sobre la línea y las tarjetas. Ahora una ruta en onda, como un tubo que se llena de sangre con burbujas que lo recorren, se dibuja sobre un fondo
   de laboratorio oscuro con la silueta de un rotor girando despacio, y en cada parada un haz de luz proyecta un rotor que gira, con
   4, 6, 8 y 12 tubos. Hueco preparado para cambiarlos por los rotores reales en 3D.

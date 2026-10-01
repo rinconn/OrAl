@@ -209,6 +209,45 @@ Ponerlos antes haría que todos los enlaces llevaran a la portada.
   - **Portada menos alta con todo junto:** sin hueco, pero la máquina se hacía más pequeña, y ahí irá el modelo
     3D.
 
+### 4.5 La máquina manda: primera pantalla rehecha (octubre 2026)
+
+- **Antes (versión anterior de la web nueva):** la Digicen 22 recortada sobre un recuadro gris oscuro con
+  retícula de plano, la cota de 410 mm, un círculo girando sobre el rotor y tres notas técnicas encima. A
+  la izquierda, el titular y cuatro cifras grandes en cajas.
+- **Ahora:**
+  - **La máquina es lo primero que se ve:** la Digicen 22 ocupa casi todo el alto de la pantalla, sobre un
+    plano gris claro que empieza por debajo de la tapa, así la máquina **sobresale por arriba**. Llega hasta el
+    borde derecho de la pantalla, con su sombra de apoyo, sin caja ni borde.
+  - **Composición asimétrica:** el texto se lleva algo más de la mitad y la máquina el resto. No es un 50/50.
+  - **Titular en mayúsculas:** "Expertos en" en ligera y más pequeño, y **"CENTRIFUGACIÓN"** en negrita a todo
+    el ancho de su columna, con "ción" en rojo como antes. Es la palabra que dice qué hacéis.
+  - **Antetítulo** "Centrifugación de laboratorio · Desde 1949", pequeño y con la raya roja de la marca. Vuelve
+    porque lo pide la dirección del proyecto: sitúa en una línea qué hacéis y desde cuándo (ver 4.1, que lo
+    había quitado).
+  - **Frase nueva**, más corta y sobre el producto: "Centrífugas diseñadas y fabricadas para ofrecer precisión,
+    fiabilidad y rendimiento en los entornos de laboratorio más exigentes."
+  - **Ficha técnica al pie de la máquina:** nombre, "Ver en la gama" y tres cifras grandes del catálogo
+    (16.500 rpm, 26.480 × g, 4 × 125 ml), cada una con una raya roja, como en la ficha de una serie.
+  - **Las cuatro cifras de confianza** (48 h, 1 semana, 3 años, ISO 13485) siguen, pero en una fila discreta a la
+    misma altura que la ficha de la máquina, con una raya que cruza toda la pantalla.
+  - **Movimiento:** solo una entrada suave (el texto sube por partes, la máquina aparece y las cifras de la
+    ficha llegan una a una) y la máquina sube un poco al pasar el ratón.
+  - **Móvil:** antetítulo, titular, frase, botones, máquina, su ficha y las cuatro cifras en 2 × 2.
+- **Por qué es mejor:**
+  - Un distribuidor entiende en un segundo que sois fabricantes de centrífugas: la máquina y la palabra
+    "centrifugación" son lo más grande de la pantalla.
+  - Fondo claro, mucho aire y solo el rojo de la marca como acento: se lee como una empresa industrial seria,
+    no como una plantilla.
+  - Quitar la retícula, la cota, el círculo y las notas limpia la foto. Esas notas (SmartConnect, REI System,
+    pantalla táctil) ya tienen su sitio en la sección de Tecnología.
+- **Descartados:**
+  - **Foto de laboratorio a pantalla completa:** la más humana, pero dependía de una sola foto que no se hizo
+    para la web.
+  - **Escaparate con un modelo por familia:** vistoso, pero repetía lo que ya hace la gama justo debajo.
+  - **Pantalla partida con foto de cerca de la Consul 22:** elegante, pero no enseña la máquina entera.
+- **Preparado para después:** el hueco de la Digicen 22 sigue siendo el del futuro modelo 3D. Cuando lleguen
+  los archivos CAD, el visor ocupará ese sitio sin mover nada más.
+
 ---
 
 ## 5. La gama (portada)
