@@ -1,26 +1,27 @@
 ---
-// Portada: quiénes sois, por qué fiarse y dos caminos claros (producto y distribuidor), todo en la primera pantalla.
-// La figura de la Digicen 22 es el hueco reservado al futuro modelo 3D: el visor ocupará este mismo sitio.
+// Portada: manos con guantes cargando tubos en un rotor RT 267, a pantalla completa (foto de Orto Alresa), con el titular, quiénes sois, los dos caminos
+// (producto y distribuidor) y las cuatro razones para fiarse encima. Al cargar, la foto gira y frena como un rotor;
+// después sigue al ratón con un brillo suave.
 import { cifras } from '../data/cifras';
-
-// Notas técnicas sobre la foto. Posición en % de la imagen; en móvil se muestran como lista bajo la foto.
-const notas = [
-  { titulo: 'SmartConnect', detalle: 'vigílala desde el móvil', x: 62, y: 9, linea: 56 },
-  { titulo: 'REI System', detalle: 'cambio de rotor sin herramientas', x: 44.6, y: 51.5, linea: 150 },
-  { titulo: 'Pantalla TFT táctil', detalle: '', x: 62, y: 78, linea: 56 },
-];
-
-// Ficha corta del equipo de la foto, sobre su "estante" como en el catálogo. Catálogo General 2025, Serie Digicen 22 (pág. 52).
-// El ancho (410 mm) sale de la tabla de versiones de la misma serie y se dibuja como la cota de un plano.
-const equipo = {
-  nombre: 'Digicen 22',
-  datos: ['16.500 rpm', '26.480 xg', '4 × 125 ml'],
-  ancho: '410 mm',
-};
 ---
 
-<section class="hero">
-  <div class="wrap grid">
+<section class="hero" data-hero>
+  <div class="fondo" aria-hidden="true">
+    <img
+      class="foto"
+      src="/img/fotos/portada-rotor.webp"
+      srcset="/img/fotos/portada-rotor-960.webp 960w, /img/fotos/portada-rotor.webp 1440w"
+      sizes="100vw"
+      alt=""
+      width="1440"
+      height="960"
+      fetchpriority="high"
+      decoding="async"
+    />
+    <span class="brillo"></span>
+  </div>
+
+  <div class="wrap contenido">
     <div class="texto">
       <h1>
         Expertos en{' '}
@@ -32,14 +33,6 @@ const equipo = {
         Desde 1949 diseñamos y fabricamos centrífugas de laboratorio en Daganzo (Madrid) y las llevamos a todo el mundo
         a través de una red de distribuidores especializados.
       </p>
-      <dl class="cifras">
-        {cifras.map((c) => (
-          <div>
-            <dt>{c.valor}</dt>
-            <dd>{c.texto}</dd>
-          </div>
-        ))}
-      </dl>
       <div class="ctas">
         <a class="btn red" href="#gama">
           Ver la gama
@@ -48,89 +41,124 @@ const equipo = {
           Soy distribuidor
         </a>
       </div>
-      <p class="why">
-        <b>Antes:</b> un carrusel de 7 novedades, con el titular cortado bajo el menú. <b>Ahora:</b> en una sola
-        pantalla se entiende quiénes sois, por qué fiarse (respuesta en 48 h, entrega en una semana, 3 años de garantía,
-        ISO 13485) y hay dos caminos claros. La Digicen 22 va sobre un recuadro oscuro con retícula y la cota de su
-        ancho real, como en un plano.
-      </p>
     </div>
 
-    <div class="foto">
-      <figure class="figure">
-        <div class="lienzo">
-          <img
-            src="/img/productos/digicen-22.webp"
-            alt="Centrífuga Digicen 22 con la tapa abierta y el rotor a la vista"
-            width="1400"
-            height="1830"
-            fetchpriority="high"
-          />
-          <span class="spin" aria-hidden="true"></span>
-          <span class="cota" aria-hidden="true">
-            <i></i>
-            <i></i>
-            <span>{equipo.ancho}</span>
-          </span>
-          {notas.map((n, i) => (
-            <span class="call" style={`left:${n.x}%;top:${n.y}%;--len:${n.linea}px;--i:${i}`} aria-hidden="true">
-              <i class="ln"></i>
-              <span>
-                {n.titulo}
-                {n.detalle && <small>{n.detalle}</small>}
-              </span>
-            </span>
-          ))}
-        </div>
-      </figure>
-      <div class="estante">
-        <a class="ficha" href="#gama">
-          <b>{equipo.nombre}</b>
-          <span>{equipo.datos.join(' · ')}</span>
-          <span class="arrow">Ver en la gama</span>
-        </a>
-      </div>
-      <ul class="notas">
-        {notas.map((n) => (
-          <li>
-            <b>{n.titulo}</b>
-            {n.detalle && <span>{n.detalle}</span>}
-          </li>
-        ))}
-      </ul>
-    </div>
+    <ul class="cifras">
+      {cifras.map((c) => (
+        <li>
+          <b>{c.valor}</b>
+          {c.texto}
+        </li>
+      ))}
+    </ul>
+
+    <p class="why">
+      <b>Antes:</b> un carrusel de 7 novedades, con el titular cortado bajo el menú. <b>Ahora:</b> una sola foto real de
+      laboratorio a pantalla completa, con el titular, los dos caminos y las cuatro razones para fiarse encima. Sin
+      cajas ni recortes: entra por la vista y se entiende en un segundo.
+    </p>
   </div>
 </section>
 
+<script>
+  // El fondo sigue al ratón: la foto se desplaza unos píxeles y un brillo suave va donde está el puntero.
+  // Se suaviza en cada fotograma para que nunca dé saltos. Solo con ratón y si no se pide menos movimiento.
+  const hero = document.querySelector<HTMLElement>('[data-hero]');
+  if (hero && matchMedia('(hover: hover) and (prefers-reduced-motion: no-preference)').matches) {
+    let x = 0.5;
+    let y = 0.5;
+    let tx = 0.5;
+    let ty = 0.5;
+    let raf = 0;
+    const paso = () => {
+      x += (tx - x) * 0.08;
+      y += (ty - y) * 0.08;
+      hero.style.setProperty('--mx', x.toFixed(4));
+      hero.style.setProperty('--my', y.toFixed(4));
+      raf = Math.abs(tx - x) + Math.abs(ty - y) > 0.0005 ? requestAnimationFrame(paso) : 0;
+    };
+    hero.addEventListener('pointermove', (e) => {
+      const r = hero.getBoundingClientRect();
+      tx = (e.clientX - r.left) / r.width;
+      ty = (e.clientY - r.top) / r.height;
+      hero.classList.add('vivo');
+      if (!raf) raf = requestAnimationFrame(paso);
+    });
+    hero.addEventListener('pointerleave', () => {
+      tx = 0.5;
+      ty = 0.5;
+      hero.classList.remove('vivo');
+      if (!raf) raf = requestAnimationFrame(paso);
+    });
+  }
+</script>
+
 <style>
   .hero {
-    --estante: 132px;
-    --oscuro: #3b4045;
-    --mas-oscuro: #2c3034;
+    --mx: 0.5;
+    --my: 0.5;
     position: relative;
     overflow: hidden;
-    border-bottom: 1px solid var(--line);
+    background: #111315;
+    color: #fff;
+    isolation: isolate;
   }
-  /* Una pantalla de alto (menos la cabecera), sin pasarse en monitores muy altos */
-  .grid {
-    display: grid;
-    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
-    align-items: start;
-    min-height: min(calc(100svh - 96px), 900px);
+
+  /* Fondo: el rotor desde arriba; el buje y los tubos quedan a la derecha y el texto va sobre los guantes de la izquierda */
+  .fondo {
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+    overflow: hidden;
   }
-  /* El titular arranca a una distancia fija del menú y el texto ocupa toda la altura de la portada:
-     sin huecos blancos arriba ni abajo, sea cual sea la pantalla. */
-  .texto {
-    align-self: stretch;
+  .foto {
+    position: absolute;
+    inset: -24px;
+    width: calc(100% + 48px);
+    height: calc(100% + 48px);
+    max-width: none;
+    object-fit: cover;
+    object-position: 50% 45%;
+    /* Sigue al ratón, como mucho 24 px a cada lado */
+    translate: calc((0.5 - var(--mx)) * 48px) calc((0.5 - var(--my)) * 32px);
+    transform-origin: 74% 46%;
+  }
+  /* Brillo que sigue al puntero: ilumina el metal y los tapones rojos al pasar */
+  .brillo {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+      560px circle at calc(var(--mx) * 100%) calc(var(--my) * 100%),
+      rgba(255, 255, 255, 0.16),
+      transparent 70%
+    );
+    mix-blend-mode: soft-light;
+    opacity: 0;
+    transition: opacity 0.6s ease;
+  }
+  .hero.vivo .brillo {
+    opacity: 1;
+  }
+  /* Velo oscuro donde va el texto, para que se lea; el buje y la derecha quedan limpios */
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background:
+      linear-gradient(90deg, rgba(10, 11, 12, 0.88) 0%, rgba(10, 11, 12, 0.66) 38%, rgba(10, 11, 12, 0.08) 72%),
+      linear-gradient(0deg, rgba(10, 11, 12, 0.7) 0%, rgba(10, 11, 12, 0) 34%);
+  }
+
+  .contenido {
     display: flex;
     flex-direction: column;
-    padding-top: clamp(56px, 9vh, 88px);
-    padding-right: clamp(32px, 5vw, 96px);
-    container-type: inline-size;
+    justify-content: space-between;
+    min-height: min(calc(100svh - 96px), 880px);
+    padding-block: clamp(64px, 11vh, 120px) clamp(32px, 5vh, 48px);
   }
   h1 {
     font-weight: 300;
-    /* Grande hasta llenar el ancho de la columna, sin pasarse en pantallas bajas */
     font-size: var(--t-titulo);
     line-height: 0.94;
   }
@@ -144,512 +172,214 @@ const equipo = {
   .lead {
     margin-top: clamp(22px, 3vh, 32px);
     font-size: var(--t-sub);
-    max-width: 40ch;
-    color: var(--body);
+    max-width: 36ch;
+    color: rgba(255, 255, 255, 0.84);
   }
 
-  /* Cuatro fichas iguales a las tarjetas de Distribuidores: al pasar el ratón suben, les crece la raya roja
-     de arriba y la esquina se pone roja */
-  .cifras {
-    margin: 28px 0 0;
-    display: grid;
-    grid-template-columns: repeat(4, auto);
-    justify-content: start;
-    gap: 12px;
-  }
-  .cifras div {
-    position: relative;
-    padding: 12px 20px;
-    border: 2px solid #3b4045;
-    background: #fff;
-    transition:
-      transform 0.35s var(--ease),
-      box-shadow 0.35s var(--ease);
-  }
-  .cifras div::before {
-    content: '';
-    position: absolute;
-    top: -2px;
-    left: -2px;
-    height: 4px;
-    width: 0;
-    background: var(--red);
-    transition: width 0.4s var(--ease);
-  }
-  .cifras div::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 22px;
-    height: 22px;
-    background: #3b4045;
-    clip-path: polygon(0 0, 100% 0, 100% 100%);
-    transition: background 0.3s var(--ease);
-  }
-  .cifras div:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 14px 30px -18px rgba(0, 0, 0, 0.35);
-  }
-  .cifras div:hover::before {
-    width: calc(100% + 4px);
-  }
-  .cifras div:hover::after {
-    background: var(--red);
-  }
-  dt {
-    font-weight: 700;
-    font-size: clamp(22px, 1.9vw, 28px);
-    line-height: 1.1;
-    font-variant-numeric: tabular-nums;
-    white-space: nowrap;
-  }
-  dd {
-    margin: 2px 0 0;
-    font-size: 14px;
-    color: var(--muted);
-    white-space: nowrap;
-  }
-
+  /* Botones: al pasar el ratón cruza un destello y la » avanza; el blanco se rellena de izquierda a derecha */
   .ctas {
-    margin-top: 28px;
+    margin-top: clamp(28px, 4vh, 40px);
     display: flex;
     flex-wrap: wrap;
     gap: 12px;
   }
-  /* Escritorio: las cifras, en grande y en 2 × 2, llenan la columna desde los botones hasta el pie,
-     alineadas con la ficha de la máquina. En pantallas bajas pasan a una fila para que todo quepa. */
-  @media (min-width: 1025px) {
-    .cifras {
-      order: 1;
-      flex: 1;
-      margin-top: clamp(32px, 5vh, 48px);
-      margin-bottom: 32px;
-      grid-template-columns: 1fr 1fr;
-      grid-template-rows: 1fr 1fr;
-      gap: 16px;
-    }
-    .cifras div {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      padding: 20px 28px;
-    }
-    .cifras dt {
-      font-size: clamp(40px, 4.2vw, 64px);
-      line-height: 1;
-    }
-    .cifras dd {
-      margin-top: 8px;
-      font-size: 16px;
-    }
-    .texto > .why {
-      order: 2;
-    }
-  }
-  @media (min-width: 1025px) and (max-height: 820px) {
-    .cifras {
-      margin-top: 32px;
-      grid-template-columns: repeat(4, auto);
-      grid-template-rows: 1fr;
-      gap: 10px;
-    }
-    .cifras div {
-      padding: 10px 16px;
-    }
-    .cifras dt {
-      /* Según el ancho de la columna, para que las cuatro quepan siempre en una fila */
-      font-size: clamp(22px, calc(7.2cqi - 10px), 34px);
-    }
-    .cifras dd {
-      font-size: 14px;
-    }
-  }
-
-  /* La columna de la foto es un recuadro gris oscuro, el mismo tono de la barra de filtros de la gama,
-     con una retícula fina como la de un plano. Llega hasta el borde derecho de la pantalla. */
-  .foto {
+  .ctas .btn {
     position: relative;
-    align-self: stretch;
-    display: flex;
-    flex-direction: column;
-    padding-top: 32px;
-    /* En pantallas más anchas que la retícula, la columna llega hasta el borde para que la máquina
-       quede centrada en todo el recuadro oscuro, no solo en su mitad izquierda */
-    margin-right: calc(-1 * (var(--gut) + max(0px, (100vw - var(--wrap)) / 2)));
+    overflow: hidden;
+    isolation: isolate;
+    transition:
+      color 0.35s var(--ease),
+      border-color 0.35s var(--ease),
+      background-color 0.35s var(--ease),
+      transform 0.35s var(--ease),
+      box-shadow 0.35s var(--ease);
   }
-  .foto::before {
-    content: '';
-    position: absolute;
-    inset: 0 -100vmax 0 0;
-    background-color: var(--oscuro);
-    background-image:
-      linear-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
-    background-size: 40px 40px;
-    background-position: left bottom;
-  }
-  .figure {
-    position: relative;
-    z-index: 1;
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-    align-self: center;
-    /* Las patas se apoyan justo en el estante */
-    margin: 0;
-    transition: transform 0.5s var(--ease);
-    /* La foto se ajusta al alto disponible para que la primera pantalla entre entera */
-    width: min(84%, calc((min(100svh - 96px, 900px) - 32px - var(--estante)) * 1400 / 1830));
-  }
-
-  /* El "estante" gris del catálogo: la máquina se posa encima y debajo va su ficha corta */
-  .estante {
-    position: relative;
-    height: var(--estante);
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    padding: 0 0 22px 32px;
-    background: var(--mas-oscuro);
-    box-shadow: 0 0 0 100vmax var(--mas-oscuro);
-    clip-path: inset(0 -100vmax 0 0);
-  }
-  .ficha {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    text-decoration: none;
-  }
-  .ficha b {
-    color: #fff;
-    font-size: 15px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-  }
-  .ficha span {
-    font-size: 15px;
-    color: #c9ced2;
-    font-variant-numeric: tabular-nums;
-  }
-  .ficha .arrow {
-    position: relative;
-    align-self: flex-start;
-    margin-top: 4px;
-    padding-bottom: 3px;
-    color: #fff;
-  }
-  /* Al pasar el ratón, "Ver en la gama" se subraya en rojo y la máquina sube un poco */
-  .ficha .arrow::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    bottom: 0;
-    width: 0;
-    height: 2px;
-    background: var(--red);
-    transition: width 0.3s var(--ease);
-  }
-  .ficha:hover .arrow::before,
-  .ficha:focus-visible .arrow::before {
-    width: calc(100% - 16px);
-  }
-  .foto:hover .figure {
-    transform: translateY(-4px);
-  }
-  /* Foto y notas comparten caja para que las posiciones en % sean sobre la imagen */
-  .lienzo {
-    position: relative;
-  }
-  .figure img {
-    width: 100%;
-    height: auto;
-    filter: drop-shadow(0 30px 40px rgba(0, 0, 0, 0.45));
-  }
-  /* Sombra de contacto: la máquina se apoya, no flota */
-  .lienzo::after {
-    content: '';
-    position: absolute;
-    z-index: -1;
-    left: 18%;
-    right: 8%;
-    bottom: -6px;
-    height: 14px;
-    border-radius: 50%;
-    background: rgba(0, 0, 0, 0.55);
-    filter: blur(8px);
-  }
-  /* Cota del ancho real, como en un plano, sobre el estante */
-  .cota {
-    position: absolute;
-    left: 14.6%;
-    right: 5%;
-    bottom: -22px;
-    display: flex;
-    justify-content: center;
-    color: #c9ced2;
-    font-size: 13px;
-    font-weight: 700;
-    letter-spacing: 0.06em;
-  }
-  .cota::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 50%;
-    height: 1px;
-    background: currentColor;
-  }
-  .cota i {
-    position: absolute;
-    top: 50%;
-    width: 1px;
-    height: 12px;
-    background: currentColor;
-    translate: 0 -50%;
-  }
-  .cota i:first-child {
-    left: 0;
-  }
-  .cota i:nth-child(2) {
-    right: 0;
-  }
-  .cota span {
-    position: relative;
-    padding: 0 10px;
-    background: var(--mas-oscuro);
-    line-height: 1.2;
-  }
-
-  /* Los dos botones mueven su » al pasar el ratón */
   .ctas .btn::after {
     content: '»';
-    color: var(--red);
-    transition: transform 0.25s var(--ease);
+    transition: transform 0.35s var(--ease);
   }
-  .ctas .btn.red::after {
-    color: #fff;
+  .ctas .btn:hover {
+    transform: translateY(-2px);
   }
   .ctas .btn:hover::after {
-    transform: translateX(5px);
+    transform: translateX(6px);
   }
-
-  /* Anotaciones técnicas sobre la foto, como en un plano */
-  .call {
-    position: absolute;
-    display: flex;
-    align-items: center;
-    translate: -4.5px -50%;
-    font-size: 13px;
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    white-space: nowrap;
+  .ctas .btn.red:hover {
+    box-shadow: 0 14px 32px -12px rgba(221, 4, 10, 0.7);
   }
-  .call::before {
+  .ctas .btn.red::before {
     content: '';
-    width: 9px;
-    height: 9px;
-    border-radius: 50%;
-    background: var(--red);
-    box-shadow: 0 0 0 4px rgba(221, 4, 10, 0.18);
-  }
-  .ln {
-    display: block;
-    width: var(--len, 90px);
-    height: 1px;
-    background: #fff;
-  }
-  .call span {
-    background: #fff;
-    padding: 7px 10px;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
-    line-height: 1.2;
-  }
-  .call small {
-    display: block;
-    font-weight: 300;
-    letter-spacing: 0;
-    text-transform: none;
-    font-size: 14px;
-    color: var(--body);
-  }
-  .spin {
     position: absolute;
-    left: 44.6%;
-    top: 51.5%;
-    width: 21%;
-    aspect-ratio: 1;
-    translate: -50% -50%;
-    border-radius: 50%;
-    border: 1px dashed rgba(221, 4, 10, 0.55);
-    animation: spin 14s linear infinite;
-    pointer-events: none;
+    inset: 0;
+    z-index: -1;
+    background: linear-gradient(105deg, transparent 30%, rgba(255, 255, 255, 0.35) 50%, transparent 70%);
+    translate: -110% 0;
   }
-  @keyframes spin {
-    to {
-      rotate: 360deg;
-    }
+  .ctas .btn.red:hover::before {
+    translate: 110% 0;
+    transition: translate 0.7s var(--ease);
+  }
+  .ctas .btn.ghost {
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.6);
+    background: transparent;
+  }
+  .ctas .btn.ghost::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: #fff;
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.4s var(--ease);
+  }
+  .ctas .btn.ghost:hover {
+    color: var(--ink);
+    border-color: #fff;
+    background: transparent;
+  }
+  .ctas .btn.ghost:hover::before {
+    transform: scaleX(1);
   }
 
-  /* La lista de notas solo se ve en móvil; en escritorio las notas están sobre la foto */
-  .notas {
+  /* Las cuatro razones al pie, sobre una línea fina. Al pasar el ratón, la raya roja de la web crece sobre la que se
+     señala y la cifra sube un poco */
+  .cifras {
+    display: grid;
+    grid-template-columns: repeat(4, auto);
+    justify-content: start;
+    margin: 48px 0 0;
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.22);
+    font-size: 15px;
+    line-height: 1.25;
+    color: rgba(255, 255, 255, 0.7);
+  }
+  .cifras li {
     position: relative;
-    display: none;
+    display: flex;
+    flex-direction: column;
+    padding: 24px clamp(20px, 3vw, 48px) 0;
+    transition: color 0.3s var(--ease);
+  }
+  .cifras li:first-child {
+    padding-left: 0;
+  }
+  .cifras li + li::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 24px;
+    bottom: 0;
+    width: 1px;
+    background: rgba(255, 255, 255, 0.22);
+  }
+  .cifras li::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: 0;
+    height: 3px;
+    width: 0;
+    background: var(--red);
+    transition: width 0.45s var(--ease);
+  }
+  .cifras b {
+    font-size: clamp(20px, 1.8vw, 28px);
+    color: #fff;
+    white-space: nowrap;
+    transition: transform 0.35s var(--ease);
+  }
+  .cifras li:hover {
+    color: #fff;
+  }
+  .cifras li:hover::before {
+    width: 100%;
+  }
+  .cifras li:hover b {
+    transform: translateY(-3px);
   }
 
-  @media (max-width: 1220px) {
-    .grid {
-      min-height: min(calc(100svh - 72px), 900px);
-    }
-    /* Más estrecho: la foto deja sitio a las notas para que no se salgan */
-    .figure {
-      width: min(80%, calc((min(100svh - 72px, 900px) - 32px - var(--estante)) * 1400 / 1830));
-    }
-  }
-
-  @media (max-width: 1366px) {
-    .ln {
-      width: min(var(--len, 90px), 48px);
-    }
-  }
-
-  @media (max-width: 1024px) {
-    .grid {
-      grid-template-columns: 1fr;
-      min-height: 0;
-    }
-    .texto {
-      display: block;
-      padding-block: clamp(32px, 5vh, 64px);
-      padding-right: 0;
-    }
-    .cifras {
-      grid-template-columns: 1fr 1fr;
-      width: 100%;
-    }
-    .cifras div {
-      padding: 12px 16px;
-    }
-    .foto {
-      margin-inline: calc(var(--gut) * -1);
-      padding: 24px 0 24px;
-    }
-    .foto::before {
-      inset: 0;
-    }
-    .figure {
-      width: min(calc(100% - 2 * var(--gut)), 420px);
-      flex: none;
-    }
-    .estante {
-      --estante: 140px;
-      box-shadow: none;
-      clip-path: none;
-      padding-inline: var(--gut);
-    }
-    .call {
-      display: none;
-    }
-    .notas {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      list-style: none;
-      margin: 20px 0 0;
-      padding: 0 var(--gut);
-    }
-    .notas li {
-      display: flex;
-      flex-direction: column;
-      background: #fff;
-      padding: 8px 12px;
-      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
-      line-height: 1.25;
-    }
-    .notas b {
-      font-size: 13px;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-    }
-    .notas span {
-      font-size: 14px;
-      color: var(--body);
-    }
-  }
-
-  /* Entrada al cargar: el texto sube por partes, la máquina entra y las notas se dibujan una a una
-     desde la máquina, como las cotas de un plano. Solo si el sistema no pide menos movimiento. */
+  /* Entrada: el rotor llega girando y frena hasta pararse, como al final de un ciclo; el texto se descubre línea a
+     línea desde abajo */
   @media (prefers-reduced-motion: no-preference) {
-    .texto > * {
-      animation: sube 0.7s var(--ease) both;
+    .foto {
+      animation: frena 2.6s cubic-bezier(0.16, 0.84, 0.24, 1) both;
+    }
+    .texto > *,
+    .cifras {
+      animation: sube 0.9s var(--ease) both;
+    }
+    h1 {
+      animation-name: descubre;
     }
     .texto > :nth-child(2) {
-      animation-delay: 0.08s;
+      animation-delay: 0.25s;
     }
     .texto > :nth-child(3) {
-      animation-delay: 0.16s;
+      animation-delay: 0.38s;
     }
-    .texto > :nth-child(4) {
-      animation-delay: 0.24s;
+    .cifras {
+      animation-delay: 0.55s;
     }
-    .texto > :nth-child(5) {
-      animation-delay: 0.32s;
+  }
+  @keyframes frena {
+    from {
+      transform: rotate(-28deg) scale(1.55);
+      filter: blur(6px) brightness(0.6);
     }
-    .lienzo img {
-      animation: entra-foto 1s var(--ease) 0.15s both;
+    55% {
+      filter: blur(0) brightness(1);
     }
-    .ficha {
-      animation: sube 0.6s var(--ease) 0.5s both;
+    to {
+      transform: none;
     }
-    .spin {
-      animation:
-        spin 14s linear infinite,
-        aparece 0.6s ease 0.9s both;
+  }
+  @keyframes descubre {
+    from {
+      clip-path: inset(0 0 100% 0);
+      transform: translateY(24px);
     }
-    .call::before {
-      animation: punto 0.4s var(--ease) calc(0.9s + var(--i) * 0.25s) both;
-    }
-    .ln {
-      transform-origin: left;
-      animation: linea 0.45s var(--ease) calc(1.05s + var(--i) * 0.25s) both;
-    }
-    .call > span {
-      animation: aparece 0.4s ease calc(1.35s + var(--i) * 0.25s) both;
+    to {
+      clip-path: inset(0 0 -10% 0);
     }
   }
   @keyframes sube {
     from {
       opacity: 0;
-      transform: translateY(16px);
+      transform: translateY(18px);
     }
   }
-  @keyframes entra-foto {
-    from {
-      opacity: 0;
-      transform: translateX(40px);
+
+  /* Móvil: la foto ocupa la mitad de arriba, con el buje a la vista, y se funde con el fondo oscuro del texto */
+  @media (max-width: 1024px) {
+    .foto {
+      inset: 0;
+      width: 100%;
+      height: 58%;
+      object-position: 100% 50%;
+      translate: none;
     }
-  }
-  @keyframes aparece {
-    from {
-      opacity: 0;
+    .hero::before {
+      background: linear-gradient(0deg, #111315 0%, #111315 44%, rgba(17, 19, 21, 0.5) 54%, rgba(17, 19, 21, 0) 74%);
     }
-  }
-  @keyframes punto {
-    from {
-      transform: scale(0);
+    .contenido {
+      min-height: calc(100svh - 72px);
+      justify-content: flex-end;
+      padding-block: 46svh 32px;
     }
-  }
-  @keyframes linea {
-    from {
-      transform: scaleX(0);
+    .cifras {
+      grid-template-columns: 1fr 1fr;
+      row-gap: 4px;
+      margin-top: 36px;
     }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .spin {
-      animation: none;
+    .cifras li:nth-child(3) {
+      padding-left: 0;
+    }
+    .cifras li:nth-child(3)::after {
+      display: none;
     }
   }
 </style>
