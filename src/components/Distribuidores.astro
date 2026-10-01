@@ -38,16 +38,16 @@ const pasos = [
   },
 ];
 
-// La ruta (lienzo de 1200 x 740: el ancho se estira, el alto es fijo en píxeles) y el punto exacto de cada parada sobre ella.
+// La ruta (lienzo de 1200 x 640: el ancho se estira, el alto es fijo en píxeles) y el punto exacto de cada parada sobre ella.
 // Las paradas están al 16, 39, 63 y 84 % del recorrido; la línea se dibuja a ritmo constante,
 // así que cada rotor sale justo cuando la línea llega a él.
 const ruta =
-  'M0,340 C120,340 150,340 190,340 C340,340 360,390 470,390 C580,390 600,340 760,340 C880,340 900,390 1010,390 C1100,390 1150,380 1200,370';
+  'M0,300 C120,300 150,300 190,300 C340,300 360,345 470,345 C580,345 600,300 760,300 C880,300 900,345 1010,345 C1100,345 1150,335 1200,325';
 const paradas = [
-  { x: 196.7, y: 340, t: 0.16 },
-  { x: 470.9, y: 390, t: 0.39 },
-  { x: 757.6, y: 340, t: 0.63 },
-  { x: 1006.3, y: 390, t: 0.84 },
+  { x: 196.7, y: 300, t: 0.16 },
+  { x: 470.9, y: 345, t: 0.39 },
+  { x: 757.6, y: 300, t: 0.63 },
+  { x: 1006.3, y: 345, t: 0.84 },
 ];
 const DIBUJO = 2.6; // segundos que tarda la línea
 
@@ -69,16 +69,18 @@ function rotor(n: number) {
   return s + '<circle cx="50" cy="50" r="11" fill="#dd040a"/><circle cx="50" cy="50" r="4" fill="#fff"/>';
 }
 
-// Silueta de un rotor de 12 tubos, enorme y casi invisible, que gira muy despacio en el fondo.
-function silueta() {
+// Siluetas de rotor del fondo: una grande a la derecha (12 tubos) y otra menor a la izquierda (6 tubos)
+// que gira al revés. Aro, eje y uno de cada tres tubos en rojo.
+function silueta(n: number) {
   let s =
-    '<circle cx="50" cy="50" r="49"/><circle cx="50" cy="50" r="45"/><circle cx="50" cy="50" r="9"/><circle cx="50" cy="50" r="4"/>';
-  for (let i = 0; i < 12; i++) {
-    const a = (i / 12) * 2 * Math.PI;
+    '<circle class="aro" cx="50" cy="50" r="49"/><circle cx="50" cy="50" r="45"/>' +
+    '<circle class="eje" cx="50" cy="50" r="9"/><circle cx="50" cy="50" r="4"/>';
+  for (let i = 0; i < n; i++) {
+    const a = (i / n) * 2 * Math.PI;
     const c = Math.cos(a);
     const sn = Math.sin(a);
     s +=
-      `<circle cx="${(50 + 32 * c).toFixed(2)}" cy="${(50 + 32 * sn).toFixed(2)}" r="6.5"/>` +
+      `<circle${i % 3 ? '' : ' class="tubo"'} cx="${(50 + 32 * c).toFixed(2)}" cy="${(50 + 32 * sn).toFixed(2)}" r="${n > 8 ? 6.5 : 8}"/>` +
       `<line x1="${(50 + 11 * c).toFixed(2)}" y1="${(50 + 11 * sn).toFixed(2)}" x2="${(50 + 24 * c).toFixed(2)}" y2="${(50 + 24 * sn).toFixed(2)}"/>`;
   }
   return s;
@@ -87,7 +89,8 @@ function silueta() {
 
 <section class="sec dist" id="distribuidores">
   <div class="fondo" aria-hidden="true"></div>
-  <svg class="silueta" viewBox="0 0 100 100" aria-hidden="true" set:html={silueta()} />
+  <svg class="silueta dcha" viewBox="0 0 100 100" aria-hidden="true" set:html={silueta(12)} />
+  <svg class="silueta izq" viewBox="0 0 100 100" aria-hidden="true" set:html={silueta(6)} />
   <div class="wrap">
     <div class="cab ap">
       <h2>
@@ -104,7 +107,7 @@ function silueta() {
     </div>
 
     <div class="ruta" style={`--dibujo:${DIBUJO}s`}>
-      <svg class="linea" viewBox="0 0 1200 740" preserveAspectRatio="none" aria-hidden="true">
+      <svg class="linea" viewBox="0 0 1200 640" preserveAspectRatio="none" aria-hidden="true">
         <path class="guia" d={ruta}></path>
         <path class="traz" d={ruta}></path>
       </svg>
@@ -115,7 +118,7 @@ function silueta() {
           return (
             <li
               class={i % 2 ? 'abajo' : 'arriba'}
-              style={`--x:${((q.x / 1200) * 100).toFixed(2)}%;--y:${q.y}px;--t:${t}s;--w:${96 + i * 8}px;--i:${i}`}
+              style={`--x:${((q.x / 1200) * 100).toFixed(2)}%;--y:${q.y}px;--t:${t}s;--w:${84 + i * 8}px;--i:${i}`}
             >
               <div class="rotor" aria-hidden="true" data-tubos={p.tubos}>
                 <div class="haz" />
@@ -180,11 +183,13 @@ function silueta() {
       { threshold: 0.2 },
     );
     sec.querySelectorAll('.ap, .ruta').forEach((b) => obs.observe(b));
+    // Las siluetas del fondo solo giran mientras la sección se ve
+    new IntersectionObserver(([e]) => sec.classList.toggle('activa', e.isIntersecting)).observe(sec);
   }
 </script>
 
 <style>
-  /* Sección oscura: foto de laboratorio muy apagada, la silueta de un rotor girando despacio y el contenido delante */
+  /* Sección oscura: foto de laboratorio, dos siluetas de rotor girando despacio y el contenido delante */
   .dist {
     position: relative;
     isolation: isolate;
@@ -197,26 +202,47 @@ function silueta() {
     inset: -20px;
     z-index: -1;
     background: url('/img/fotos/lab-235.webp') center / cover;
-    filter: blur(8px) grayscale(0.7) brightness(0.3);
+    filter: blur(4px) grayscale(0.4) brightness(0.5);
   }
   .dist::before {
     content: '';
     position: absolute;
     inset: 0;
-    background: radial-gradient(120% 90% at 30% 40%, rgba(21, 24, 27, 0.55), rgba(21, 24, 27, 0.92));
+    background: radial-gradient(120% 90% at 70% 45%, rgba(21, 24, 27, 0.35), rgba(21, 24, 27, 0.85));
   }
   .silueta {
     position: absolute;
-    top: 50%;
-    right: -18%;
-    width: min(1100px, 90vw);
     aspect-ratio: 1;
-    translate: 0 -50%;
     fill: none;
-    stroke: #fff;
-    stroke-width: 0.12;
-    opacity: 0.07;
+    stroke: rgba(255, 255, 255, 0.12);
+    stroke-width: 0.14;
+    will-change: transform;
     animation: gira 240s linear infinite;
+  }
+  .silueta :global(.aro),
+  .silueta :global(.tubo) {
+    stroke: rgba(221, 4, 10, 0.38);
+    stroke-width: 0.22;
+  }
+  .silueta :global(.eje) {
+    stroke: rgba(221, 4, 10, 0.5);
+  }
+  /* Solo gira mientras la sección está a la vista */
+  .dist:not(:global(.activa)) .silueta {
+    animation-play-state: paused;
+  }
+  .dcha {
+    top: 50%;
+    right: -16%;
+    width: clamp(560px, 70vw, 1100px);
+    translate: 0 -50%;
+  }
+  .izq {
+    left: -9%;
+    bottom: -6%;
+    width: clamp(260px, 30vw, 460px);
+    animation-direction: reverse;
+    animation-duration: 160s;
   }
   .wrap {
     position: relative;
@@ -247,14 +273,14 @@ function silueta() {
     max-width: 44ch;
   }
 
-  /* La ruta: 740 px de alto; en horizontal, rotores y textos colocados en porcentajes */
+  /* La ruta: 640 px de alto; en horizontal, rotores y textos colocados en porcentajes */
   .ruta {
     position: relative;
-    margin-top: clamp(40px, 5vw, 72px);
+    margin-top: clamp(24px, 3vw, 40px);
   }
   @media (min-width: 901px) {
     .ruta {
-      height: 740px;
+      height: 640px;
     }
     li {
       display: contents;
@@ -279,7 +305,7 @@ function silueta() {
     }
     li:nth-child(2) .texto {
       left: 30%;
-      top: 520px;
+      top: 455px;
     }
     li:nth-child(3) .texto {
       left: 56%;
@@ -287,7 +313,7 @@ function silueta() {
     }
     li:nth-child(4) .texto {
       left: 77%;
-      top: 520px;
+      top: 455px;
     }
   }
   .linea {
@@ -388,7 +414,7 @@ function silueta() {
   strong {
     display: block;
     margin-top: 4px;
-    font-size: clamp(48px, 5vw, 76px);
+    font-size: clamp(40px, 4vw, 60px);
     line-height: 0.95;
     letter-spacing: -0.02em;
   }
@@ -399,8 +425,8 @@ function silueta() {
     letter-spacing: 0;
   }
   .texto h3 {
-    margin: 14px 0 6px;
-    font-size: 20px;
+    margin: 10px 0 4px;
+    font-size: 18px;
   }
   .texto p {
     margin: 0;
@@ -565,6 +591,9 @@ function silueta() {
 
   /* Móvil y tableta: la ruta se apila; cada rotor a la izquierda de su texto */
   @media (max-width: 900px) {
+    .izq {
+      display: none;
+    }
     .cab {
       grid-template-columns: 1fr;
     }
