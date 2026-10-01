@@ -209,22 +209,34 @@ Ponerlos antes haría que todos los enlaces llevaran a la portada.
   - **Portada menos alta con todo junto:** sin hueco, pero la máquina se hacía más pequeña, y ahí irá el modelo
     3D.
 
-### 4.5 Rediseño: foto de laboratorio a pantalla completa (1-10-2026)
+### 4.5 Rediseño: el rotor de cerca a pantalla completa (1-10-2026)
 
 - **Antes:** texto a la izquierda y, a la derecha, la Digicen 22 recortada sobre un recuadro oscuro con retícula y
   notas técnicas; las cuatro cifras en cajas.
-- **Ahora:** una foto real de la empresa (un técnico con guante señalando la pantalla de una centrífuga) ocupa toda
-  la portada. Encima, el titular en blanco con "ción" en rojo, la frase, los dos botones y, al pie, las cuatro razones
-  (48 h, 1 semana, 3 años, ISO 13485) sobre una línea fina, sin cajas. Un velo oscuro solo en la zona del texto para
-  que se lea; la mano queda limpia. Al cargar, la foto se asienta despacio y el texto sube.
-- **Por qué es mejor:** entra por la vista y transmite laboratorio y oficio de un vistazo, como las webs de
-  fabricantes de equipos de referencia. Una sola imagen grande y poco texto: menos elementos que la versión anterior,
-  más limpio. La foto es vuestra, no de banco de imágenes. Pesa 33 KB (14 KB en móvil).
-- **Móvil:** la foto ocupa la mitad de arriba, con la mano a la vista, y se funde con el fondo oscuro donde va el texto.
+- **Ahora:** la foto de un rotor RT 286 de cerca (buje, tapones rojos, "R.P.M Max. 4.200" y "orto alresa" grabados)
+  ocupa toda la portada. Encima, el titular en blanco con "ción" en rojo, la frase, los dos botones y, al pie, las
+  cuatro razones (48 h, 1 semana, 3 años, ISO 13485) sobre una línea fina, sin cajas. Un velo oscuro solo donde va el
+  texto; el buje queda limpio.
+- **Movimiento:**
+  - Al entrar, el rotor llega girando y frena hasta pararse, como al final de un ciclo de centrifugación. El titular
+    se descubre desde abajo y el resto sube detrás.
+  - Con ratón, la foto se desplaza unos píxeles siguiendo el puntero y un brillo suave ilumina el metal y los tapones
+    por donde pasa.
+  - Botones: "Ver la gama" sube un poco, le cruza un destello y se ilumina en rojo; "Soy distribuidor" se rellena de
+    blanco de izquierda a derecha. En los dos la » avanza.
+  - Cifras: al pasar el ratón crece encima la misma raya roja de las tarjetas de la web y la cifra sube.
+  - Con "reducir movimiento" activado en el sistema, todo queda quieto.
+- **Por qué es mejor:** es vuestro producto, de cerca, sin decir nada: el visitante ve una centrífuga por dentro y
+  vuestra marca grabada en el rotor. Una sola imagen y poco texto, más limpio que la versión anterior. El movimiento
+  cuenta algo (un rotor que frena), no es adorno.
+- **Móvil:** la foto ocupa la mitad de arriba, con el buje a la vista, y se funde con el fondo oscuro del texto.
+- **Pendiente:** la foto viene de una miniatura de vídeo (686 px) ampliada; se pide a la empresa el original en alta
+  o el vídeo, que podría ir de fondo en movimiento.
 - **Descartados el mismo día:**
-  - **Cartel con "centrifugación" a todo el ancho y cinco máquinas recortadas turnándose delante:** no gustó; la
-    centrífuga recortada seguía pareciendo catálogo.
-  - **Vitrina gris con selector de modelos:** misma estructura de dos columnas de siempre, no cambiaba la sensación.
+  - **Foto del técnico con guante (lab-114) de fondo:** ya se usaba en otras secciones.
+  - **Cartel con "centrifugación" a todo el ancho y cinco máquinas recortadas turnándose delante:** la centrífuga
+    recortada seguía pareciendo catálogo.
+  - **Vitrina gris con selector de modelos:** misma estructura de dos columnas de siempre.
   - Antes, en otro hilo: la máquina gigante sobre blanco, máquina con foto de la fábrica, fachada con titular y un
     modelo 3D genérico de Sketchfab.
 - **El modelo 3D:** cuando llegue el CAD de la Digicen 22 se decidirá dónde va; ya no ocupa la portada.
