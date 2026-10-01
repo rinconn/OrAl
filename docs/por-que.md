@@ -431,8 +431,9 @@ entrega).
   despacio. Después entra su texto.
 - Las paradas de arriba proyectan el rotor hacia arriba y las de abajo hacia abajo, colgando de la línea, para
   que cada rotor quede junto a su texto.
-- Detrás, la silueta enorme de un rotor de 12 tubos, casi invisible, gira muy despacio (una vuelta cada cuatro
-  minutos). Se nota sin que se mire.
+- Detrás, la silueta enorme de un rotor de 12 tubos gira muy despacio (una vuelta cada cuatro minutos), con el aro y
+  algunos tubos en rojo tenue; abajo a la izquierda, otra menor de 6 tubos gira al revés. Solo giran mientras la
+  sección se ve.
 - En el móvil la ruta se apila: cada rotor a la izquierda de su texto, uno detrás de otro.
 - Si el sistema pide menos movimiento, no hay animaciones, los rotores no giran y la silueta del fondo queda quieta.
 
@@ -461,7 +462,7 @@ Hasta entonces, los dos enlaces llevan al contacto del pie.
   web hecha con plantilla o con IA.
 - **Ahora:** sin cuadrados ni tarjetas. Una ruta curva, como la de un envío en un mapa, y en cada parada un rotor
   de centrífuga proyectado. Cada rotor lleva más tubos que el anterior (4, 6, 8 y 12), como el pedido que avanza.
-  La sección pasa a oscura, con una foto del laboratorio muy apagada y la silueta de un rotor girando despacio.
+  La sección pasa a oscura, con una foto del laboratorio muy apagada y dos siluetas de rotor girando despacio, con toques de rojo.
 - **Por qué es mejor:**
   - Las cifras quedan sueltas, grandes y con aire, y la imagen que se recuerda es un rotor, que es lo que fabrica
     la empresa. Ninguna otra web de centrífugas cuenta su servicio así.
