@@ -460,7 +460,7 @@ Hasta entonces, los dos enlaces llevan al contacto del pie.
 - **Antes (versión del 30-09):** cuatro cuadrados sobre una línea recta y una tarjeta bajo cada uno. Mirando la
   portada entera se vio que ese esquema (casillas en una línea y tarjetas iguales) es de los que más delatan una
   web hecha con plantilla o con IA.
-- **Ahora:** sin cuadrados ni tarjetas. Una ruta en zigzag, con una recta de cada parada a la siguiente, y en cada parada un rotor
+- **Ahora:** sin cuadrados ni tarjetas. Una ruta en onda suave, hecha como un tubo de sangre, y en cada parada un rotor
   de centrífuga proyectado. Cada rotor lleva más tubos que el anterior (4, 6, 8 y 12), como el pedido que avanza.
   La sección pasa a oscura, con una foto del laboratorio muy apagada y dos siluetas de rotor girando despacio, con toques de rojo.
 - **Por qué es mejor:**
@@ -482,11 +482,12 @@ Hasta entonces, los dos enlaces llevan al contacto del pie.
 - **Hueco preparado:** cuando la empresa pase los archivos CAD de los rotores, cada dibujo se cambia por su modelo
   real en 3D (unos 200-400 KB cada uno, cargado solo al llegar a la sección) sin tocar la ruta ni los textos.
   También se cambiará la foto de fondo por una buena del laboratorio. Ver `docs/pendiente-empresa.md`.
-- **La ruta en zigzag:** primero fue una onda suave, pero las ondas así son de las que más se ven en webs de
-  plantilla. Se probó en tramos rectos tipo plano de metro y quedó en un zigzag: una recta larga de cada parada a
-  la siguiente, alternando arriba y abajo, que se lee como un recorrido. La línea no es un trazo plano: es un tubo transparente (pared clara, interior
-  oscuro) que se va llenando de sangre hasta cada rotor, y una vez lleno unos destellos lo recorren muy despacio.
-  Así la ruta habla del oficio (tubos y muestras) en vez de ser una línea genérica. Se para fuera de pantalla.
+- **La ruta, un tubo de sangre:** la línea es una onda suave que sube y baja entre paradas. Se probaron tramos rectos
+  tipo plano de metro, un zigzag, una escalera, un serpentín y un colector con ramales; ninguno mejoraba la onda y
+  se volvió a ella. Lo que la hace nuestra es el trazo: un tubo transparente y grueso (pared clara, interior oscuro)
+  que se va llenando de sangre hasta cada rotor, y una vez lleno lo recorren despacio burbujas de un rojo más vivo.
+  Así la ruta habla del oficio (tubos y muestras) en vez de ser una línea genérica. Las burbujas se paran fuera de
+  pantalla y siempre son redondas, aunque el dibujo se estire a lo ancho.
 - **Orden de la portada:** Distribuidores pasa a ir después de Empresa. Así las dos secciones oscuras (Tecnología y
   Distribuidores) no van seguidas y la portada alterna claro y oscuro.
 - **Movimiento del fondo:** las siluetas giran muy despacio (una vuelta cada seis minutos la grande), crecen y
