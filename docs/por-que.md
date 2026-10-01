@@ -209,31 +209,32 @@ Ponerlos antes haría que todos los enlaces llevaran a la portada.
   - **Portada menos alta con todo junto:** sin hueco, pero la máquina se hacía más pequeña, y ahí irá el modelo
     3D.
 
-### 4.5 Rediseño: rotores con REI System a pantalla completa (1-10-2026)
+### 4.5 Rediseño: el rotor de cerca a pantalla completa (1-10-2026)
 
 - **Antes:** texto a la izquierda y, a la derecha, la Digicen 22 recortada sobre un recuadro oscuro con retícula y
   notas técnicas; las cuatro cifras en cajas.
-- **Ahora:** la foto de los rotores vistos desde arriba, con una mano sacando el tirador rojo del REI System (Catálogo
-  General 2025, pág. 31), ocupa toda la portada. Encima, el titular en blanco con "ción" en rojo, la frase, los dos botones y, al pie, las
+- **Ahora:** el rotor RT 266 de cerca (buje, tapones rojos, "R.P.M Max. 4.200" y "orto alresa" grabados), sacado
+  del vídeo de la empresa en YouTube, ocupa toda la portada. Encima, el titular en blanco con "ción" en rojo, la frase, los dos botones y, al pie, las
   cuatro razones (48 h, 1 semana, 3 años, ISO 13485) sobre una línea fina, sin cajas. Un velo oscuro solo donde va el
-  texto; la mano y el tirador rojo quedan limpios.
+  texto; el buje queda limpio.
 - **Movimiento:**
-  - Al entrar, los rotores llegan girando y frenan hasta pararse, como al final de un ciclo de centrifugación. El titular
+  - Al entrar, el rotor llega girando y frena hasta pararse, como al final de un ciclo de centrifugación. El titular
     se descubre desde abajo y el resto sube detrás.
-  - Con ratón, la foto se desplaza unos píxeles siguiendo el puntero y un brillo suave ilumina el metal y el rojo
+  - Con ratón, la foto se desplaza unos píxeles siguiendo el puntero y un brillo suave ilumina el metal y los tapones
     por donde pasa.
   - Botones: "Ver la gama" sube un poco, le cruza un destello y se ilumina en rojo; "Soy distribuidor" se rellena de
     blanco de izquierda a derecha. En los dos la » avanza.
   - Cifras: al pasar el ratón crece encima la misma raya roja de las tarjetas de la web y la cifra sube.
   - Con "reducir movimiento" activado en el sistema, todo queda quieto.
-- **Por qué es mejor:** es vuestro producto, de cerca y en manos de una persona: el visitante ve los rotores, vuestra
-  marca grabada y el REI System, lo que os diferencia. Una sola imagen y poco texto, más limpio que la versión anterior. El movimiento
+- **Por qué es mejor:** es vuestro producto, de cerca, sin decir nada: el visitante ve una centrífuga por dentro y
+  vuestra marca grabada en el rotor. Una sola imagen y poco texto, más limpio que la versión anterior. El movimiento
   cuenta algo (un rotor que frena), no es adorno.
-- **Móvil:** la foto ocupa la mitad de arriba, con la mano y el tirador rojo a la vista, y se funde con el fondo oscuro del texto.
+- **Móvil:** la foto ocupa la mitad de arriba, con el buje a la vista, y se funde con el fondo oscuro del texto.
 - **Descartados el mismo día:**
   - **Foto del técnico con guante (lab-114) de fondo:** ya se usaba en otras secciones.
-  - **Rotor RT 286 de cerca sacado del vídeo de YouTube:** la imagen más grande disponible es de 686 px (o un
-    fotograma movido a 1280 px); en pantalla grande se veía borrosa.
+  - **Miniatura de YouTube del mismo rotor (686 px):** se veía borrosa; se sustituyó por una captura del vídeo a
+    1315 px.
+  - **Rotores con REI System del catálogo (pág. 31):** nítida, pero ya sale en Tecnología.
   - **Cartel con "centrifugación" a todo el ancho y cinco máquinas recortadas turnándose delante:** la centrífuga
     recortada seguía pareciendo catálogo.
   - **Vitrina gris con selector de modelos:** misma estructura de dos columnas de siempre.
