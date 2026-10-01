@@ -29,7 +29,7 @@ Hasta que se publique la web, todo va en "Sin publicar"; al publicar se cierra l
 ### Cambiado
 
 - Distribuidores: fuera los cuadrados sobre la línea y las tarjetas. Ahora una ruta curva se dibuja sobre un fondo
-  de laboratorio oscuro con una red de puntos tenue, y en cada parada un haz de luz proyecta un rotor que gira, con
+  de laboratorio oscuro con la silueta de un rotor girando despacio, y en cada parada un haz de luz proyecta un rotor que gira, con
   4, 6, 8 y 12 tubos. Hueco preparado para cambiarlos por los rotores reales en 3D.
 - Gama: el filtro por uso ya no baja con la página; se queda encima de las fichas y no tapa las fotos.
 
