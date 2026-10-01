@@ -213,10 +213,10 @@ Ponerlos antes haría que todos los enlaces llevaran a la portada.
 
 - **Antes:** texto a la izquierda y, a la derecha, la Digicen 22 recortada sobre un recuadro oscuro con retícula y
   notas técnicas; las cuatro cifras en cajas.
-- **Ahora:** el rotor RT 266 de cerca (buje, tapones rojos, "R.P.M Max. 4.200" y "orto alresa" grabados), sacado
-  del vídeo de la empresa en YouTube, ocupa toda la portada. Encima, el titular en blanco con "ción" en rojo, la frase, los dos botones y, al pie, las
+- **Ahora:** una foto vuestra desde arriba: manos con guantes cargando tubos de tapón rojo en un rotor RT 267, con
+  "ortoalresa" grabado, ocupa toda la portada. Encima, el titular en blanco con "ción" en rojo, la frase, los dos botones y, al pie, las
   cuatro razones (48 h, 1 semana, 3 años, ISO 13485) sobre una línea fina, sin cajas. Un velo oscuro solo donde va el
-  texto; el buje queda limpio.
+  texto; el rotor y los tubos de la derecha quedan limpios.
 - **Movimiento:**
   - Al entrar, el rotor llega girando y frena hasta pararse, como al final de un ciclo de centrifugación. El titular
     se descubre desde abajo y el resto sube detrás.
@@ -226,14 +226,15 @@ Ponerlos antes haría que todos los enlaces llevaran a la portada.
     blanco de izquierda a derecha. En los dos la » avanza.
   - Cifras: al pasar el ratón crece encima la misma raya roja de las tarjetas de la web y la cifra sube.
   - Con "reducir movimiento" activado en el sistema, todo queda quieto.
-- **Por qué es mejor:** es vuestro producto, de cerca, sin decir nada: el visitante ve una centrífuga por dentro y
-  vuestra marca grabada en el rotor. Una sola imagen y poco texto, más limpio que la versión anterior. El movimiento
+- **Por qué es mejor:** es vuestro producto en uso, en manos de una persona: el visitante ve una centrífuga por
+  dentro, cargándose, con vuestra marca grabada. Foto propia y nítida. Una sola imagen y poco texto, más limpio que la versión anterior. El movimiento
   cuenta algo (un rotor que frena), no es adorno.
 - **Móvil:** la foto ocupa la mitad de arriba, con el buje a la vista, y se funde con el fondo oscuro del texto.
 - **Descartados el mismo día:**
   - **Foto del técnico con guante (lab-114) de fondo:** ya se usaba en otras secciones.
   - **Miniatura de YouTube del mismo rotor (686 px):** se veía borrosa; se sustituyó por una captura del vídeo a
     1315 px.
+  - **Captura del vídeo del rotor RT 266 (1315 px):** mejor, pero algo blanda y sin personas.
   - **Rotores con REI System del catálogo (pág. 31):** nítida, pero ya sale en Tecnología.
   - **Cartel con "centrifugación" a todo el ancho y cinco máquinas recortadas turnándose delante:** la centrífuga
     recortada seguía pareciendo catálogo.
