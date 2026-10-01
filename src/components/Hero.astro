@@ -59,28 +59,19 @@ const equipo = {
     <div class="foto">
       <figure class="figure">
         <div class="lienzo">
-          <img
-            src="/img/productos/digicen-22.webp"
-            alt="Centrífuga Digicen 22 con la tapa abierta y el rotor a la vista"
-            width="1400"
-            height="1830"
-            fetchpriority="high"
-          />
-          <span class="spin" aria-hidden="true"></span>
+          {/* PRUEBA: modelo genérico de Sketchfab solo para ver cómo quedaría el visor. No fusionar. */}
+          <iframe
+            class="visor"
+            title="Centrífuga en 3D (prueba)"
+            src="https://sketchfab.com/models/efe15cf6be9c49d5be9f2d3526fca820/embed?autostart=1&autospin=0.3&ui_theme=dark&ui_infos=0&ui_controls=0&ui_stop=0&ui_watermark=0&ui_hint=2&dnt=1"
+            allow="autoplay; fullscreen; xr-spatial-tracking"
+            allowfullscreen
+          ></iframe>
           <span class="cota" aria-hidden="true">
             <i></i>
             <i></i>
             <span>{equipo.ancho}</span>
           </span>
-          {notas.map((n, i) => (
-            <span class="call" style={`left:${n.x}%;top:${n.y}%;--len:${n.linea}px;--i:${i}`} aria-hidden="true">
-              <i class="ln"></i>
-              <span>
-                {n.titulo}
-                {n.detalle && <small>{n.detalle}</small>}
-              </span>
-            </span>
-          ))}
         </div>
       </figure>
       <div class="estante">
@@ -361,6 +352,13 @@ const equipo = {
   /* Foto y notas comparten caja para que las posiciones en % sean sobre la imagen */
   .lienzo {
     position: relative;
+  }
+  .visor {
+    display: block;
+    width: 100%;
+    aspect-ratio: 1400 / 1830;
+    border: 0;
+    background: transparent;
   }
   .figure img {
     width: 100%;
