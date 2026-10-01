@@ -397,12 +397,12 @@ entrega).
 - **Antes:** la web no tenía nada para distribuidores. El formulario de contacto ponía "Cliente final" como
   primera opción. El prototipo de esta sección llevaba una etiqueta pequeña en mayúsculas, cuatro casillas
   iguales y dos botones del mismo peso, que además iban al mismo sitio.
-- **Ahora:** las razones para trabajar con Orto Alresa se cuentan como **el recorrido de un pedido**, en
-  cuatro tarjetas colgadas de una línea. Llevan el mismo borde gris oscuro que las tarjetas de la gama y una
-  esquina gris oscuro arriba a la derecha, que recuerda a las pestañas del catálogo:
+- **Ahora:** las razones para trabajar con Orto Alresa se cuentan como **el recorrido de un pedido**: una ruta
+  roja que se dibuja sobre un fondo de laboratorio y, en cada parada, un haz de luz que proyecta un rotor girando
+  (rediseño del 1 de octubre de 2026, ver 7.6):
   1. **Stock:** haces el pedido y hay existencias de toda la gama.
-  2. **1 semana:** te llega al almacén. Es el plazo medio de 2024 y 2025 según la web actual; en la tarjeta no
-     se ponen los años para que no se quede vieja.
+  2. **1 semana:** te llega al almacén. Es el plazo medio de 2024 y 2025 según la web actual; no se ponen los
+     años para que no se quede vieja.
   3. **48 h:** si tienes una duda, tienes respuesta, con puesta en marcha, reparaciones y formación online.
   4. **3 años:** tu cliente queda cubierto por la garantía, salvo la Minicen, que tiene 14 meses.
 - Debajo, una franja oscura remata la sección con el **OEM** ("¿Necesitas un equipo a medida?", tal como lo cuenta el catálogo) y **un solo
@@ -426,12 +426,15 @@ entrega).
 
 ### 7.3 Movimiento y efectos
 
-- Al llegar a la sección, la línea roja se dibuja de izquierda a derecha y las cuatro paradas aparecen una
-  detrás de otra, como un pedido que avanza. En el móvil la línea es vertical y se dibuja hacia abajo.
-- Al pasar el ratón por una tarjeta, sube un poco, le crece la raya roja arriba (como las tarjetas de
-  Tecnología), la esquina se pone roja y su cuadrado de la línea se rellena de rojo. La flecha del
-  botón se desplaza y el enlace del laboratorio se subraya en rojo, como los enlaces de Tecnología.
-- Si el sistema pide menos movimiento, no hay animaciones y todo se ve desde el principio.
+- Al llegar a la sección, la ruta roja se dibuja de izquierda a derecha a ritmo constante. Cuando llega a cada
+  parada se enciende un haz de luz y aparece un rotor con un parpadeo, como un proyector, y se queda girando
+  despacio. Después entra su texto.
+- Las paradas de arriba proyectan el rotor hacia arriba y las de abajo hacia abajo, colgando de la línea, para
+  que cada rotor quede junto a su texto.
+- Detrás, una red de puntos plana y tenue se mueve muy despacio y se ilumina un poco al pasar el ratón. Donde hay
+  texto o un rotor casi se apaga, para no estorbar la lectura.
+- En el móvil la ruta se apila: cada rotor a la izquierda de su texto, uno detrás de otro.
+- Si el sistema pide menos movimiento, no hay animaciones, los rotores no giran y la red queda quieta.
 
 ### 7.4 Descartados
 
@@ -450,6 +453,37 @@ La sección es el escaparate de una página de Distribuidores con:
   y qué datos quieren pedir.
 
 Hasta entonces, los dos enlaces llevan al contacto del pie.
+
+### 7.6 Rediseño: ruta, rotores proyectados y fondo de laboratorio (1-10-2026)
+
+- **Antes (versión del 30-09):** cuatro cuadrados sobre una línea recta y una tarjeta bajo cada uno. Mirando la
+  portada entera se vio que ese esquema (casillas en una línea y tarjetas iguales) es de los que más delatan una
+  web hecha con plantilla o con IA.
+- **Ahora:** sin cuadrados ni tarjetas. Una ruta curva, como la de un envío en un mapa, y en cada parada un rotor
+  de centrífuga proyectado. Cada rotor lleva más tubos que el anterior (4, 6, 8 y 12), como el pedido que avanza.
+  La sección pasa a oscura, con una foto del laboratorio muy apagada y una red de puntos tenue.
+- **Por qué es mejor:**
+  - Las cifras quedan sueltas, grandes y con aire, y la imagen que se recuerda es un rotor, que es lo que fabrica
+    la empresa. Ninguna otra web de centrífugas cuenta su servicio así.
+  - La animación se apoya en el producto, no en adornos genéricos.
+  - Es ligera: los rotores son dibujos vectoriales sin imágenes, y la red se dibuja en el navegador, con 60 puntos
+    como máximo, y se para cuando la sección no se ve. Medida a 60 imágenes por segundo.
+- **Se probó y se descartó:**
+  - **Pompas que crecen:** cuatro círculos de tamaño creciente. Más sencillo, pero los círculos con una cifra dentro
+    también son muy de plantilla.
+  - **Una frase como en una revista:** el recorrido en una sola frase grande. Elegante, pero sin la sensación de
+    recorrido.
+  - **Línea punteada** como guía de la ruta: se cambió por una línea continua y tenue, más limpia.
+  - **Red de puntos densa y con brillo**, como las de las fotos de tecnología: recargaba la sección. Se dejó plana,
+    con pocos puntos y muy tenue.
+- **Contra lo que se dijo en 7.4:** allí se descartó un panel oscuro después de Tecnología porque pesaba demasiado.
+  Ahora sí va oscuro porque el fondo es una foto apagada con movimiento y los rotores necesitan oscuridad para
+  verse como proyectados; la franja OEM pasa a gris translúcido para no sumar otro bloque macizo.
+- **Hueco preparado:** cuando la empresa pase los archivos CAD de los rotores, cada dibujo se cambia por su modelo
+  real en 3D (unos 200-400 KB cada uno, cargado solo al llegar a la sección) sin tocar la ruta ni los textos.
+  También se cambiará la foto de fondo por una buena del laboratorio. Ver `docs/pendiente-empresa.md`.
+- **Efecto al pasar el ratón:** ya no hay tarjetas, así que no se usa el efecto común de las tarjetas. Al pasar
+  por una parada, su haz de luz se aviva.
 
 ---
 
