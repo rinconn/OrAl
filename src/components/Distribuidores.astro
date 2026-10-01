@@ -38,15 +38,16 @@ const pasos = [
   },
 ];
 
-// La ruta en zigzag: una recta de parada a parada, sin curvas (lienzo de 1200 x 685: el ancho se estira, el alto es fijo en píxeles) y el punto exacto de cada parada sobre ella.
+// La ruta (lienzo de 1200 x 640: el ancho se estira, el alto es fijo en píxeles) y el punto exacto de cada parada sobre ella.
 // Las paradas están al 16, 39, 63 y 84 % del recorrido; la línea se dibuja a ritmo constante,
 // así que cada rotor sale justo cuando la línea llega a él.
-const ruta = 'M0,305 L196.7,305 L470.9,385 L757.6,305 L1006.3,385 H1200';
+const ruta =
+  'M0,300 C120,300 150,300 190,300 C340,300 360,345 470,345 C580,345 600,300 760,300 C880,300 900,345 1010,345 C1100,345 1150,335 1200,325';
 const paradas = [
-  { x: 196.7, y: 305, t: 0.159 },
-  { x: 470.9, y: 385, t: 0.391 },
-  { x: 757.6, y: 305, t: 0.632 },
-  { x: 1006.3, y: 385, t: 0.843 },
+  { x: 196.7, y: 300, t: 0.16 },
+  { x: 470.9, y: 345, t: 0.39 },
+  { x: 757.6, y: 300, t: 0.63 },
+  { x: 1006.3, y: 345, t: 0.84 },
 ];
 const DIBUJO = 2.6; // segundos que tarda la línea
 
@@ -106,11 +107,12 @@ function silueta(n: number) {
     </div>
 
     <div class="ruta" style={`--dibujo:${DIBUJO}s`}>
-      <svg class="linea" viewBox="0 0 1200 685" preserveAspectRatio="none" aria-hidden="true">
+      <svg class="linea" viewBox="0 0 1200 640" preserveAspectRatio="none" aria-hidden="true">
         <path class="pared" d={ruta}></path>
         <path class="hueco" d={ruta}></path>
         <path class="traz" d={ruta}></path>
-        <path class="flujo" d={ruta}></path>
+        <path class="pompa" d={ruta}></path>
+        <path class="pompa chica" d={ruta}></path>
       </svg>
       <ol>
         {pasos.map((p, i) => {
@@ -303,14 +305,14 @@ function silueta(n: number) {
     max-width: 44ch;
   }
 
-  /* La ruta: 685 px de alto; en horizontal, rotores y textos colocados en porcentajes */
+  /* La ruta: 640 px de alto; en horizontal, rotores y textos colocados en porcentajes */
   .ruta {
     position: relative;
     margin-top: clamp(24px, 3vw, 40px);
   }
   @media (min-width: 901px) {
     .ruta {
-      height: 685px;
+      height: 640px;
     }
     li {
       display: contents;
@@ -335,7 +337,7 @@ function silueta(n: number) {
     }
     li:nth-child(2) .texto {
       left: 30%;
-      top: 495px;
+      top: 455px;
     }
     li:nth-child(3) .texto {
       left: 56%;
@@ -343,7 +345,7 @@ function silueta(n: number) {
     }
     li:nth-child(4) .texto {
       left: 77%;
-      top: 495px;
+      top: 455px;
     }
   }
   .linea {
@@ -356,42 +358,50 @@ function silueta(n: number) {
   .pared,
   .hueco,
   .traz,
-  .flujo {
+  .pompa {
     fill: none;
     stroke-linecap: round;
     stroke-linejoin: round;
   }
-  /* La ruta es un tubo transparente (pared clara, interior oscuro) que se va llenando de sangre */
+  /* La ruta es un tubo transparente y grueso (pared clara, interior oscuro) que se va llenando de sangre */
   .pared {
-    stroke: rgba(255, 255, 255, 0.22);
-    stroke-width: 11;
+    stroke: rgba(255, 255, 255, 0.24);
+    stroke-width: 17;
   }
   .hueco {
-    stroke: rgba(12, 14, 16, 0.7);
-    stroke-width: 8;
+    stroke: rgba(12, 14, 16, 0.75);
+    stroke-width: 13;
   }
   .traz {
-    stroke: #b8040a;
-    stroke-width: 6;
+    stroke: #8e0307;
+    stroke-width: 11;
   }
-  /* Una vez lleno, unos destellos recorren el tubo muy despacio, como la sangre que circula */
-  .flujo {
-    stroke: rgba(255, 140, 140, 0.55);
-    stroke-width: 1.6;
-    stroke-dasharray: 10 70;
+  /* Una vez lleno, unas burbujas de un rojo más vivo lo recorren despacio.
+     Son trazos de largo 0 con punta redonda: círculos perfectos aunque el lienzo se estire */
+  .pompa {
+    vector-effect: non-scaling-stroke;
+    stroke: #ff2b30;
+    stroke-width: 7;
+    stroke-dasharray: 0 64;
     opacity: 0;
     transition: opacity 1s var(--ease) var(--dibujo);
-    animation: circula 14s linear infinite;
+    animation: circula 16s linear infinite;
   }
-  .ruta.vista .flujo {
+  .pompa.chica {
+    stroke: #ff6a6e;
+    stroke-width: 4;
+    stroke-dasharray: 0 80;
+    animation-duration: 22s;
+  }
+  .ruta.vista .pompa {
     opacity: 1;
   }
-  .dist:not(:global(.activa)) .flujo {
+  .dist:not(:global(.activa)) .pompa {
     animation-play-state: paused;
   }
   @keyframes circula {
     to {
-      stroke-dashoffset: -800;
+      stroke-dashoffset: -1280;
     }
   }
   ol {
@@ -559,8 +569,8 @@ function silueta(n: number) {
   }
   :global(.js) .traz {
     /* algo más que el largo de la ruta en el lienzo */
-    stroke-dasharray: 1280;
-    stroke-dashoffset: 1280;
+    stroke-dasharray: 1250;
+    stroke-dashoffset: 1250;
   }
   .ruta.vista .traz {
     animation: dibuja var(--dibujo) linear forwards;
