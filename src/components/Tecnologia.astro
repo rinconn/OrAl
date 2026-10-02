@@ -1,8 +1,10 @@
 ---
 import { rei, smartconnect, sistemas, ademas } from '../data/tecnologia';
+import Paso from './Paso.astro';
 ---
 
 <section class="tech" id="tecnologia">
+  <Paso desde="#111315" />
   <div class="wrap">
     <div class="cab ap">
       <h2>
@@ -229,9 +231,13 @@ import { rei, smartconnect, sistemas, ademas } from '../data/tecnologia';
     --mas-oscuro: #2c3034;
     --texto: #c9ced2;
     --raya: #4a5055;
+    position: relative;
     background: var(--mas-oscuro);
     color: #fff;
     padding-block: clamp(64px, 9vw, 128px);
+  }
+  .tech > .wrap {
+    position: relative;
   }
 
   .cab {

@@ -1,0 +1,81 @@
+---
+// Paso entre dos secciones oscuras: el color de la de arriba se funde hacia abajo y una raya roja se dibuja
+// desde el centro, con un destello que la recorre cada pocos segundos. Va como primer hijo de la sección.
+interface Props {
+  /** Color de la sección de arriba, que se funde en esta */
+  desde: string;
+}
+const { desde } = Astro.props;
+---
+
+<div class="paso" style={`--desde: ${desde}`} aria-hidden="true" data-paso>
+  <span></span>
+</div>
+
+<script>
+  const pasos = document.querySelectorAll('[data-paso]');
+  if (pasos.length && 'IntersectionObserver' in window) {
+    const obs = new IntersectionObserver(
+      (entradas) => {
+        for (const e of entradas) {
+          if (e.isIntersecting) {
+            e.target.classList.add('vista');
+            obs.unobserve(e.target);
+          }
+        }
+      },
+      { threshold: 0.2 },
+    );
+    pasos.forEach((p) => obs.observe(p));
+  } else {
+    pasos.forEach((p) => p.classList.add('vista'));
+  }
+</script>
+
+<style>
+  .paso {
+    position: absolute;
+    inset: 0 0 auto;
+    height: clamp(120px, 14vw, 200px);
+    background: linear-gradient(180deg, var(--desde), transparent);
+    pointer-events: none;
+  }
+  span {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: min(100% - 2 * var(--gut), calc(var(--wrap) - 2 * var(--gut)));
+    height: 2px;
+    translate: -50% 0;
+    overflow: hidden;
+    background: linear-gradient(90deg, transparent, var(--red) 18%, var(--red) 82%, transparent);
+    box-shadow: 0 0 18px rgba(221, 4, 10, 0.55);
+    scale: 0 1;
+    transition: scale 1.4s var(--ease);
+  }
+  .vista span {
+    scale: 1 1;
+  }
+  span::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    width: 22%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.9), transparent);
+    translate: -120% 0;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .vista span::after {
+      animation: recorre 5s var(--ease) 1.4s infinite;
+    }
+  }
+  @keyframes recorre {
+    0% {
+      translate: -120% 0;
+    }
+    45%,
+    100% {
+      translate: 560% 0;
+    }
+  }
+</style>
