@@ -4,11 +4,13 @@
 export interface Cifra {
   valor: string;
   texto: string;
+  /** Icono de la marca Orto Alresa (los de la web actual), en `public/img/iconos/` */
+  icono: 'telefono' | 'pack' | 'ico-seguridad' | 'ico-tabla';
 }
 
 export const cifras: Cifra[] = [
-  { valor: '48 h', texto: 'de respuesta' },
-  { valor: '1 semana', texto: 'plazo de entrega' },
-  { valor: '3 años', texto: 'de garantía' },
-  { valor: 'ISO 13485', texto: '9001 · 14001 · IVDR' },
+  { valor: '48 h', texto: 'de respuesta', icono: 'telefono' },
+  { valor: '1 semana', texto: 'plazo de entrega', icono: 'pack' },
+  { valor: '3 años', texto: 'de garantía', icono: 'ico-seguridad' },
+  { valor: 'ISO 13485', texto: '9001 · 14001 · IVDR', icono: 'ico-tabla' },
 ];
