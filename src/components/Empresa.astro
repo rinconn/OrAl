@@ -1,6 +1,6 @@
 ---
 // Todo sale del Catálogo General 2025: la frase, la historia, la empresa familiar, la fábrica y las normas
-const tarjetas = [
+const pompas = [
   {
     cifra: '1949',
     titulo: 'Fabricantes de centrífugas',
@@ -53,29 +53,25 @@ const primero = certificados[1];
 ---
 
 <section class="company" id="empresa">
-  <div class="foto ap">
-    <div
-      class="ph"
-      role="img"
-      aria-label="Mano con guante negro usando la pantalla de una centrífuga Orto Alresa"
-    ></div>
-    <div class="wrap">
-      <h2>
-        Nuestro objetivo no es ser una opción más, sino ir <b>más allá de lo estándar</b>
-      </h2>
-    </div>
-  </div>
+  <div class="ph" role="img" aria-label="Rotor de una centrífuga Orto Alresa cargado con tubos de tapón rojo"></div>
 
-  <div class="wrap">
-    <ul class="tarjetas ap">
-      {tarjetas.map((t) => (
-        <li>
-          <b class="cifra">{t.cifra}</b>
-          <h3>{t.titulo}</h3>
-          <p>{t.texto}</p>
+  <div class="wrap cuerpo">
+    <h2 class="ap">
+      Nuestro objetivo no es ser una opción más, sino ir <b>más allá de lo estándar</b>
+    </h2>
+
+    <ul class="pompas ap">
+      {pompas.map((p, i) => (
+        <li style={`--i: ${i}`}>
+          <b class="pompa">{p.cifra}</b>
+          <div class="txt">
+            <h3>{p.titulo}</h3>
+            <p>{p.texto}</p>
+          </div>
         </li>
       ))}
     </ul>
+
     <div class="cta ap">
       <a class="btn ghost" href="/empresa/">
         Conoce la empresa <span aria-hidden="true">»</span>
@@ -83,34 +79,33 @@ const primero = certificados[1];
     </div>
   </div>
 
-  <div class="sellos ap">
-    <div class="wrap">
-      <h3 class="st">
-        Certificados y normas que <b>cumplimos</b>
-      </h3>
-      <div class="rueda" data-rueda>
-        <button class="flecha ant" type="button" aria-label="Certificado anterior">
-          ‹
-        </button>
-        <ul>
-          {certificados.map((c, i) => (
-            <li>
-              <button type="button" data-i={i} data-texto={c.texto} aria-label={`${c.nombre}: ${c.texto}`}>
-                <b>{c.nombre}</b>
-                <span>{c.detalle}</span>
-              </button>
-            </li>
-          ))}
-        </ul>
-        <button class="flecha sig" type="button" aria-label="Certificado siguiente">
-          ›
-        </button>
-      </div>
-      <p class="expl" aria-live="polite">
-        <b>{primero?.nombre}</b>
-        <span>{primero?.texto}</span>
-      </p>
+  <div class="sellos wrap ap">
+    <h3 class="st">
+      Certificados y normas que <b>cumplimos</b>
+    </h3>
+    <div class="rueda" data-rueda>
+      <button class="flecha ant" type="button" aria-label="Certificado anterior">
+        ‹
+      </button>
+      <ul>
+        {certificados.map((c, i) => (
+          <li>
+            <button type="button" data-i={i} data-texto={c.texto} aria-label={`${c.nombre}: ${c.texto}`}>
+              <span class="luz" aria-hidden="true" />
+              <b>{c.nombre}</b>
+              <span>{c.detalle}</span>
+            </button>
+          </li>
+        ))}
+      </ul>
+      <button class="flecha sig" type="button" aria-label="Certificado siguiente">
+        ›
+      </button>
     </div>
+    <p class="expl" aria-live="polite">
+      <b>{primero?.nombre}</b>
+      <span>{primero?.texto}</span>
+    </p>
   </div>
 </section>
 
@@ -128,12 +123,12 @@ const primero = certificados[1];
           }
         }
       },
-      { threshold: 0.2 },
+      { threshold: 0.25 },
     );
     bloques.forEach((b) => obs.observe(b));
   }
 
-  // Rueda de certificados: el del centro se destaca y se explica debajo; avanza sola y se para al pasar el ratón
+  // Rueda de certificados: el del centro se enciende y se explica debajo; avanza sola y se para al pasar el ratón
   const rueda = document.querySelector<HTMLElement>('[data-rueda]');
   const expl = document.querySelector<HTMLElement>('#empresa .expl');
   if (rueda && expl) {
@@ -171,7 +166,7 @@ const primero = certificados[1];
     const arrancar = () => {
       if (quieto) return;
       clearInterval(reloj);
-      reloj = window.setInterval(() => ir(activo + 1), 3200);
+      reloj = window.setInterval(() => ir(activo + 1), 3600);
     };
     const parar = () => clearInterval(reloj);
 
@@ -189,35 +184,44 @@ const primero = certificados[1];
 </script>
 
 <style>
-  /* Foto a todo el ancho con la frase centrada arriba, en la zona clara */
-  .foto {
+  /* Una sola escena oscura: la foto del rotor de fondo, apagada, con la frase, las pompas y los certificados encima */
+  .company {
     position: relative;
     overflow: hidden;
-    height: clamp(420px, 40vw, 580px);
+    background: var(--carbon);
+    color: #fff;
   }
   .ph {
     position: absolute;
     inset: 0;
     background:
-      radial-gradient(ellipse 70% 55% at 50% 12%, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0) 70%),
-      url('/img/fotos/lab-114.webp') center 62% / cover;
-    transition: transform 1.6s var(--ease);
+      linear-gradient(
+        180deg,
+        rgba(12, 14, 16, 0.88) 0%,
+        rgba(12, 14, 16, 0.6) 40%,
+        rgba(12, 14, 16, 0.78) 72%,
+        rgba(12, 14, 16, 0.96) 100%
+      ),
+      url('/img/fotos/empresa-tubos.webp') center 40% / cover;
   }
-  .foto .wrap {
+  .cuerpo,
+  .sellos {
     position: relative;
-    padding-top: clamp(40px, 5vw, 72px);
     text-align: center;
   }
+  .cuerpo {
+    padding-top: clamp(72px, 7vw, 112px);
+  }
   h2 {
-    margin: 0 auto;
+    margin: 0 auto clamp(48px, 5vw, 72px);
     max-width: 17em;
     font-weight: 300;
     font-size: clamp(30px, 3.6vw, 52px);
     line-height: 1.08;
     text-wrap: balance;
     transition:
-      opacity 0.8s var(--ease) 0.2s,
-      transform 0.8s var(--ease) 0.2s;
+      opacity 0.9s var(--ease),
+      transform 0.9s var(--ease);
   }
   h2 b {
     font-weight: 700;
@@ -226,88 +230,60 @@ const primero = certificados[1];
     padding-bottom: 2px;
   }
 
-  /* Tres tarjetas sueltas que se montan sobre el borde de la foto */
-  .tarjetas {
+  /* Pompas: esferas de rojo a negro con un brillo blanco arriba, que flotan muy despacio, cada una a su ritmo */
+  .pompas {
     list-style: none;
-    margin: -88px 0 0;
+    margin: 0;
     padding: 0;
-    position: relative;
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: clamp(16px, 2vw, 28px);
+    gap: clamp(20px, 3vw, 48px);
   }
-  .tarjetas li {
-    position: relative;
+  .pompas li {
     display: grid;
-    align-content: start;
-    gap: 8px;
-    padding: 30px 28px 32px;
-    background: #fff;
-    border: 2px solid #3b4045;
-    transition:
-      opacity 0.8s var(--ease),
-      transform 0.35s var(--ease),
-      box-shadow 0.35s var(--ease);
+    justify-items: center;
+    gap: 18px;
   }
-  .tarjetas li:nth-child(2) {
-    transition-delay: 0.1s, 0s, 0s;
+  .pompa {
+    --s: clamp(150px, 12.5vw, 184px);
+    display: grid;
+    place-items: center;
+    width: var(--s);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    font-size: calc(var(--s) * 0.2);
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+    background:
+      radial-gradient(ellipse 46% 26% at 40% 17%, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0) 72%),
+      linear-gradient(140deg, #e3070e 0%, #9a0308 28%, #3b0b0c 58%, #141618 86%);
+    box-shadow:
+      inset 0 0 0 1px rgba(255, 255, 255, 0.14),
+      inset 0 -10px 22px rgba(0, 0, 0, 0.35),
+      0 24px 40px -24px rgba(0, 0, 0, 0.9);
+    transition: box-shadow 0.45s var(--ease);
   }
-  .tarjetas li:nth-child(3) {
-    transition-delay: 0.2s, 0s, 0s;
-  }
-  .tarjetas li::before {
-    content: '';
-    position: absolute;
-    top: -2px;
-    left: -2px;
-    height: 4px;
-    width: 0;
-    background: var(--red);
-    transition: width 0.4s var(--ease);
-  }
-  .tarjetas li::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 28px;
-    height: 28px;
-    background: #3b4045;
-    clip-path: polygon(0 0, 100% 0, 100% 100%);
-    transition: background 0.3s var(--ease);
-  }
-  .tarjetas li:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 18px 36px -20px rgba(0, 0, 0, 0.4);
-  }
-  .tarjetas li:hover::before {
-    width: calc(100% + 4px);
-  }
-  .tarjetas li:hover::after {
-    background: var(--red);
-  }
-  .cifra {
-    font-size: clamp(38px, 3.6vw, 52px);
-    line-height: 1;
-    transition: color 0.3s var(--ease);
-  }
-  .tarjetas li:hover .cifra {
-    color: var(--red);
-  }
-  .tarjetas h3 {
-    margin: 10px 0 0;
+  .txt h3 {
+    margin: 0 0 6px;
     font-size: 20px;
   }
-  .tarjetas p {
-    margin: 0;
-    color: var(--body);
+  .txt p {
+    margin: 0 auto;
+    max-width: 26ch;
     line-height: 1.45;
+    color: var(--on-dark);
   }
 
   .cta {
     display: flex;
     justify-content: center;
-    margin-top: clamp(32px, 4vw, 48px);
+    margin-top: clamp(36px, 4vw, 56px);
+    transition:
+      opacity 0.8s var(--ease),
+      transform 0.8s var(--ease);
+  }
+  .cta .btn {
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.7);
   }
   .btn span {
     transition: transform 0.25s var(--ease);
@@ -316,24 +292,22 @@ const primero = certificados[1];
     transform: translateX(5px);
   }
 
-  /* Certificados: franja gris con una rueda centrada; el del medio manda y se explica debajo */
+  /* Certificados: placas de cristal esmerilado sobre la misma foto, como las cifras de la portada */
   .sellos {
-    margin-top: clamp(28px, 3vw, 40px);
-    padding-block: clamp(32px, 4vw, 48px) clamp(40px, 5vw, 64px);
-    background: var(--band);
-    text-align: center;
+    padding-block: clamp(56px, 6vw, 88px) clamp(56px, 6vw, 80px);
   }
   .st {
-    margin: 0 0 20px;
+    margin: 0 0 24px;
     font-weight: 300;
     font-size: clamp(24px, 2.4vw, 32px);
   }
-  .st b {
-    color: var(--red);
+  .st b,
+  .expl :global(b) {
+    color: #ff3b3f;
   }
   .rueda {
     position: relative;
-    max-width: 980px;
+    max-width: 1000px;
     margin: 0 auto;
     transition:
       opacity 0.8s var(--ease),
@@ -349,50 +323,62 @@ const primero = certificados[1];
     gap: 12px;
   }
   .rueda li button {
+    position: relative;
+    overflow: hidden;
     display: grid;
     gap: 2px;
-    width: 150px;
-    padding: 14px 10px;
-    background: #fff;
-    border: 2px solid #3b4045;
+    width: 158px;
+    padding: 16px 10px;
     font: inherit;
-    color: var(--ink);
+    color: #fff;
     cursor: pointer;
+    background: rgba(255, 255, 255, 0.07);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    -webkit-backdrop-filter: blur(12px) saturate(140%);
+    backdrop-filter: blur(12px) saturate(140%);
     transition:
-      border-color 0.3s var(--ease),
-      background 0.3s var(--ease),
-      color 0.3s var(--ease);
+      border-color 0.45s var(--ease),
+      box-shadow 0.45s var(--ease),
+      background 0.45s var(--ease);
   }
   .rueda li b {
-    font-size: 20px;
+    font-size: 21px;
   }
   .rueda li span {
     font-size: 13px;
-    color: var(--muted);
-    transition: color 0.3s var(--ease);
+    color: var(--on-dark);
+  }
+  .luz {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(105deg, transparent 30%, rgba(255, 255, 255, 0.22) 50%, transparent 70%);
+    translate: -110% 0;
+    pointer-events: none;
   }
   .flecha {
     display: none;
   }
+  .expl {
+    display: none;
+  }
 
-  /* Con JS la lista se convierte en rueda */
+  /* Con JS la lista se convierte en rueda: el del centro se enciende en rojo neón y le cruza un destello */
   .rueda.viva {
-    height: 108px;
-    overflow: hidden;
+    height: 116px;
   }
   .rueda.viva ul {
-    mask-image: linear-gradient(90deg, transparent, #000 15%, #000 85%, transparent);
     display: block;
     position: relative;
     height: 100%;
+    mask-image: linear-gradient(90deg, transparent, #000 15%, #000 85%, transparent);
   }
   .rueda.viva li {
-    --paso: 170px;
+    --paso: 178px;
     position: absolute;
     left: 50%;
     top: 50%;
-    transform: translate(calc(-50% + var(--d) * var(--paso)), -50%) scale(calc(1.1 - var(--a) * 0.1));
-    opacity: calc(1 - var(--a) * 0.25);
+    transform: translate(calc(-50% + var(--d) * var(--paso)), -50%) scale(calc(1.08 - var(--a) * 0.08));
+    opacity: calc(1 - var(--a) * 0.22);
     transition:
       transform 0.6s var(--ease),
       opacity 0.6s var(--ease);
@@ -402,15 +388,11 @@ const primero = certificados[1];
     pointer-events: none;
   }
   .rueda.viva li.activo button {
-    background: #3b4045;
-    border-color: #3b4045;
-    color: #fff;
-  }
-  .rueda.viva li.activo span {
-    color: #c9ced2;
-  }
-  .rueda.viva li:not(.activo) button:hover {
-    border-color: var(--red);
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 64, 64, 0.55);
+    box-shadow:
+      0 0 24px -6px rgba(221, 4, 10, 0.6),
+      inset 0 0 18px -10px rgba(255, 64, 64, 0.55);
   }
   .rueda.viva .flecha {
     display: grid;
@@ -424,21 +406,18 @@ const primero = certificados[1];
     background: transparent;
     border: 0;
     font: 300 40px/1 var(--f);
-    color: var(--ink);
+    color: #fff;
     cursor: pointer;
     transition: color 0.2s var(--ease);
   }
   .flecha:hover {
-    color: var(--red);
+    color: #ff3b3f;
   }
   .ant {
     left: 0;
   }
   .sig {
     right: 0;
-  }
-  .expl {
-    display: none;
   }
   .rueda.viva + .expl {
     display: flex;
@@ -450,14 +429,68 @@ const primero = certificados[1];
     max-width: 60ch;
     min-height: 3em;
     font-size: 18px;
-    font-weight: 700;
-    color: var(--ink);
   }
-  .expl :global(b) {
-    color: var(--red);
+
+  /* Al pasar el ratón, la pompa y la placa se encienden con el mismo neón rojo suave de la portada */
+  @media (hover: hover) {
+    .pompas li:hover .pompa {
+      box-shadow:
+        inset 0 0 0 1px rgba(255, 90, 90, 0.4),
+        inset 0 -10px 22px rgba(0, 0, 0, 0.35),
+        0 0 34px -6px rgba(221, 4, 10, 0.65),
+        0 24px 40px -24px rgba(0, 0, 0, 0.9);
+    }
+    .rueda.viva li:not(.activo) button:hover {
+      border-color: rgba(255, 64, 64, 0.45);
+    }
   }
-  .expl.cambio {
-    animation: aparecer 0.5s var(--ease);
+
+  @media (prefers-reduced-motion: no-preference) {
+    /* Las pompas se mecen arriba y abajo, desfasadas, para que no vayan al compás */
+    .pompa {
+      animation: flota 7s ease-in-out infinite;
+      animation-delay: calc(var(--i) * -2.3s);
+    }
+    .rueda.viva li.activo .luz {
+      translate: 110% 0;
+      transition: translate 1s var(--ease);
+    }
+    .expl.cambio {
+      animation: aparecer 0.5s var(--ease);
+    }
+
+    /* Entrada: la frase sube, las pompas llegan flotando una tras otra y su texto aparece detrás */
+    :global(.js) #empresa .pompas li {
+      transition:
+        opacity 1.2s var(--ease),
+        transform 1.6s cubic-bezier(0.16, 0.8, 0.24, 1);
+      transition-delay: calc(var(--i) * 0.28s);
+    }
+    :global(.js) #empresa .pompas .txt {
+      transition: opacity 0.9s var(--ease);
+      transition-delay: calc(var(--i) * 0.28s + 0.7s);
+    }
+    :global(.js) #empresa .pompas:not(.vista) li {
+      opacity: 0;
+      transform: translateY(70px) scale(0.86);
+    }
+    :global(.js) #empresa .pompas:not(.vista) .txt {
+      opacity: 0;
+    }
+    :global(.js) #empresa h2:not(.vista) {
+      opacity: 0;
+      transform: translateY(24px);
+    }
+    :global(.js) #empresa .cta:not(.vista),
+    :global(.js) #empresa .sellos:not(.vista) .rueda {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+  }
+  @keyframes flota {
+    50% {
+      translate: 0 -10px;
+    }
   }
   @keyframes aparecer {
     from {
@@ -466,56 +499,57 @@ const primero = certificados[1];
     }
   }
 
-  /* Entrada: todo visible sin JS; con JS la foto se acerca y lo demás sube */
-  .cta {
-    transition:
-      opacity 0.8s var(--ease),
-      transform 0.8s var(--ease);
-  }
-  :global(.js) #empresa .foto:not(.vista) .ph {
-    transform: scale(1.08);
-  }
-  :global(.js) #empresa .foto:not(.vista) h2 {
-    opacity: 0;
-    transform: translateY(24px);
-  }
-  :global(.js) #empresa .tarjetas:not(.vista) li {
-    opacity: 0;
-    transform: translateY(28px);
-  }
-  :global(.js) #empresa .cta:not(.vista),
-  :global(.js) #empresa .sellos:not(.vista) .rueda {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-
+  /* Móvil: pompas en columna, alternando de lado, con su texto al lado */
   @media (max-width: 860px) {
-    .foto {
-      height: auto;
-      display: flex;
-      flex-direction: column-reverse;
-    }
     .ph {
-      position: relative;
-      inset: auto;
-      aspect-ratio: 3 / 2;
-      background: url('/img/fotos/lab-114.webp') center / cover;
+      background-image:
+        linear-gradient(
+          180deg,
+          rgba(12, 14, 16, 0.88) 0%,
+          rgba(12, 14, 16, 0.6) 40%,
+          rgba(12, 14, 16, 0.78) 72%,
+          rgba(12, 14, 16, 0.96) 100%
+        ),
+        url('/img/fotos/empresa-tubos-960.webp');
     }
-    .foto .wrap {
-      padding-block: 8px 28px;
-    }
-    .tarjetas {
-      margin-top: 24px;
+    .pompas {
       grid-template-columns: 1fr;
+      gap: 26px;
+    }
+    .pompas li {
+      grid-template-columns: auto 1fr;
+      justify-items: start;
+      align-items: center;
+      text-align: left;
+      gap: 20px;
+    }
+    .pompas li:nth-child(2) {
+      grid-template-columns: 1fr auto;
+      text-align: right;
+    }
+    .pompas li:nth-child(2) .pompa {
+      order: 2;
+    }
+    .pompa {
+      --s: 112px;
+    }
+    .txt p {
+      margin: 0;
+    }
+    .pompas li:nth-child(2) .txt p {
+      margin-left: auto;
     }
     .rueda.viva li {
-      --paso: 132px;
+      --paso: 136px;
     }
     .rueda.viva li button {
-      width: 120px;
+      width: 124px;
     }
     .rueda.viva ul {
       mask-image: linear-gradient(90deg, transparent, #000 22%, #000 78%, transparent);
+    }
+    .rueda.viva .flecha {
+      width: 32px;
     }
   }
 </style>
