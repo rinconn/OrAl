@@ -4,39 +4,12 @@
 // Cada parada proyecta un rotor; cada rotor lleva más tubos que el anterior, como el pedido que avanza.
 // Hueco preparado: cuando la empresa pase los CAD, el dibujo de cada rotor se cambia por su modelo real
 // (ver docs/pendiente-empresa.md) sin tocar la ruta ni los textos.
-const pasos = [
-  {
-    cuando: 'Haces el pedido',
-    cifra: 'Stock',
-    titulo: 'Siempre disponible',
-    texto: 'Stock continuo de toda la gama.',
-    tubos: 4,
-  },
-  {
-    cuando: 'Llega a tu almacén en',
-    cifra: '1',
-    unidad: 'semana',
-    titulo: 'Entrega rápida',
-    texto: 'Plazo medio de entrega, gracias al stock continuo.',
-    tubos: 6,
-  },
-  {
-    cuando: 'Si tienes una duda, respuesta en',
-    cifra: '48',
-    unidad: 'h',
-    titulo: 'Asesoramiento',
-    texto: 'Puesta en marcha, incidencias, reparaciones y formación técnica online.',
-    tubos: 8,
-  },
-  {
-    cuando: 'Tu cliente, cubierto durante',
-    cifra: '3',
-    unidad: 'años',
-    titulo: 'Garantía sin sorpresas',
-    texto: 'En todas las centrífugas nuevas, salvo la Minicen (14 meses).',
-    tubos: 12,
-  },
-];
+import { idioma, textos } from '../i18n';
+
+const t = textos(idioma(Astro.currentLocale)).distribuidores;
+// Textos de cada parada, por idioma, en src/i18n/ (`distribuidores.pasos`); aquí, los tubos de su rotor
+const tubos = [4, 6, 8, 12];
+const pasos = t.pasos.map((p, i) => ({ ...p, tubos: tubos[i] ?? 4 }));
 
 // La ruta (lienzo de 1200 x 640: el ancho se estira, el alto es fijo en píxeles) y el punto exacto de cada parada sobre ella.
 // Las paradas están al 16, 39, 63 y 84 % del recorrido; la línea se dibuja a ritmo constante,
@@ -94,14 +67,13 @@ function silueta(n: number) {
   <div class="wrap">
     <div class="cab ap">
       <h2>
-        Crece con <b>nosotros</b>
+        {t.titulo[0]}
+        <b>{t.titulo[1]}</b>
       </h2>
       <div>
-        <p class="lead">
-          Una empresa familiar que trata a cada distribuidor como socio. Así funciona un pedido con Orto Alresa.
-        </p>
+        <p class="lead">{t.lead}</p>
         <a class="lab" href="#contacto">
-          ¿Eres un laboratorio? Encuentra tu distribuidor <i aria-hidden="true">»</i>
+          {t.laboratorio} <i aria-hidden="true">»</i>
         </a>
       </div>
     </div>
@@ -151,12 +123,14 @@ function silueta(n: number) {
     <div class="pie ap">
       <div>
         <h3>
-          ¿Necesitas un equipo <b>a medida</b>?
+          {t.oemTitulo[0]}
+          <b>{t.oemTitulo[1]}</b>
+          {t.oemTitulo[2]}
         </h3>
-        <p>Fabricación OEM a medida, con análisis de riesgos y trazabilidad de origen a usuario.</p>
+        <p>{t.oem}</p>
       </div>
       <a class="btn red" href="#contacto">
-        Hazte distribuidor <span aria-hidden="true">»</span>
+        {t.boton} <span aria-hidden="true">»</span>
       </a>
     </div>
   </div>

@@ -1,0 +1,20 @@
+---
+// Portada, la misma en los tres idiomas: cada sección saca sus textos del idioma de la dirección.
+import Base from '../../layouts/Base.astro';
+import Hero from '../Hero.astro';
+import Tecnologia from '../Tecnologia.astro';
+import Distribuidores from '../Distribuidores.astro';
+import Empresa from '../Empresa.astro';
+import Aplicaciones from '../Aplicaciones.astro';
+import { idioma, textos } from '../../i18n';
+
+const t = textos(idioma(Astro.currentLocale)).portada;
+---
+
+<Base title={t.title} description={t.description}>
+  <Hero />
+  <Tecnologia />
+  <Empresa />
+  <Distribuidores />
+  <Aplicaciones />
+</Base>

@@ -4,35 +4,39 @@
 // y mantiene el foco dentro mientras está abierto.
 import Bandera from './ui/Bandera.astro';
 import Buscador from './Buscador.astro';
-import { principal, contacto, idiomas } from '../data/navegacion';
+import { principal, contacto } from '../data/navegacion';
+import { idioma, idiomas, ruta, sinIdioma, textos } from '../i18n';
 
-const ruta = Astro.url.pathname;
-const actual = (href: string) => !href.startsWith('/#') && ruta.startsWith(href);
+const lang = idioma(Astro.currentLocale);
+const t = textos(lang);
+// Cada bandera lleva a esta misma página en su idioma
+const base = sinIdioma(Astro.url.pathname);
+const actual = (href: string) => !href.startsWith('/#') && base.startsWith(href);
 ---
 
 <a class="skip" href="#inicio">
-  Saltar al contenido
+  {t.meta.saltar}
 </a>
 
-<header class="top" id="top">
+<header class="top" id="top" data-portada={base === '/' ? '' : undefined}>
   <div class="wrap bar">
-    <a class="marca" href="/" aria-label="Orto Alresa, inicio">
+    <a class="marca" href={ruta(lang, '/')} aria-label={t.cabecera.inicio}>
       <img class="logo" src="/img/marca/logo-ortoalresa-2-lineas.svg" alt="orto alresa" width="132" height="44" />
     </a>
 
-    <nav class="nav" id="nav" aria-label="Principal">
+    <nav class="nav" id="nav" aria-label={t.cabecera.principal}>
       <ul>
         {principal.map((e) => (
           <li>
-            <a href={e.href} aria-current={actual(e.href) ? 'page' : undefined}>
-              {e.texto}
+            <a href={ruta(lang, e.href)} aria-current={actual(e.href) ? 'page' : undefined}>
+              {t.nav[e.clave]}
             </a>
           </li>
         ))}
       </ul>
       <div class="nav-extra">
-        <a class="btn red" href={contacto.href}>
-          Contacto
+        <a class="btn red" href={ruta(lang, contacto.href)}>
+          {t.cabecera.contacto}
         </a>
         <a href={contacto.telefonoHref}>{contacto.telefono}</a>
         <a href={`mailto:${contacto.comercial}`}>{contacto.comercial}</a>
@@ -40,35 +44,45 @@ const actual = (href: string) => !href.startsWith('/#') && ruta.startsWith(href)
     </nav>
 
     <div class="der">
-      <div class="banderas" role="group" aria-label="Idioma">
+      <div class="banderas" role="group" aria-label={t.cabecera.idioma}>
         {idiomas.map((i) =>
-          i.codigo === 'es' ? (
+          i.codigo === lang ? (
             <span class="bandera" aria-current="true" title={i.nombre}>
               <Bandera codigo={i.codigo} />
               <span class="sr">{i.nombre}</span>
             </span>
-          ) : i.publicado ? (
-            <a class="bandera" href={i.href} hreflang={i.codigo} title={i.nombre}>
+          ) : (
+            <a
+              class="bandera"
+              href={ruta(i.codigo, base)}
+              hreflang={i.codigo}
+              lang={i.codigo}
+              title={i.nombre}
+              data-idioma
+            >
               <Bandera codigo={i.codigo} />
               <span class="sr">{i.nombre}</span>
             </a>
-          ) : (
-            <span class="bandera" title={`${i.nombre}: próximamente`}>
-              <Bandera codigo={i.codigo} />
-              <span class="sr">{i.nombre}: próximamente</span>
-            </span>
           ),
         )}
       </div>
       <Buscador />
-      <a class="btn red contacto" href={contacto.href}>
-        Contacto
+      <a class="btn red contacto" href={ruta(lang, contacto.href)}>
+        {t.cabecera.contacto}
       </a>
     </div>
 
-    <button class="menu-btn" id="menuBtn" type="button" aria-expanded="false" aria-controls="nav">
+    <button
+      class="menu-btn"
+      id="menuBtn"
+      type="button"
+      aria-expanded="false"
+      aria-controls="nav"
+      data-menu={t.cabecera.menu}
+      data-cerrar={t.cabecera.cerrar}
+    >
       <span class="ico" aria-hidden="true"></span>
-      <span class="txt">Menú</span>
+      <span class="txt">{t.cabecera.menu}</span>
     </button>
   </div>
 </header>
@@ -84,7 +98,7 @@ const actual = (href: string) => !href.startsWith('/#') && ruta.startsWith(href)
     if (!nav || !btn) return;
     nav.classList.toggle('open', abierto);
     btn.setAttribute('aria-expanded', String(abierto));
-    btn.querySelector('.txt')!.textContent = abierto ? 'Cerrar' : 'Menú';
+    btn.querySelector('.txt')!.textContent = (abierto ? btn.dataset.cerrar : btn.dataset.menu) ?? '';
     document.documentElement.classList.toggle('menu-abierto', abierto);
     if (abierto) nav.querySelector('a')?.focus();
   };
@@ -138,14 +152,21 @@ const actual = (href: string) => !href.startsWith('/#') && ruta.startsWith(href)
   );
   top?.addEventListener('focusin', () => top.classList.remove('oculta'));
 
+  // Al cambiar de idioma se sigue en la misma sección de la portada
+  for (const a of document.querySelectorAll<HTMLAnchorElement>('[data-idioma]')) {
+    a.addEventListener('click', () => {
+      if (location.hash) a.hash = location.hash;
+    });
+  }
+
   // En la portada, marca en el menú la sección que se está viendo
-  const enlaces = [...(nav?.querySelectorAll<HTMLAnchorElement>('ul a[href^="/#"]') ?? [])];
+  const enlaces = [...(nav?.querySelectorAll<HTMLAnchorElement>('ul a[href*="/#"]') ?? [])];
   const porSeccion = new Map<string, HTMLAnchorElement>();
   for (const a of enlaces) {
     const id = a.hash.slice(1);
     if (!porSeccion.has(id)) porSeccion.set(id, a);
   }
-  if (location.pathname === '/') {
+  if (top?.hasAttribute('data-portada')) {
     const visibles = new Set<string>();
     const obs = new IntersectionObserver(
       (entradas) => {
@@ -266,7 +287,7 @@ const actual = (href: string) => !href.startsWith('/#') && ruta.startsWith(href)
   }
   .banderas {
     display: flex;
-    gap: 12px;
+    gap: 18px;
     align-items: center;
   }
   .bandera {
@@ -279,8 +300,8 @@ const actual = (href: string) => !href.startsWith('/#') && ruta.startsWith(href)
   }
   .bandera :global(svg) {
     display: block;
-    width: 24px;
-    height: 16px;
+    width: 30px;
+    height: 20px;
     box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.12);
   }
   span.bandera:not([aria-current]) {
@@ -425,6 +446,10 @@ const actual = (href: string) => !href.startsWith('/#') && ruta.startsWith(href)
     }
     .der .banderas {
       gap: 8px;
+    }
+    .bandera :global(svg) {
+      width: 24px;
+      height: 16px;
     }
     .menu-btn {
       padding: 9px 10px;

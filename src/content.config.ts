@@ -13,6 +13,9 @@ const notas = defineCollection({
     // Foto de la nota, dentro de public/ (por ejemplo /img/notas/mi-nota.webp)
     foto: z.string(),
     alt: z.string(),
+    // Título y texto de la foto en los otros idiomas; si faltan, se enseña el español
+    en: z.object({ titulo: z.string(), alt: z.string() }).optional(),
+    fr: z.object({ titulo: z.string(), alt: z.string() }).optional(),
   }),
 });
 
