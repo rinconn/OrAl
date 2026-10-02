@@ -794,9 +794,17 @@ entera delante, si se ensancha el contenido de 1280 a 1440 px.
 ### 14.2 La raya roja que recorre las tarjetas
 
 - **Ahora:** al aparecer cada tarjeta, una raya roja le da una vuelta al borde. Su último tramo se queda donde
-  acaba, apagándose y encendiéndose suave, y cada pocos segundos lo cruza un destello blanco, como a la raya entre
-  secciones. Cada tarjeta empieza por un lado y a su tiempo, y los tramos quedan en lados de fuera para que nunca
+  acaba, apagándose y encendiéndose suave, y en su punta late un punto rojo que suelta una onda cada pocos
+  segundos, como el vaso del esquema ULS. Cada tarjeta empieza por un lado y a su tiempo, y los tramos quedan en lados de fuera para que nunca
   choquen entre tarjetas vecinas. Sin animaciones (accesibilidad), el tramo se ve quieto.
-- **Por qué:** da vida a la sección con el mismo lenguaje de la marca (rojo y destello), sin texto ni adornos.
+- **Por qué:** da vida a la sección con el rojo de la marca, sin texto ni adornos, y con un efecto propio que no se
+  confunde con la raya entre secciones.
 - **Descartado:** que la raya diera dos vueltas y se apagara, una punta blanca mientras corre (dos colores
-  liaban) y un borde de neón entero (demasiado).
+  liaban), un borde de neón entero (demasiado) y un destello blanco cruzando el tramo (igual que la raya entre
+  secciones).
+
+### 14.3 Iconos en los pasos del Configurador
+
+- **Ahora:** cada paso lleva un icono de la propia marca (los del sistema de diseño, no genéricos) en un círculo
+  rojo, con el mismo efecto al pasar el ratón que las placas del inicio.
+- **Por qué:** se lee de un vistazo qué pregunta cada paso, y repetir el efecto del inicio hace la web coherente.

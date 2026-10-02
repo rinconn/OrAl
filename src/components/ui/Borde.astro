@@ -1,7 +1,7 @@
 ---
 // Raya roja que da una vuelta al borde de una tarjeta cuando aparece. Al acabar, su último tramo se queda donde
-// ha terminado, apagándose y encendiéndose suave, y de vez en cuando lo cruza un destello blanco, como a la raya
-// entre secciones. Cada tarjeta arranca por un lado y con un retraso distinto para que dos rayas no coincidan en el
+// ha terminado, apagándose y encendiéndose suave, y en su punta late un punto rojo que suelta una onda cada pocos
+// segundos, como el vaso del esquema ULS. Cada tarjeta arranca por un lado y con un retraso distinto para que dos rayas no coincidan en el
 // borde que comparten. La tarjeta tiene que ser position: relative y recibir la clase "vista" al verse.
 interface Props {
   lado: 'arriba' | 'derecha' | 'abajo' | 'izquierda';
@@ -12,7 +12,8 @@ const { lado, retraso = 0 } = Astro.props;
 
 <svg class="borde" data-lado={lado} style={`--retraso: ${retraso}s`} aria-hidden="true">
   <rect class="raya" width="100%" height="100%" pathLength="100"></rect>
-  <rect class="destello" width="100%" height="100%" pathLength="100"></rect>
+  <circle class="onda" r="4"></circle>
+  <circle class="punto" r="3.5"></circle>
 </svg>
 
 <script>
@@ -26,9 +27,18 @@ const { lado, retraso = 0 } = Astro.props;
       const o = ((pos[s.dataset.lado as keyof typeof pos] ?? 0) / (2 * (w + h))) * 100;
       s.style.setProperty('--ini', String(-o));
       s.style.setProperty('--fin', String(-o - 100));
-      // El destello cruza el tramo de 16 de punta a punta
-      s.style.setProperty('--d-ini', String(-o));
-      s.style.setProperty('--d-fin', String(-o - 13));
+      // La punta del tramo (16 de largo), en píxeles, para el punto que late
+      let d = (((o + 16) % 100) / 100) * 2 * (w + h);
+      let x = 0;
+      let y = 0;
+      if (d <= w) x = d;
+      else if ((d -= w) <= h) [x, y] = [w, d];
+      else if ((d -= h) <= w) [x, y] = [w - d, h];
+      else [x, y] = [0, h - (d - w)];
+      s.querySelectorAll('circle').forEach((c) => {
+        c.setAttribute('cx', String(x));
+        c.setAttribute('cy', String(y));
+      });
     });
   };
   colocar();
@@ -58,30 +68,39 @@ const { lado, retraso = 0 } = Astro.props;
     filter: drop-shadow(0 0 5px rgba(255, 30, 30, 0.75));
     opacity: 0;
   }
-  .destello {
-    stroke: #fff;
-    stroke-width: 3;
-    stroke-linecap: round;
-    stroke-dasharray: 3 97;
-    stroke-dashoffset: var(--d-ini);
-    filter: drop-shadow(0 0 4px #fff);
+  circle {
     opacity: 0;
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+  .punto {
+    fill: #ff1a20;
+    filter: drop-shadow(0 0 4px rgba(255, 30, 30, 0.9));
+  }
+  .onda {
+    fill: none;
+    stroke: #ff1a20;
+    stroke-width: 1.5;
   }
 
   @media (prefers-reduced-motion: no-preference) {
-    /* Una vuelta; después el tramo respira y el destello lo cruza cada pocos segundos */
+    /* Una vuelta; después el tramo respira y el punto de la punta late */
     :global(.vista) > .borde .raya {
       animation:
         borde-vuelta var(--dura) cubic-bezier(0.45, 0.05, 0.4, 1) var(--retraso) both,
         borde-respira 2.4s ease-in-out calc(var(--retraso) + var(--dura)) infinite alternate;
     }
-    :global(.vista) > .borde .destello {
-      animation: borde-destello 5s ease-in-out calc(var(--retraso) + var(--dura) + 0.6s) infinite;
+    :global(.vista) > .borde .punto {
+      animation: borde-punto 0.5s ease-out calc(var(--retraso) + var(--dura)) both;
+    }
+    :global(.vista) > .borde .onda {
+      animation: borde-onda 3.2s ease-out calc(var(--retraso) + var(--dura) + 0.4s) infinite;
     }
   }
   /* Sin animaciones, el tramo se ve quieto en su sitio */
   @media (prefers-reduced-motion: reduce) {
-    .raya {
+    .raya,
+    .punto {
       opacity: 0.7;
     }
   }
@@ -107,21 +126,26 @@ const { lado, retraso = 0 } = Astro.props;
       opacity: 0.4;
     }
   }
-  @keyframes borde-destello {
-    0% {
-      stroke-dashoffset: var(--d-ini);
+  @keyframes borde-punto {
+    from {
       opacity: 0;
+      transform: scale(0);
     }
-    4% {
+    to {
       opacity: 1;
+      transform: scale(1);
     }
-    22% {
-      stroke-dashoffset: var(--d-fin);
-      opacity: 0;
+  }
+  /* La onda sale del punto, se abre y se desvanece; luego espera a la siguiente */
+  @keyframes borde-onda {
+    0% {
+      opacity: 0.9;
+      transform: scale(1);
     }
+    45%,
     100% {
-      stroke-dashoffset: var(--d-fin);
       opacity: 0;
+      transform: scale(4.5);
     }
   }
 </style>
