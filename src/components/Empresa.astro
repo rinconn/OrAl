@@ -69,17 +69,19 @@ const primero = certificados[1];
     <ul class="pompas ap">
       {pompas.map((p, i) => (
         <li style={`--i: ${i}`}>
-          <div class="tubo" aria-hidden="true">
-            <i class="tapon" />
-            <i class="vidrio">
-              <i class="celulas" />
-              <i class="capa" />
-              <i class="plasma" />
-              <i class="etiqueta" />
-              <i class="burbuja" />
-              <i class="burbuja" />
-              <i class="burbuja" />
-            </i>
+          <div class="gradilla" aria-hidden="true">
+            <div class="tubo">
+              <i class="tapon" />
+              <i class="vidrio">
+                <i class="celulas" />
+                <i class="capa" />
+                <i class="plasma" />
+                <i class="etiqueta" />
+                <i class="burbuja" />
+                <i class="burbuja" />
+                <i class="burbuja" />
+              </i>
+            </div>
           </div>
           <div class="txt">
             <b class="cifra" data-cifra={p.cifra}>
@@ -305,6 +307,33 @@ const primero = certificados[1];
     align-items: start;
     gap: clamp(18px, 2vw, 28px);
     text-align: left;
+  }
+  /* Gradilla gris de laboratorio: travesaño delante del tubo, dos patas y la base */
+  .gradilla {
+    position: relative;
+    padding: 0 18px 12px;
+    background:
+      linear-gradient(90deg, #2e3236, #4a5056) left 3px bottom 0 / 7px 34% no-repeat,
+      linear-gradient(90deg, #2e3236, #4a5056) right 3px bottom 0 / 7px 34% no-repeat;
+  }
+  .gradilla::before,
+  .gradilla::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    z-index: 3;
+    border-radius: 2px;
+    background: linear-gradient(180deg, #555b61, #3b4045 45%, #2b2f33);
+    box-shadow: 0 6px 10px -6px rgba(0, 0, 0, 0.5);
+  }
+  .gradilla::before {
+    top: 64%;
+    height: 14px;
+  }
+  .gradilla::after {
+    bottom: 0;
+    height: 10px;
   }
   .tubo {
     --h: clamp(170px, 14vw, 210px);
