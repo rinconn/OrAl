@@ -29,6 +29,8 @@ export const rei = {
 export const configurador = {
   nombre: 'Configurador',
   href: '#configurador',
+  /** Icono de la marca de cada paso, en el orden de las preguntas */
+  iconos: ['centrifuge', 'icono-mesa-movil', 'ico-tubos', 'ico-velocidad', 'ico-capacidad', 'rotor-add'],
 };
 
 export const smartconnect = {
