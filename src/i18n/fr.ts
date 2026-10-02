@@ -93,6 +93,7 @@ export const fr: Textos = {
     },
     smartconnect: {
       alt: 'L’application SmartConnect sur plusieurs tablettes : connexion, graphique du programme et listes',
+      entrar: 'Se connecter',
       frase: ['Les centrifugeuses du laboratoire, ', 'surveillées depuis le mobile', '.'],
       puntos: [
         'Application gratuite : elle se connecte au Wi-Fi et se consulte depuis un PC, une tablette ou un mobile.',
@@ -100,6 +101,15 @@ export const fr: Textos = {
         'Utilisateurs avec différents niveaux d’accès et suivi de qui a fait quoi.',
         'Alertes de sécurité et de maintenance, et diagnostic à distance par le service technique.',
       ],
+    },
+    configurador: {
+      nombre: 'Configurateur',
+      alt: 'Une main gantée tient un tube à bouchon rouge au-dessus du rotor d’une centrifugeuse',
+      cifra: '6 étapes',
+      cifraTexto: 'pour trouver votre centrifugeuse',
+      frase: ['Répondez à six questions et nous vous indiquons ', 'quel modèle et quel rotor', '.'],
+      pasos: ['Type de centrifugeuse', 'Emplacement', 'Type de tube', 'Vitesse', 'Nb de positions', 'Type de rotor'],
+      empezar: 'Commencer',
     },
     pantalla: {
       nombre: 'Écran tactile',

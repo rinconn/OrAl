@@ -92,6 +92,7 @@ export const en: Textos = {
     },
     smartconnect: {
       alt: 'The SmartConnect app on several tablets: login, program graph and lists',
+      entrar: 'Log in',
       frase: ['Your lab’s centrifuges, ', 'monitored from your phone', '.'],
       puntos: [
         'Free app: it connects to the Wi-Fi and can be checked from a PC, tablet or phone.',
@@ -99,6 +100,15 @@ export const en: Textos = {
         'Users with different access levels and a record of who did what.',
         'Safety and maintenance alerts, and remote diagnosis by our technical service.',
       ],
+    },
+    configurador: {
+      nombre: 'Configurator',
+      alt: 'A gloved hand holds a red-capped tube above a centrifuge rotor',
+      cifra: '6 steps',
+      cifraTexto: 'to find your centrifuge',
+      frase: ['Answer six questions and we’ll tell you ', 'which model and which rotor', '.'],
+      pasos: ['Centrifuge type', 'Location', 'Tube type', 'Speed', 'No. of positions', 'Rotor type'],
+      empezar: 'Start',
     },
     pantalla: {
       nombre: 'Touchscreen',
