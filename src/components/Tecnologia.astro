@@ -3,6 +3,10 @@ import { rei, smartconnect, sistemas, ademas } from '../data/tecnologia';
 ---
 
 <section class="tech" id="tecnologia">
+  <!-- Paso desde la foto del inicio: el negro se funde en el gris y una raya roja se dibuja con un destello que la recorre -->
+  <div class="paso ap" aria-hidden="true">
+    <span></span>
+  </div>
   <div class="wrap">
     <div class="cab ap">
       <h2>
@@ -229,9 +233,58 @@ import { rei, smartconnect, sistemas, ademas } from '../data/tecnologia';
     --mas-oscuro: #2c3034;
     --texto: #c9ced2;
     --raya: #4a5055;
+    position: relative;
     background: var(--mas-oscuro);
     color: #fff;
     padding-block: clamp(64px, 9vw, 128px);
+  }
+  .tech > .wrap {
+    position: relative;
+  }
+  .paso {
+    position: absolute;
+    inset: 0 0 auto;
+    height: clamp(120px, 14vw, 200px);
+    background: linear-gradient(180deg, #111315, rgba(17, 19, 21, 0));
+    pointer-events: none;
+  }
+  .paso span {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: min(100% - 2 * var(--gut), calc(var(--wrap) - 2 * var(--gut)));
+    height: 2px;
+    translate: -50% 0;
+    overflow: hidden;
+    background: linear-gradient(90deg, transparent, var(--red) 18%, var(--red) 82%, transparent);
+    box-shadow: 0 0 18px rgba(221, 4, 10, 0.55);
+    scale: 0 1;
+    transition: scale 1.4s var(--ease);
+  }
+  .paso.vista span {
+    scale: 1 1;
+  }
+  .paso span::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    width: 22%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.9), transparent);
+    translate: -120% 0;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .paso.vista span::after {
+      animation: recorre 5s var(--ease) 1.4s infinite;
+    }
+  }
+  @keyframes recorre {
+    0% {
+      translate: -120% 0;
+    }
+    45%,
+    100% {
+      translate: 560% 0;
+    }
   }
 
   .cab {
