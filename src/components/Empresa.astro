@@ -59,6 +59,9 @@ const primero = certificados[1];
       <h2>
         Nuestro objetivo no es ser una opción más, sino ir <b>más allá de lo estándar</b>
       </h2>
+      <a class="btn ghost grande" href="/empresa/">
+        Conoce la empresa <span aria-hidden="true">»</span>
+      </a>
     </div>
   </div>
 
@@ -87,12 +90,6 @@ const primero = certificados[1];
         </li>
       ))}
     </ul>
-
-    <div class="cta ap">
-      <a class="btn ghost grande" href="/empresa/">
-        Conoce la empresa <span aria-hidden="true">»</span>
-      </a>
-    </div>
   </div>
 
   <div class="franja">
@@ -238,7 +235,7 @@ const primero = certificados[1];
   .foto {
     position: relative;
     overflow: hidden;
-    height: clamp(320px, 27vw, 400px);
+    height: clamp(360px, 30vw, 450px);
     color: #fff;
   }
   .ph {
@@ -253,6 +250,20 @@ const primero = certificados[1];
     position: relative;
     padding-top: clamp(44px, 5vw, 72px);
     text-align: center;
+  }
+  .foto .btn {
+    margin-top: clamp(24px, 2.4vw, 34px);
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.85);
+    transition:
+      opacity 0.7s var(--ease) 0.15s,
+      transform 0.7s var(--ease) 0.15s,
+      background 0.25s var(--ease),
+      color 0.25s var(--ease);
+  }
+  .foto .btn:hover {
+    background: #fff;
+    color: var(--ink);
   }
   h2 {
     margin: 0 auto;
@@ -290,7 +301,7 @@ const primero = certificados[1];
   .pompas li {
     display: grid;
     grid-template-columns: auto 1fr;
-    align-items: end;
+    align-items: start;
     gap: clamp(18px, 2vw, 28px);
     text-align: left;
   }
@@ -306,32 +317,44 @@ const primero = certificados[1];
     top: 0;
     left: -6px;
     right: -6px;
-    height: 30px;
+    height: 32px;
     z-index: 2;
-    border-radius: 3px;
-    background: linear-gradient(90deg, #a10309, #e3070e 35%, #ff4a4f 48%, #c4050b 62%, #8c0307);
-    box-shadow: inset 0 -5px 0 rgba(0, 0, 0, 0.18);
+    border-radius: 4px 4px 2px 2px;
+    background:
+      repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.14) 0 2px, transparent 2px 7px) center 7px / 100% 18px no-repeat,
+      linear-gradient(90deg, #8c0307, #d9060c 30%, #ef1a20 46%, #c4050b 70%, #7a0206);
+    box-shadow:
+      inset 0 3px 0 rgba(255, 255, 255, 0.22),
+      inset 0 -4px 0 rgba(0, 0, 0, 0.22),
+      0 6px 12px -6px rgba(80, 0, 0, 0.5);
   }
   .vidrio {
     position: relative;
     display: block;
     height: 100%;
     overflow: hidden;
-    border: 2px solid rgba(59, 64, 69, 0.28);
+    border: 1px solid rgba(59, 64, 69, 0.3);
     border-top: 0;
     border-radius: 0 0 29px 29px;
-    background: linear-gradient(90deg, rgba(240, 242, 244, 0.9), #fff 40%, rgba(232, 235, 238, 0.9));
+    background: #fbfcfd;
+    box-shadow: 0 18px 30px -22px rgba(0, 0, 0, 0.45);
   }
-  /* Reflejo del cristal, encima de todo */
+  /* Volumen del cristal: sombra suave a los lados y luz difusa a la izquierda, sobre el líquido */
   .vidrio::after {
     content: '';
     position: absolute;
-    top: 8px;
-    bottom: 14px;
-    left: 9px;
-    width: 6px;
-    border-radius: 3px;
-    background: rgba(255, 255, 255, 0.7);
+    inset: 0;
+    z-index: 1;
+    border-radius: inherit;
+    background: linear-gradient(
+      90deg,
+      rgba(0, 0, 0, 0.16),
+      rgba(255, 255, 255, 0.28) 24%,
+      rgba(255, 255, 255, 0) 46%,
+      rgba(0, 0, 0, 0.04) 70%,
+      rgba(0, 0, 0, 0.18)
+    );
+    pointer-events: none;
   }
   .celulas,
   .capa,
@@ -345,27 +368,31 @@ const primero = certificados[1];
   .celulas {
     bottom: 0;
     height: 42%;
-    background: linear-gradient(90deg, #6e0205, #a8040a 45%, #7a0206);
+    background: linear-gradient(180deg, #b0050b, #7a0206);
     transform-origin: bottom;
   }
   .capa {
     bottom: 42%;
     height: 4px;
-    background: #f4f1ea;
+    background: #fff;
   }
   .plasma {
     bottom: calc(42% + 4px);
     height: 40%;
-    background: linear-gradient(90deg, #e9c779, #f6dc9c 45%, #e5c06c);
+    border-top: 2px solid rgba(221, 4, 10, 0.22);
+    border-radius: 40% 40% 0 0 / 6px 6px 0 0;
+    background: linear-gradient(180deg, rgba(221, 4, 10, 0.1), rgba(221, 4, 10, 0.05));
   }
   .burbuja {
     left: 50%;
-    bottom: 46%;
-    width: 7px;
-    height: 7px;
+    right: auto;
+    bottom: 10%;
+    width: 6px;
+    height: 6px;
     margin-left: -3px;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.85);
+    background: rgba(255, 255, 255, 0.75);
+    box-shadow: inset -1px -1px 0 rgba(0, 0, 0, 0.12);
     opacity: 0;
   }
   .burbuja:nth-child(5) {
@@ -398,14 +425,6 @@ const primero = certificados[1];
     color: #3d3d3d;
   }
 
-  .cta {
-    display: flex;
-    justify-content: center;
-    margin-top: clamp(36px, 4vw, 56px);
-    transition:
-      opacity 0.8s var(--ease),
-      transform 0.8s var(--ease);
-  }
   .btn.grande {
     padding: 18px 34px;
     font-size: 19px;
@@ -419,8 +438,8 @@ const primero = certificados[1];
 
   /* Certificados: placas claras de cristal; la del centro se enciende con un borde rojo suave */
   .franja {
-    margin-top: clamp(56px, 6vw, 88px);
-    background: var(--band);
+    margin-top: clamp(48px, 5vw, 72px);
+    background: var(--panel);
   }
   .sellos {
     padding-block: clamp(56px, 6vw, 88px) clamp(56px, 6vw, 80px);
@@ -461,15 +480,13 @@ const primero = certificados[1];
     font: inherit;
     color: var(--ink);
     cursor: pointer;
-    background: rgba(255, 255, 255, 0.72);
-    border: 1px solid rgba(59, 64, 69, 0.18);
-    box-shadow: 0 10px 24px -18px rgba(0, 0, 0, 0.35);
-    -webkit-backdrop-filter: blur(12px) saturate(140%);
-    backdrop-filter: blur(12px) saturate(140%);
+    background: #fff;
+    border: 2px solid #3b4045;
     transition:
       border-color 0.45s var(--ease),
       box-shadow 0.45s var(--ease),
-      background 0.45s var(--ease);
+      background 0.45s var(--ease),
+      color 0.45s var(--ease);
   }
   .rueda li b {
     font-size: 21px;
@@ -481,7 +498,7 @@ const primero = certificados[1];
   .luz {
     position: absolute;
     inset: 0;
-    background: linear-gradient(105deg, transparent 30%, rgba(221, 4, 10, 0.08) 50%, transparent 70%);
+    background: linear-gradient(105deg, transparent 30%, rgba(255, 255, 255, 0.35) 50%, transparent 70%);
     translate: -110% 0;
     pointer-events: none;
   }
@@ -518,11 +535,15 @@ const primero = certificados[1];
     pointer-events: none;
   }
   .rueda.viva li.activo button {
-    background: #fff;
-    border-color: rgba(221, 4, 10, 0.55);
+    background: var(--red);
+    border-color: var(--red);
+    color: #fff;
     box-shadow:
-      0 0 22px -8px rgba(221, 4, 10, 0.45),
-      0 14px 28px -20px rgba(0, 0, 0, 0.4);
+      0 0 26px -6px rgba(221, 4, 10, 0.55),
+      0 16px 30px -18px rgba(120, 0, 0, 0.6);
+  }
+  .rueda.viva li.activo span {
+    color: rgba(255, 255, 255, 0.85);
   }
   .rueda.viva .flecha {
     display: grid;
@@ -571,14 +592,14 @@ const primero = certificados[1];
     }
   }
   @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    .tubo {
+      transition: translate 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .pompas li:hover .tubo {
+      translate: 0 -6px;
+    }
     .pompas li:hover .burbuja {
-      animation: burbuja 1.4s ease-in infinite;
-    }
-    .pompas li:hover .burbuja:nth-child(5) {
-      animation-delay: 0.45s;
-    }
-    .pompas li:hover .burbuja:nth-child(6) {
-      animation-delay: 0.9s;
+      animation-duration: 1.6s;
     }
   }
 
@@ -620,10 +641,20 @@ const primero = certificados[1];
     :global(.js) #empresa .pompas.vista .capa {
       animation: aparece 0.4s var(--ease) calc(var(--i) * 0.18s + 1.1s) both;
     }
+    /* Burbujas que suben sin parar por el tubo, despacio y desfasadas */
+    :global(.js) #empresa .pompas.vista .burbuja {
+      animation: burbuja 3.4s ease-in calc(var(--i) * 0.5s + 1.8s) infinite;
+    }
+    :global(.js) #empresa .pompas.vista .burbuja:nth-child(5) {
+      animation-delay: calc(var(--i) * 0.5s + 2.9s);
+    }
+    :global(.js) #empresa .pompas.vista .burbuja:nth-child(6) {
+      animation-delay: calc(var(--i) * 0.5s + 4s);
+    }
     :global(.js) #empresa .pompas.vista .txt {
       animation: sube 0.6s var(--ease) calc(var(--i) * 0.18s + 0.35s) both;
     }
-    :global(.js) #empresa .cta:not(.vista),
+    :global(.js) #empresa .foto:not(.vista) .btn,
     :global(.js) #empresa .sellos:not(.vista) .rueda {
       opacity: 0;
       transform: translateY(20px);
@@ -667,9 +698,12 @@ const primero = certificados[1];
     20% {
       opacity: 1;
     }
+    85% {
+      opacity: 0.9;
+    }
     100% {
       opacity: 0;
-      transform: translateY(-60px);
+      transform: translateY(calc(var(--h) * -0.72));
     }
   }
   @keyframes sube {
