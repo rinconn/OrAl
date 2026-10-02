@@ -567,56 +567,46 @@ estándar"; en la portada va un poco más corta para que se lea de un golpe.
 
 - **Antes:** la web actual presenta la empresa con valores genéricos ("integridad, dinamismo") y deja los
   certificados en otra página. La primera versión de la portada nueva ponía la foto de una mano con guante a todo
-  el ancho, tres tarjetas blancas con borde montadas sobre ella y los certificados en una rueda sobre una franja gris.
-- **Ahora:** toda la sección es **una sola escena** sobre la foto de un rotor cargado con tubos de tapón rojo
-  (foto de la empresa), oscurecida para que se lea bien encima.
-  - Arriba, la frase del catálogo centrada, con "más allá de lo estándar" en negrita, mayúsculas y subrayado rojo.
-  - **Tres pompas** de rojo a negro con un brillo blanco: 1949 (fabricantes de centrífugas y referente europeo),
-    Familiar (una empresa de familia que integra a socios, usuarios y asociados) y Daganzo (fábrica propia en
-    Madrid con sus tres ISO). El texto de cada una va debajo; en el móvil, al lado y alternando de lado.
-  - El botón **"Conoce la empresa"**, que llevará a la página de Empresa.
-  - Los **nueve certificados y normas** en la misma rueda de antes, ahora con placas de **cristal esmerilado**
-    sobre la foto, como las cifras de la primera pantalla. El del centro se enciende con un rojo neón suave y
-    debajo se explica qué significa.
+  el ancho, tres tarjetas blancas con borde y los certificados en una rueda sobre franja gris.
+- **Ahora:**
+  - Foto del rotor con tubos de tapón rojo (foto de la empresa) **a lo ancho y más baja**, con la frase del catálogo
+    y el botón **"Conoce la empresa"** encima, en blanco.
+  - **Tres tubos de sangre** en su gradilla gris, con tapón rojo estriado, etiqueta con código de barras y sangre
+    separada en capas (glóbulos, capa blanca y plasma). Al lado de cada uno, el dato en grande (1949, Familiar,
+    Daganzo), su título y su frase. En el móvil, uno debajo de otro.
+  - Los **nueve certificados** en una franja gris: placas blancas con borde oscuro y la del centro en rojo, explicada
+    debajo.
 
 ### 8.2 Por qué es mejor
 
-- La frase es de la propia empresa, no un eslogan inventado, y es lo primero que se lee.
-- La foto del rotor con tubos rojos es real, de la empresa, y repite el rojo de la marca sin forzarlo. Sustituye
-  a la anterior: la portada no suma ni una foto más.
-- Las pompas dejan de parecer fichas de formulario: son tres datos grandes que se recuerdan de un vistazo, con el
-  rojo y el negro de la marca. Cuentan tres cosas distintas (historia, familia y fábrica) y no repiten las 48 h ni
-  los 3 años, que ya están en la primera pantalla.
-- Los certificados dejan de ser siglas: el distribuidor lee qué garantiza cada uno. El cristal es el mismo de las
-  cifras de la primera pantalla, así que la portada usa un solo lenguaje para los datos destacados.
-- Foto, pompas y certificados en la misma escena: se lee como un bloque sobre la empresa y no como tres franjas
-  sueltas.
+- La frase es de la propia empresa y el dato principal de cada bloque se lee de un vistazo.
+- Los tubos cuentan lo que hace Orto Alresa, centrifugar, sin decirlo: no es decoración genérica sino su oficio.
+- La sección es blanca y solo lleva una foto baja: la portada recupera el equilibrio entre secciones oscuras y
+  claras y no se convierte en una sucesión de fotos.
+- El botón dentro de la foto evita un hueco en blanco antes de los certificados.
+- El certificado activo en rojo se ve desde lejos; antes, todo blanco, pasaba desapercibido.
 
 ### 8.3 Movimiento y efectos
 
-- Al llegar, la frase sube y las pompas suben flotando una tras otra, con su texto apareciendo justo después.
-  Luego se mecen arriba y abajo muy despacio, cada una a su ritmo para que no vayan al compás.
-- Al pasar el ratón, la pompa se enciende con el mismo rojo neón suave de las cifras de la portada.
-- La rueda gira cada pocos segundos; al certificado que llega al centro le cruza un destello de luz y la
-  explicación cambia con un fundido corto. Se para al pasar el ratón y se mueve con las flechas o pulsando un
-  certificado.
-- Todo se mueve solo con transformaciones y opacidad, que el navegador anima sin esfuerzo. Si el sistema pide menos
-  movimiento, las pompas se quedan quietas, no hay destellos y la rueda no avanza sola. Sin JavaScript, los
-  certificados se ven todos en filas centradas.
+- Al llegar, la foto se asienta, la frase y el botón suben, y cada tubo, uno tras otro, se llena de sangre con un
+  leve vaivén y en seguida se separa en capas, como al centrifugar. El 1949 cuenta rápido desde 1900.
+- Después suben burbujas por el tubo, despacio y sin parar. Al pasar el ratón, el tubo sube un poco, las burbujas
+  van más rápido y la cifra se pone roja.
+- La rueda de certificados gira sola, se para al pasar el ratón y se mueve con flechas o pulsando un certificado.
+- Solo se animan transformaciones y opacidad. Con menos movimiento pedido por el sistema no hay animaciones y la
+  rueda no avanza sola; sin JavaScript, los certificados se ven en filas.
 
 ### 8.4 Descartados
 
-- **Pompas montadas sobre el borde de una foto a lo ancho (A):** la más parecida a la versión anterior, pero las
-  pompas medio dentro y medio fuera de la foto partían la sección.
-- **Foto a la izquierda y pompas en escalera a la derecha (B):** ordenada, pero vuelve al reparto en dos mitades de
-  siempre.
-- **Foto de la mano con guante cargando tubos:** buena foto, pero se lee la etiqueta "digicen 21", un modelo que ya
-  no está en el catálogo.
-- **Versión anterior (tarjetas blancas y franja gris):** correcta, pero las tarjetas con borde se parecían a las de
-  otras secciones y la franja gris de certificados quedaba como un añadido.
-- **Antes de esa**, revisada con el usuario: frase a la izquierda, tres datos pegados en una sola ficha, sin botón y
-  con los certificados pasando en una cinta continua. La ficha parecía una tabla y la cinta daba vueltas sin decir
-  nada.
+- **Escena oscura con la foto de fondo y pompas rojas encima:** vistosa, pero dejaba tres secciones oscuras
+  seguidas y la portada perdía el blanco.
+- **Pompas rojo-negro flotando:** no terminaban de encajar; parecían adorno.
+- **Foto de la mano con guante cargando tubos:** se lee la etiqueta "digicen 21", un modelo que ya no está en el
+  catálogo.
+- **Otras ideas para los datos:** burbujas de sangre que suben y estallan (demasiado recargado) y tapones vistos
+  desde arriba en un rotor (más sobrio, menos expresivo). Para no dejar los tubos sueltos se eligió la gradilla
+  frente a un panel gris o un plano del rotor de fondo.
+- **Versiones anteriores** (tarjetas blancas, ficha tipo tabla, cinta de certificados): correctas pero planas.
 
 ### 8.5 Lo que viene después
 
