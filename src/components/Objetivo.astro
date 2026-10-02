@@ -1,0 +1,110 @@
+---
+// Frase de la empresa sobre la foto del rotor con tubos de tapón rojo (Catálogo General 2025).
+// Va justo después del inicio: primero quiénes somos, luego Tecnología.
+---
+
+<section class="foto" id="objetivo">
+  <div class="ph" role="img" aria-label="Rotor de una centrífuga Orto Alresa cargado con tubos de tapón rojo"></div>
+  <div class="wrap">
+    <h2>
+      Nuestro objetivo no es ser una opción más, sino ir <b>más allá de lo estándar</b>
+    </h2>
+    <a class="btn ghost grande" href="/empresa/">
+      Conoce la empresa <span aria-hidden="true">»</span>
+    </a>
+  </div>
+</section>
+
+<script>
+  // La foto se asienta y la frase sube la primera vez que se ve
+  const bloque = document.getElementById('objetivo');
+  if (bloque && 'IntersectionObserver' in window) {
+    document.documentElement.classList.add('js');
+    const obs = new IntersectionObserver(
+      (entradas) => {
+        if (entradas.some((e) => e.isIntersecting)) {
+          bloque.classList.add('vista');
+          obs.disconnect();
+        }
+      },
+      { threshold: 0.25 },
+    );
+    obs.observe(bloque);
+  }
+</script>
+
+<style>
+  /* Foto del rotor a lo ancho, más baja que antes, con la frase en blanco encima */
+  .foto {
+    position: relative;
+    overflow: hidden;
+    height: clamp(360px, 30vw, 450px);
+    color: #fff;
+  }
+  .ph {
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(180deg, rgba(12, 14, 16, 0.72), rgba(12, 14, 16, 0.35) 70%, rgba(12, 14, 16, 0.2)),
+      url('/img/fotos/empresa-tubos.webp') center 45% / cover;
+    transition: transform 1.6s var(--ease);
+  }
+  .foto .wrap {
+    position: relative;
+    padding-top: clamp(44px, 5vw, 72px);
+    text-align: center;
+  }
+  .foto .btn {
+    margin-top: clamp(24px, 2.4vw, 34px);
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.85);
+    transition:
+      opacity 0.7s var(--ease) 0.15s,
+      transform 0.7s var(--ease) 0.15s,
+      background 0.25s var(--ease),
+      color 0.25s var(--ease);
+  }
+  .foto .btn:hover {
+    background: #fff;
+    color: var(--ink);
+  }
+  h2 {
+    margin: 0 auto;
+    max-width: 17em;
+    font-weight: 300;
+    font-size: clamp(30px, 3.6vw, 52px);
+    line-height: 1.08;
+    text-wrap: balance;
+    transition:
+      opacity 0.7s var(--ease),
+      transform 0.7s var(--ease);
+  }
+  h2 b {
+    font-weight: 700;
+    text-transform: uppercase;
+    background: linear-gradient(var(--red), var(--red)) left bottom / 100% 3px no-repeat;
+    padding-bottom: 2px;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    :global(.js) #objetivo:not(.vista) .ph {
+      transform: scale(1.08);
+    }
+    :global(.js) #objetivo:not(.vista) h2 {
+      opacity: 0;
+      transform: translateY(24px);
+    }
+    :global(.js) #objetivo:not(.vista) .btn {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+  }
+
+  @media (max-width: 860px) {
+    .foto {
+      height: auto;
+      min-height: 280px;
+      padding-bottom: 48px;
+    }
+  }
+</style>
