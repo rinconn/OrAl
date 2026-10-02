@@ -776,3 +776,35 @@ entera delante, si se ensancha el contenido de 1280 a 1440 px.
   rompían el ritmo. Es el mismo lenguaje (rojo, destello) que el resto de la web.
 - **Descartado:** las cifras del inicio en una franja blanca (muy simple o parecía un pie), el título de
   Tecnología sobre blanco (el cambio de blanco a gris chirriaba) y una raya roja quieta.
+
+## 14. Tecnología, más completa
+
+### 14.1 SmartConnect y Configurador, a la par y con su botón
+
+- **Antes:** SmartConnect se explicaba pero no llevaba a ningún sitio, y el Configurador de 6 pasos no aparecía en
+  ninguna parte de la web nueva. En la web antigua los dos tenían su acceso.
+- **Ahora:** tras el REI System van dos tarjetas iguales: SmartConnect con su botón **Iniciar sesión** (el mismo
+  panel de la app que usa la web antigua) y el Configurador con foto, "6 pasos", las seis preguntas y **Empezar**.
+  La página del Configurador aún no existe: de momento el botón se queda en la tarjeta.
+- **Por qué:** son las dos herramientas que el distribuidor usa de verdad; ponerlas juntas y del mismo tamaño
+  les da el peso que la empresa pide sin quitar fuerza a la sección.
+- **Descartado:** una banda del Configurador al final de la sección (quedaba como un añadido) y dos placas de
+  acceso bajo el título (pequeñas para lo que son).
+
+### 14.2 La raya roja que recorre las tarjetas
+
+- **Ahora:** al aparecer cada tarjeta, una raya roja le da una vuelta al borde. Su último tramo se queda donde
+  acaba, apagándose y encendiéndose suave, y en su punta late un punto rojo que suelta una onda cada pocos
+  segundos, como el vaso del esquema ULS. Cada tarjeta empieza por un lado y a su tiempo, y los tramos quedan en lados de fuera para que nunca
+  choquen entre tarjetas vecinas. Sin animaciones (accesibilidad), el tramo se ve quieto.
+- **Por qué:** da vida a la sección con el rojo de la marca, sin texto ni adornos, y con un efecto propio que no se
+  confunde con la raya entre secciones.
+- **Descartado:** que la raya diera dos vueltas y se apagara, una punta blanca mientras corre (dos colores
+  liaban), un borde de neón entero (demasiado) y un destello blanco cruzando el tramo (igual que la raya entre
+  secciones).
+
+### 14.3 Iconos en los pasos del Configurador
+
+- **Ahora:** cada paso lleva un icono de la propia marca (los del sistema de diseño, no genéricos) en un círculo
+  rojo, con el mismo efecto al pasar el ratón que las placas del inicio.
+- **Por qué:** se lee de un vistazo qué pregunta cada paso, y repetir el efecto del inicio hace la web coherente.

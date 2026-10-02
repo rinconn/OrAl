@@ -1,0 +1,151 @@
+---
+// Raya roja que da una vuelta al borde de una tarjeta cuando aparece. Al acabar, su último tramo se queda donde
+// ha terminado, apagándose y encendiéndose suave, y en su punta late un punto rojo que suelta una onda cada pocos
+// segundos, como el vaso del esquema ULS. Cada tarjeta arranca por un lado y con un retraso distinto para que dos rayas no coincidan en el
+// borde que comparten. La tarjeta tiene que ser position: relative y recibir la clase "vista" al verse.
+interface Props {
+  lado: 'arriba' | 'derecha' | 'abajo' | 'izquierda';
+  retraso?: number;
+}
+const { lado, retraso = 0 } = Astro.props;
+---
+
+<svg class="borde" data-lado={lado} style={`--retraso: ${retraso}s`} aria-hidden="true">
+  <rect class="raya" width="100%" height="100%" pathLength="100"></rect>
+  <circle class="onda" r="3"></circle>
+  <circle class="punto" r="2.5"></circle>
+</svg>
+
+<script>
+  // Dónde empieza (y acaba, tras la vuelta): el centro del lado elegido, en % del perímetro (el rectángulo se
+  // recorre desde la esquina de arriba a la izquierda en el sentido de las agujas del reloj)
+  const colocar = () => {
+    document.querySelectorAll<SVGSVGElement>('svg.borde').forEach((s) => {
+      const { width: w, height: h } = s.getBoundingClientRect();
+      if (!w) return;
+      const pos = { arriba: w / 2, derecha: w + h / 2, abajo: w + h + w / 2, izquierda: 2 * w + h + h / 2 };
+      const o = ((pos[s.dataset.lado as keyof typeof pos] ?? 0) / (2 * (w + h))) * 100;
+      s.style.setProperty('--ini', String(-o));
+      s.style.setProperty('--fin', String(-o - 100));
+      // La punta del tramo (16 de largo), en píxeles, para el punto que late
+      let d = (((o + 16) % 100) / 100) * 2 * (w + h);
+      let x = 0;
+      let y = 0;
+      if (d <= w) x = d;
+      else if ((d -= w) <= h) [x, y] = [w, d];
+      else if ((d -= h) <= w) [x, y] = [w - d, h];
+      else [x, y] = [0, h - (d - w)];
+      s.querySelectorAll('circle').forEach((c) => {
+        c.setAttribute('cx', String(x));
+        c.setAttribute('cy', String(y));
+      });
+    });
+  };
+  colocar();
+  addEventListener('resize', colocar, { passive: true });
+</script>
+
+<style>
+  .borde {
+    --dura: 2.6s;
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    pointer-events: none;
+    z-index: 2;
+  }
+  rect {
+    fill: none;
+    vector-effect: non-scaling-stroke;
+  }
+  .raya {
+    stroke: #ff1a20;
+    stroke-width: 2.5;
+    stroke-dasharray: 16 84;
+    stroke-dashoffset: var(--fin);
+    filter: drop-shadow(0 0 5px rgba(255, 30, 30, 0.75));
+    opacity: 0;
+  }
+  circle {
+    opacity: 0;
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+  .punto {
+    fill: #ff1a20;
+    filter: drop-shadow(0 0 3px rgba(255, 30, 30, 0.6));
+  }
+  .onda {
+    fill: none;
+    stroke: #ff1a20;
+    stroke-width: 1;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    /* Una vuelta; después el tramo respira y el punto de la punta late */
+    :global(.vista) > .borde .raya {
+      animation:
+        borde-vuelta var(--dura) cubic-bezier(0.45, 0.05, 0.4, 1) var(--retraso) both,
+        borde-respira 2.4s ease-in-out calc(var(--retraso) + var(--dura)) infinite alternate;
+    }
+    :global(.vista) > .borde .punto {
+      animation: borde-punto 0.5s ease-out calc(var(--retraso) + var(--dura)) both;
+    }
+    :global(.vista) > .borde .onda {
+      animation: borde-onda 3.2s ease-out calc(var(--retraso) + var(--dura) + 0.4s) infinite;
+    }
+  }
+  /* Sin animaciones, el tramo se ve quieto en su sitio */
+  @media (prefers-reduced-motion: reduce) {
+    .raya,
+    .punto {
+      opacity: 0.7;
+    }
+  }
+
+  @keyframes borde-vuelta {
+    0% {
+      stroke-dashoffset: var(--ini);
+      opacity: 0;
+    }
+    8%,
+    100% {
+      opacity: 1;
+    }
+    100% {
+      stroke-dashoffset: var(--fin);
+    }
+  }
+  @keyframes borde-respira {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0.4;
+    }
+  }
+  @keyframes borde-punto {
+    from {
+      opacity: 0;
+      transform: scale(0);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  /* La onda sale del punto, se abre y se desvanece; luego espera a la siguiente */
+  @keyframes borde-onda {
+    0% {
+      opacity: 0.55;
+      transform: scale(1);
+    }
+    45%,
+    100% {
+      opacity: 0;
+      transform: scale(3.2);
+    }
+  }
+</style>
