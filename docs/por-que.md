@@ -245,18 +245,27 @@ Ponerlos antes haría que todos los enlaces llevaran a la portada.
 
 ---
 
-### 4.6 Foto de fondo: el rotor girando (2-10-2026)
+### 4.6 Foto del rotor girando, movimiento más tranquilo y cifras con iconos (2-10-2026)
 
-- **Antes:** manos con guantes cargando tubos en un rotor RT 267.
-- **Ahora:** un rotor girando a toda velocidad, con estelas rojas y el buje de metal nítido en el centro (foto de la
-  empresa). Solo cambia la foto; el texto, los botones, las cifras y el movimiento siguen igual.
-- **Por qué es mejor:** es lo que hace una centrífuga, contado en una imagen. Tiene más zona oscura a la izquierda para
-  el texto, el rojo de las estelas es el de la marca y, al estar en movimiento, no se le nota la resolución. La
-  entrada (el rotor llega girando y frena) encaja todavía mejor.
-- **Sin retoque con IA:** no se ha subido la resolución con IA porque se inventa detalles. Si la empresa tiene el
-  original del fotógrafo, se cambia el archivo y listo.
-- **Móvil:** la foto se encuadra para dejar el buje centrado arriba.
-- **Las otras dos fotos** (tubos rojos y guante) quedan para la gama y Tecnología.
+- **Foto, antes:** manos con guantes cargando tubos en un rotor RT 267. **Ahora:** un rotor girando a toda
+  velocidad, con estelas rojas y el buje de metal nítido (foto de la empresa). Es lo que hace una centrífuga,
+  contado en una imagen; deja más zona oscura para el texto y, al estar en movimiento, no se le nota la resolución.
+  No se ha subido la resolución con IA porque se inventa detalles; si la empresa tiene el original, se cambia el
+  archivo y listo. En móvil se encuadra con el buje centrado arriba.
+- **Movimiento, antes:** la foto entraba girando y luego se desplazaba con el ratón, con un brillo detrás del
+  puntero; se notaba como un temblor. **Ahora:** la foto solo se aclara y se asienta despacio al cargar, y luego
+  queda quieta. Un fondo quieto se lee mejor y transmite más seriedad.
+- **Botón "Ver la gama":** mantiene el destello y, al pasar el ratón, se vuelve cristal rojo: deja ver la foto
+  detrás, con un brillo fino en el borde de arriba y un halo rojo muy suave.
+- **Cifras, antes:** cuatro textos sobre una línea fina, sin nada que los distinga. **Ahora:** cuatro placas de
+  cristal esmerilado, cada una con su icono dibujado para la web en un círculo rojo (reloj para 48 h, camión para
+  1 semana, calendario para 3 años, sello para ISO). Se entienden de un vistazo, antes de leer.
+  - Al pasar el ratón: cruza el mismo destello de luz que en el botón, la raya roja de la web crece arriba, la
+    esquina se vuelve roja, el borde y el icono se encienden con un rojo neón muy suave y el icono se mueve (el
+    reloj da la vuelta, el camión arranca, el visto se dibuja, el sello late).
+  - Con "reducir movimiento" activado en el sistema, los iconos quedan quietos.
+- **Descartados (con capturas):** cifras sin cajas con el icono encima, y tarjetas oscuras opacas como las del
+  resto de la web; las placas de cristal casan mejor con la foto y con el botón.
 
 ## 5. La gama (portada)
 
