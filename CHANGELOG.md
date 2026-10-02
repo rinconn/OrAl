@@ -63,3 +63,7 @@ Hasta que se publique la web, todo va en "Sin publicar"; al publicar se cierra l
   barra negra superior (teléfono y correo siguen en el menú móvil y en el pie). Por debajo de 1220 px sale
   el botón de menú; en móvil las banderas y la lupa quedan siempre a la vista. (#8)
 - Las anclas ya no quedan tapadas por la cabecera fija (`scroll-margin-top`). (#3)
+
+### Quitado
+
+- Botón "Ver antes y después" y sus notas en cada sección: fuera de la web. Las notas se guardan en `docs/antes-y-despues.md`.

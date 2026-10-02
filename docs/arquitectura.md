@@ -68,7 +68,7 @@ Enlaces, teléfono, idiomas ──► src/data/navegacion.ts ──► cabecera 
 
 - `global.css` define las variables de marca (`--red`, `--ink`, `--carbon`…) y las utilidades comunes:
   `.wrap` (ancho máximo), `.sec` (espaciado de sección), `.head` (titular de dos pesos), `.eyebrow`,
-  `.arrow` (enlace con `»`), `.btn`, `.why` (nota "antes y después").
+  `.arrow` (enlace con `»`), `.btn`.
 - Cada componente lleva su propio `<style>`, que Astro limita a ese componente.
 - Puntos de corte habituales: 1240, 1080, 900, 760 y 520 px. Todo se revisa a 1440 y 390 px.
 

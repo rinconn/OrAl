@@ -71,13 +71,6 @@ const actual = (href: string) => !href.startsWith('/#') && ruta.startsWith(href)
       <span class="txt">Menú</span>
     </button>
   </div>
-  <div class="wrap">
-    <p class="why">
-      <b>Antes:</b> diez entradas de menú al mismo nivel y, en móvil, el titular de la portada tapado por la cabecera.
-      <b>Ahora:</b> seis entradas claras, el mismo logo, idioma con banderas, una lupa para ir directo a un modelo, más
-      aire, y una cabecera que se aparta mientras lees y vuelve en cuanto subes.
-    </p>
-  </div>
 </header>
 
 <script>
@@ -337,9 +330,6 @@ const actual = (href: string) => !href.startsWith('/#') && ruta.startsWith(href)
     opacity: 1;
     transform: rotate(-45deg);
   }
-  .top .why {
-    margin: 0 0 14px;
-  }
 
   /* Portátiles: menos hueco entre elementos para que el menú respire */
   @media (max-width: 1360px) {
@@ -422,9 +412,6 @@ const actual = (href: string) => !href.startsWith('/#') && ruta.startsWith(href)
     }
     :global(html.menu-abierto) {
       overflow: hidden;
-    }
-    :global(html.menu-abierto .notas-btn) {
-      display: none;
     }
   }
 
