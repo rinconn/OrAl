@@ -566,49 +566,47 @@ estándar"; en la portada va un poco más corta para que se lea de un golpe.
 ### 8.1 Qué había y qué hay
 
 - **Antes:** la web actual presenta la empresa con valores genéricos ("integridad, dinamismo") y deja los
-  certificados en otra página. El prototipo de la portada nueva seguía el molde de siempre: foto a un lado,
-  texto al otro, una etiqueta pequeña "La empresa" encima, los certificados como etiquetas sueltas y un enlace
-  que llevaba a la misma sección.
+  certificados en otra página. La primera versión de la portada nueva ponía la foto de una mano con guante a todo
+  el ancho, tres tarjetas blancas con borde y los certificados en una rueda sobre franja gris.
 - **Ahora:**
-  - La foto va **a todo el ancho**, encuadrada para que se vean la mano y la pantalla, y la frase del catálogo
-    va **centrada** en la zona clara de arriba, con "más allá de lo estándar" en negrita y mayúsculas y
-    subrayado en rojo, como los titulares del catálogo.
-  - **Tres tarjetas sueltas** que se montan sobre el borde de la foto: 1949 (fabricantes de centrífugas y
-    referente europeo), Familiar (una empresa de familia que integra a socios, usuarios y asociados) y Daganzo
-    (fábrica propia en Madrid con sus tres ISO). Llevan el borde y la esquina de las tarjetas de Distribuidores.
-  - Un botón **"Conoce la empresa"** que llevará a la página de Empresa, para quien quiera saber más.
-  - Una franja gris con **los nueve certificados y normas** en una rueda: el del centro se destaca en gris
-    oscuro y debajo se explica en negrita qué significa. En el título, "cumplimos" va en rojo, igual que el nombre del certificado. Avanza sola, se para al pasar el ratón y se puede
-    mover con las flechas o pulsando cualquier certificado.
+  - Foto del rotor con tubos de tapón rojo (foto de la empresa) **a lo ancho y más baja**, con la frase del catálogo
+    y el botón **"Conoce la empresa"** encima, en blanco.
+  - **Tres tubos de sangre** en su gradilla gris, con tapón rojo estriado, etiqueta con código de barras y sangre
+    separada en capas (glóbulos, capa blanca y plasma). Al lado de cada uno, el dato en grande (1949, Familiar,
+    Daganzo), su título y su frase. En el móvil, uno debajo de otro.
+  - Los **nueve certificados** en una franja gris: placas blancas con borde oscuro y la del centro en rojo, explicada
+    debajo.
 
 ### 8.2 Por qué es mejor
 
-- La frase es de la propia empresa, no un eslogan inventado, y ahora es lo primero que se lee.
-- La foto a todo el ancho rompe con las secciones anteriores, que son de columnas y tarjetas, y las tarjetas
-  montadas sobre ella dan profundidad sin recargar.
-- Las tarjetas cuentan tres cosas distintas de la empresa (historia, familia y fábrica). No se repiten las 48 h
-  ni los 3 años, que ya están en Distribuidores.
-- Los certificados dejan de ser siglas: el distribuidor lee qué garantiza cada uno, que es lo que tendrá que
-  explicar a su cliente.
-- Bordes, esquina y botón repiten los de secciones anteriores, así que la portada se lee como un conjunto.
+- La frase es de la propia empresa y el dato principal de cada bloque se lee de un vistazo.
+- Los tubos cuentan lo que hace Orto Alresa, centrifugar, sin decirlo: no es decoración genérica sino su oficio.
+- La sección es blanca y solo lleva una foto baja: la portada recupera el equilibrio entre secciones oscuras y
+  claras y no se convierte en una sucesión de fotos.
+- El botón dentro de la foto evita un hueco en blanco antes de los certificados.
+- El certificado activo en rojo se ve desde lejos; antes, todo blanco, pasaba desapercibido.
 
 ### 8.3 Movimiento y efectos
 
-- Al llegar, la foto se acerca despacio hasta su sitio, la frase sube y las tarjetas entran una tras otra.
-- Al pasar el ratón por una tarjeta, sube un poco, le crece la raya roja arriba y la cifra y la esquina se
-  ponen rojas. La flecha del botón se desplaza.
-- La rueda gira cada pocos segundos y la explicación cambia con un fundido corto.
-- Si el sistema pide menos movimiento, no hay animaciones y la rueda no avanza sola; se mueve con las flechas.
-  Sin JavaScript, los certificados se ven todos en filas centradas.
+- Al llegar, la foto se asienta, la frase y el botón suben, y cada tubo, uno tras otro, se llena de sangre con un
+  leve vaivén y en seguida se separa en capas, como al centrifugar. El 1949 cuenta rápido desde 1900.
+- Después suben burbujas por el tubo, despacio y sin parar. Al pasar el ratón, el tubo sube un poco, las burbujas
+  van más rápido y la cifra se pone roja.
+- La rueda de certificados gira sola, se para al pasar el ratón y se mueve con flechas o pulsando un certificado.
+- Solo se animan transformaciones y opacidad. Con menos movimiento pedido por el sistema no hay animaciones y la
+  rueda no avanza sola; sin JavaScript, los certificados se ven en filas.
 
 ### 8.4 Descartados
 
-- **Foto y ficha con sellos (B):** ordenada, pero seguía siendo el reparto en dos mitades de siempre.
-- **Línea del tiempo en panel oscuro (C):** cuenta más historia, pero repetía el tono oscuro de la primera
-  pantalla y de Tecnología.
-- **Primera versión de la A**, revisada con el usuario: frase a la izquierda, tres datos pegados en una sola
-  ficha, sin botón y con los certificados pasando en una cinta continua. La ficha parecía una tabla, los datos
-  se quedaban cortos y la cinta daba vueltas sin decir nada.
+- **Escena oscura con la foto de fondo y pompas rojas encima:** vistosa, pero dejaba tres secciones oscuras
+  seguidas y la portada perdía el blanco.
+- **Pompas rojo-negro flotando:** no terminaban de encajar; parecían adorno.
+- **Foto de la mano con guante cargando tubos:** se lee la etiqueta "digicen 21", un modelo que ya no está en el
+  catálogo.
+- **Otras ideas para los datos:** burbujas de sangre que suben y estallan (demasiado recargado) y tapones vistos
+  desde arriba en un rotor (más sobrio, menos expresivo). Para no dejar los tubos sueltos se eligió la gradilla
+  frente a un panel gris o un plano del rotor de fondo.
+- **Versiones anteriores** (tarjetas blancas, ficha tipo tabla, cinta de certificados): correctas pero planas.
 
 ### 8.5 Lo que viene después
 
