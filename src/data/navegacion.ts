@@ -8,8 +8,7 @@ export interface Enlace {
 }
 
 export const principal: Enlace[] = [
-  { href: '/#gama', texto: 'Centrífugas' },
-  { href: '/#gama', texto: 'Elegir centrífuga' },
+  { href: '/centrifugas/', texto: 'Centrífugas' },
   { href: '/#tecnologia', texto: 'Tecnología' },
   { href: '/#distribuidores', texto: 'Distribuidores' },
   { href: '/#contacto', texto: 'Servicio técnico' },
@@ -32,8 +31,7 @@ export const pie: { titulo: string; enlaces: Enlace[] }[] = [
   {
     titulo: 'Centrífugas',
     enlaces: [
-      { href: '/#gama', texto: 'Toda la gama' },
-      { href: '/#gama', texto: 'Elegir centrífuga' },
+      { href: '/centrifugas/', texto: 'Toda la gama' },
       { href: '/#tecnologia', texto: 'Tecnología' },
       { href: '/descargas/', texto: 'Catálogo 2025' },
     ],
