@@ -28,6 +28,7 @@ Hasta que se publique la web, todo va en "Sin publicar"; al publicar se cierra l
 
 ### Cambiado
 
+- Empresa: foto del rotor con tubos rojos a lo ancho, más baja, con la frase y el botón "Conoce la empresa" encima. 1949, Familiar y Daganzo pasan a tres tubos de sangre en su gradilla, con tapón rojo y etiqueta, que al llegar se llenan y se separan en capas como al centrifugar; luego suben burbujas despacio. Certificados en franja gris con placas de borde oscuro y la del centro en rojo.
 - Portada: la foto de fondo pasa a ser un rotor girando a toda velocidad, con estelas rojas y el buje nítido (foto de la empresa). Fuera el temblor que seguía al ratón y el giro de entrada: la foto solo se aclara y se asienta despacio. "Ver la gama" se vuelve cristal rojo al pasar el ratón. Las cuatro cifras pasan a placas de cristal con los iconos de la marca (teléfono, caja, escudo, casillas) y, al pasar el ratón, un destello de luz, un rojo neón suave y el icono que da un pequeño salto.
 - Portada nueva: manos con guantes cargando un rotor, a pantalla completa (foto de la empresa), que gira y frena al entrar y sigue al ratón con un brillo suave, con el titular, la frase, los dos botones (con destello y relleno al pasar el ratón) y las cuatro razones (48 h, 1 semana, 3 años, ISO 13485) encima, sin cajas. Fuera el recuadro oscuro con retícula, la Digicen recortada y las notas técnicas.
 - Distribuidores: fuera los cuadrados sobre la línea y las tarjetas. Ahora una ruta en onda, como un tubo que se llena de sangre con burbujas que lo recorren, se dibuja sobre un fondo
