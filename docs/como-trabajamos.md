@@ -23,7 +23,7 @@ Los mensajes de commit también en español, en imperativo o describiendo el res
 - [ ] Sin errores en la consola del navegador.
 - [ ] Se puede usar con teclado (Tab, Enter, Esc) y todo lo interactivo tiene foco visible.
 - [ ] Ningún dato inventado: todo sale del catálogo o de la web actual ([Contenido](contenido.md)).
-- [ ] Si mejora algo frente a la web actual: nota `.why` en la sección y fila en [Antes y después](antes-y-despues.md).
+- [ ] Si mejora algo frente a la web actual: fila en [Antes y después](antes-y-despues.md).
 - [ ] [CHANGELOG](../CHANGELOG.md) actualizado; decisión nueva en [`decisiones/`](decisiones/) si cuesta deshacerla.
 
 ## Versiones
