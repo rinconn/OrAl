@@ -9,7 +9,7 @@ export interface Modelo {
   nombre: string;
 }
 
-/** Enlaza cada modelo con su tarjeta de la gama (/#slug) y le pone su nombre con variantes */
+/** Enlaza cada modelo con su ficha del catálogo (/centrifugas/#slug) y le pone su nombre con variantes */
 const modelos = (...slugs: string[]): Modelo[] =>
   slugs.map((slug) => {
     const p = productos.find((x) => x.slug === slug);
@@ -18,7 +18,7 @@ const modelos = (...slugs: string[]): Modelo[] =>
     const v = p.variantes?.split(' · ') ?? [];
     const todas = [p.nombre, ...v];
     const nombre = todas.length > 1 ? `${todas.slice(0, -1).join(', ')} y ${todas.at(-1)}` : p.nombre;
-    return { href: `/#${slug}`, nombre };
+    return { href: `/centrifugas/#${slug}`, nombre };
   });
 
 export const rei = {

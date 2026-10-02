@@ -28,6 +28,7 @@ Hasta que se publique la web, todo va en "Sin publicar"; al publicar se cierra l
 
 ### Cambiado
 
+- Catálogo en su propia página, `/centrifugas/`: todas las series agrupadas por familia, sin filtros, con foto, frase y tres cifras. Sale de la portada para dejarla más limpia; "Centrífugas", "Ver la gama", "Toda la gama", los modelos de Tecnología y la lupa llevan allí.
 - Menú y pie sin "Elegir centrífuga": llevaba al mismo sitio que "Centrífugas". Volverá cuando exista la página del Configurador.
 
 - Empresa: foto del rotor con tubos rojos a lo ancho, más baja, con la frase y el botón "Conoce la empresa" encima. 1949, Familiar y Daganzo pasan a tres tubos de sangre en su gradilla, con tapón rojo y etiqueta, que al llegar se llenan y se separan en capas como al centrifugar; luego suben burbujas despacio. Certificados en franja gris con placas de borde oscuro y la del centro en rojo.

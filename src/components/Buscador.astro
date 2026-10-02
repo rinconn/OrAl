@@ -15,7 +15,7 @@ const indice: Entrada[] = [
   ...productos.map((p) => ({
     titulo: p.variantes ? `${p.nombre} · ${p.variantes}` : p.nombre,
     detalle: `Centrífuga · ${p.uso ?? familias[p.familia].nombre}`,
-    href: `/#${p.slug}`,
+    href: `/centrifugas/#${p.slug}`,
     texto: [p.nombre, p.variantes, familias[p.familia].nombre, p.uso, p.frase, p.capacidad, ...p.temperatura].join(' '),
   })),
   ...principal.map((e) => ({ titulo: e.texto, detalle: 'Sección', href: e.href, texto: e.texto })),
