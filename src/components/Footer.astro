@@ -1,5 +1,9 @@
 ---
 import { contacto, pie, redes, ayudas, sellos } from '../data/navegacion';
+import { idioma, ruta, textos } from '../i18n';
+
+const lang = idioma(Astro.currentLocale);
+const t = textos(lang);
 
 const year = new Date().getFullYear();
 ---
@@ -16,7 +20,7 @@ const year = new Date().getFullYear();
       </p>
       <div class="sellos">
         {sellos.map((s) => (
-          <img src={s.src} alt={s.alt} width={s.ancho} height={s.alto} loading="lazy" />
+          <img src={s.src} alt={t.pie.sellos[s.clave]} width={s.ancho} height={s.alto} loading="lazy" />
         ))}
       </div>
     </div>
@@ -25,7 +29,7 @@ const year = new Date().getFullYear();
         {contacto.telefono}
       </a>
       <p>
-        Pedidos y distribuidores: <a href={`mailto:${contacto.comercial}`}>{contacto.comercial}</a>
+        {t.pie.pedidos} <a href={`mailto:${contacto.comercial}`}>{contacto.comercial}</a>
       </p>
     </div>
   </div>
@@ -33,31 +37,31 @@ const year = new Date().getFullYear();
   <div class="wrap cols">
     {pie.map((c) => (
       <div>
-        <h2>{c.titulo}</h2>
+        <h2>{t.pie.titulos[c.titulo]}</h2>
         <ul>
           {c.enlaces.map((e) => (
             <li>
-              <a href={e.href}>{e.texto}</a>
+              <a href={ruta(lang, e.href)}>{t.pie.enlaces[e.clave]}</a>
             </li>
           ))}
         </ul>
       </div>
     ))}
     <div>
-      <h2>Contacto</h2>
+      <h2>{t.pie.contacto}</h2>
       <ul>
         <li>
           <a href={`mailto:${contacto.tecnico}`}>{contacto.tecnico}</a>
-          <small>Servicio técnico</small>
+          <small>{t.pie.servicio}</small>
         </li>
         <li>
           <a href={`mailto:${contacto.general}`}>{contacto.general}</a>
-          <small>Información general</small>
+          <small>{t.pie.info}</small>
         </li>
       </ul>
     </div>
     <div>
-      <h2>Síguenos</h2>
+      <h2>{t.pie.siguenos}</h2>
       <ul>
         {redes.map((r) => (
           <li>{r.href ? <a href={r.href}>{r.nombre}</a> : <span>{r.nombre}</span>}</li>
@@ -67,7 +71,7 @@ const year = new Date().getFullYear();
   </div>
 
   <!-- Cinta de las ayudas públicas: la lista va dos veces seguidas para que el bucle no tenga salto -->
-  <div class="cinta" role="region" aria-label="Ayudas públicas recibidas">
+  <div class="cinta" role="region" aria-label={t.pie.ayudas}>
     <ul class="pista">
       {[0, 1].map((vuelta) =>
         ayudas.map((a) => (
@@ -90,10 +94,10 @@ const year = new Date().getFullYear();
     <span>
       © {year} {contacto.empresa}
     </span>
-    <nav aria-label="Legal">
-      <a href="/aviso-legal/">Aviso legal</a>
-      <a href="/privacidad/">Privacidad</a>
-      <a href="/cookies/">Cookies</a>
+    <nav aria-label={t.pie.legal}>
+      <a href={ruta(lang, '/aviso-legal/')}>{t.pie.aviso}</a>
+      <a href={ruta(lang, '/privacidad/')}>{t.pie.privacidad}</a>
+      <a href={ruta(lang, '/cookies/')}>{t.pie.cookies}</a>
     </nav>
   </div>
 </footer>

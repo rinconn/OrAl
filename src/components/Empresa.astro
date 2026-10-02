@@ -1,68 +1,26 @@
 ---
 import Paso from './Paso.astro';
-// Todo sale del Catálogo General 2025: la frase, la historia, la empresa familiar, la fábrica y las normas
-const pompas = [
-  {
-    cifra: '1949',
-    titulo: 'Fabricantes de centrífugas',
-    texto: 'Más de 75 años después, somos referente entre los fabricantes europeos.',
-  },
-  {
-    cifra: 'Familiar',
-    titulo: 'Una empresa de familia',
-    texto: 'Buscamos integrar a nuestros socios, usuarios y asociados.',
-  },
-  {
-    cifra: 'Daganzo',
-    titulo: 'Fábrica propia en Madrid',
-    texto: 'Fabricamos y atendemos desde aquí, con ISO 9001, ISO 13485 e ISO 14001.',
-  },
-];
+import { idioma, ruta, textos } from '../i18n';
 
-const certificados = [
-  { nombre: 'ISO 9001', detalle: 'Calidad', texto: 'Gestión de la calidad en toda la empresa.' },
-  {
-    nombre: 'ISO 13485',
-    detalle: 'Producto sanitario',
-    texto: 'Sistema de calidad específico para productos sanitarios.',
-  },
-  { nombre: 'ISO 14001', detalle: 'Medio ambiente', texto: 'Gestión ambiental de la fábrica y de sus procesos.' },
-  { nombre: 'IVDR', detalle: '(UE) 2017/746', texto: 'Conformes con el Reglamento europeo de diagnóstico in vitro.' },
-  {
-    nombre: 'CE',
-    detalle: 'Marcado europeo',
-    texto: 'Cumplen las directivas europeas de baja tensión y compatibilidad electromagnética.',
-  },
-  {
-    nombre: 'EN 61010',
-    detalle: 'Seguridad',
-    texto: 'Seguridad de equipos de laboratorio, con su parte específica para centrífugas.',
-  },
-  {
-    nombre: 'RoHS',
-    detalle: '2011/65/UE',
-    texto: 'Componentes sin las sustancias peligrosas que restringe la Unión Europea.',
-  },
-  { nombre: 'RAEE', detalle: '2012/19/UE', texto: 'El equipo se recoge y se recicla al final de su vida útil.' },
-  {
-    nombre: 'KC',
-    detalle: 'Expedidor conocido',
-    texto: 'Los envíos por avión salen con los controles de seguridad ya hechos.',
-  },
-];
+// Todo sale del Catálogo General 2025: la frase, la historia, la empresa familiar, la fábrica y las normas.
+// Los textos, por idioma, en src/i18n/ (`empresa`).
+const lang = idioma(Astro.currentLocale);
+const t = textos(lang).empresa;
+const { pompas, certificados } = t;
 const primero = certificados[1];
 ---
 
 <section class="company" id="empresa">
   <div class="foto ap">
-    <div class="ph" role="img" aria-label="Rotor de una centrífuga Orto Alresa cargado con tubos de tapón rojo"></div>
+    <div class="ph" role="img" aria-label={t.alt}></div>
     <Paso desde="#2c3034" />
     <div class="wrap">
       <h2>
-        Nuestro objetivo no es ser una opción más, sino ir <b>más allá de lo estándar</b>
+        {t.titulo[0]}
+        <b>{t.titulo[1]}</b>
       </h2>
-      <a class="btn ghost grande" href="/empresa/">
-        Conoce la empresa <span aria-hidden="true">»</span>
+      <a class="btn ghost grande" href={ruta(lang, '/empresa/')}>
+        {t.boton} <span aria-hidden="true">»</span>
       </a>
     </div>
   </div>
@@ -100,10 +58,11 @@ const primero = certificados[1];
   <div class="franja">
     <div class="sellos wrap ap">
       <h3 class="st">
-        Certificados y normas que <b>cumplimos</b>
+        {t.sellosTitulo[0]}
+        <b>{t.sellosTitulo[1]}</b>
       </h3>
       <div class="rueda" data-rueda>
-        <button class="flecha ant" type="button" aria-label="Certificado anterior">
+        <button class="flecha ant" type="button" aria-label={t.anterior}>
           ‹
         </button>
         <ul>
@@ -117,7 +76,7 @@ const primero = certificados[1];
             </li>
           ))}
         </ul>
-        <button class="flecha sig" type="button" aria-label="Certificado siguiente">
+        <button class="flecha sig" type="button" aria-label={t.siguiente}>
           ›
         </button>
       </div>
