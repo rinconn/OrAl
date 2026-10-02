@@ -245,6 +245,19 @@ Ponerlos antes haría que todos los enlaces llevaran a la portada.
 
 ---
 
+### 4.6 Foto de fondo: el rotor girando (2-10-2026)
+
+- **Antes:** manos con guantes cargando tubos en un rotor RT 267.
+- **Ahora:** un rotor girando a toda velocidad, con estelas rojas y el buje de metal nítido en el centro (foto de la
+  empresa). Solo cambia la foto; el texto, los botones, las cifras y el movimiento siguen igual.
+- **Por qué es mejor:** es lo que hace una centrífuga, contado en una imagen. Tiene más zona oscura a la izquierda para
+  el texto, el rojo de las estelas es el de la marca y, al estar en movimiento, no se le nota la resolución. La
+  entrada (el rotor llega girando y frena) encaja todavía mejor.
+- **Sin retoque con IA:** no se ha subido la resolución con IA porque se inventa detalles. Si la empresa tiene el
+  original del fotógrafo, se cambia el archivo y listo.
+- **Móvil:** la foto se encuadra para dejar el buje centrado arriba.
+- **Las otras dos fotos** (tubos rojos y guante) quedan para la gama y Tecnología.
+
 ## 5. La gama (portada)
 
 ### 5.1 Qué había y qué hay

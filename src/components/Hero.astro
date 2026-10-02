@@ -1,5 +1,5 @@
 ---
-// Portada: manos con guantes cargando tubos en un rotor RT 267, a pantalla completa (foto de Orto Alresa), con el titular, quiénes sois, los dos caminos
+// Portada: un rotor girando a toda velocidad, con estelas rojas y el buje nítido, a pantalla completa (foto de Orto Alresa), con el titular, quiénes sois, los dos caminos
 // (producto y distribuidor) y las cuatro razones para fiarse encima. Al cargar, la foto gira y frena como un rotor;
 // después sigue al ratón con un brillo suave.
 import { cifras } from '../data/cifras';
@@ -121,9 +121,9 @@ import { cifras } from '../data/cifras';
     object-position: 50% 45%;
     /* Sigue al ratón, como mucho 24 px a cada lado */
     translate: calc((0.5 - var(--mx)) * 48px) calc((0.5 - var(--my)) * 32px);
-    transform-origin: 74% 46%;
+    transform-origin: 66% 47%;
   }
-  /* Brillo que sigue al puntero: ilumina el metal y los tapones rojos al pasar */
+  /* Brillo que sigue al puntero: ilumina el metal y las estelas rojas al pasar */
   .brillo {
     position: absolute;
     inset: 0;
@@ -359,7 +359,7 @@ import { cifras } from '../data/cifras';
       inset: 0;
       width: 100%;
       height: 58%;
-      object-position: 100% 50%;
+      object-position: 82% 50%;
       translate: none;
     }
     .hero::before {
