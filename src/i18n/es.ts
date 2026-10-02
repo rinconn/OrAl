@@ -102,6 +102,7 @@ export const es = {
     },
     smartconnect: {
       alt: 'La app SmartConnect en varias tablets: acceso, gráfica del programa y listados',
+      entrar: 'Iniciar sesión',
       frase: ['Las centrífugas del laboratorio, ', 'vigiladas desde el móvil', '.'],
       puntos: [
         'App gratuita: se conecta a la WiFi y se consulta desde PC, tablet o móvil.',
@@ -109,6 +110,15 @@ export const es = {
         'Usuarios con distintos niveles de acceso y registro de quién hizo qué.',
         'Avisos de seguridad y mantenimiento, y diagnóstico a distancia del servicio técnico.',
       ],
+    },
+    configurador: {
+      nombre: 'Configurador',
+      alt: 'Una mano con guante sostiene un tubo de tapón rojo sobre el rotor de una centrífuga',
+      cifra: '6 pasos',
+      cifraTexto: 'y das con tu centrífuga',
+      frase: ['Responde a seis preguntas y te decimos ', 'qué modelo y qué rotor', '.'],
+      pasos: ['Tipo de centrífuga', 'Ubicación', 'Tipo de tubo', 'Velocidad', 'Nº de posiciones', 'Tipo de rotor'],
+      empezar: 'Empezar',
     },
     pantalla: {
       nombre: 'Pantalla táctil',

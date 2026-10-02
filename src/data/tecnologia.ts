@@ -25,8 +25,16 @@ export const rei = {
   modelos: modelos('digicen-22', 'cyto-22'),
 };
 
+/** Configurador de 6 pasos: su página aún no existe, de momento el botón se queda en la propia tarjeta */
+export const configurador = {
+  nombre: 'Configurador',
+  href: '#configurador',
+};
+
 export const smartconnect = {
   nombre: 'SmartConnect',
+  /** El panel de la app, el mismo al que lleva "Iniciar sesión" en la web antigua */
+  acceso: 'https://ortoalresa-frontend-j56qpltrua-ew.a.run.app/login',
   modelos: modelos('digicen-22', 'cyto-22'),
 };
 

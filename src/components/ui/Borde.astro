@@ -1,0 +1,94 @@
+---
+// Raya roja que da dos vueltas al borde de una tarjeta cuando aparece, con un destello blanco en la punta, como la
+// raya entre secciones. Cada tarjeta arranca por un lado y con un retraso distinto para que dos rayas no coincidan
+// en el borde que comparten. La tarjeta tiene que ser position: relative y recibir la clase "vista" al verse.
+interface Props {
+  lado: 'arriba' | 'derecha' | 'abajo' | 'izquierda';
+  retraso?: number;
+}
+const { lado, retraso = 0 } = Astro.props;
+---
+
+<svg class="borde" data-lado={lado} style={`--retraso: ${retraso}s`} aria-hidden="true">
+  <rect class="raya" width="100%" height="100%" pathLength="100"></rect>
+  <rect class="punta" width="100%" height="100%" pathLength="100"></rect>
+</svg>
+
+<script>
+  // Dónde empieza cada raya: el centro del lado elegido, en % del perímetro (el rectángulo se recorre desde la
+  // esquina de arriba a la izquierda en el sentido de las agujas del reloj)
+  const colocar = () => {
+    document.querySelectorAll<SVGSVGElement>('svg.borde').forEach((s) => {
+      const { width: w, height: h } = s.getBoundingClientRect();
+      if (!w) return;
+      const p = 2 * (w + h);
+      const pos = { arriba: w / 2, derecha: w + h / 2, abajo: w + h + w / 2, izquierda: 2 * w + h + h / 2 };
+      const o = ((pos[s.dataset.lado as keyof typeof pos] ?? 0) / p) * 100;
+      // La punta blanca va al final de la raya roja (16 de largo, punta de 2,5)
+      s.querySelectorAll<SVGRectElement>('rect').forEach((r, i) => {
+        const ini = -(o + (i ? 13.5 : 0));
+        r.style.setProperty('--ini', String(ini));
+        r.style.setProperty('--fin', String(ini - 200));
+      });
+    });
+  };
+  colocar();
+  addEventListener('resize', colocar, { passive: true });
+</script>
+
+<style>
+  .borde {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    pointer-events: none;
+    z-index: 2;
+    opacity: 0;
+  }
+  rect {
+    fill: none;
+    vector-effect: non-scaling-stroke;
+  }
+  .raya {
+    stroke: #ff1a20;
+    stroke-width: 2.5;
+    stroke-dasharray: 16 84;
+    filter: drop-shadow(0 0 6px rgba(255, 30, 30, 0.85));
+  }
+  .punta {
+    stroke: #fff;
+    stroke-width: 3;
+    stroke-dasharray: 2.5 97.5;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    :global(.vista) > .borde {
+      animation: borde-ve 5.2s linear var(--retraso) both;
+    }
+    :global(.vista) > .borde rect {
+      animation: borde-da 5.2s cubic-bezier(0.45, 0.05, 0.4, 1) var(--retraso) both;
+    }
+  }
+  @keyframes borde-ve {
+    0% {
+      opacity: 0;
+    }
+    6%,
+    86% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0;
+    }
+  }
+  /* Dos vueltas */
+  @keyframes borde-da {
+    from {
+      stroke-dashoffset: var(--ini);
+    }
+    to {
+      stroke-dashoffset: var(--fin);
+    }
+  }
+</style>
