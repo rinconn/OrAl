@@ -287,7 +287,7 @@ const actual = (href: string) => !href.startsWith('/#') && base.startsWith(href)
   }
   .banderas {
     display: flex;
-    gap: 12px;
+    gap: 18px;
     align-items: center;
   }
   .bandera {
@@ -300,8 +300,8 @@ const actual = (href: string) => !href.startsWith('/#') && base.startsWith(href)
   }
   .bandera :global(svg) {
     display: block;
-    width: 24px;
-    height: 16px;
+    width: 30px;
+    height: 20px;
     box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.12);
   }
   span.bandera:not([aria-current]) {
@@ -446,6 +446,10 @@ const actual = (href: string) => !href.startsWith('/#') && base.startsWith(href)
     }
     .der .banderas {
       gap: 8px;
+    }
+    .bandera :global(svg) {
+      width: 24px;
+      height: 16px;
     }
     .menu-btn {
       padding: 9px 10px;
