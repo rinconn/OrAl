@@ -7,6 +7,7 @@ Hasta que se publique la web, todo va en "Sin publicar"; al publicar se cierra l
 
 ### Añadido
 
+- Web en inglés (`/en/`) y francés (`/fr/`): las banderas de la cabecera llevan a la misma página en el otro idioma. Portada y Centrífugas traducidas; los textos de cada idioma están en `src/i18n/` (es, en, fr). Traducción provisional, pendiente de revisar por la empresa.
 - Paso entre secciones oscuras seguidas (inicio → Tecnología → foto de Empresa): el color se funde y una raya roja se dibuja con un destello que la recorre cada pocos segundos. Componente `Paso.astro`. (#28)
 - Pie nuevo: oscuro en tres pisos, con el teléfono en grande, enlaces ordenados, sellos ODS y Empresa Solidaria y los logos de las ayudas públicas, sin repetir, en una cinta que pasa despacio. Correos, enlaces, redes y logos en `src/data/navegacion.ts`.
 - Aplicaciones en la portada: las cinco últimas notas como una baraja de fotos que se reparte sola al llegar a ella y se queda abierta. Las notas son archivos en `src/content/notas/` y la portada se actualiza sola.
