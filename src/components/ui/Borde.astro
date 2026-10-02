@@ -1,7 +1,8 @@
 ---
-// Raya roja que da dos vueltas al borde de una tarjeta cuando aparece, con un destello blanco en la punta, como la
-// raya entre secciones. Cada tarjeta arranca por un lado y con un retraso distinto para que dos rayas no coincidan
-// en el borde que comparten. La tarjeta tiene que ser position: relative y recibir la clase "vista" al verse.
+// Borde de neón de las tarjetas: al aparecer, una chispa de luz recorre el borde y lo va encendiendo en rojo; da
+// una segunda vuelta por encima y se apaga, y el neón se queda encendido respirando (brilla y baja, sin apagarse).
+// Cada tarjeta arranca por un lado y con un retraso distinto para que dos chispas no coincidan en el borde que
+// comparten. La tarjeta tiene que ser position: relative y recibir la clase "vista" al verse.
 interface Props {
   lado: 'arriba' | 'derecha' | 'abajo' | 'izquierda';
   retraso?: number;
@@ -10,25 +11,28 @@ const { lado, retraso = 0 } = Astro.props;
 ---
 
 <svg class="borde" data-lado={lado} style={`--retraso: ${retraso}s`} aria-hidden="true">
-  <rect class="raya" width="100%" height="100%" pathLength="100"></rect>
-  <rect class="punta" width="100%" height="100%" pathLength="100"></rect>
+  <g class="neon">
+    <rect width="100%" height="100%" pathLength="100"></rect>
+  </g>
+  <rect class="halo" width="100%" height="100%" pathLength="100"></rect>
+  <rect class="chispa" width="100%" height="100%" pathLength="100"></rect>
 </svg>
 
 <script>
-  // Dónde empieza cada raya: el centro del lado elegido, en % del perímetro (el rectángulo se recorre desde la
-  // esquina de arriba a la izquierda en el sentido de las agujas del reloj)
+  // Dónde empieza: el centro del lado elegido, en % del perímetro (el rectángulo se recorre desde la esquina de
+  // arriba a la izquierda en el sentido de las agujas del reloj)
   const colocar = () => {
     document.querySelectorAll<SVGSVGElement>('svg.borde').forEach((s) => {
       const { width: w, height: h } = s.getBoundingClientRect();
       if (!w) return;
-      const p = 2 * (w + h);
       const pos = { arriba: w / 2, derecha: w + h / 2, abajo: w + h + w / 2, izquierda: 2 * w + h + h / 2 };
-      const o = ((pos[s.dataset.lado as keyof typeof pos] ?? 0) / p) * 100;
-      // La punta blanca va al final de la raya roja (16 de largo, punta de 2,5)
-      s.querySelectorAll<SVGRectElement>('rect').forEach((r, i) => {
-        const ini = -(o + (i ? 13.5 : 0));
-        r.style.setProperty('--ini', String(ini));
-        r.style.setProperty('--fin', String(ini - 200));
+      const o = ((pos[s.dataset.lado as keyof typeof pos] ?? 0) / (2 * (w + h))) * 100;
+      s.style.setProperty('--o', String(-o));
+      // La chispa va justo delante del neón que se enciende
+      s.querySelectorAll<SVGRectElement>('.halo, .chispa').forEach((r) => {
+        const largo = r.classList.contains('halo') ? 5 : 1.2;
+        r.style.setProperty('--ini', String(-(o - largo)));
+        r.style.setProperty('--fin', String(-(o - largo) - 200));
       });
     });
   };
@@ -38,6 +42,7 @@ const { lado, retraso = 0 } = Astro.props;
 
 <style>
   .borde {
+    --vuelta: 1.8s;
     position: absolute;
     inset: 0;
     width: 100%;
@@ -45,50 +50,88 @@ const { lado, retraso = 0 } = Astro.props;
     overflow: visible;
     pointer-events: none;
     z-index: 2;
-    opacity: 0;
   }
   rect {
     fill: none;
     vector-effect: non-scaling-stroke;
   }
-  .raya {
+  .neon rect {
     stroke: #ff1a20;
-    stroke-width: 2.5;
-    stroke-dasharray: 16 84;
-    filter: drop-shadow(0 0 6px rgba(255, 30, 30, 0.85));
+    stroke-width: 2;
+    stroke-dasharray: 0 100;
+    stroke-dashoffset: var(--o, 0);
+    filter: drop-shadow(0 0 5px rgba(255, 30, 30, 0.8));
   }
-  .punta {
+  .halo,
+  .chispa {
+    opacity: 0;
+  }
+  .halo {
+    stroke: rgba(255, 60, 60, 0.9);
+    stroke-width: 8;
+    stroke-linecap: round;
+    stroke-dasharray: 5 95;
+    filter: blur(4px);
+  }
+  .chispa {
     stroke: #fff;
     stroke-width: 3;
-    stroke-dasharray: 2.5 97.5;
+    stroke-linecap: round;
+    stroke-dasharray: 1.2 98.8;
+    filter: drop-shadow(0 0 4px #fff) drop-shadow(0 0 8px #ff3b3b);
   }
+
   @media (prefers-reduced-motion: no-preference) {
-    :global(.vista) > .borde {
-      animation: borde-ve 5.2s linear var(--retraso) both;
+    /* 1ª vuelta: la chispa enciende el neón. 2ª: corre por encima y se apaga. Después, el neón respira */
+    :global(.vista) > .borde .neon rect {
+      animation: enciende var(--vuelta) linear var(--retraso) both;
     }
-    :global(.vista) > .borde rect {
-      animation: borde-da 5.2s cubic-bezier(0.45, 0.05, 0.4, 1) var(--retraso) both;
+    :global(.vista) > .borde :is(.halo, .chispa) {
+      animation:
+        corre calc(var(--vuelta) * 2) linear var(--retraso) both,
+        chispa calc(var(--vuelta) * 2) linear var(--retraso) both;
     }
-  }
-  @keyframes borde-ve {
-    0% {
-      opacity: 0;
-    }
-    6%,
-    86% {
-      opacity: 1;
-    }
-    100% {
-      opacity: 0;
+    :global(.vista) > .borde .neon {
+      animation: respira 2.8s ease-in-out calc(var(--retraso) + var(--vuelta) * 2) infinite alternate;
     }
   }
-  /* Dos vueltas */
-  @keyframes borde-da {
+  /* Sin animaciones, el neón se ve encendido y quieto */
+  @media (prefers-reduced-motion: reduce) {
+    .neon rect {
+      stroke-dasharray: 100 0;
+      opacity: 0.6;
+    }
+  }
+
+  @keyframes enciende {
+    to {
+      stroke-dasharray: 100 0;
+    }
+  }
+  @keyframes corre {
     from {
       stroke-dashoffset: var(--ini);
     }
     to {
       stroke-dashoffset: var(--fin);
+    }
+  }
+  @keyframes chispa {
+    0%,
+    100% {
+      opacity: 0;
+    }
+    4%,
+    88% {
+      opacity: 1;
+    }
+  }
+  @keyframes respira {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0.35;
     }
   }
 </style>
