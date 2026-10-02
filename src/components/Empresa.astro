@@ -75,6 +75,7 @@ const primero = certificados[1];
               <i class="celulas" />
               <i class="capa" />
               <i class="plasma" />
+              <i class="etiqueta" />
               <i class="burbuja" />
               <i class="burbuja" />
               <i class="burbuja" />
@@ -337,7 +338,10 @@ const primero = certificados[1];
     border-top: 0;
     border-radius: 0 0 29px 29px;
     background: #fbfcfd;
-    box-shadow: 0 18px 30px -22px rgba(0, 0, 0, 0.45);
+    box-shadow:
+      inset 3px 0 0 rgba(255, 255, 255, 0.7),
+      inset -2px 0 0 rgba(0, 0, 0, 0.05),
+      0 18px 30px -22px rgba(0, 0, 0, 0.45);
   }
   /* Volumen del cristal: sombra suave a los lados y luz difusa a la izquierda, sobre el líquido */
   .vidrio::after {
@@ -359,6 +363,7 @@ const primero = certificados[1];
   .celulas,
   .capa,
   .plasma,
+  .etiqueta,
   .burbuja {
     position: absolute;
     left: 0;
@@ -368,20 +373,43 @@ const primero = certificados[1];
   .celulas {
     bottom: 0;
     height: 42%;
-    background: linear-gradient(180deg, #b0050b, #7a0206);
+    background: linear-gradient(180deg, #8f0308, #6a0205 60%, #4e0104);
     transform-origin: bottom;
   }
   .capa {
     bottom: 42%;
-    height: 4px;
-    background: #fff;
+    height: 3px;
+    background: #efe9dc;
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.12);
   }
   .plasma {
     bottom: calc(42% + 4px);
     height: 40%;
-    border-top: 2px solid rgba(221, 4, 10, 0.22);
+    border-top: 2px solid rgba(196, 150, 60, 0.4);
     border-radius: 40% 40% 0 0 / 6px 6px 0 0;
-    background: linear-gradient(180deg, rgba(221, 4, 10, 0.1), rgba(221, 4, 10, 0.05));
+    background: linear-gradient(180deg, rgba(246, 220, 150, 0.6), rgba(238, 204, 122, 0.5));
+  }
+  /* Etiqueta blanca con código de barras, como la de los tubos de verdad; deja ver la sangre por debajo */
+  .etiqueta {
+    top: 7%;
+    height: 30%;
+    left: 0;
+    right: 30%;
+    border-radius: 0 2px 2px 0;
+    background:
+      repeating-linear-gradient(
+          90deg,
+          #3b4045 0 1px,
+          transparent 1px 3px,
+          #3b4045 3px 5px,
+          transparent 5px 6px,
+          #3b4045 6px 7px,
+          transparent 7px 9px
+        )
+        6px 9px / calc(100% - 12px) 40% no-repeat,
+      linear-gradient(#dd040a, #dd040a) 6px calc(100% - 7px) / 45% 2px no-repeat,
+      #fff;
+    box-shadow: 1px 0 0 rgba(0, 0, 0, 0.08);
   }
   .burbuja {
     left: 50%;
@@ -395,12 +423,12 @@ const primero = certificados[1];
     box-shadow: inset -1px -1px 0 rgba(0, 0, 0, 0.12);
     opacity: 0;
   }
-  .burbuja:nth-child(5) {
+  .burbuja:nth-child(6) {
     margin-left: -12px;
     width: 5px;
     height: 5px;
   }
-  .burbuja:nth-child(6) {
+  .burbuja:nth-child(7) {
     margin-left: 6px;
     width: 4px;
     height: 4px;
@@ -645,10 +673,10 @@ const primero = certificados[1];
     :global(.js) #empresa .pompas.vista .burbuja {
       animation: burbuja 3.4s ease-in calc(var(--i) * 0.5s + 1.8s) infinite;
     }
-    :global(.js) #empresa .pompas.vista .burbuja:nth-child(5) {
+    :global(.js) #empresa .pompas.vista .burbuja:nth-child(6) {
       animation-delay: calc(var(--i) * 0.5s + 2.9s);
     }
-    :global(.js) #empresa .pompas.vista .burbuja:nth-child(6) {
+    :global(.js) #empresa .pompas.vista .burbuja:nth-child(7) {
       animation-delay: calc(var(--i) * 0.5s + 4s);
     }
     :global(.js) #empresa .pompas.vista .txt {
