@@ -1,9 +1,8 @@
 ---
-// Raya roja que da dos vueltas al borde de una tarjeta cuando aparece, con un destello blanco en la punta. Al
-// acabar no se apaga: su último tramo se queda quieto, más suave, respirando. El brillo es blanco para no
-// confundirla con la raya roja entre secciones. Cada tarjeta arranca por un lado y con un retraso distinto para
-// que dos rayas no coincidan en el borde que comparten. La tarjeta tiene que ser position: relative y recibir la
-// clase "vista" al verse.
+// Raya roja que da una vuelta al borde de una tarjeta cuando aparece. Al acabar, su último tramo se queda donde
+// ha terminado, apagándose y encendiéndose suave, y de vez en cuando lo cruza un destello blanco, como a la raya
+// entre secciones. Cada tarjeta arranca por un lado y con un retraso distinto para que dos rayas no coincidan en el
+// borde que comparten. La tarjeta tiene que ser position: relative y recibir la clase "vista" al verse.
 interface Props {
   lado: 'arriba' | 'derecha' | 'abajo' | 'izquierda';
   retraso?: number;
@@ -12,14 +11,12 @@ const { lado, retraso = 0 } = Astro.props;
 ---
 
 <svg class="borde" data-lado={lado} style={`--retraso: ${retraso}s`} aria-hidden="true">
-  <g class="tramo">
-    <rect class="raya" width="100%" height="100%" pathLength="100"></rect>
-    <rect class="punta" width="100%" height="100%" pathLength="100"></rect>
-  </g>
+  <rect class="raya" width="100%" height="100%" pathLength="100"></rect>
+  <rect class="destello" width="100%" height="100%" pathLength="100"></rect>
 </svg>
 
 <script>
-  // Dónde empieza (y acaba, tras dos vueltas): el centro del lado elegido, en % del perímetro (el rectángulo se
+  // Dónde empieza (y acaba, tras la vuelta): el centro del lado elegido, en % del perímetro (el rectángulo se
   // recorre desde la esquina de arriba a la izquierda en el sentido de las agujas del reloj)
   const colocar = () => {
     document.querySelectorAll<SVGSVGElement>('svg.borde').forEach((s) => {
@@ -27,12 +24,11 @@ const { lado, retraso = 0 } = Astro.props;
       if (!w) return;
       const pos = { arriba: w / 2, derecha: w + h / 2, abajo: w + h + w / 2, izquierda: 2 * w + h + h / 2 };
       const o = ((pos[s.dataset.lado as keyof typeof pos] ?? 0) / (2 * (w + h))) * 100;
-      // La punta blanca va al final de la raya (16 de largo, punta de 2,5)
-      s.querySelectorAll<SVGRectElement>('rect').forEach((r, i) => {
-        const ini = -(o + (i ? 13.5 : 0));
-        r.style.setProperty('--ini', String(ini));
-        r.style.setProperty('--fin', String(ini - 200));
-      });
+      s.style.setProperty('--ini', String(-o));
+      s.style.setProperty('--fin', String(-o - 100));
+      // El destello cruza el tramo de 16 de punta a punta
+      s.style.setProperty('--d-ini', String(-o));
+      s.style.setProperty('--d-fin', String(-o - 13));
     });
   };
   colocar();
@@ -41,7 +37,7 @@ const { lado, retraso = 0 } = Astro.props;
 
 <style>
   .borde {
-    --dura: 5.2s;
+    --dura: 2.6s;
     position: absolute;
     inset: 0;
     width: 100%;
@@ -49,7 +45,6 @@ const { lado, retraso = 0 } = Astro.props;
     overflow: visible;
     pointer-events: none;
     z-index: 2;
-    opacity: 0;
   }
   rect {
     fill: none;
@@ -60,63 +55,73 @@ const { lado, retraso = 0 } = Astro.props;
     stroke-width: 2.5;
     stroke-dasharray: 16 84;
     stroke-dashoffset: var(--fin);
-    filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.55));
+    filter: drop-shadow(0 0 5px rgba(255, 30, 30, 0.75));
+    opacity: 0;
   }
-  .punta {
+  .destello {
     stroke: #fff;
     stroke-width: 3;
     stroke-linecap: round;
-    stroke-dasharray: 2.5 97.5;
-    stroke-dashoffset: var(--fin);
-    filter: drop-shadow(0 0 4px #fff) drop-shadow(0 0 10px rgba(255, 255, 255, 0.8));
+    stroke-dasharray: 3 97;
+    stroke-dashoffset: var(--d-ini);
+    filter: drop-shadow(0 0 4px #fff);
+    opacity: 0;
   }
 
   @media (prefers-reduced-motion: no-preference) {
-    :global(.vista) > .borde {
-      animation: borde-aparece 0.4s linear var(--retraso) both;
-    }
-    :global(.vista) > .borde rect {
-      animation: borde-da cubic-bezier(0.45, 0.05, 0.4, 1) var(--dura) var(--retraso) both;
-    }
-    /* Al acabar las dos vueltas, el tramo baja de intensidad y se queda respirando */
-    :global(.vista) > .borde .tramo {
+    /* Una vuelta; después el tramo respira y el destello lo cruza cada pocos segundos */
+    :global(.vista) > .borde .raya {
       animation:
-        borde-reposa 0.9s ease-out calc(var(--retraso) + var(--dura)) both,
-        borde-respira 2.6s ease-in-out calc(var(--retraso) + var(--dura) + 0.9s) infinite alternate;
+        borde-vuelta var(--dura) cubic-bezier(0.45, 0.05, 0.4, 1) var(--retraso) both,
+        borde-respira 2.4s ease-in-out calc(var(--retraso) + var(--dura)) infinite alternate;
+    }
+    :global(.vista) > .borde .destello {
+      animation: borde-destello 5s ease-in-out calc(var(--retraso) + var(--dura) + 0.6s) infinite;
     }
   }
   /* Sin animaciones, el tramo se ve quieto en su sitio */
   @media (prefers-reduced-motion: reduce) {
-    .borde {
-      opacity: 0.6;
+    .raya {
+      opacity: 0.7;
     }
   }
 
-  @keyframes borde-aparece {
-    to {
+  @keyframes borde-vuelta {
+    0% {
+      stroke-dashoffset: var(--ini);
+      opacity: 0;
+    }
+    8%,
+    100% {
       opacity: 1;
     }
-  }
-  /* Dos vueltas */
-  @keyframes borde-da {
-    from {
-      stroke-dashoffset: var(--ini);
-    }
-    to {
+    100% {
       stroke-dashoffset: var(--fin);
-    }
-  }
-  @keyframes borde-reposa {
-    to {
-      opacity: 0.6;
     }
   }
   @keyframes borde-respira {
     from {
-      opacity: 0.6;
+      opacity: 1;
     }
     to {
-      opacity: 0.25;
+      opacity: 0.4;
+    }
+  }
+  @keyframes borde-destello {
+    0% {
+      stroke-dashoffset: var(--d-ini);
+      opacity: 0;
+    }
+    4% {
+      opacity: 1;
+    }
+    22% {
+      stroke-dashoffset: var(--d-fin);
+      opacity: 0;
+    }
+    100% {
+      stroke-dashoffset: var(--d-fin);
+      opacity: 0;
     }
   }
 </style>
