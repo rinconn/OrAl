@@ -180,23 +180,7 @@ import { cifras } from '../data/cifras';
     content: '»';
     transition: transform 0.35s var(--ease);
   }
-  .ctas .btn:hover {
-    transform: translateY(-2px);
-  }
-  .ctas .btn:hover::after {
-    transform: translateX(6px);
-  }
   /* "Ver la gama" se vuelve cristal rojo: se transparenta la foto, con brillo en el borde de arriba */
-  .ctas .btn.red:hover {
-    background: rgba(221, 4, 10, 0.62);
-    border-color: rgba(255, 255, 255, 0.28);
-    -webkit-backdrop-filter: blur(12px) saturate(160%);
-    backdrop-filter: blur(12px) saturate(160%);
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.35),
-      0 0 22px -4px rgba(255, 40, 40, 0.55),
-      0 14px 32px -12px rgba(221, 4, 10, 0.7);
-  }
   .ctas .btn.red::before {
     content: '';
     position: absolute;
@@ -204,10 +188,6 @@ import { cifras } from '../data/cifras';
     z-index: -1;
     background: linear-gradient(105deg, transparent 30%, rgba(255, 255, 255, 0.35) 50%, transparent 70%);
     translate: -110% 0;
-  }
-  .ctas .btn.red:hover::before {
-    translate: 110% 0;
-    transition: translate 0.7s var(--ease);
   }
   .ctas .btn.ghost {
     color: #fff;
@@ -225,14 +205,6 @@ import { cifras } from '../data/cifras';
     transform: scaleX(0);
     transform-origin: left;
     transition: transform 0.4s var(--ease);
-  }
-  .ctas .btn.ghost:hover {
-    color: var(--ink);
-    border-color: #fff;
-    background: transparent;
-  }
-  .ctas .btn.ghost:hover::before {
-    transform: scaleX(1);
   }
 
   /* Las cuatro razones al pie, cada una con su icono dibujado a mano. Al pasar el ratón, la raya roja de la web crece
@@ -316,30 +288,6 @@ import { cifras } from '../data/cifras';
     clip-path: polygon(0 0, 100% 0, 100% 100%);
     transition: background 0.3s var(--ease);
   }
-  .cifras li:hover {
-    color: #fff;
-    transform: translateY(-4px);
-  }
-  .cifras li:hover::before {
-    width: calc(100% + 2px);
-  }
-  .cifras li:hover::after {
-    background: var(--red);
-  }
-  @media (prefers-reduced-motion: no-preference) {
-    .cifras li:nth-child(1):hover .mueve {
-      animation: vuelta 1.1s var(--ease);
-    }
-    .cifras li:nth-child(2):hover .mueve {
-      animation: arranca 0.9s var(--ease);
-    }
-    .cifras li:nth-child(4):hover .mueve {
-      animation: late 0.6s var(--ease);
-    }
-    .cifras li:hover .traza {
-      animation: traza 0.6s 0.1s var(--ease) both;
-    }
-  }
   @keyframes vuelta {
     to {
       transform: rotate(360deg);
@@ -370,23 +318,13 @@ import { cifras } from '../data/cifras';
     overflow: hidden;
     background: rgba(255, 255, 255, 0.07);
     border: 1px solid rgba(255, 255, 255, 0.16);
-    -webkit-backdrop-filter: blur(14px) saturate(140%);
-    backdrop-filter: blur(14px) saturate(140%);
+    -webkit-backdrop-filter: blur(12px) saturate(140%);
+    backdrop-filter: blur(12px) saturate(140%);
     transition:
       transform 0.35s var(--ease),
       box-shadow 0.45s var(--ease),
       border-color 0.45s var(--ease),
       color 0.3s var(--ease);
-  }
-  .cifras li:hover {
-    background-position:
-      -60% 0,
-      0 0;
-    border-color: rgba(255, 64, 64, 0.5);
-    box-shadow:
-      0 0 22px -6px rgba(221, 4, 10, 0.55),
-      inset 0 0 18px -10px rgba(255, 64, 64, 0.5),
-      0 18px 36px -20px rgba(0, 0, 0, 0.8);
   }
   .luz {
     position: absolute;
@@ -395,14 +333,107 @@ import { cifras } from '../data/cifras';
     translate: -110% 0;
     pointer-events: none;
   }
-  .cifras li:hover .luz {
-    translate: 110% 0;
-    transition: translate 0.9s var(--ease);
+
+  /* Los efectos al pasar el ratón, solo con ratón: en el móvil un toque no deja la tarjeta encendida */
+  @media (hover: hover) {
+    .ctas .btn:hover {
+      transform: translateY(-2px);
+    }
+    .ctas .btn:hover::after {
+      transform: translateX(6px);
+    }
+    .ctas .btn.red:hover {
+      background: rgba(221, 4, 10, 0.62);
+      border-color: rgba(255, 255, 255, 0.28);
+      -webkit-backdrop-filter: blur(12px) saturate(160%);
+      backdrop-filter: blur(12px) saturate(160%);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.35),
+        0 0 22px -4px rgba(255, 40, 40, 0.55),
+        0 14px 32px -12px rgba(221, 4, 10, 0.7);
+    }
+    .ctas .btn.red:hover::before {
+      translate: 110% 0;
+      transition: translate 0.7s var(--ease);
+    }
+    .ctas .btn.ghost:hover {
+      color: var(--ink);
+      border-color: #fff;
+      background: transparent;
+    }
+    .ctas .btn.ghost:hover::before {
+      transform: scaleX(1);
+    }
+    .cifras li:hover {
+      color: #fff;
+      transform: translateY(-4px);
+      border-color: rgba(255, 64, 64, 0.5);
+      box-shadow:
+        0 0 22px -6px rgba(221, 4, 10, 0.55),
+        inset 0 0 18px -10px rgba(255, 64, 64, 0.5),
+        0 18px 36px -20px rgba(0, 0, 0, 0.8);
+    }
+    .cifras li:hover::before {
+      width: calc(100% + 2px);
+    }
+    .cifras li:hover::after {
+      background: var(--red);
+    }
+    .cifras li:hover .ico {
+      box-shadow: 0 0 16px -2px rgba(255, 40, 40, 0.6);
+    }
   }
-  .cifras li:hover .ico {
-    box-shadow: 0 0 16px -2px rgba(255, 40, 40, 0.6);
+  /* El destello y el movimiento de los iconos, solo si no se pide menos movimiento */
+  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    .cifras li:hover .luz {
+      translate: 110% 0;
+      transition: translate 0.9s var(--ease);
+    }
+    .cifras li:nth-child(1):hover .mueve {
+      animation: vuelta 1.1s var(--ease);
+    }
+    .cifras li:nth-child(2):hover .mueve {
+      animation: arranca 0.9s var(--ease);
+    }
+    .cifras li:nth-child(4):hover .mueve {
+      animation: late 0.6s var(--ease);
+    }
+    .cifras li:hover .traza {
+      animation: traza 0.6s 0.1s var(--ease) both;
+    }
   }
 
+  /* Entrada: la foto se aclara y se asienta despacio, sin sacudidas; el texto se descubre línea a línea desde abajo */
+  @media (prefers-reduced-motion: no-preference) {
+    .foto {
+      animation: asienta 2.4s cubic-bezier(0.22, 0.7, 0.2, 1) both;
+    }
+    .texto > *,
+    .cifras {
+      animation: sube 0.9s var(--ease) both;
+    }
+    h1 {
+      animation-name: descubre;
+    }
+    .texto > :nth-child(2) {
+      animation-delay: 0.25s;
+    }
+    .texto > :nth-child(3) {
+      animation-delay: 0.38s;
+    }
+    .cifras {
+      animation-delay: 0.55s;
+    }
+  }
+  @keyframes asienta {
+    from {
+      opacity: 0;
+      transform: scale(1.06);
+    }
+    25% {
+      opacity: 1;
+    }
+  }
   @keyframes descubre {
     from {
       clip-path: inset(0 0 100% 0);
