@@ -3,8 +3,8 @@
 Registro de cada mejora frente a la web actual, con el porqué. Es el guion para presentar la web a la empresa:
 cada fila se puede defender con un argumento, no con un gusto.
 
-En la propia web, el botón **Ver antes y después** muestra estas mismas notas junto a cada sección
-(clase `.why`). Ese botón se quita antes de publicar.
+Hasta octubre de 2026 la propia web tenía un botón **Ver antes y después** que enseñaba una nota corta
+en cada sección. Se quitó de la web; esas notas se guardan tal cual al final de este documento.
 
 ## Portada
 
@@ -34,3 +34,16 @@ En la propia web, el botón **Ver antes y después** muestra estas mismas notas 
 | Pie          | Pared de logos de ayudas repetidos con párrafos largos, pie gris con dibujo de fondo y © 2021 | Pie oscuro en tres pisos: teléfono en grande, enlaces ordenados y los logos de las ayudas una vez cada uno en una cinta que pasa | Limpio, se encuentra el contacto al momento y las ayudas siguen a la vista |
 
 Cuando se añada una sección o página nueva, se añade aquí su fila.
+
+## Notas que enseñaba la web
+
+Texto exacto de las notas del botón "Ver antes y después", por sección, para los informes de la web antigua frente a la nueva.
+
+- **Cabecera.** **Antes:** diez entradas de menú al mismo nivel y, en móvil, el titular de la portada tapado por la cabecera. **Ahora:** seis entradas claras, el mismo logo, idioma con banderas, una lupa para ir directo a un modelo, más aire, y una cabecera que se aparta mientras lees y vuelve en cuanto subes.
+- **Portada (primera pantalla).** **Antes:** un carrusel de 7 novedades, con el titular cortado bajo el menú. **Ahora:** una sola foto real de laboratorio a pantalla completa, con el titular, los dos caminos y las cuatro razones para fiarse encima. Sin cajas ni recortes: entra por la vista y se entiende en un segundo.
+- **Gama.** **Antes:** una rejilla plana con parte de la gama, y el configurador, la guía y la comparativa en tres sitios. **Ahora:** las 17 series del catálogo con su foto, su frase y sus cifras, ordenadas por uso y con un color por familia para encontrar la adecuada de un vistazo. El titular recoge el stock continuo que promete el catálogo.
+- **Tecnología.** **Antes:** REI System y SmartConnect eran dos entradas sueltas del menú, y PCBS, ULS y las pantallas estaban escondidas en una guía cuyo enlace daba error. **Ahora:** todo junto en una sección, con foto real, pasos, vídeo y qué modelos lleva cada sistema, enlazados a su tarjeta de la gama.
+- **Distribuidores.** **Antes:** no había nada para distribuidores y el formulario ponía "Cliente final" primero. **Ahora:** una sección que habla al cliente real: el recorrido de su pedido se dibuja sobre un fondo de laboratorio y cada parada proyecta un rotor, con un solo botón claro.
+- **Empresa.** **Antes:** valores genéricos ("integridad, dinamismo") y los certificados en otra página. **Ahora:** la frase del propio catálogo sobre una foto real, tres tarjetas con historia, familia y fábrica, un botón para conocer la empresa a fondo y los certificados explicados uno a uno.
+- **Aplicaciones.** **Antes:** las notas solo estaban en Noticias, en una rejilla de fotos con una etiqueta roja encima y el título tapando la imagen. **Ahora:** las cinco últimas en la portada, como una baraja que se reparte sola al llegar a ella y se queda abierta. Se actualiza sola al publicar una nota nueva.
+- **Pie.** **Antes:** un bloque gris con texto largo, iconos redondos y un dibujo de fondo, y encima una pared de logos de ayudas repetidos con sus párrafos. **Ahora:** un pie oscuro en tres pisos (quiénes somos y teléfono, enlaces, ayudas) y todos los logos de las ayudas en una cinta que pasa despacio, sin repetirlos.
