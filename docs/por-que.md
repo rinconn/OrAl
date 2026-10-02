@@ -753,3 +753,26 @@ entera delante, si se ensancha el contenido de 1280 a 1440 px.
   pone roja.
 - **Por qué:** son los cuatro motivos para fiarse de la empresa; como fichas destacan más y siguen el mismo
   lenguaje que el resto de la portada.
+
+## 13. Portada más limpia: el catálogo a su página
+
+### 13.1 El catálogo, fuera de la portada
+
+- **Antes:** la portada enseñaba el catálogo entero con barra de filtros oscura, fichas con cifras e iconos de
+  temperatura, y el menú repetía "Centrífugas" y "Elegir centrífuga".
+- **Ahora:** el catálogo vive en `/centrifugas/`, agrupado por familias, con foto, nombre, una frase y tres cifras,
+  sin filtros ni etiquetas. El menú tiene un solo "Centrífugas".
+- **Por qué:** la dirección vio el catálogo agresivo de primeras; la portada presenta la empresa y el catálogo se
+  consulta. Con página propia, además, Google puede enseñar el catálogo y cada botón lleva a un sitio distinto.
+- **Descartado:** una franja de cinco fotos en la portada y subir Empresa tras el inicio (demasiada imagen seguida).
+
+### 13.2 Paso entre secciones oscuras
+
+- **Problema:** sin la gama en medio, la foto del inicio quedaba pegada a Tecnología (las dos oscuras) y se leían
+  como un solo bloque. Lo mismo entre Tecnología y la foto de Empresa.
+- **Ahora:** el color de arriba se funde en el de abajo y una raya roja de marca se dibuja desde el centro, con un
+  destello de luz que la recorre cada pocos segundos, como el de los botones del inicio.
+- **Por qué:** separa sin cambiar el orden, sin quitar fuerza a Tecnología y sin meter franjas blancas que
+  rompían el ritmo. Es el mismo lenguaje (rojo, destello) que el resto de la web.
+- **Descartado:** las cifras del inicio en una franja blanca (muy simple o parecía un pie), el título de
+  Tecnología sobre blanco (el cambio de blanco a gris chirriaba) y una raya roja quieta.

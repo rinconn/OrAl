@@ -7,6 +7,7 @@ Hasta que se publique la web, todo va en "Sin publicar"; al publicar se cierra l
 
 ### Añadido
 
+- Paso entre secciones oscuras seguidas (inicio → Tecnología → foto de Empresa): el color se funde y una raya roja se dibuja con un destello que la recorre cada pocos segundos. Componente `Paso.astro`. (#28)
 - Pie nuevo: oscuro en tres pisos, con el teléfono en grande, enlaces ordenados, sellos ODS y Empresa Solidaria y los logos de las ayudas públicas, sin repetir, en una cinta que pasa despacio. Correos, enlaces, redes y logos en `src/data/navegacion.ts`.
 - Aplicaciones en la portada: las cinco últimas notas como una baraja de fotos que se reparte sola al llegar a ella y se queda abierta. Las notas son archivos en `src/content/notas/` y la portada se actualiza sola.
 - Distribuidores en la portada: las razones como el recorrido de un pedido, con línea que se dibuja al
@@ -27,6 +28,9 @@ Hasta que se publique la web, todo va en "Sin publicar"; al publicar se cierra l
   empresa y aplicaciones, con notas "antes y después" para la presentación.
 
 ### Cambiado
+
+- Catálogo en su propia página, `/centrifugas/`: todas las series agrupadas por familia, sin filtros, con foto, frase y tres cifras. Sale de la portada para dejarla más limpia; "Centrífugas", "Ver la gama", "Toda la gama", los modelos de Tecnología y la lupa llevan allí. (#28)
+- Menú y pie sin "Elegir centrífuga": llevaba al mismo sitio que "Centrífugas". Volverá cuando exista la página del Configurador. (#28)
 
 - Empresa: foto del rotor con tubos rojos a lo ancho, más baja, con la frase y el botón "Conoce la empresa" encima. 1949, Familiar y Daganzo pasan a tres tubos de sangre en su gradilla, con tapón rojo y etiqueta, que al llegar se llenan y se separan en capas como al centrifugar; luego suben burbujas despacio. Certificados en franja gris con placas de borde oscuro y la del centro en rojo.
 - Portada: la foto de fondo pasa a ser un rotor girando a toda velocidad, con estelas rojas y el buje nítido (foto de la empresa). Fuera el temblor que seguía al ratón y el giro de entrada: la foto solo se aclara y se asienta despacio. "Ver la gama" se vuelve cristal rojo al pasar el ratón. Las cuatro cifras pasan a placas de cristal con los iconos de la marca (teléfono, caja, escudo, casillas) y, al pasar el ratón, un destello de luz, un rojo neón suave y el icono que da un pequeño salto.
