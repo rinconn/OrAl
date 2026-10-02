@@ -4,11 +4,12 @@
 export interface Cifra {
   valor: string;
   texto: string;
+  icono: 'reloj' | 'camion' | 'calendario' | 'sello';
 }
 
 export const cifras: Cifra[] = [
-  { valor: '48 h', texto: 'de respuesta' },
-  { valor: '1 semana', texto: 'plazo de entrega' },
-  { valor: '3 años', texto: 'de garantía' },
-  { valor: 'ISO 13485', texto: '9001 · 14001 · IVDR' },
+  { valor: '48 h', texto: 'de respuesta', icono: 'reloj' },
+  { valor: '1 semana', texto: 'plazo de entrega', icono: 'camion' },
+  { valor: '3 años', texto: 'de garantía', icono: 'calendario' },
+  { valor: 'ISO 13485', texto: '9001 · 14001 · IVDR', icono: 'sello' },
 ];
