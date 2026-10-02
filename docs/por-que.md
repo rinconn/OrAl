@@ -264,6 +264,9 @@ Ponerlos antes haría que todos los enlaces llevaran a la portada.
     esquina se vuelve roja, el borde y el icono se encienden con un rojo neón muy suave y el icono se mueve (el
     reloj da la vuelta, el camión arranca, el visto se dibuja, el sello late).
   - Con "reducir movimiento" activado en el sistema, los iconos quedan quietos.
+- **Fluidez:** todo el movimiento usa solo desplazamientos y transparencias, que el navegador mueve sin
+  redibujar la página (60 fotogramas por segundo medidos al entrar y al pasar el ratón). Los efectos de ratón solo
+  existen con ratón: en el móvil, al tocar una cifra no se queda encendida. La foto pesa 41 KB (23 KB en móvil).
 - **Descartados (con capturas):** cifras sin cajas con el icono encima, y tarjetas oscuras opacas como las del
   resto de la web; las placas de cristal casan mejor con la foto y con el botón.
 
