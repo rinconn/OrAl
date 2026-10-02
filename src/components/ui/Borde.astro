@@ -12,8 +12,8 @@ const { lado, retraso = 0 } = Astro.props;
 
 <svg class="borde" data-lado={lado} style={`--retraso: ${retraso}s`} aria-hidden="true">
   <rect class="raya" width="100%" height="100%" pathLength="100"></rect>
-  <circle class="onda" r="4"></circle>
-  <circle class="punto" r="3.5"></circle>
+  <circle class="onda" r="3"></circle>
+  <circle class="punto" r="2.5"></circle>
 </svg>
 
 <script>
@@ -75,12 +75,12 @@ const { lado, retraso = 0 } = Astro.props;
   }
   .punto {
     fill: #ff1a20;
-    filter: drop-shadow(0 0 4px rgba(255, 30, 30, 0.9));
+    filter: drop-shadow(0 0 3px rgba(255, 30, 30, 0.6));
   }
   .onda {
     fill: none;
     stroke: #ff1a20;
-    stroke-width: 1.5;
+    stroke-width: 1;
   }
 
   @media (prefers-reduced-motion: no-preference) {
@@ -139,13 +139,13 @@ const { lado, retraso = 0 } = Astro.props;
   /* La onda sale del punto, se abre y se desvanece; luego espera a la siguiente */
   @keyframes borde-onda {
     0% {
-      opacity: 0.9;
+      opacity: 0.55;
       transform: scale(1);
     }
     45%,
     100% {
       opacity: 0;
-      transform: scale(4.5);
+      transform: scale(3.2);
     }
   }
 </style>
