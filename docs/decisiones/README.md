@@ -16,3 +16,4 @@ Así, dentro de un año, nadie tiene que adivinar por qué la web es como es.
 | 0005 | [Ramas, PRs y comprobación automática](0005-ramas-pr-y-ci.md)                               | Aceptada | 2026-09-28 |
 | 0006 | [Datos solo de fuentes oficiales, validados al compilar](0006-datos-oficiales-validados.md) | Aceptada | 2026-09-28 |
 | 0007 | [La gama se agrupa por uso, con un color por familia](0007-gama-por-uso.md)                 | Aceptada | 2026-09-29 |
+| 0008 | [El catálogo sale de la portada a su propia página](0008-catalogo-en-pagina-propia.md)      | Aceptada | 2026-10-02 |
