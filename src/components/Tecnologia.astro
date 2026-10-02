@@ -1,6 +1,11 @@
 ---
-import { rei, smartconnect, sistemas, ademas } from '../data/tecnologia';
+import { rei, smartconnect, sistemas } from '../data/tecnologia';
 import Paso from './Paso.astro';
+import { idioma, ruta, textos, unir } from '../i18n';
+
+const lang = idioma(Astro.currentLocale);
+const t = textos(lang).tecnologia;
+const enlace = (href: string) => ruta(lang, href);
 ---
 
 <section class="tech" id="tecnologia">
@@ -8,45 +13,38 @@ import Paso from './Paso.astro';
   <div class="wrap">
     <div class="cab ap">
       <h2>
-        Tecnología <b>propia</b>
+        {t.titulo[0]}
+        <b>{t.titulo[1]}</b>
       </h2>
-      <p>
-        Lo que diferencia a una centrífuga Orto Alresa está dentro. Estos son los sistemas que desarrollamos nosotros.
-      </p>
+      <p>{t.intro}</p>
     </div>
 
     <!-- Los dos que más os diferencian, a lo grande y con foto real del catálogo -->
     <article class="gran rei ap">
       <div class="foto">
-        <img
-          src="/img/tecnologia/rei-system.webp"
-          alt="Rotores con REI System: una mano levanta el tirador rojo para sacar el rotor"
-          width="1400"
-          height="856"
-          loading="lazy"
-        />
+        <img src="/img/tecnologia/rei-system.webp" alt={t.rei.alt} width="1400" height="856" loading="lazy" />
       </div>
       <div class="txt">
         <h3>{rei.nombre}</h3>
         <p class="frase">
-          {rei.frase[0]}
-          <b>{rei.frase[1]}</b>
-          {rei.frase[2]}
+          {t.rei.frase[0]}
+          <b>{t.rei.frase[1]}</b>
+          {t.rei.frase[2]}
         </p>
         <ol class="pasos">
-          {rei.pasos.map((p) => (
+          {t.rei.pasos.map((p) => (
             <li>{p}</li>
           ))}
         </ol>
         <a class="arrow video" href={rei.video} target="_blank" rel="noopener">
-          Ver el vídeo
+          {t.rei.video}
         </a>
         <p class="modelos">
-          <b>Lo llevan</b>
+          <b>{t.lollevan}</b>
           {rei.modelos.map((m, i) => (
             <>
               {i > 0 && ' · '}
-              <a href={m.href}>{m.nombre}</a>
+              <a href={enlace(m.href)}>{unir(lang, m.nombres)}</a>
             </>
           ))}
         </p>
@@ -57,21 +55,21 @@ import Paso from './Paso.astro';
       <div class="txt">
         <h3>{smartconnect.nombre}</h3>
         <p class="frase">
-          {smartconnect.frase[0]}
-          <b>{smartconnect.frase[1]}</b>
-          {smartconnect.frase[2]}
+          {t.smartconnect.frase[0]}
+          <b>{t.smartconnect.frase[1]}</b>
+          {t.smartconnect.frase[2]}
         </p>
         <ul class="puntos">
-          {smartconnect.puntos.map((p) => (
+          {t.smartconnect.puntos.map((p) => (
             <li>{p}</li>
           ))}
         </ul>
         <p class="modelos">
-          <b>Lo llevan</b>
+          <b>{t.lollevan}</b>
           {smartconnect.modelos.map((m, i) => (
             <>
               {i > 0 && ' · '}
-              <a href={m.href}>{m.nombre}</a>
+              <a href={enlace(m.href)}>{unir(lang, m.nombres)}</a>
             </>
           ))}
         </p>
@@ -79,7 +77,7 @@ import Paso from './Paso.astro';
       <div class="foto negra">
         <img
           src="/img/tecnologia/smartconnect.webp"
-          alt="La app SmartConnect en varias tablets: acceso, gráfica del programa y listados"
+          alt={t.smartconnect.alt}
           width="1400"
           height="715"
           loading="lazy"
@@ -95,44 +93,36 @@ import Paso from './Paso.astro';
             {s.id === 'pantalla' && (
               <img
                 src="/img/tecnologia/pantalla-tactil.webp"
-                alt="Pantalla táctil de una Consul 22 con rotor, velocidad, FCR y rampas"
+                alt={t.pantalla.alt}
                 width="1000"
                 height="495"
                 loading="lazy"
               />
             )}
             {s.id === 'pcbs' && (
-              <svg
-                viewBox="0 0 600 360"
-                role="img"
-                aria-label="Esquema: velocidad frente a tiempo con un frenado brusco y otro progresivo"
-              >
+              <svg viewBox="0 0 600 360" role="img" aria-label={t.pcbs.esquema}>
                 <path class="eje" d="M60 40 V300 H570" />
                 <text x="60" y="30">
                   rpm
                 </text>
                 <text x="570" y="332" text-anchor="end">
-                  tiempo
+                  {t.pcbs.tiempo}
                 </text>
                 <path class="curva" pathLength="1" d="M60 300 C95 300 110 90 150 80 H330" />
                 <path class="brusca" d="M330 80 C345 90 352 300 372 300" />
                 <path class="media" pathLength="1" d="M330 80 C380 100 410 300 450 300" />
                 <path class="suave" pathLength="1" d="M330 80 C430 110 500 300 555 300" />
                 <text x="300" y="200" text-anchor="end">
-                  brusco
+                  {t.pcbs.brusco}
                 </text>
                 <path class="guia" d="M306 194 H352" />
                 <text class="rojo" x="430" y="128">
-                  progresivo
+                  {t.pcbs.progresivo}
                 </text>
               </svg>
             )}
             {s.id === 'uls' && (
-              <svg
-                viewBox="0 0 600 360"
-                role="img"
-                aria-label="Esquema: rotor visto desde arriba con el vaso 3 señalado por desequilibrio"
-              >
+              <svg viewBox="0 0 600 360" role="img" aria-label={t.uls.esquema}>
                 <g transform="translate(220 180)">
                   <circle class="orbita" r="150" />
                   <path class="brazo" d="M-78 -78 L78 78 M78 -78 L-78 78" />
@@ -159,28 +149,28 @@ import Paso from './Paso.astro';
                 <path class="guia roja" d="M366 272 H410" />
                 <rect class="aviso" x="410" y="238" width="170" height="68" />
                 <text class="aviso-t" x="424" y="265">
-                  Desequilibrio
+                  {t.uls.desequilibrio}
                 </text>
                 <text class="aviso-v" x="424" y="290">
-                  Vaso 3
+                  {t.uls.vaso}
                 </text>
               </svg>
             )}
           </div>
           <div class="t">
-            <h3>{s.nombre}</h3>
-            <p>{s.texto}</p>
+            <h3>{t[s.id].nombre}</h3>
+            <p>{t[s.id].texto}</p>
             <p class="cifra">
-              {s.cifra}
-              <small>{s.unidad}</small>
+              {t[s.id].cifra}
+              <small>{t[s.id].unidad}</small>
             </p>
             <p class="modelos">
-              <b>{s.id === 'pantalla' ? 'La llevan' : 'Lo llevan'}</b>
-              {'antes' in s && `${s.antes} `}
+              <b>{s.id === 'pantalla' ? t.lallevan : t.lollevan}</b>
+              {s.id === 'pcbs' && `${t.pcbs.antes} `}
               {s.modelos.map((m, i) => (
                 <>
                   {i > 0 && ' · '}
-                  <a href={m.href}>{m.nombre}</a>
+                  <a href={enlace(m.href)}>{unir(lang, m.nombres)}</a>
                 </>
               ))}
             </p>
@@ -191,10 +181,12 @@ import Paso from './Paso.astro';
 
     <div class="ap">
       <p class="frase mas-t">
-        Y además, <b>según el modelo</b>:
+        {t.ademasTitulo[0]}
+        <b>{t.ademasTitulo[1]}</b>
+        {t.ademasTitulo[2]}
       </p>
       <dl class="mas">
-        {ademas.map((a) => (
+        {t.ademas.map((a) => (
           <div>
             <dt>{a.titulo}</dt>
             <dd>{a.texto}</dd>

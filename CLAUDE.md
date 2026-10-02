@@ -1,8 +1,8 @@
 # Orto Alresa · web
 
 Web nueva de Orto Alresa (Álvarez Redondo, S.A.), fabricante de centrífugas de laboratorio desde 1949.
-El público son **distribuidores B2B**, no el laboratorio final. Todo el contenido visible va en español
-(después EN y FR).
+El público son **distribuidores B2B**, no el laboratorio final. La web va en español (`/`), inglés (`/en/`) y
+francés (`/fr/`); los textos visibles de cada idioma viven en `src/i18n/`, no en los componentes.
 
 ## Principios
 

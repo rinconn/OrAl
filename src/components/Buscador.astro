@@ -1,8 +1,12 @@
 ---
 // Lupa de la cabecera. Busca en el navegador, sin servidor, entre los modelos y las secciones de la web.
 // Cuando entre el catálogo completo basta con que el índice lo lea de ahí.
-import { familias, productos } from '../data/productos';
+import { productos } from '../data/productos';
 import { principal } from '../data/navegacion';
+import { idioma, ruta, textoSerie, textos } from '../i18n';
+
+const lang = idioma(Astro.currentLocale);
+const t = textos(lang);
 
 interface Entrada {
   titulo: string;
@@ -12,13 +16,30 @@ interface Entrada {
 }
 
 const indice: Entrada[] = [
-  ...productos.map((p) => ({
-    titulo: p.variantes ? `${p.nombre} · ${p.variantes}` : p.nombre,
-    detalle: `Centrífuga · ${p.uso ?? familias[p.familia].nombre}`,
-    href: `/centrifugas/#${p.slug}`,
-    texto: [p.nombre, p.variantes, familias[p.familia].nombre, p.uso, p.frase, p.capacidad, ...p.temperatura].join(' '),
+  ...productos.map((p) => {
+    const s = textoSerie(lang, p.slug);
+    const familia = t.familias[p.familia];
+    return {
+      titulo: p.variantes ? `${p.nombre} · ${p.variantes}` : p.nombre,
+      detalle: `${t.buscador.centrifuga} · ${s.uso ?? familia}`,
+      href: ruta(lang, `/centrifugas/#${p.slug}`),
+      texto: [
+        p.nombre,
+        p.variantes,
+        familia,
+        s.uso,
+        s.frase,
+        s.capacidad ?? p.capacidad,
+        ...p.temperatura.map((x) => t.temperatura[x]),
+      ].join(' '),
+    };
+  }),
+  ...principal.map((e) => ({
+    titulo: t.nav[e.clave],
+    detalle: t.buscador.seccion,
+    href: ruta(lang, e.href),
+    texto: t.nav[e.clave],
   })),
-  ...principal.map((e) => ({ titulo: e.texto, detalle: 'Sección', href: e.href, texto: e.texto })),
 ];
 ---
 
@@ -27,21 +48,22 @@ const indice: Entrada[] = [
     <circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="1.6"></circle>
     <path d="M15.5 15.5 21 21" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"></path>
   </svg>
-  <span class="sr">Buscar</span>
+  <span class="sr">{t.buscador.buscar}</span>
 </button>
 
-<div class="buscador" id="buscador" role="search" hidden data-indice={JSON.stringify(indice)}>
+<div
+  class="buscador"
+  id="buscador"
+  role="search"
+  hidden
+  data-indice={JSON.stringify(indice)}
+  data-nada={t.buscador.nada}
+>
   <div class="wrap">
     <label class="sr" for="buscarInput">
-      Buscar en la web
+      {t.buscador.etiqueta}
     </label>
-    <input
-      id="buscarInput"
-      type="search"
-      placeholder="Busca un modelo, p. ej. Digicen 22"
-      autocomplete="off"
-      spellcheck="false"
-    />
+    <input id="buscarInput" type="search" placeholder={t.buscador.ejemplo} autocomplete="off" spellcheck="false" />
     <ul class="resultados" id="resultados" aria-live="polite"></ul>
   </div>
 </div>
@@ -73,7 +95,7 @@ const indice: Entrada[] = [
     if (!hallados.length) {
       const li = document.createElement('li');
       li.className = 'nada';
-      li.textContent = 'No hay resultados. Prueba con el nombre del modelo o escríbenos desde Contacto.';
+      li.textContent = panel?.dataset.nada ?? '';
       lista.append(li);
       return;
     }

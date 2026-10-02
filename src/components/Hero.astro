@@ -3,6 +3,10 @@
 // (producto y distribuidor) y las cuatro razones para fiarse encima, cada una con su icono de la marca. Al cargar, la foto se
 // aclara y se asienta despacio; nada sigue al ratón.
 import { cifras } from '../data/cifras';
+import { idioma, ruta, textos } from '../i18n';
+
+const lang = idioma(Astro.currentLocale);
+const t = textos(lang).hero;
 ---
 
 <section class="hero" data-hero>
@@ -23,21 +27,19 @@ import { cifras } from '../data/cifras';
   <div class="wrap contenido">
     <div class="texto">
       <h1>
-        Expertos en{' '}
+        {t.titulo[0]}
         <b>
-          centrifuga<i>ción</i>
+          {t.titulo[1]}
+          <i>{t.titulo[2]}</i>
         </b>
       </h1>
-      <p class="lead">
-        Desde 1949 diseñamos y fabricamos centrífugas de laboratorio en Daganzo (Madrid) y las llevamos a todo el mundo
-        a través de una red de distribuidores especializados.
-      </p>
+      <p class="lead">{t.lead}</p>
       <div class="ctas">
-        <a class="btn red" href="/centrifugas/">
-          Ver la gama
+        <a class="btn red" href={ruta(lang, '/centrifugas/')}>
+          {t.gama}
         </a>
         <a class="btn ghost" href="#distribuidores">
-          Soy distribuidor
+          {t.distribuidor}
         </a>
       </div>
     </div>
@@ -48,8 +50,8 @@ import { cifras } from '../data/cifras';
           <span class="ico">
             <i style={`--ico: url(/img/iconos/${c.icono}.svg)`} />
           </span>
-          <b>{c.valor}</b>
-          <span class="txt">{c.texto}</span>
+          <b>{t.cifras[c.clave].valor}</b>
+          <span class="txt">{t.cifras[c.clave].texto}</span>
           <span class="luz" aria-hidden="true" />
         </li>
       ))}

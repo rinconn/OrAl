@@ -1,18 +1,16 @@
-// Navegación común a toda la web. Un solo sitio para cambiar enlaces, teléfono o idiomas.
+// Navegación común a toda la web. Un solo sitio para cambiar enlaces o teléfono (los idiomas, en src/i18n/).
 // Mientras una sección no tenga página propia, su enlace apunta a su bloque de la portada;
 // cuando se publique la página se cambia aquí el `href` y se actualiza toda la web.
 
-export interface Enlace {
-  href: string;
-  texto: string;
-}
+// Los textos de cada enlace están en src/i18n/ (`nav` y `pie`), por idioma.
+import type { Textos } from '../i18n/es';
 
-export const principal: Enlace[] = [
-  { href: '/centrifugas/', texto: 'Centrífugas' },
-  { href: '/#tecnologia', texto: 'Tecnología' },
-  { href: '/#distribuidores', texto: 'Distribuidores' },
-  { href: '/#contacto', texto: 'Servicio técnico' },
-  { href: '/#empresa', texto: 'Empresa' },
+export const principal: { href: string; clave: keyof Textos['nav'] }[] = [
+  { href: '/centrifugas/', clave: 'centrifugas' },
+  { href: '/#tecnologia', clave: 'tecnologia' },
+  { href: '/#distribuidores', clave: 'distribuidores' },
+  { href: '/#contacto', clave: 'servicio' },
+  { href: '/#empresa', clave: 'empresa' },
 ];
 
 export const contacto = {
@@ -27,22 +25,25 @@ export const contacto = {
 };
 
 /** Columnas de enlaces del pie */
-export const pie: { titulo: string; enlaces: Enlace[] }[] = [
+export const pie: {
+  titulo: keyof Textos['pie']['titulos'];
+  enlaces: { href: string; clave: keyof Textos['pie']['enlaces'] }[];
+}[] = [
   {
-    titulo: 'Centrífugas',
+    titulo: 'centrifugas',
     enlaces: [
-      { href: '/centrifugas/', texto: 'Toda la gama' },
-      { href: '/#tecnologia', texto: 'Tecnología' },
-      { href: '/descargas/', texto: 'Catálogo 2025' },
+      { href: '/centrifugas/', clave: 'gama' },
+      { href: '/#tecnologia', clave: 'tecnologia' },
+      { href: '/descargas/', clave: 'catalogo' },
     ],
   },
   {
-    titulo: 'Empresa',
+    titulo: 'empresa',
     enlaces: [
-      { href: '/empresa/', texto: 'Quiénes somos' },
-      { href: '/#distribuidores', texto: 'Distribuidores' },
-      { href: '/#aplicaciones', texto: 'Aplicaciones' },
-      { href: '/#empresa', texto: 'Certificados' },
+      { href: '/empresa/', clave: 'quienes' },
+      { href: '/#distribuidores', clave: 'distribuidores' },
+      { href: '/#aplicaciones', clave: 'aplicaciones' },
+      { href: '/#empresa', clave: 'certificados' },
     ],
   },
 ];
@@ -92,31 +93,17 @@ export const ayudas: { nombre: string; src?: string; ancho?: number; alto?: numb
   },
 ];
 
-export interface Idioma {
-  codigo: 'es' | 'en' | 'fr';
-  nombre: string;
-  href: string;
-  /** false hasta que esa versión exista; se muestra pero no enlaza */
-  publicado: boolean;
-}
-
-export const idiomas: Idioma[] = [
-  { codigo: 'es', nombre: 'Español', href: '/', publicado: true },
-  { codigo: 'en', nombre: 'English', href: '/en/', publicado: false },
-  { codigo: 'fr', nombre: 'Français', href: '/fr/', publicado: false },
-];
-
 /** Sellos de la empresa que acompañan al logo en el pie, como en la web actual */
-export const sellos = [
+export const sellos: { src: string; clave: keyof Textos['pie']['sellos']; ancho: number; alto: number }[] = [
   {
     src: '/img/sellos/ods.webp',
-    alt: 'Objetivos de Desarrollo Sostenible',
+    clave: 'ods',
     ancho: 96,
     alto: 96,
   },
   {
     src: '/img/sellos/empresa-solidaria-2024.webp',
-    alt: 'Empresa Solidaria 2024',
+    clave: 'solidaria',
     ancho: 204,
     alto: 96,
   },

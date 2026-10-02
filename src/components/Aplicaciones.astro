@@ -1,17 +1,22 @@
 ---
 import { getCollection } from 'astro:content';
+import { idioma, ruta, textos } from '../i18n';
+
+const lang = idioma(Astro.currentLocale);
+const t = textos(lang);
 
 // Las cinco últimas notas del blog; al publicar una nueva, la portada se actualiza sola.
 const notas = (await getCollection('notas'))
   .sort((a, b) => b.data.fecha.valueOf() - a.data.fecha.valueOf())
   .slice(0, 5);
-const fmt = new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
+const fmt = new Intl.DateTimeFormat(t.meta.fechas, { day: 'numeric', month: 'long', year: 'numeric' });
 ---
 
 <section class="sec apl" id="aplicaciones">
   <div class="wrap">
     <h2 class="ap">
-      Aplicaciones <b>en el laboratorio</b>
+      {t.aplicaciones.titulo[0]}
+      <b>{t.aplicaciones.titulo[1]}</b>
     </h2>
   </div>
 
@@ -20,19 +25,24 @@ const fmt = new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'long', ye
     <ul class="baraja ap">
       {notas.map((n) => (
         <li>
-          <a class="carta" href={`/noticias/${n.id}/`}>
+          <a class="carta" href={ruta(lang, `/noticias/${n.id}/`)}>
             <span class="marcas" aria-hidden="true" />
             <div class="foto">
-              <img src={n.data.foto} alt={n.data.alt} loading="lazy" decoding="async" />
+              <img
+                src={n.data.foto}
+                alt={(lang !== 'es' && n.data[lang]?.alt) || n.data.alt}
+                loading="lazy"
+                decoding="async"
+              />
             </div>
             <div class="texto">
               {!n.data.fechaPendiente && (
                 <time datetime={n.data.fecha.toISOString().slice(0, 10)}>{fmt.format(n.data.fecha)}</time>
               )}
-              <h3>{n.data.titulo}</h3>
+              <h3>{(lang !== 'es' && n.data[lang]?.titulo) || n.data.titulo}</h3>
             </div>
             <span class="leer">
-              Leer la nota <i aria-hidden="true">»</i>
+              {t.aplicaciones.leer} <i aria-hidden="true">»</i>
             </span>
           </a>
         </li>
@@ -42,8 +52,8 @@ const fmt = new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'long', ye
 
   <div class="wrap">
     <div class="cta ap">
-      <a class="btn ghost" href="/noticias/">
-        Ver todas las notas <span aria-hidden="true">»</span>
+      <a class="btn ghost" href={ruta(lang, '/noticias/')}>
+        {t.aplicaciones.todas} <span aria-hidden="true">»</span>
       </a>
     </div>
   </div>
