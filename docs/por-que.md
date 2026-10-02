@@ -258,16 +258,17 @@ Ponerlos antes haría que todos los enlaces llevaran a la portada.
 - **Botón "Ver la gama":** mantiene el destello y, al pasar el ratón, se vuelve cristal rojo: deja ver la foto
   detrás, con un brillo fino en el borde de arriba y un halo rojo muy suave.
 - **Cifras, antes:** cuatro textos sobre una línea fina, sin nada que los distinga. **Ahora:** cuatro placas de
-  cristal esmerilado, cada una con su icono dibujado para la web en un círculo rojo (reloj para 48 h, camión para
-  1 semana, calendario para 3 años, sello para ISO). Se entienden de un vistazo, antes de leer.
+  cristal esmerilado, cada una con un icono de la propia marca (los mismos de la web actual y del sistema de diseño) en
+  un círculo rojo: teléfono para 48 h, caja para 1 semana, escudo para 3 años y casillas marcadas para ISO. Se entienden de un vistazo, antes de leer.
   - Al pasar el ratón: cruza el mismo destello de luz que en el botón, la raya roja de la web crece arriba, la
-    esquina se vuelve roja, el borde y el icono se encienden con un rojo neón muy suave y el icono se mueve (el
-    reloj da la vuelta, el camión arranca, el visto se dibuja, el sello late).
+    esquina se vuelve roja, el borde y el icono se encienden con un rojo neón muy suave y el icono da un pequeño
+    salto.
   - Con "reducir movimiento" activado en el sistema, los iconos quedan quietos.
 - **Fluidez:** todo el movimiento usa solo desplazamientos y transparencias, que el navegador mueve sin
   redibujar la página (60 fotogramas por segundo medidos al entrar y al pasar el ratón). Los efectos de ratón solo
   existen con ratón: en el móvil, al tocar una cifra no se queda encendida. La foto pesa 41 KB (23 KB en móvil).
-- **Descartados (con capturas):** cifras sin cajas con el icono encima, y tarjetas oscuras opacas como las del
+- **Descartados (con capturas):** iconos dibujados para la ocasión (reloj, camión, calendario, sello): se veían
+  genéricos, y los de la marca ya son vuestros y sin derechos que pagar. Cifras sin cajas con el icono encima, y tarjetas oscuras opacas como las del
   resto de la web; las placas de cristal casan mejor con la foto y con el botón.
 
 ## 5. La gama (portada)
