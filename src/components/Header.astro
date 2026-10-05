@@ -228,17 +228,21 @@ const actual = (href: string) => !href.startsWith('/#') && base.startsWith(href)
     transform: translateY(-100%);
     box-shadow: none;
   }
+  /* A todo el ancho de la pantalla, como la cabecera de la web actual: logo pegado a la izquierda y banderas,
+     lupa y Contacto a la derecha, sin el ancho máximo del resto de la página */
   .bar {
     display: flex;
     align-items: center;
     gap: 40px;
-    height: 96px;
+    height: 76px;
+    max-width: none;
+    padding-inline: clamp(16px, 2.6vw, 48px);
   }
   .marca {
     flex: none;
   }
   .logo {
-    height: 52px;
+    height: 42px;
     width: auto;
   }
 
@@ -267,7 +271,7 @@ const actual = (href: string) => !href.startsWith('/#') && base.startsWith(href)
     display: block;
     white-space: nowrap;
     text-decoration: none;
-    padding-block: 36px;
+    padding-block: 26px;
     box-shadow: inset 0 -3px 0 transparent;
     transition: box-shadow 0.2s var(--ease);
   }
@@ -364,11 +368,11 @@ const actual = (href: string) => !href.startsWith('/#') && base.startsWith(href)
 
   @media (max-width: 1220px) {
     .bar {
-      height: 72px;
+      height: 60px;
       gap: 20px;
     }
     .logo {
-      height: 42px;
+      height: 36px;
     }
     /* En móvil solo quedan las banderas a la vista; Contacto va dentro del menú */
     .der {
@@ -385,7 +389,7 @@ const actual = (href: string) => !href.startsWith('/#') && base.startsWith(href)
     .nav {
       display: none;
       position: fixed;
-      inset: 72px 0 0;
+      inset: 60px 0 0;
       overflow-y: auto;
       background: #fff;
       padding: 8px var(--gut) calc(32px + env(safe-area-inset-bottom, 0px));
