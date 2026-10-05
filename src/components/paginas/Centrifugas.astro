@@ -1,304 +1,994 @@
 ---
-// Catálogo de productos: todas las series de centrífugas del Catálogo General 2025, agrupadas por uso, y después
-// los equipos de laboratorio y los accesorios. Sin filtros ni etiquetas: foto, nombre, una frase y las cifras que
-// pide un distribuidor.
+// Catálogo de productos: los 23 modelos de centrífuga (fotos y aplicaciones de la página de productos de la web
+// actual), los accesorios y los otros productos de laboratorio. Cabecera oscura como la portada, un panel de
+// filtros de cristal (buscador, aplicación, temperatura, pantalla y orden) y una tarjeta por modelo con los cuatro
+// iconos de la web actual. Los filtros se guardan en la dirección para poder compartir una búsqueda.
 import Base from '../../layouts/Base.astro';
-import { familias, productos, totalModelos, type Familia } from '../../data/productos';
-import { accesorios, equipos } from '../../data/laboratorio';
+import {
+  categorias,
+  modelos,
+  productos,
+  totalModelos,
+  type Categoria,
+  type Modelo,
+  type Temperatura,
+} from '../../data/productos';
+import { accesorios, equipos, type ProductoLab } from '../../data/laboratorio';
 import { idioma, numero, textoSerie, textos } from '../../i18n';
 
 const lang = idioma(Astro.currentLocale);
 const t = textos(lang);
+const f = t.catalogo.filtros;
 
-const grupos = (Object.keys(familias) as Familia[]).map((clave) => ({
-  clave,
-  nombre: t.familias[clave],
-  series: productos.filter((p) => p.familia === clave),
-}));
-// Como en la página de productos de la web actual: primero los accesorios de centrífuga y después el resto
-const otros = [
-  { clave: 'accesorios', nombre: t.laboratorio.accesorios, items: accesorios },
-  { clave: 'equipos', nombre: t.laboratorio.equipos, items: equipos },
-];
-// "ventilada / refrigerada", con la primera en mayúscula
-const temperatura = (p: (typeof productos)[number]) => {
-  const s = p.temperatura.map((x) => t.temperatura[x]).join(' / ');
-  return s.charAt(0).toUpperCase() + s.slice(1);
-};
+const may = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+// Texto para el buscador: sin tildes ni mayúsculas, como la lupa de la cabecera
+const plano = (...partes: (string | undefined)[]) =>
+  partes.filter(Boolean).join(' ').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+
+type Otro = 'accesorios' | 'laboratorio';
+const todas: (Categoria | Otro)[] = [...categorias.generales, ...categorias.especiales, 'accesorios', 'laboratorio'];
+const nombreCat = (c: Categoria | Otro) =>
+  c === 'accesorios'
+    ? t.laboratorio.accesorios
+    : c === 'laboratorio'
+      ? t.laboratorio.equipos
+      : t.catalogo.categorias[c];
+const nombreCorto = (c: Categoria | Otro) => (c === 'accesorios' || c === 'laboratorio' ? f.cortos[c] : nombreCat(c));
+const grupoDe = (c: Categoria | Otro) =>
+  (categorias.generales as readonly string[]).includes(c)
+    ? t.catalogo.grupos.generales
+    : (categorias.especiales as readonly string[]).includes(c)
+      ? t.catalogo.grupos.especiales
+      : t.catalogo.grupos.otros;
+
+const cuenta = (c: Categoria | Otro) =>
+  c === 'accesorios'
+    ? accesorios.length
+    : c === 'laboratorio'
+      ? equipos.length
+      : modelos.filter((m) => m.categoria === c).length;
+
+const temperaturas: Temperatura[] = ['ventilada', 'refrigerada', 'calefactada'];
+const pantallas = ['TFT', 'LCD', 'LED'] as const;
+
+// Tarjetas en el orden del catálogo: por aplicación, y dentro de cada una como en la web actual
+type Ficha =
+  { tipo: 'modelo'; cat: Categoria | Otro; m: Modelo } | { tipo: 'lab'; cat: Categoria | Otro; p: ProductoLab };
+const lab = (c: Otro, items: ProductoLab[]): Ficha[] => items.map((p) => ({ tipo: 'lab', cat: c, p }));
+const fichas = todas.flatMap((c): Ficha[] =>
+  c === 'accesorios'
+    ? lab(c, accesorios)
+    : c === 'laboratorio'
+      ? lab(c, equipos)
+      : modelos.filter((m) => m.categoria === c).map((m): Ficha => ({ tipo: 'modelo', cat: c, m })),
+);
 ---
 
 <Base title={t.catalogo.title} description={t.catalogo.description(productos.length, totalModelos)}>
-  <section class="sec cat">
+  <!-- Cabecera oscura, como la portada: el rotor girando muy apagado, el título y tres cifras en cristal -->
+  <section class="cab">
+    <div class="fondo" aria-hidden="true">
+      <img src="/img/fotos/portada-rotor-960.webp" alt="" width="960" height="640" decoding="async" />
+    </div>
     <div class="wrap">
       <h1>
         {t.catalogo.titulo[0]}
         <b>{t.catalogo.titulo[1]}</b>
       </h1>
       <p class="lead">{t.catalogo.lead(productos.length, totalModelos)}</p>
-      <nav class="indice" aria-label={t.catalogo.indice}>
-        {[...grupos, ...otros].map((g) => (
-          <a href={`#${g.clave}`}>{g.nombre}</a>
-        ))}
-      </nav>
+      <ul class="cifras">
+        <li>
+          <b>{modelos.length}</b> {t.catalogo.cifras.centrifugas}
+        </li>
+        <li>
+          <b>{categorias.generales.length + categorias.especiales.length}</b> {t.catalogo.cifras.aplicaciones}
+        </li>
+        <li>
+          <b>{accesorios.length + equipos.length}</b> {t.catalogo.cifras.otros}
+        </li>
+      </ul>
+    </div>
+  </section>
 
-      {grupos.map((g) => (
-        <section class="grupo" id={g.clave} aria-labelledby={`t-${g.clave}`}>
-          <h2 id={`t-${g.clave}`}>{g.nombre}</h2>
-          <ul class="rejilla">
-            {g.series.map((p) => (
-              <li class="serie" id={p.slug}>
-                <span class="foto">
-                  <img
-                    src={p.imagen.src}
-                    alt={p.nombre}
-                    width={p.imagen.ancho}
-                    height={p.imagen.alto}
-                    loading="lazy"
-                    decoding="async"
-                  />
+  <section class="cat">
+    <div class="wrap">
+      <!-- Panel de filtros: cristal sobre la cabecera. Sin JS se ve todo el catálogo y el panel no aparece -->
+      <form
+        class="filtros"
+        id="filtros"
+        role="search"
+        aria-label={f.titulo}
+        data-uno={f.resultados(1)}
+        data-varios={f.resultados(999)}
+        hidden
+      >
+        <div class="fila primera">
+          <label class="buscar">
+            <span class="sr">{f.buscar}</span>
+            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+              <circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="1.6"></circle>
+              <path d="M15.5 15.5 21 21" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path>
+            </svg>
+            <input type="search" name="q" placeholder={f.buscar} autocomplete="off" />
+          </label>
+          <label class="orden">
+            <span>{f.orden}</span>
+            <select name="o">
+              <option value="">{f.ordenes.catalogo}</option>
+              <option value="rapidas">{f.ordenes.rapidas}</option>
+              <option value="lentas">{f.ordenes.lentas}</option>
+              <option value="nombre">{f.ordenes.nombre}</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="fila">
+          <p class="etq">{f.titulo}</p>
+          <div class="chips cats">
+            <button type="button" class="chip todo" data-todo aria-pressed="true">
+              {f.todo}
+            </button>
+            {[
+              [t.catalogo.grupos.generales, categorias.generales],
+              [t.catalogo.grupos.especiales, categorias.especiales],
+              [t.catalogo.grupos.otros, ['accesorios', 'laboratorio']],
+            ].map(([grupo, lista]) => (
+              <div class="grupo-chips" role="group" aria-label={grupo as string}>
+                <span class="nombre-grupo" aria-hidden="true">
+                  {grupo as string}
                 </span>
-                <h3>
-                  {p.nombre}
-                  {p.variantes && <span> · {p.variantes}</span>}
-                </h3>
-                <p class="frase">{textoSerie(lang, p.slug).frase}</p>
-                {/* Los cuatro iconos de la web actual: capacidad, pantalla, velocidad y temperatura */}
-                <ul class="fichas">
-                  <li>
-                    <i style="--ico: url(/img/iconos/ficha-capacidad.svg)" aria-hidden="true" />
-                    <span class="sr">{t.catalogo.iconos.capacidad}: </span>
-                    {textoSerie(lang, p.slug).capacidad ?? p.capacidad}
-                  </li>
-                  <li>
-                    <i style="--ico: url(/img/iconos/ficha-pantalla.svg)" aria-hidden="true" />
-                    <span class="sr">{t.catalogo.iconos.pantalla}: </span>
-                    {p.pantalla}
-                  </li>
-                  <li>
-                    <i style="--ico: url(/img/iconos/ficha-velocidad.svg)" aria-hidden="true" />
-                    <span class="sr">{t.catalogo.iconos.velocidad}: </span>
-                    {numero(lang, p.rpm)} rpm
-                    <small>{numero(lang, p.xg)} xg</small>
-                  </li>
-                  <li>
-                    <i style="--ico: url(/img/iconos/ficha-info.svg)" aria-hidden="true" />
-                    <span class="sr">{t.catalogo.iconos.temperatura}: </span>
-                    {temperatura(p)}
-                  </li>
-                </ul>
-              </li>
+                {(lista as (Categoria | Otro)[]).map((c) => (
+                  <button type="button" class="chip" data-f="c" data-v={c} aria-pressed="false">
+                    {nombreCorto(c)} <span class="n">{cuenta(c)}</span>
+                  </button>
+                ))}
+              </div>
             ))}
-          </ul>
-        </section>
-      ))}
+          </div>
+        </div>
 
-      {otros.map((g) => (
-        <section class="grupo" id={g.clave} aria-labelledby={`t-${g.clave}`}>
-          <h2 id={`t-${g.clave}`}>{g.nombre}</h2>
-          <ul class="rejilla">
-            {g.items.map((p) => {
-              const tx = t.laboratorio.items[p.slug];
-              return (
-                <li class="serie" id={p.slug}>
-                  <span class:list={['foto', { doble: p.imagen2 }]}>
-                    <img
-                      src={p.imagen.src}
-                      alt={tx.nombre}
-                      width={p.imagen.ancho}
-                      height={p.imagen.alto}
-                      loading="lazy"
-                      decoding="async"
-                    />
-                    {p.imagen2 && (
-                      <img
-                        class="segunda"
-                        src={p.imagen2.src}
-                        alt=""
-                        width={p.imagen2.ancho}
-                        height={p.imagen2.alto}
-                        loading="lazy"
-                        decoding="async"
-                      />
+        <div class="fila facetas">
+          <div class="chips" role="group" aria-label={f.temperatura}>
+            <p class="etq">{f.temperatura}</p>
+            {temperaturas.map((x) => (
+              <button type="button" class="chip" data-f="t" data-v={x} aria-pressed="false">
+                {may(t.temperatura[x])} <span class="n" />
+              </button>
+            ))}
+          </div>
+          <div class="chips" role="group" aria-label={f.pantalla}>
+            <p class="etq">{f.pantalla}</p>
+            {pantallas.map((x) => (
+              <button type="button" class="chip" data-f="p" data-v={x} aria-pressed="false">
+                {x} <span class="n" />
+              </button>
+            ))}
+          </div>
+          <div class="estado">
+            <p class="total" aria-live="polite"></p>
+            <button type="button" class="limpiar" hidden>
+              {f.limpiar}
+            </button>
+          </div>
+        </div>
+      </form>
+
+      <!-- Barra fija al bajar: lo que está filtrado, el total y vuelta al panel -->
+      <div class="barra" aria-hidden="true">
+        <div class="wrap barra-in">
+          <p class="resumen"></p>
+          <p class="total"></p>
+          <button type="button" class="subir" tabindex="-1">
+            {f.abrir}
+          </button>
+        </div>
+      </div>
+
+      <ul class="rejilla" id="rejilla">
+        {todas.map((c) => (
+          <>
+            <li class="titulo" data-cat={c}>
+              <h2>{nombreCat(c)}</h2>
+              <span>{grupoDe(c)}</span>
+            </li>
+            {fichas
+              .filter((x) => x.cat === c)
+              .map((x) =>
+                x.tipo === 'modelo' ? (
+                  <li
+                    class="ficha"
+                    id={x.m.principal ? x.m.serie : x.m.slug}
+                    data-cat={c}
+                    data-t={x.m.temperatura}
+                    data-p={x.m.pantalla}
+                    data-rpm={x.m.rpm.replace(/\./g, '')}
+                    data-nombre={x.m.nombre}
+                    data-texto={plano(
+                      x.m.nombre,
+                      nombreCat(c),
+                      grupoDe(c),
+                      textoSerie(lang, x.m.serie).frase,
+                      x.m.capacidad,
+                      x.m.pantalla,
+                      t.temperatura[x.m.temperatura],
                     )}
-                  </span>
-                  <h3>
-                    {tx.nombre} <span>· {p.modelo}</span>
-                  </h3>
-                  <p class="frase">{tx.frase}</p>
-                  <p class="spec">{tx.datos}</p>
-                  {p.pdf && (
-                    <a class="arrow pdf" href={p.pdf} target="_blank" rel="noopener">
-                      {t.laboratorio.pdf}
-                    </a>
-                  )}
-                </li>
-              );
-            })}
-          </ul>
-        </section>
-      ))}
+                  >
+                    <article>
+                      <div class="foto">
+                        <img
+                          src={x.m.imagen.src}
+                          alt={x.m.nombre}
+                          width={x.m.imagen.ancho}
+                          height={x.m.imagen.alto}
+                          loading="lazy"
+                          decoding="async"
+                        />
+                        <span class="luz" aria-hidden="true" />
+                      </div>
+                      <div class="cuerpo">
+                        <p class="cat-n">{nombreCat(c)}</p>
+                        <h3>{x.m.nombre}</h3>
+                        <p class="frase">{textoSerie(lang, x.m.serie).frase}</p>
+                        {/* Los cuatro iconos de la web actual: capacidad, pantalla, velocidad y temperatura */}
+                        <ul class="iconos">
+                          <li>
+                            <i style="--ico: url(/img/iconos/ficha-capacidad.svg)" aria-hidden="true" />
+                            <span class="sr">{t.catalogo.iconos.capacidad}: </span>
+                            {x.m.capacidad === productos.find((p) => p.slug === x.m.serie)?.capacidad
+                              ? (textoSerie(lang, x.m.serie).capacidad ?? x.m.capacidad)
+                              : x.m.capacidad}
+                          </li>
+                          <li>
+                            <i style="--ico: url(/img/iconos/ficha-pantalla.svg)" aria-hidden="true" />
+                            <span class="sr">{t.catalogo.iconos.pantalla}: </span>
+                            {x.m.pantalla}
+                          </li>
+                          <li>
+                            <i style="--ico: url(/img/iconos/ficha-velocidad.svg)" aria-hidden="true" />
+                            <span class="sr">{t.catalogo.iconos.velocidad}: </span>
+                            {numero(lang, x.m.rpm)} rpm
+                            {x.m.xg && <small>{numero(lang, x.m.xg)} xg</small>}
+                          </li>
+                          <li>
+                            <i style="--ico: url(/img/iconos/ficha-info.svg)" aria-hidden="true" />
+                            <span class="sr">{t.catalogo.iconos.temperatura}: </span>
+                            {may(t.temperatura[x.m.temperatura])}
+                          </li>
+                        </ul>
+                      </div>
+                    </article>
+                  </li>
+                ) : (
+                  <li
+                    class="ficha lab"
+                    id={x.p.slug}
+                    data-cat={c}
+                    data-rpm="0"
+                    data-nombre={t.laboratorio.items[x.p.slug].nombre}
+                    data-texto={plano(
+                      t.laboratorio.items[x.p.slug].nombre,
+                      x.p.modelo,
+                      nombreCat(c),
+                      t.laboratorio.items[x.p.slug].frase,
+                      t.laboratorio.items[x.p.slug].datos,
+                    )}
+                  >
+                    <article>
+                      <div class:list={['foto', { doble: x.p.imagen2 }]}>
+                        <img
+                          src={x.p.imagen.src}
+                          alt={t.laboratorio.items[x.p.slug].nombre}
+                          width={x.p.imagen.ancho}
+                          height={x.p.imagen.alto}
+                          loading="lazy"
+                          decoding="async"
+                        />
+                        {x.p.imagen2 && (
+                          <img
+                            class="segunda"
+                            src={x.p.imagen2.src}
+                            alt=""
+                            width={x.p.imagen2.ancho}
+                            height={x.p.imagen2.alto}
+                            loading="lazy"
+                            decoding="async"
+                          />
+                        )}
+                        <span class="luz" aria-hidden="true" />
+                      </div>
+                      <div class="cuerpo">
+                        <p class="cat-n">{nombreCat(c)}</p>
+                        <h3>
+                          {t.laboratorio.items[x.p.slug].nombre} <span>{x.p.modelo}</span>
+                        </h3>
+                        <p class="frase">{t.laboratorio.items[x.p.slug].frase}</p>
+                        <p class="datos">{t.laboratorio.items[x.p.slug].datos}</p>
+                        {x.p.pdf && (
+                          <a class="arrow pdf" href={x.p.pdf} target="_blank" rel="noopener">
+                            {t.laboratorio.pdf}
+                          </a>
+                        )}
+                      </div>
+                    </article>
+                  </li>
+                ),
+              )}
+          </>
+        ))}
+        <li class="vacio" hidden>
+          <p>{f.vacio}</p>
+          <button type="button" class="btn red limpiar">
+            {f.limpiar}
+          </button>
+        </li>
+      </ul>
     </div>
   </section>
 </Base>
 
+<script>
+  // Filtros del catálogo: aplicación, temperatura y pantalla (dentro de cada uno se suma, entre ellos se cruza),
+  // buscador sin tildes y orden. Cada botón dice cuántos productos quedarían si se pulsa.
+  const form = document.getElementById('filtros') as HTMLFormElement | null;
+  const rejilla = document.getElementById('rejilla');
+  if (form && rejilla) {
+    form.hidden = false;
+    document.documentElement.classList.add('con-filtros');
+    // "1 producto" / "N productos", con los textos de cada idioma
+    const total = (n: number) => (n === 1 ? form.dataset.uno! : form.dataset.varios!.replace('999', String(n)));
+    const fichas = [...rejilla.querySelectorAll<HTMLElement>('.ficha')];
+    const titulos = [...rejilla.querySelectorAll<HTMLElement>('.titulo')];
+    const vacio = rejilla.querySelector<HTMLElement>('.vacio')!;
+    const chips = [...form.querySelectorAll<HTMLButtonElement>('.chip[data-f]')];
+    const todo = form.querySelector<HTMLButtonElement>('[data-todo]')!;
+    const q = form.querySelector<HTMLInputElement>('input[name=q]')!;
+    const orden = form.querySelector<HTMLSelectElement>('select[name=o]')!;
+    const limpiar = [...document.querySelectorAll<HTMLButtonElement>('.limpiar')];
+    const totales = [...document.querySelectorAll<HTMLElement>('.total')];
+    const barra = document.querySelector<HTMLElement>('.barra')!;
+    const resumen = barra.querySelector<HTMLElement>('.resumen')!;
+
+    type Clave = 'c' | 't' | 'p';
+    const estado: Record<Clave, Set<string>> = { c: new Set(), t: new Set(), p: new Set() };
+    const plano = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
+    const campo: Record<Clave, string> = { c: 'cat', t: 't', p: 'p' };
+    const cumple = (el: HTMLElement, sin?: Clave, extra?: [Clave, string]) => {
+      for (const k of ['c', 't', 'p'] as Clave[]) {
+        const valores = new Set(k === sin ? [] : estado[k]);
+        if (extra && extra[0] === k) valores.add(extra[1]);
+        if (valores.size && !valores.has(el.dataset[campo[k]] ?? '')) return false;
+      }
+      const texto = plano(q.value);
+      return !texto || texto.split(/\s+/).every((p) => (el.dataset.texto ?? '').includes(p));
+    };
+
+    let primera = true;
+    const aplicar = () => {
+      const visibles = new Set(fichas.filter((el) => cumple(el)));
+      let i = 0;
+      for (const el of fichas) {
+        const ver = visibles.has(el);
+        if (ver && el.hidden && !primera) {
+          el.style.setProperty('--i', String(Math.min(i, 8)));
+          el.classList.remove('entra');
+          void el.offsetWidth;
+          el.classList.add('entra');
+        }
+        if (ver) i++;
+        el.hidden = !ver;
+      }
+      // Orden: por aplicación (con sus títulos), por velocidad o por nombre
+      const o = orden.value;
+      const lista = [...fichas];
+      if (o === 'rapidas' || o === 'lentas') {
+        const s = o === 'rapidas' ? -1 : 1;
+        lista.sort((a, b) => {
+          const ra = Number(a.dataset.rpm),
+            rb = Number(b.dataset.rpm);
+          if (!ra || !rb) return ra ? -1 : rb ? 1 : 0;
+          return s * (ra - rb);
+        });
+      } else if (o === 'nombre') {
+        lista.sort((a, b) =>
+          (a.dataset.nombre ?? '').localeCompare(b.dataset.nombre ?? '', document.documentElement.lang),
+        );
+      }
+      lista.forEach((el, n) => (el.style.order = o ? String(n) : ''));
+      for (const ti of titulos) {
+        ti.hidden = !!o || !fichas.some((el) => visibles.has(el) && el.dataset.cat === ti.dataset.cat);
+      }
+      // Cada botón: cuántos quedarían al pulsarlo; los que dejarían cero, apagados
+      for (const ch of chips) {
+        const k = ch.dataset.f as Clave,
+          v = ch.dataset.v!;
+        const n = fichas.filter((el) => cumple(el, k, [k, v])).length;
+        const activo = estado[k].has(v);
+        ch.setAttribute('aria-pressed', String(activo));
+        ch.disabled = !activo && n === 0;
+        const num = ch.querySelector('.n');
+        if (num) num.textContent = String(n);
+      }
+      todo.setAttribute('aria-pressed', String(estado.c.size === 0));
+      const hay = estado.c.size + estado.t.size + estado.p.size > 0 || !!q.value.trim() || !!o;
+      for (const b of limpiar) if (b.closest('.estado')) b.hidden = !hay;
+      for (const tt of totales) tt.textContent = total(visibles.size);
+      vacio.hidden = visibles.size > 0;
+      const activos = [...chips].filter((ch) => ch.getAttribute('aria-pressed') === 'true');
+      resumen.textContent = activos.length
+        ? activos.map((ch) => ch.firstChild?.textContent?.trim()).join(' · ')
+        : (todo.textContent ?? '');
+      // La búsqueda queda en la dirección para poder compartirla
+      const url = new URL(location.href);
+      for (const k of ['c', 't', 'p'] as Clave[]) {
+        if (estado[k].size) url.searchParams.set(k, [...estado[k]].join(','));
+        else url.searchParams.delete(k);
+      }
+      if (q.value.trim()) url.searchParams.set('q', q.value.trim());
+      else url.searchParams.delete('q');
+      if (o) url.searchParams.set('o', o);
+      else url.searchParams.delete('o');
+      history.replaceState(null, '', url);
+      primera = false;
+    };
+
+    // Estado inicial desde la dirección
+    const url = new URL(location.href);
+    for (const k of ['c', 't', 'p'] as Clave[]) {
+      for (const v of url.searchParams.get(k)?.split(',') ?? []) if (v) estado[k].add(v);
+    }
+    q.value = url.searchParams.get('q') ?? '';
+    orden.value = url.searchParams.get('o') ?? '';
+    // Si se llega a una ficha concreta (lupa, Tecnología), se ve todo para que esté
+    if (location.hash && document.getElementById(location.hash.slice(1))?.classList.contains('ficha')) {
+      for (const k of ['c', 't', 'p'] as Clave[]) estado[k].clear();
+      q.value = '';
+    }
+
+    for (const ch of chips) {
+      ch.addEventListener('click', () => {
+        const k = ch.dataset.f as Clave,
+          v = ch.dataset.v!;
+        if (estado[k].has(v)) estado[k].delete(v);
+        else estado[k].add(v);
+        aplicar();
+      });
+    }
+    todo.addEventListener('click', () => {
+      estado.c.clear();
+      aplicar();
+    });
+    let espera = 0;
+    q.addEventListener('input', () => {
+      clearTimeout(espera);
+      espera = window.setTimeout(aplicar, 120);
+    });
+    orden.addEventListener('change', aplicar);
+    form.addEventListener('submit', (e) => e.preventDefault());
+    for (const b of limpiar) {
+      b.addEventListener('click', () => {
+        for (const k of ['c', 't', 'p'] as Clave[]) estado[k].clear();
+        q.value = '';
+        orden.value = '';
+        aplicar();
+      });
+    }
+    aplicar();
+
+    // Barra fija: aparece cuando el panel sale de la pantalla y quedan productos debajo
+    if ('IntersectionObserver' in window) {
+      let panelFuera = false,
+        rejillaDentro = false;
+      const ver = () => {
+        const si = panelFuera && rejillaDentro;
+        barra.classList.toggle('visible', si);
+        barra.setAttribute('aria-hidden', String(!si));
+        barra.querySelector('button')!.tabIndex = si ? 0 : -1;
+      };
+      new IntersectionObserver(([e]) => {
+        panelFuera = !e.isIntersecting && e.boundingClientRect.top < 0;
+        ver();
+      }).observe(form);
+      new IntersectionObserver(([e]) => {
+        rejillaDentro = e.isIntersecting;
+        ver();
+      }).observe(rejilla);
+    }
+    barra.querySelector('button')!.addEventListener('click', () => {
+      form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      window.setTimeout(() => q.focus({ preventScroll: true }), 500);
+    });
+  }
+</script>
+
 <style>
+  /* Cabecera oscura con el rotor apagado detrás, como la primera pantalla de la portada */
+  .cab {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+    background: #111315;
+    color: #fff;
+    padding-block: clamp(56px, 9vw, 112px) clamp(120px, 14vw, 168px);
+  }
+  .fondo {
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+  }
+  .fondo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 60% 45%;
+    opacity: 0.55;
+  }
+  .cab::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background:
+      linear-gradient(90deg, rgba(10, 11, 12, 0.92) 0%, rgba(10, 11, 12, 0.72) 45%, rgba(10, 11, 12, 0.35) 100%),
+      linear-gradient(0deg, rgba(10, 11, 12, 0.85) 0%, rgba(10, 11, 12, 0) 45%);
+  }
   h1 {
     font-size: var(--t-titulo);
     font-weight: 300;
-    line-height: 0.95;
+    line-height: 0.94;
     letter-spacing: -0.015em;
   }
-  .lead {
-    margin-top: 24px;
-    max-width: 52ch;
-    font-size: var(--t-sub);
-    color: var(--body);
+  /* "productos" en el rojo de la marca, como "ción" en la portada */
+  h1 b {
+    display: block;
+    font-weight: 700;
+    color: var(--red);
   }
-
-  /* Índice de familias: texto suelto que se subraya en rojo, sin barra ni pestañas */
-  .indice {
-    margin-top: 40px;
+  .lead {
+    margin-top: 22px;
+    max-width: 46ch;
+    font-size: var(--t-sub);
+    color: rgba(255, 255, 255, 0.82);
+  }
+  /* Tres cifras en placas de cristal, con el filo de luz de los botones de la portada */
+  .cifras {
+    margin: 32px 0 0;
+    padding: 0;
+    list-style: none;
     display: flex;
     flex-wrap: wrap;
-    gap: 12px 36px;
+    gap: 12px;
   }
-  .indice a {
-    position: relative;
-    padding-bottom: 4px;
-    font-size: 20px;
-    font-weight: 700;
-    color: var(--ink);
-    text-decoration: none;
+  .cifras li {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    padding: 12px 18px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    background: rgba(255, 255, 255, 0.06);
+    -webkit-backdrop-filter: blur(12px) saturate(140%);
+    backdrop-filter: blur(12px) saturate(140%);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
+    font-size: 16px;
+    color: rgba(255, 255, 255, 0.82);
   }
-  .indice a::after {
-    content: '';
-    position: absolute;
-    left: 0;
-    bottom: 0;
-    width: 0;
-    height: 2px;
-    background: var(--red);
-    transition: width 0.3s var(--ease);
-  }
-  .indice a:hover::after,
-  .indice a:focus-visible::after {
-    width: 100%;
+  .cifras b {
+    font-size: 30px;
+    line-height: 1;
+    color: #fff;
   }
 
-  .grupo {
-    margin-top: clamp(64px, 8vw, 104px);
-    scroll-margin-top: 110px;
+  /* ——— Panel de filtros: cristal claro que se monta sobre la cabecera ——— */
+  .cat {
+    background: var(--band);
+    padding-bottom: clamp(64px, 8vw, 112px);
   }
-  .grupo h2 {
-    padding-bottom: 18px;
-    border-bottom: 1px solid var(--line);
-    font-size: clamp(32px, 3.4vw, 44px);
-    font-weight: 300;
-    line-height: 1;
+  .filtros {
+    position: relative;
+    z-index: 2;
+    margin-top: calc(-1 * clamp(80px, 10vw, 112px));
+    display: grid;
+    gap: 18px;
+    padding: clamp(18px, 2.4vw, 28px);
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    background: rgba(255, 255, 255, 0.78);
+    -webkit-backdrop-filter: blur(18px) saturate(160%);
+    backdrop-filter: blur(18px) saturate(160%);
+    box-shadow:
+      inset 0 1px 0 #fff,
+      0 24px 60px -28px rgba(17, 19, 21, 0.45);
+    scroll-margin-top: 96px;
   }
+  .filtros::before {
+    content: '';
+    position: absolute;
+    top: -1px;
+    left: -1px;
+    width: 72px;
+    height: 3px;
+    background: var(--red);
+  }
+  .fila {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px 24px;
+  }
+  .primera {
+    gap: 12px;
+  }
+  .etq {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--red);
+  }
+  .buscar {
+    flex: 1 1 320px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 16px;
+    height: 52px;
+    background: #fff;
+    border: 1px solid var(--line);
+    transition:
+      border-color 0.2s var(--ease),
+      box-shadow 0.2s var(--ease);
+  }
+  .buscar:focus-within {
+    border-color: var(--ink);
+    box-shadow: 0 0 0 3px rgba(221, 4, 10, 0.15);
+  }
+  .buscar svg {
+    flex: none;
+    color: var(--muted);
+  }
+  .buscar input {
+    flex: 1;
+    min-width: 0;
+    border: 0;
+    outline: 0;
+    background: none;
+    font: 400 18px var(--f);
+    color: var(--ink);
+  }
+  .orden {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    height: 52px;
+    padding: 0 6px 0 16px;
+    background: #fff;
+    border: 1px solid var(--line);
+    font-size: 15px;
+    color: var(--muted);
+  }
+  .orden select {
+    height: 100%;
+    border: 0;
+    outline: 0;
+    background: none;
+    font: 700 16px var(--f);
+    color: var(--ink);
+    cursor: pointer;
+  }
+  .orden:focus-within {
+    border-color: var(--ink);
+  }
+
+  /* Botones de filtro: texto y número; pulsado, rojo de marca. Agrupados como en la web actual */
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+  }
+  .cats {
+    flex: 1;
+    gap: 10px 18px;
+  }
+  .grupo-chips {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    padding-left: 18px;
+    border-left: 1px solid var(--line);
+  }
+  .nombre-grupo {
+    width: 100%;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 38px;
+    padding: 0 14px;
+    border: 1px solid rgba(26, 26, 26, 0.16);
+    background: rgba(255, 255, 255, 0.9);
+    font: 400 16px var(--f);
+    color: var(--ink);
+    cursor: pointer;
+    transition:
+      background 0.25s var(--ease),
+      border-color 0.25s var(--ease),
+      color 0.25s var(--ease),
+      transform 0.25s var(--ease),
+      box-shadow 0.25s var(--ease),
+      opacity 0.25s var(--ease);
+  }
+  .chip .n {
+    min-width: 20px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+  .chip .n:empty {
+    display: none;
+  }
+  .chip[aria-pressed='true'] {
+    background: var(--red);
+    border-color: var(--red);
+    color: #fff;
+    font-weight: 700;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.3),
+      0 8px 18px -10px rgba(221, 4, 10, 0.8);
+  }
+  .chip[aria-pressed='true'] .n {
+    color: rgba(255, 255, 255, 0.8);
+  }
+  .chip:disabled {
+    opacity: 0.35;
+    cursor: default;
+  }
+  .chip:focus-visible,
+  .limpiar:focus-visible,
+  .subir:focus-visible {
+    outline: 2px solid var(--red);
+    outline-offset: 2px;
+  }
+  @media (hover: hover) {
+    .chip:not(:disabled, [aria-pressed='true']):hover {
+      border-color: var(--red);
+      color: var(--red);
+      transform: translateY(-1px);
+    }
+  }
+  .facetas {
+    padding-top: 16px;
+    border-top: 1px solid var(--line);
+    gap: 14px 36px;
+  }
+  .facetas .chips .etq {
+    margin-right: 4px;
+    color: var(--ink);
+  }
+  .estado {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+  }
+  .total {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+  }
+  .limpiar:not(.btn) {
+    border: 0;
+    background: none;
+    padding: 4px 0;
+    font: 400 16px var(--f);
+    color: var(--red);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    cursor: pointer;
+  }
+
+  /* Barra fija al bajar: cristal, lo filtrado, el total y "Filtros" */
+  .barra {
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: 0;
+    z-index: 15;
+    background: rgba(255, 255, 255, 0.82);
+    -webkit-backdrop-filter: blur(16px) saturate(160%);
+    backdrop-filter: blur(16px) saturate(160%);
+    border-bottom: 1px solid rgba(26, 26, 26, 0.08);
+    box-shadow: 0 10px 30px -20px rgba(17, 19, 21, 0.5);
+    transform: translateY(-110%);
+    transition:
+      transform 0.35s var(--ease),
+      top 0.35s var(--ease);
+  }
+  /* Con la cabecera a la vista, la barra va justo debajo */
+  :global(html:has(#top:not(.oculta))) .barra {
+    top: 76px;
+  }
+  .barra.visible {
+    transform: none;
+  }
+  .barra-in {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    height: 56px;
+  }
+  .resumen {
+    flex: 1;
+    min-width: 0;
+    margin: 0;
+    font-size: 16px;
+    color: var(--red);
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .subir {
+    height: 38px;
+    padding: 0 16px;
+    border: 1px solid var(--ink);
+    background: none;
+    font: 700 15px var(--f);
+    color: var(--ink);
+    cursor: pointer;
+  }
+
+  /* ——— Rejilla: títulos de aplicación a todo el ancho y una tarjeta por modelo ——— */
   .rejilla {
-    margin: 36px 0 0;
+    margin: clamp(40px, 5vw, 64px) 0 0;
     padding: 0;
     list-style: none;
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 40px 28px;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 28px 24px;
   }
-  .serie {
-    scroll-margin-top: 110px;
+  .titulo {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    margin-top: 28px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--line);
+    scroll-margin-top: 140px;
   }
-
-  /* Misma tarjeta que el resto de la web: sube, crece la raya roja arriba y la esquina oscura se pone roja */
-  .foto {
+  .titulo:first-child {
+    margin-top: 0;
+  }
+  .titulo h2 {
+    font-size: clamp(30px, 3vw, 40px);
+    font-weight: 300;
+    line-height: 1;
+  }
+  .titulo span {
+    font-size: 14px;
+    color: var(--muted);
+  }
+  .ficha {
+    scroll-margin-top: 150px;
+  }
+  .ficha article {
     position: relative;
-    display: block;
-    aspect-ratio: 1;
-    overflow: hidden;
-    background: var(--panel);
-    border: 2px solid #3b4045;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    border: 1px solid rgba(26, 26, 26, 0.1);
+    box-shadow: 0 12px 30px -24px rgba(17, 19, 21, 0.35);
     transition:
       transform 0.35s var(--ease),
-      border-color 0.3s var(--ease);
+      box-shadow 0.35s var(--ease),
+      border-color 0.35s var(--ease);
   }
-  .foto::before {
+  /* Raya roja arriba que crece y esquina que se enciende, como el resto de tarjetas de la web */
+  .ficha article::before {
     content: '';
     position: absolute;
-    z-index: 1;
-    inset: 0 auto auto 0;
-    width: 0;
-    height: 4px;
+    z-index: 2;
+    top: -1px;
+    left: -1px;
+    width: 40px;
+    height: 3px;
     background: var(--red);
-    transition: width 0.4s var(--ease);
+    transition: width 0.45s var(--ease);
   }
-  .foto::after {
+  .ficha article::after {
     content: '';
     position: absolute;
-    z-index: 1;
-    top: 0;
-    right: 0;
+    z-index: 2;
+    top: -1px;
+    right: -1px;
     border-style: solid;
-    border-width: 0 18px 18px 0;
-    border-color: transparent #3b4045 transparent transparent;
+    border-width: 0 16px 16px 0;
+    border-color: transparent rgba(26, 26, 26, 0.18) transparent transparent;
     transition: border-color 0.3s var(--ease);
+  }
+  .foto {
+    position: relative;
+    overflow: hidden;
+    aspect-ratio: 1;
+    background: #fff;
   }
   .foto img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
-    object-position: left top;
-    transition: transform 0.7s var(--ease);
+    object-fit: contain;
+    transition:
+      transform 0.7s var(--ease),
+      opacity 0.45s var(--ease);
   }
-  .serie:hover .foto {
-    transform: translateY(-4px);
-    border-color: var(--ink);
+  .foto .segunda {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
   }
-  .serie:hover .foto::before {
-    width: 100%;
+  /* Destello que cruza la foto al pasar el ratón, el de los botones de la portada */
+  .luz {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(105deg, transparent 35%, rgba(255, 255, 255, 0.55) 50%, transparent 65%);
+    translate: -110% 0;
+    pointer-events: none;
   }
-  .serie:hover .foto::after {
-    border-right-color: var(--red);
+  .cuerpo {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 4px 20px 20px;
   }
-  .serie:hover img {
-    transform: scale(1.04);
+  .cat-n {
+    margin: 0;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--red);
   }
-  /* Ficha enlazada desde Tecnología o la lupa: se marca un momento al llegar */
-  .serie:target .foto {
-    border-color: var(--red);
-  }
-
   h3 {
-    margin-top: 16px;
-    font-size: 26px;
+    margin-top: 6px;
+    font-size: 25px;
     font-weight: 700;
     line-height: 1.05;
   }
   h3 span {
+    display: block;
+    margin-top: 2px;
+    font-size: 16px;
     font-weight: 300;
+    color: var(--muted);
   }
   .frase {
     margin-top: 8px;
-    font-size: 17px;
+    font-size: 15px;
+    line-height: 1.35;
     color: var(--body);
   }
-  .spec {
-    margin-top: 10px;
-    font-size: 16px;
-    color: var(--muted);
-    font-variant-numeric: tabular-nums;
-  }
-  .spec b {
-    color: var(--ink);
-  }
-  /* Iconos de la ficha, como en la web actual: cuadrado rojo con el dibujo en blanco y el dato debajo */
-  .fichas {
-    margin: 14px 0 0;
-    padding: 0;
+  /* Los cuatro iconos: cuadrado rojo con el dibujo en blanco y el dato debajo; abajo de la tarjeta, alineados */
+  .iconos {
+    margin: auto 0 0;
+    padding: 16px 0 0;
     list-style: none;
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 8px;
   }
-  .fichas li {
+  .frase + .iconos {
+    margin-top: 16px;
+    border-top: 1px solid var(--panel);
+  }
+  .iconos li {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
@@ -308,17 +998,86 @@ const temperatura = (p: (typeof productos)[number]) => {
     line-height: 1.15;
     color: var(--ink);
     font-variant-numeric: tabular-nums;
+    overflow-wrap: anywhere;
   }
-  .fichas i {
+  .iconos i {
     display: block;
-    width: 32px;
-    height: 32px;
+    width: 30px;
+    height: 30px;
     background: var(--red) var(--ico) center / 60% 60% no-repeat;
   }
-  .fichas small {
+  .iconos small {
     font-size: 12px;
     font-weight: 400;
     color: var(--muted);
+  }
+  .datos {
+    margin-top: auto;
+    padding-top: 12px;
+    font-size: 14px;
+    color: var(--muted);
+  }
+  .pdf {
+    margin-top: 12px;
+    font-size: 16px;
+    color: var(--ink);
+  }
+  .ficha:target article {
+    border-color: var(--red);
+  }
+
+  @media (hover: hover) {
+    .ficha article:hover {
+      transform: translateY(-6px);
+      border-color: rgba(26, 26, 26, 0.18);
+      box-shadow: 0 30px 50px -30px rgba(17, 19, 21, 0.45);
+    }
+    .ficha article:hover::before {
+      width: calc(100% + 2px);
+    }
+    .ficha article:hover::after {
+      border-right-color: var(--red);
+    }
+    .ficha article:hover .foto img {
+      transform: scale(1.04);
+    }
+    .ficha article:hover .foto.doble img:first-child {
+      opacity: 0;
+    }
+    .ficha article:hover .foto.doble .segunda {
+      opacity: 1;
+    }
+  }
+  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    .ficha article:hover .luz {
+      translate: 110% 0;
+      transition: translate 0.8s var(--ease);
+    }
+  }
+  /* Al filtrar, las que vuelven entran suaves una detrás de otra */
+  @media (prefers-reduced-motion: no-preference) {
+    .ficha.entra {
+      animation: entra 0.45s var(--ease) both;
+      animation-delay: calc(var(--i, 0) * 35ms);
+    }
+  }
+  @keyframes entra {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+  }
+
+  .vacio {
+    grid-column: 1 / -1;
+    padding: 56px 24px;
+    text-align: center;
+    background: #fff;
+    border: 1px dashed var(--line);
+  }
+  .vacio p {
+    margin: 0 0 20px;
+    font-size: 20px;
   }
   .sr {
     position: absolute;
@@ -328,62 +1087,94 @@ const temperatura = (p: (typeof productos)[number]) => {
     clip-path: inset(50%);
     white-space: nowrap;
   }
-  /* Equipos y accesorios con segunda foto (el accesorio en uso): aparece encima al pasar el ratón */
-  .foto .segunda {
-    position: absolute;
-    inset: 0;
-    opacity: 0;
-    transition:
-      opacity 0.45s var(--ease),
-      transform 0.7s var(--ease);
-  }
-  .serie:hover .foto.doble .segunda {
-    opacity: 1;
-  }
-  .pdf {
-    margin-top: 12px;
-    font-size: 16px;
-    color: var(--ink);
-  }
 
   @media (max-width: 1100px) {
     .rejilla {
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(3, minmax(0, 1fr));
     }
   }
-  /* Móvil: dos por fila para que el catálogo no se haga eterno */
+  @media (max-width: 1439px) {
+    :global(html:has(#top:not(.oculta))) .barra {
+      top: 60px;
+    }
+  }
+  /* Tableta y móvil: cada grupo de botones se desliza de lado para que el panel no se haga eterno */
+  @media (max-width: 900px) {
+    .cats {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 12px;
+    }
+    .todo {
+      align-self: flex-start;
+    }
+    .grupo-chips,
+    .facetas .chips {
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      padding: 0 0 4px;
+      border-left: 0;
+      scrollbar-width: none;
+    }
+    .grupo-chips::-webkit-scrollbar,
+    .facetas .chips::-webkit-scrollbar {
+      display: none;
+    }
+    .nombre-grupo {
+      width: auto;
+      flex: none;
+      margin-right: 4px;
+    }
+    .chip {
+      flex: none;
+    }
+    .facetas {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .estado {
+      margin-left: 0;
+      justify-content: space-between;
+    }
+  }
   @media (max-width: 760px) {
-    .indice {
-      gap: 10px 24px;
-    }
-    .indice a {
-      font-size: 18px;
-    }
     .rejilla {
-      grid-template-columns: repeat(2, 1fr);
-      gap: 32px 16px;
-      margin-top: 24px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 20px 14px;
+    }
+    .cuerpo {
+      padding: 2px 12px 14px;
     }
     h3 {
-      font-size: 21px;
+      font-size: 20px;
     }
     .frase {
-      font-size: 16px;
+      display: none;
     }
-    .spec {
-      font-size: 15px;
-    }
-    /* Dos tarjetas por fila: los cuatro iconos, en dos filas de dos para que el texto no se monte */
-    .fichas {
+    .iconos {
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 12px 8px;
     }
-    .fichas li {
-      overflow-wrap: anywhere;
+    .iconos i {
+      width: 26px;
+      height: 26px;
     }
-    .fichas i {
-      width: 28px;
-      height: 28px;
+    .orden {
+      flex: 1;
+    }
+    .orden select {
+      flex: 1;
+    }
+    .barra-in {
+      gap: 12px;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ficha article,
+    .foto img,
+    .chip,
+    .barra {
+      transition: none;
     }
   }
 </style>
