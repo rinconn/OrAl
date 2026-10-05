@@ -1,8 +1,10 @@
 ---
-// Catálogo: todas las series del Catálogo General 2025, agrupadas por uso. Sin filtros ni etiquetas:
-// foto, nombre, una frase y las tres cifras que pide un distribuidor.
+// Catálogo de productos: todas las series de centrífugas del Catálogo General 2025, agrupadas por uso, y después
+// los equipos de laboratorio y los accesorios. Sin filtros ni etiquetas: foto, nombre, una frase y las cifras que
+// pide un distribuidor.
 import Base from '../../layouts/Base.astro';
 import { familias, productos, totalModelos, type Familia } from '../../data/productos';
+import { accesorios, equipos } from '../../data/laboratorio';
 import { idioma, numero, textoSerie, textos } from '../../i18n';
 
 const lang = idioma(Astro.currentLocale);
@@ -13,6 +15,16 @@ const grupos = (Object.keys(familias) as Familia[]).map((clave) => ({
   nombre: t.familias[clave],
   series: productos.filter((p) => p.familia === clave),
 }));
+// Como en la página de productos de la web actual: primero los accesorios de centrífuga y después el resto
+const otros = [
+  { clave: 'accesorios', nombre: t.laboratorio.accesorios, items: accesorios },
+  { clave: 'equipos', nombre: t.laboratorio.equipos, items: equipos },
+];
+// "ventilada / refrigerada", con la primera en mayúscula
+const temperatura = (p: (typeof productos)[number]) => {
+  const s = p.temperatura.map((x) => t.temperatura[x]).join(' / ');
+  return s.charAt(0).toUpperCase() + s.slice(1);
+};
 ---
 
 <Base title={t.catalogo.title} description={t.catalogo.description(productos.length, totalModelos)}>
@@ -24,7 +36,7 @@ const grupos = (Object.keys(familias) as Familia[]).map((clave) => ({
       </h1>
       <p class="lead">{t.catalogo.lead(productos.length, totalModelos)}</p>
       <nav class="indice" aria-label={t.catalogo.indice}>
-        {grupos.map((g) => (
+        {[...grupos, ...otros].map((g) => (
           <a href={`#${g.clave}`}>{g.nombre}</a>
         ))}
       </nav>
@@ -50,12 +62,78 @@ const grupos = (Object.keys(familias) as Familia[]).map((clave) => ({
                   {p.variantes && <span> · {p.variantes}</span>}
                 </h3>
                 <p class="frase">{textoSerie(lang, p.slug).frase}</p>
-                <p class="spec">
-                  <b>{textoSerie(lang, p.slug).capacidad ?? p.capacidad}</b> · {numero(lang, p.rpm)} rpm ·{' '}
-                  {numero(lang, p.xg)} xg
-                </p>
+                {/* Los cuatro iconos de la web actual: capacidad, pantalla, velocidad y temperatura */}
+                <ul class="fichas">
+                  <li>
+                    <i style="--ico: url(/img/iconos/ficha-capacidad.svg)" aria-hidden="true" />
+                    <span class="sr">{t.catalogo.iconos.capacidad}: </span>
+                    {textoSerie(lang, p.slug).capacidad ?? p.capacidad}
+                  </li>
+                  <li>
+                    <i style="--ico: url(/img/iconos/ficha-pantalla.svg)" aria-hidden="true" />
+                    <span class="sr">{t.catalogo.iconos.pantalla}: </span>
+                    {p.pantalla}
+                  </li>
+                  <li>
+                    <i style="--ico: url(/img/iconos/ficha-velocidad.svg)" aria-hidden="true" />
+                    <span class="sr">{t.catalogo.iconos.velocidad}: </span>
+                    {numero(lang, p.rpm)} rpm
+                    <small>{numero(lang, p.xg)} xg</small>
+                  </li>
+                  <li>
+                    <i style="--ico: url(/img/iconos/ficha-info.svg)" aria-hidden="true" />
+                    <span class="sr">{t.catalogo.iconos.temperatura}: </span>
+                    {temperatura(p)}
+                  </li>
+                </ul>
               </li>
             ))}
+          </ul>
+        </section>
+      ))}
+
+      {otros.map((g) => (
+        <section class="grupo" id={g.clave} aria-labelledby={`t-${g.clave}`}>
+          <h2 id={`t-${g.clave}`}>{g.nombre}</h2>
+          <ul class="rejilla">
+            {g.items.map((p) => {
+              const tx = t.laboratorio.items[p.slug];
+              return (
+                <li class="serie" id={p.slug}>
+                  <span class:list={['foto', { doble: p.imagen2 }]}>
+                    <img
+                      src={p.imagen.src}
+                      alt={tx.nombre}
+                      width={p.imagen.ancho}
+                      height={p.imagen.alto}
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    {p.imagen2 && (
+                      <img
+                        class="segunda"
+                        src={p.imagen2.src}
+                        alt=""
+                        width={p.imagen2.ancho}
+                        height={p.imagen2.alto}
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    )}
+                  </span>
+                  <h3>
+                    {tx.nombre} <span>· {p.modelo}</span>
+                  </h3>
+                  <p class="frase">{tx.frase}</p>
+                  <p class="spec">{tx.datos}</p>
+                  {p.pdf && (
+                    <a class="arrow pdf" href={p.pdf} target="_blank" rel="noopener">
+                      {t.laboratorio.pdf}
+                    </a>
+                  )}
+                </li>
+              );
+            })}
           </ul>
         </section>
       ))}
@@ -211,6 +289,62 @@ const grupos = (Object.keys(familias) as Familia[]).map((clave) => ({
   .spec b {
     color: var(--ink);
   }
+  /* Iconos de la ficha, como en la web actual: cuadrado rojo con el dibujo en blanco y el dato debajo */
+  .fichas {
+    margin: 14px 0 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .fichas li {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.15;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+  }
+  .fichas i {
+    display: block;
+    width: 32px;
+    height: 32px;
+    background: var(--red) var(--ico) center / 60% 60% no-repeat;
+  }
+  .fichas small {
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--muted);
+  }
+  .sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  /* Equipos y accesorios con segunda foto (el accesorio en uso): aparece encima al pasar el ratón */
+  .foto .segunda {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition:
+      opacity 0.45s var(--ease),
+      transform 0.7s var(--ease);
+  }
+  .serie:hover .foto.doble .segunda {
+    opacity: 1;
+  }
+  .pdf {
+    margin-top: 12px;
+    font-size: 16px;
+    color: var(--ink);
+  }
 
   @media (max-width: 1100px) {
     .rejilla {
@@ -238,6 +372,18 @@ const grupos = (Object.keys(familias) as Familia[]).map((clave) => ({
     }
     .spec {
       font-size: 15px;
+    }
+    /* Dos tarjetas por fila: los cuatro iconos, en dos filas de dos para que el texto no se monte */
+    .fichas {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px 8px;
+    }
+    .fichas li {
+      overflow-wrap: anywhere;
+    }
+    .fichas i {
+      width: 28px;
+      height: 28px;
     }
   }
 </style>
