@@ -808,3 +808,12 @@ entera delante, si se ensancha el contenido de 1280 a 1440 px.
 - **Ahora:** cada paso lleva un icono de la propia marca (los del sistema de diseño, no genéricos) en un círculo
   rojo, con el mismo efecto al pasar el ratón que las placas del inicio.
 - **Por qué:** se lee de un vistazo qué pregunta cada paso, y repetir el efecto del inicio hace la web coherente.
+
+## 15. Portada sin las cuatro tarjetas
+
+- **Antes:** al pie de la primera pantalla, cuatro tarjetas de cristal con icono: 48 h de respuesta, 1 semana de
+  entrega, 3 años de garantía e ISO 13485.
+- **Ahora:** la primera pantalla tiene solo el titular, la frase y los dos botones sobre la foto del rotor.
+- **Por qué:** lo pidió la empresa (5-10-2026). La foto respira entera y los dos caminos (gama y distribuidor) son
+  lo único que pide atención. Las cifras no se pierden: respuesta, entrega y garantía siguen en Distribuidores, y
+  las certificaciones en Empresa.

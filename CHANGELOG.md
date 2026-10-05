@@ -73,4 +73,5 @@ Hasta que se publique la web, todo va en "Sin publicar"; al publicar se cierra l
 
 ### Quitado
 
+- Las cuatro tarjetas de la portada (48 h, 1 semana, 3 años, ISO 13485): la primera pantalla queda con el titular, la frase y los dos botones sobre la foto del rotor. Fuera `src/data/cifras.ts` y los textos `hero.cifras` de los tres idiomas. Los datos siguen en Distribuidores y Empresa.
 - Botón "Ver antes y después" y sus notas en cada sección: fuera de la web. Las notas se guardan en `docs/antes-y-despues.md`.

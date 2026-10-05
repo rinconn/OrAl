@@ -76,12 +76,6 @@ export const es = {
     lead: 'Desde 1949 diseñamos y fabricamos centrífugas de laboratorio en Daganzo (Madrid) y las llevamos a todo el mundo a través de una red de distribuidores especializados.',
     gama: 'Ver la gama',
     distribuidor: 'Soy distribuidor',
-    cifras: {
-      respuesta: { valor: '48 h', texto: 'de respuesta' },
-      entrega: { valor: '1 semana', texto: 'plazo de entrega' },
-      garantia: { valor: '3 años', texto: 'de garantía' },
-      iso: { valor: 'ISO 13485', texto: '9001 · 14001 · IVDR' },
-    },
   },
 
   tecnologia: {
