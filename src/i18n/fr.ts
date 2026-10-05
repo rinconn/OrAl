@@ -11,6 +11,9 @@ export const fr: Textos = {
   nav: {
     centrifugas: 'Centrifugeuses',
     tecnologia: 'Technologie',
+    smartconnect: 'SmartConnect',
+    rei: 'REI System',
+    configurador: 'Configurateur',
     distribuidores: 'Distributeurs',
     servicio: 'Service technique',
     empresa: 'Entreprise',
