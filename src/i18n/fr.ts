@@ -67,12 +67,6 @@ export const fr: Textos = {
     lead: 'Depuis 1949, nous concevons et fabriquons des centrifugeuses de laboratoire à Daganzo (Madrid) et nous les diffusons dans le monde entier grâce à un réseau de distributeurs spécialisés.',
     gama: 'Voir la gamme',
     distribuidor: 'Je suis distributeur',
-    cifras: {
-      respuesta: { valor: '48 h', texto: 'de délai de réponse' },
-      entrega: { valor: '1 semaine', texto: 'de délai de livraison' },
-      garantia: { valor: '3 ans', texto: 'de garantie' },
-      iso: { valor: 'ISO 13485', texto: '9001 · 14001 · IVDR' },
-    },
   },
 
   tecnologia: {

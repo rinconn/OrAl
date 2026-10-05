@@ -808,3 +808,15 @@ entera delante, si se ensancha el contenido de 1280 a 1440 px.
 - **Ahora:** cada paso lleva un icono de la propia marca (los del sistema de diseño, no genéricos) en un círculo
   rojo, con el mismo efecto al pasar el ratón que las placas del inicio.
 - **Por qué:** se lee de un vistazo qué pregunta cada paso, y repetir el efecto del inicio hace la web coherente.
+
+## 15. Primera pantalla sin las cuatro placas (5-10-2026)
+
+- **Antes:** al pie de la foto del rotor, cuatro placas de cristal con icono: 48 h de respuesta, 1 semana de
+  entrega, 3 años de garantía e ISO 13485 (ver 4.6 y 12.2).
+- **Ahora:** se quitan. Sobre la foto quedan solo el titular, la frase y los dos botones,
+  centrados en el alto de la pantalla; en móvil siguen bajo la foto.
+- **Por qué es mejor:** la primera pantalla dice una sola cosa y la foto respira. Los datos no se pierden: 1 semana,
+  48 h y 3 años están en el recorrido de Distribuidores, que es donde el distribuidor los busca, y las normas ISO en
+  Empresa.
+- **Limpieza:** se borran `src/data/cifras.ts`, los textos `hero.cifras` de los tres idiomas y los cuatro iconos que
+  solo usaban las placas (`telefono`, `pack`, `ico-seguridad`, `ico-tabla`). Si vuelven, están en el historial de git.

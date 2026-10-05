@@ -67,12 +67,6 @@ export const en: Textos = {
     lead: 'Since 1949 we have designed and manufactured laboratory centrifuges in Daganzo (Madrid), and we take them all over the world through a network of specialised distributors.',
     gama: 'See the range',
     distribuidor: 'I’m a distributor',
-    cifras: {
-      respuesta: { valor: '48 h', texto: 'response time' },
-      entrega: { valor: '1 week', texto: 'delivery time' },
-      garantia: { valor: '3 years', texto: 'warranty' },
-      iso: { valor: 'ISO 13485', texto: '9001 · 14001 · IVDR' },
-    },
   },
 
   tecnologia: {

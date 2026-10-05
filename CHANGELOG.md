@@ -73,4 +73,5 @@ Hasta que se publique la web, todo va en "Sin publicar"; al publicar se cierra l
 
 ### Quitado
 
+- Portada: fuera las cuatro placas de la primera pantalla (48 h, 1 semana, 3 años, ISO 13485). El titular, la frase y los dos botones quedan solos, centrados en la foto. Las cifras siguen en Distribuidores y las normas ISO en Empresa. Se borran `src/data/cifras.ts`, sus textos en `src/i18n/` y los cuatro iconos que solo usaban ellas.
 - Botón "Ver antes y después" y sus notas en cada sección: fuera de la web. Las notas se guardan en `docs/antes-y-despues.md`.
