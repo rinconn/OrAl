@@ -5,6 +5,8 @@
 // Los textos de cada enlace están en src/i18n/ (`nav` y `pie`), por idioma.
 import type { Textos } from '../i18n/es';
 
+// En el orden en que aparecen las secciones al bajar por la portada: inicio ("Ver la gama"), Tecnología, Empresa,
+// Distribuidores, notas y pie. Descargas no tiene sección; va junto al pie, que enlaza el catálogo.
 export const principal: { href: string; clave: keyof Textos['nav'] }[] = [
   { href: '/centrifugas/', clave: 'centrifugas' },
   // La tecnología propia, seguida y con el nombre de cada pieza, como en la web actual, en el orden del acordeón
@@ -12,12 +14,12 @@ export const principal: { href: string; clave: keyof Textos['nav'] }[] = [
   { href: '/#rei-system', clave: 'rei' },
   { href: '/#smartconnect', clave: 'smartconnect' },
   { href: '/#configurador', clave: 'configurador' },
+  { href: '/#empresa', clave: 'empresa' },
   { href: '/#distribuidores', clave: 'distribuidores' },
-  { href: '/#contacto', clave: 'servicio' },
+  { href: '/#aplicaciones', clave: 'noticias' },
   // Guías y descargas juntas en una página, con una sección para cada cosa
   { href: '/descargas/', clave: 'descargas' },
-  { href: '/#aplicaciones', clave: 'noticias' },
-  { href: '/#empresa', clave: 'empresa' },
+  { href: '/#contacto', clave: 'servicio' },
 ];
 
 export const contacto = {
