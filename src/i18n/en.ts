@@ -220,13 +220,47 @@ export const en: Textos = {
   },
 
   catalogo: {
-    title: 'Laboratory centrifuges · Orto Alresa',
+    title: 'Products · Centrifuges and laboratory equipment · Orto Alresa',
     description: (series: number, modelos: number) =>
-      `The ${series} Orto Alresa centrifuge series (${modelos} models), made in Daganzo (Madrid): compact, universal, high capacity, clinical and industry.`,
-    titulo: ['Our ', 'centrifuges'],
+      `The ${series} Orto Alresa centrifuge series (${modelos} models), made in Daganzo (Madrid), plus sieve shaker, ball mill, water stills and accessories.`,
+    titulo: ['Our ', 'products'],
     lead: (series: number, modelos: number) =>
-      `${modelos} models in ${series} series, made in Daganzo (Madrid) and always in stock.`,
+      `${modelos} centrifuges in ${series} series, made in Daganzo (Madrid) and always in stock, plus laboratory equipment and accessories.`,
     indice: 'Families',
+    iconos: { capacidad: 'Capacity', pantalla: 'Display', velocidad: 'Speed', temperatura: 'Temperature' },
+  },
+
+  laboratorio: {
+    equipos: 'Other laboratory products',
+    accesorios: 'Centrifuge accessories',
+    pdf: 'PDF catalogue',
+    items: {
+      tamizadora: {
+        nombre: 'Sieve shaker and sieves',
+        frase: 'Analytical wet and dry sieving with reproducible results.',
+        datos: 'Up to 6 kg · 8 sieves of 50 mm · from 40 µm to 125 mm',
+      },
+      'molino-de-bolas': {
+        nombre: 'Ball mill',
+        frase: 'Grinding in sealed jars that prevent sample contamination.',
+        datos: '1 to 15 l jars · 50 to 300 rpm · alumina or stainless steel',
+      },
+      destiladores: {
+        nombre: 'Water stills',
+        frase: 'Laboratory-grade distilled water from the mains supply.',
+        datos: '4 or 8 l/h · type III and IV water · ASTM D 1193',
+      },
+      'mesas-moviles': {
+        nombre: 'Mobile tables',
+        frase: 'To move the centrifuge easily or store it under the laboratory bench.',
+        datos: '4 models · 360° castors with brakes',
+      },
+      grs: {
+        nombre: 'GRS',
+        frase: 'Extracts the gases from petroleum analysis out of the centrifuge to a safe area.',
+        datos: 'Digtor 22 C series · 10 l/min · compressed air at 2 bar',
+      },
+    },
   },
 
   familias: {

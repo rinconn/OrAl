@@ -226,13 +226,48 @@ export const es = {
   },
 
   catalogo: {
-    title: 'Centrífugas de laboratorio · Orto Alresa',
+    title: 'Productos · Centrífugas y equipos de laboratorio · Orto Alresa',
     description: (series: number, modelos: number) =>
-      `Las ${series} series de centrífugas Orto Alresa (${modelos} modelos), fabricadas en Daganzo (Madrid): compactas, universales, gran capacidad, clínica e industria.`,
-    titulo: ['Nuestras ', 'centrífugas'],
+      `Las ${series} series de centrífugas Orto Alresa (${modelos} modelos), fabricadas en Daganzo (Madrid), y además tamizadora, molino de bolas, destiladores y accesorios.`,
+    titulo: ['Nuestros ', 'productos'],
     lead: (series: number, modelos: number) =>
-      `${modelos} modelos en ${series} series, fabricados en Daganzo (Madrid) y siempre en stock.`,
+      `${modelos} centrífugas en ${series} series, fabricadas en Daganzo (Madrid) y siempre en stock, además de equipos de laboratorio y accesorios.`,
     indice: 'Familias',
+    iconos: { capacidad: 'Capacidad', pantalla: 'Pantalla', velocidad: 'Velocidad', temperatura: 'Temperatura' },
+  },
+
+  /** Equipos de laboratorio y accesorios (códigos y fotos en src/data/laboratorio.ts) */
+  laboratorio: {
+    equipos: 'Otros productos de laboratorio',
+    accesorios: 'Accesorios para centrífugas',
+    pdf: 'Catálogo en PDF',
+    items: {
+      tamizadora: {
+        nombre: 'Tamizadora y tamices',
+        frase: 'Tamizado analítico por vía húmeda y seca, con resultados reproducibles.',
+        datos: 'Hasta 6 kg · 8 tamices de 50 mm · de 40 µm a 125 mm',
+      },
+      'molino-de-bolas': {
+        nombre: 'Molino de bolas',
+        frase: 'Molienda en jarros aislados que impiden la contaminación de la muestra.',
+        datos: 'Jarros de 1 a 15 l · de 50 a 300 rpm · alúmina o acero inoxidable',
+      },
+      destiladores: {
+        nombre: 'Destiladores',
+        frase: 'Agua destilada de grado laboratorio a partir del agua del suministro.',
+        datos: '4 u 8 l/h · agua tipo III y IV · ASTM D 1193',
+      },
+      'mesas-moviles': {
+        nombre: 'Mesas móviles',
+        frase: 'Para mover la centrífuga con facilidad o guardarla bajo la mesa del laboratorio.',
+        datos: '4 modelos · ruedas de 360° con freno',
+      },
+      grs: {
+        nombre: 'GRS',
+        frase: 'Saca los gases del análisis de petróleos de la centrífuga y los lleva a un área segura.',
+        datos: 'Serie Digtor 22 C · 10 l/min · aire comprimido a 2 bar',
+      },
+    },
   },
 
   /** Nombres de familia y textos de cada serie (las cifras están en src/data/productos.ts) */

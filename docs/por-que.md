@@ -893,3 +893,27 @@ entera delante, si se ensancha el contenido de 1280 a 1440 px.
 - **Descartado:** una tira de cifras con Pantalla, PCBS y ULS (seguía alargando la sección), un mosaico con REI a la
   izquierda y las otras dos apiladas (tarjetas apretadas y desiguales) y un carrusel con pestañas (correcto, pero
   solo enseñaba una tecnología cada vez).
+
+## 18. Productos: el catálogo entero, con los iconos de la web actual
+
+- **Antes:** la página `/centrifugas/` solo tenía las 17 series de centrífugas, con una línea de cifras
+  (capacidad · rpm · xg). La tamizadora, el molino de bolas, los destiladores, las mesas móviles y el GRS no
+  aparecían en la web nueva, aunque la web actual los tiene en su página de productos.
+- **Ahora:** la página se llama **Nuestros productos** y recoge todo lo de la página de productos de la web actual:
+  - Cada centrífuga lleva los **cuatro iconos de la web actual** en su cuadrado rojo: capacidad, pantalla (LCD, TFT
+    o LED), velocidad y temperatura. Las xg siguen, en pequeño bajo las rpm. Los iconos son los de la web actual
+    (`public/img/iconos/ficha-*.svg`) y el tipo de pantalla de cada serie sale de esa misma página.
+  - Después, como en la web actual, **Accesorios para centrífugas** (mesas móviles y GRS) y **Otros productos de
+    laboratorio** (tamizadora y tamices, molino de bolas y destiladores), con foto, modelo, una frase y sus datos,
+    y el enlace a su catálogo en PDF. En las mesas y el GRS, al pasar el ratón aparece una segunda foto: las dos
+    alturas de mesa y el GRS conectado a la centrífuga.
+  - Textos, fotos y datos salen de las fichas de la web actual (su WordPress). Las fotos se han pasado al gris de
+    las tarjetas para que todo el catálogo se vea igual.
+- **Por qué:** lo pidió la empresa (5-10-2026): el distribuidor tiene que encontrar en un solo sitio todo lo que
+  vende Orto Alresa, y los iconos son la forma en que ya lee el catálogo. Siguen fuera de la portada, que era lo que
+  la dirección veía agresivo (sección 13.1): la portada presenta y el catálogo se consulta.
+- **Pendiente:**
+  - Los **73 rotores**: en la web actual van dentro de la ficha de cada centrífuga, no como productos sueltos.
+    Entran con las fichas de cada serie.
+  - Las tablas de tamices y de eficacia del destilado (imágenes de la web actual) entran en la ficha de cada
+    producto cuando exista.

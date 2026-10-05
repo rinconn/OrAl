@@ -221,13 +221,47 @@ export const fr: Textos = {
   },
 
   catalogo: {
-    title: 'Centrifugeuses de laboratoire · Orto Alresa',
+    title: 'Produits · Centrifugeuses et équipements de laboratoire · Orto Alresa',
     description: (series: number, modelos: number) =>
-      `Les ${series} séries de centrifugeuses Orto Alresa (${modelos} modèles), fabriquées à Daganzo (Madrid) : compactes, universelles, grande capacité, clinique et industrie.`,
-    titulo: ['Nos ', 'centrifugeuses'],
+      `Les ${series} séries de centrifugeuses Orto Alresa (${modelos} modèles), fabriquées à Daganzo (Madrid), ainsi que tamiseuse, broyeur à boulets, distillateurs et accessoires.`,
+    titulo: ['Nos ', 'produits'],
     lead: (series: number, modelos: number) =>
-      `${modelos} modèles en ${series} séries, fabriqués à Daganzo (Madrid) et toujours en stock.`,
+      `${modelos} centrifugeuses en ${series} séries, fabriquées à Daganzo (Madrid) et toujours en stock, ainsi que des équipements de laboratoire et des accessoires.`,
     indice: 'Familles',
+    iconos: { capacidad: 'Capacité', pantalla: 'Écran', velocidad: 'Vitesse', temperatura: 'Température' },
+  },
+
+  laboratorio: {
+    equipos: 'Autres produits de laboratoire',
+    accesorios: 'Accessoires pour centrifugeuses',
+    pdf: 'Catalogue PDF',
+    items: {
+      tamizadora: {
+        nombre: 'Tamiseuse et tamis',
+        frase: 'Tamisage analytique par voie humide et sèche, aux résultats reproductibles.',
+        datos: 'Jusqu’à 6 kg · 8 tamis de 50 mm · de 40 µm à 125 mm',
+      },
+      'molino-de-bolas': {
+        nombre: 'Broyeur à boulets',
+        frase: 'Broyage dans des jarres isolées qui évitent la contamination de l’échantillon.',
+        datos: 'Jarres de 1 à 15 l · de 50 à 300 tr/min · alumine ou acier inoxydable',
+      },
+      destiladores: {
+        nombre: 'Distillateurs',
+        frase: 'Eau distillée de qualité laboratoire à partir de l’eau du réseau.',
+        datos: '4 ou 8 l/h · eau de type III et IV · ASTM D 1193',
+      },
+      'mesas-moviles': {
+        nombre: 'Tables mobiles',
+        frase: 'Pour déplacer la centrifugeuse facilement ou la ranger sous la paillasse.',
+        datos: '4 modèles · roulettes 360° avec frein',
+      },
+      grs: {
+        nombre: 'GRS',
+        frase: 'Évacue les gaz de l’analyse des pétroles hors de la centrifugeuse vers une zone sûre.',
+        datos: 'Série Digtor 22 C · 10 l/min · air comprimé à 2 bar',
+      },
+    },
   },
 
   familias: {
