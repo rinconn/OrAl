@@ -17,13 +17,15 @@ export const es = {
     saltar: 'Saltar al contenido',
   },
   nav: {
-    centrifugas: 'Centrífugas',
+    centrifugas: 'Productos',
     tecnologia: 'Tecnología',
     smartconnect: 'SmartConnect',
     rei: 'REI System',
     configurador: 'Configurador',
     distribuidores: 'Distribuidores',
     servicio: 'Servicio técnico',
+    descargas: 'Descargas',
+    noticias: 'Noticias',
     empresa: 'Empresa',
   },
   cabecera: {

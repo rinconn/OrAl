@@ -99,23 +99,32 @@ web nueva resuelve, y todo lo demás de este documento sale de aquí:
 
 ## 3. Cabecera
 
-| Antes                                                   | Ahora                                                                                                                          | Por qué es mejor                                                                                                                       |
-| ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------- |
-| 10 entradas de menú al mismo nivel                      | 7 entradas (Centrífugas, SmartConnect, REI System, Configurador, Distribuidores, Servicio técnico, Empresa) y Contacto en rojo | Menos opciones y más claras; Contacto, que es lo que más importa, destaca; la tecnología propia sigue a la vista como en la web actual |
-| Menú con huecos desiguales                              | El mismo hueco a cada lado de cada entrada                                                                                     | La barra se ve ordenada y equilibrada                                                                                                  |
-| Idioma en texto                                         | Banderas                                                                                                                       | Se reconoce sin leer, en cualquier idioma                                                                                              |
-| Para buscar un modelo había que recorrer menús          | Lupa: se escribe el modelo y aparece, sin tildes ni mayúsculas                                                                 | El distribuidor que sabe lo que quiere llega directo a la ficha                                                                        |
-| Barra negra superior con teléfono y correo              | Fuera; teléfono y correo siguen en el menú móvil y en el pie                                                                   | Más aire arriba y la cabecera queda para navegar                                                                                       |
-| Sellos ODS y Empresa Solidaria apretados en la cabecera | En el pie, en todas las pantallas                                                                                              | Se ven enteros y no compiten con el menú                                                                                               |
-| Cabecera fija ocupando pantalla mientras se lee         | Se aparta al bajar y vuelve en cuanto se sube                                                                                  | Más espacio para el contenido, sobre todo en móvil                                                                                     |
-| En móvil, menú pequeño                                  | Banderas y lupa siempre a la vista; menú a pantalla completa con Contacto, teléfono y correo                                   | Se usa con el pulgar; se llama en un toque                                                                                             |
-| Logo en una línea                                       | Logo en dos líneas, la versión del manual                                                                                      | Más compacto y reconocible                                                                                                             |
+| Antes                                                   | Ahora                                                                                                                                             | Por qué es mejor                                                                                          |
+| ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| 10 entradas de menú al mismo nivel                      | 9 entradas (Productos, REI System, SmartConnect, Configurador, Distribuidores, Servicio técnico, Descargas, Noticias, Empresa) y Contacto en rojo | Lo mismo que la web actual, con Guías y Descargas juntas y Contacto, que es lo que más importa, destacado |
+| Menú con huecos desiguales                              | El mismo hueco a cada lado de cada entrada                                                                                                        | La barra se ve ordenada y equilibrada                                                                     |
+| Idioma en texto                                         | Banderas                                                                                                                                          | Se reconoce sin leer, en cualquier idioma                                                                 |
+| Para buscar un modelo había que recorrer menús          | Lupa: se escribe el modelo y aparece, sin tildes ni mayúsculas                                                                                    | El distribuidor que sabe lo que quiere llega directo a la ficha                                           |
+| Barra negra superior con teléfono y correo              | Fuera; teléfono y correo siguen en el menú móvil y en el pie                                                                                      | Más aire arriba y la cabecera queda para navegar                                                          |
+| Sellos ODS y Empresa Solidaria apretados en la cabecera | En el pie, en todas las pantallas                                                                                                                 | Se ven enteros y no compiten con el menú                                                                  |
+| Cabecera fija ocupando pantalla mientras se lee         | Se aparta al bajar y vuelve en cuanto se sube                                                                                                     | Más espacio para el contenido, sobre todo en móvil                                                        |
+| En móvil, menú pequeño                                  | Banderas y lupa siempre a la vista; menú a pantalla completa con Contacto, teléfono y correo                                                      | Se usa con el pulgar; se llama en un toque                                                                |
+| Logo en una línea                                       | Logo en dos líneas, la versión del manual                                                                                                         | Más compacto y reconocible                                                                                |
 
-SmartConnect, REI System y Configurador van seguidos y con su nombre, como en la web actual, en lugar de un solo
-"Tecnología": son lo que distingue a la marca y el cliente los quiere en la barra. Cada uno lleva a su panel de
-Tecnología en la portada y lo abre; al leer esa sección, el menú marca el panel abierto. Descartado: meterlos en un
-desplegable bajo un título común, porque escondía justo lo que la empresa quiere enseñar. La simplificación va dentro
-de cada página, no en la barra.
+La barra se parece a la de la web actual a propósito: a la empresa le gusta que la navegación no cambie, así que la
+simplificación va dentro de cada página, no en la barra.
+
+- **Productos**, como en la web actual (antes "Centrífugas").
+- **REI System, SmartConnect y Configurador** seguidos y con su nombre, en el orden del acordeón de Tecnología, en
+  lugar de un solo "Tecnología": son lo que distingue a la marca. Cada uno abre su panel en la portada y, al leer esa
+  sección, el menú marca el panel abierto. Sin los iconos de la web actual: desentonaban con el resto de la barra.
+- **Descargas** junta las Guías y las Descargas de la web actual: las dos son documentos, y dentro de la página cada
+  cosa tiene su sección. **Noticias** lleva a las notas de la portada hasta que tenga página propia.
+- Nueve entradas caben a 1440 px en los tres idiomas (el francés es el más largo) con 16 px entre ellas; por debajo
+  de 1440 px se usa el menú a pantalla completa.
+- Descartado: agrupar REI System, SmartConnect y Configurador en un desplegable bajo un título común, porque escondía
+  justo lo que la empresa quiere enseñar; y juntar Contacto con Servicio técnico, porque son públicos distintos
+  (comprar frente a una máquina averiada).
 
 Pendiente, a propósito: los desplegables de Centrífugas y Distribuidores llegan cuando existan esas páginas.
 Ponerlos antes haría que todos los enlaces llevaran a la portada.

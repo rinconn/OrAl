@@ -9,13 +9,15 @@ export const en: Textos = {
     saltar: 'Skip to content',
   },
   nav: {
-    centrifugas: 'Centrifuges',
+    centrifugas: 'Products',
     tecnologia: 'Technology',
     smartconnect: 'SmartConnect',
     rei: 'REI System',
     configurador: 'Configurator',
     distribuidores: 'Distributors',
     servicio: 'Technical service',
+    descargas: 'Downloads',
+    noticias: 'News',
     empresa: 'Company',
   },
   cabecera: {
