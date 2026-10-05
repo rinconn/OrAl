@@ -894,26 +894,27 @@ entera delante, si se ensancha el contenido de 1280 a 1440 px.
   izquierda y las otras dos apiladas (tarjetas apretadas y desiguales) y un carrusel con pestañas (correcto, pero
   solo enseñaba una tecnología cada vez).
 
-## 18. Productos: el catálogo entero, con los iconos de la web actual
+## 18. Productos: el catálogo entero, en oscuro y con filtros
 
-- **Antes:** la página `/centrifugas/` solo tenía las 17 series de centrífugas, con una línea de cifras
-  (capacidad · rpm · xg). La tamizadora, el molino de bolas, los destiladores, las mesas móviles y el GRS no
-  aparecían en la web nueva, aunque la web actual los tiene en su página de productos.
-- **Ahora:** la página se llama **Nuestros productos** y recoge todo lo de la página de productos de la web actual:
-  - Cada centrífuga lleva los **cuatro iconos de la web actual** en su cuadrado rojo: capacidad, pantalla (LCD, TFT
-    o LED), velocidad y temperatura. Las xg siguen, en pequeño bajo las rpm. Los iconos son los de la web actual
-    (`public/img/iconos/ficha-*.svg`) y el tipo de pantalla de cada serie sale de esa misma página.
-  - Después, como en la web actual, **Accesorios para centrífugas** (mesas móviles y GRS) y **Otros productos de
-    laboratorio** (tamizadora y tamices, molino de bolas y destiladores), con foto, modelo, una frase y sus datos,
-    y el enlace a su catálogo en PDF. En las mesas y el GRS, al pasar el ratón aparece una segunda foto: las dos
-    alturas de mesa y el GRS conectado a la centrífuga.
-  - Textos, fotos y datos salen de las fichas de la web actual (su WordPress). Las fotos se han pasado al gris de
-    las tarjetas para que todo el catálogo se vea igual.
-- **Por qué:** lo pidió la empresa (5-10-2026): el distribuidor tiene que encontrar en un solo sitio todo lo que
-  vende Orto Alresa, y los iconos son la forma en que ya lee el catálogo. Siguen fuera de la portada, que era lo que
-  la dirección veía agresivo (sección 13.1): la portada presenta y el catálogo se consulta.
-- **Pendiente:**
-  - Los **73 rotores**: en la web actual van dentro de la ficha de cada centrífuga, no como productos sueltos.
-    Entran con las fichas de cada serie.
-  - Las tablas de tamices y de eficacia del destilado (imágenes de la web actual) entran en la ficha de cada
-    producto cuando exista.
+- **Antes:** `/centrifugas/` tenía las 17 series en blanco, agrupadas en cinco familias propias, con fotos recortadas
+  muy de cerca (la Magnus 22, que es de suelo, parecía de sobremesa) y una línea de cifras. Ni accesorios ni
+  otros productos de laboratorio.
+- **Ahora (5-10-2026, primera versión para revisar con la empresa):**
+  - **Toda la página en el oscuro de la portada.** Título con "productos" en rojo y tres cifras en placas de cristal.
+  - **Una tarjeta por modelo (23)**, como la web actual, con la foto entera de su página de productos recortada sobre
+    el oscuro, bajo un foco suave con su sombra. Al pasar el ratón la tarjeta sube, se enciende en rojo y cruza el
+    destello de los botones de la portada.
+  - **Los cuatro datos de la web actual** (capacidad, pantalla, velocidad y temperatura) en fichas de cristal con su
+    icono en un cuadrado rojo, el valor en grande y qué es debajo; las xg, bajo las rpm.
+  - **Barra fija de cristal** con las 9 aplicaciones de la web actual como pestañas (Minicentrífuga, Pequeña,
+    Microcentrífuga, Universal, Gran capacidad, Sobrepiso, Oil/Petrol, Tejidos, Lácteos/Vet), más Accesorios y
+    Laboratorio. "Filtros" despliega buscador (sin tildes), temperatura, pantalla y orden. Cada botón dice cuántos
+    productos quedarían y se apaga si no queda ninguno; la búsqueda se guarda en la dirección para compartirla.
+  - **Accesorios** (mesas móviles y GRS, con una segunda foto al pasar el ratón) y **otros productos de laboratorio**
+    (tamizadora, molino de bolas y destiladores) con su catálogo en PDF.
+- **Por qué:** lo pidió la empresa: todo lo que vende en un sitio, ordenado como lo conocen sus distribuidores y con el
+  aspecto de la portada. Los iconos siguen fuera de la portada, que era lo que la dirección veía agresivo (13.1).
+- **Descartado:** la primera versión en blanco con panel de filtros grande (pesada y con mucho blanco), y el foco
+  como mancha blanca alrededor de la foto (se veían los bordes): las fotos se recortan.
+- **Pendiente:** los 73 rotores (en la web actual van dentro de la ficha de cada centrífuga) y las tablas de tamices y
+  de eficacia del destilado, para las fichas de cada producto.

@@ -262,7 +262,7 @@ export const es = {
         nombre: 'Nombre (A–Z)',
       },
       resultados: (n: number) => (n === 1 ? '1 producto' : `${n} productos`),
-      limpiar: 'Quitar filtros',
+      limpiar: 'Borrar filtros',
       vacio: 'Ningún producto cumple todos estos filtros.',
       abrir: 'Filtros',
       ver: (n: number) => `Ver ${n === 1 ? '1 producto' : `${n} productos`}`,
