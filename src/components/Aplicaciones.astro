@@ -102,6 +102,10 @@ const fmt = new Intl.DateTimeFormat(t.meta.fechas, { day: 'numeric', month: 'lon
     font-size: var(--t-titulo);
     line-height: 0.95;
   }
+  /* "En el laboratorio" en rojo, como "propia" en Tecnología */
+  h2 b {
+    color: var(--red);
+  }
 
   /* La baraja: cinco fotos en fila que, mientras está cerrada, se apilan en el centro un poco giradas */
   .ancho {

@@ -6,7 +6,6 @@ export const en: Textos = {
   meta: {
     locale: 'en_GB',
     fechas: 'en-GB',
-    pestana: 'Centrifugation experts · since 1949',
     saltar: 'Skip to content',
   },
   nav: {
@@ -73,7 +72,6 @@ export const en: Textos = {
     titulo: ['Our own ', 'technology'],
     intro: 'What sets an Orto Alresa centrifuge apart is on the inside. These are the systems we develop ourselves.',
     lollevan: 'Available on',
-    lallevan: 'Available on',
     rei: {
       alt: 'Rotors with REI System: a hand lifts the red handle to take the rotor out',
       frase: ['Change the rotor in ', 'seconds, with one hand', ' and no tools.'],
@@ -104,40 +102,6 @@ export const en: Textos = {
       pasos: ['Centrifuge type', 'Location', 'Tube type', 'Speed', 'No. of positions', 'Rotor type'],
       empezar: 'Start',
     },
-    pantalla: {
-      nombre: 'Touchscreen',
-      texto: 'In colour, easy to read and to program. Real RCF according to the adapter and up to 8 linked programs.',
-      cifra: '100',
-      unidad: 'program memories',
-      alt: 'Touchscreen of a Consul 22 showing rotor, speed, RCF and ramps',
-    },
-    pcbs: {
-      nombre: 'PCBS',
-      texto: 'Progressive braking so the sample does not mix again after separation.',
-      cifra: '175',
-      unidad: 'braking ramps',
-      antes: 'all touchscreen models, plus',
-      esquema: 'Diagram: speed over time with an abrupt braking and a progressive one',
-      tiempo: 'time',
-      brusco: 'abrupt',
-      progresivo: 'progressive',
-    },
-    uls: {
-      nombre: 'ULS',
-      texto: 'If the centrifuge stops because of an imbalance, the display shows which bucket caused it.',
-      cifra: 'No.',
-      unidad: 'of the bucket, on screen',
-      esquema: 'Diagram: rotor seen from above with bucket 3 flagged for imbalance',
-      desequilibrio: 'Imbalance',
-      vaso: 'Bucket 3',
-    },
-    ademasTitulo: ['And also, ', 'depending on the model', ':'],
-    ademas: [
-      { titulo: 'Rotor recognition', texto: 'Identifies the rotor by itself and protects against overspeed.' },
-      { titulo: 'Safe lid', texto: 'Motorised closing, locked while running and emergency opening.' },
-      { titulo: 'From −20 to 80 °C', texto: 'In refrigerated and heated models, in 1 °C steps.' },
-      { titulo: 'Under 60 dB', texto: 'Brushless, maintenance-free induction motor.' },
-    ],
   },
 
   empresa: {

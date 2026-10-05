@@ -1,5 +1,5 @@
 ---
-import { configurador, rei, smartconnect, sistemas } from '../data/tecnologia';
+import { configurador, rei, smartconnect } from '../data/tecnologia';
 import Borde from './ui/Borde.astro';
 import Paso from './Paso.astro';
 import { idioma, ruta, textos, unir } from '../i18n';
@@ -20,240 +20,149 @@ const enlace = (href: string) => ruta(lang, href);
       <p>{t.intro}</p>
     </div>
 
-    <!-- Los dos que más os diferencian, a lo grande y con foto real del catálogo -->
-    <article class="gran rei ap">
+    <!-- Acordeón: tres franjas; la abierta enseña foto y texto, las cerradas son tiras con número y nombre en
+         vertical. Al abrir una, una cortina roja barre la foto y la descubre -->
+    <div class="acordeon ap">
       <Borde lado="arriba" />
-      <div class="foto">
-        <img src="/img/tecnologia/rei-system.webp" alt={t.rei.alt} width="1400" height="856" loading="lazy" />
-      </div>
-      <div class="txt">
-        <h3>{rei.nombre}</h3>
-        <p class="frase">
-          {t.rei.frase[0]}
-          <b>{t.rei.frase[1]}</b>
-          {t.rei.frase[2]}
-        </p>
-        <ol class="pasos">
-          {t.rei.pasos.map((p) => (
-            <li>{p}</li>
-          ))}
-        </ol>
-        <a class="arrow video" href={rei.video} target="_blank" rel="noopener">
-          {t.rei.video}
-        </a>
-        <p class="modelos">
-          <b>{t.lollevan}</b>
-          {rei.modelos.map((m, i) => (
-            <>
-              {i > 0 && ' · '}
-              <a href={enlace(m.href)}>{unir(lang, m.nombres)}</a>
-            </>
-          ))}
-        </p>
-      </div>
-    </article>
+      {[rei.nombre, smartconnect.nombre, t.configurador.nombre].map((nombre, i) => (
+        <article class:list={['panel', ['rei', 'sc', 'cfg'][i], { abierto: i === 0 }]}>
+          {i === 2 && <span id="configurador" class="ancla" />}
+          <button
+            class="lomo"
+            type="button"
+            aria-expanded={i === 0 ? 'true' : 'false'}
+            aria-controls={`tec-${i}`}
+            tabindex={i === 0 ? -1 : undefined}
+          >
+            <span class="num">{String(i + 1).padStart(2, '0')}</span>
+            <span class="nombre">{nombre}</span>
+            <span class="mas" aria-hidden="true" />
+          </button>
 
-    <!-- SmartConnect y el Configurador, a la par: cada uno con su botón para entrar -->
-    <div class="dos">
-      <article class="par sc ap">
-        <Borde lado="izquierda" />
-        <div class="foto negra">
-          <img
-            src="/img/tecnologia/smartconnect.webp"
-            alt={t.smartconnect.alt}
-            width="1400"
-            height="715"
-            loading="lazy"
-          />
-        </div>
-        <div class="txt">
-          <h3>{smartconnect.nombre}</h3>
-          <p class="frase">
-            {t.smartconnect.frase[0]}
-            <b>{t.smartconnect.frase[1]}</b>
-            {t.smartconnect.frase[2]}
-          </p>
-          <ul class="puntos">
-            {t.smartconnect.puntos.map((p) => (
-              <li>{p}</li>
-            ))}
-          </ul>
-          <p class="modelos">
-            <b>{t.lollevan}</b>
-            {smartconnect.modelos.map((m, i) => (
+          <div class="contenido" id={`tec-${i}`} inert={i !== 0}>
+            {i === 0 && (
               <>
-                {i > 0 && ' · '}
-                <a href={enlace(m.href)}>{unir(lang, m.nombres)}</a>
+                <div class="foto">
+                  <img src="/img/tecnologia/rei-system.webp" alt={t.rei.alt} width="1400" height="856" loading="lazy" />
+                </div>
+                <div class="txt">
+                  <h3>{rei.nombre}</h3>
+                  <p class="frase">
+                    {t.rei.frase[0]}
+                    <b>{t.rei.frase[1]}</b>
+                    {t.rei.frase[2]}
+                  </p>
+                  <ol class="pasos">
+                    {t.rei.pasos.map((p) => (
+                      <li>{p}</li>
+                    ))}
+                  </ol>
+                  <a class="arrow video" href={rei.video} target="_blank" rel="noopener">
+                    {t.rei.video}
+                  </a>
+                  <p class="modelos">
+                    <b>{t.lollevan}</b>
+                    {rei.modelos.map((m, j) => (
+                      <>
+                        {j > 0 && ' · '}
+                        <a href={enlace(m.href)}>{unir(lang, m.nombres)}</a>
+                      </>
+                    ))}
+                  </p>
+                </div>
               </>
-            ))}
-          </p>
-          <a class="btn red entrar" href={smartconnect.acceso} target="_blank" rel="noopener">
-            {t.smartconnect.entrar}
-          </a>
-        </div>
-      </article>
+            )}
 
-      <article class="par cfg ap" id="configurador">
-        <Borde lado="derecha" retraso={1.3} />
-        <div class="foto">
-          <img
-            src="/img/tecnologia/configurador.webp"
-            alt={t.configurador.alt}
-            width="786"
-            height="862"
-            loading="lazy"
-          />
-          <p class="seis">
-            {t.configurador.cifra}
-            <small>{t.configurador.cifraTexto}</small>
-          </p>
-        </div>
-        <div class="txt">
-          <h3>{t.configurador.nombre}</h3>
-          <p class="frase">
-            {t.configurador.frase[0]}
-            <b>{t.configurador.frase[1]}</b>
-            {t.configurador.frase[2]}
-          </p>
-          <ol class="seis-pasos">
-            {t.configurador.pasos.map((p, i) => (
-              <li>
-                <span class="ico">
-                  <i style={`--ico: url(/img/iconos/${configurador.iconos[i]}.svg)`} />
-                </span>
-                <span class="paso-t">
-                  <b>{i + 1}</b>
-                  {p}
-                </span>
-                <span class="luz" aria-hidden="true" />
-              </li>
-            ))}
-          </ol>
-          <a class="btn red entrar" href={configurador.href}>
-            {t.configurador.empezar}
-          </a>
-        </div>
-      </article>
-    </div>
+            {i === 1 && (
+              <>
+                <div class="foto negra">
+                  <img
+                    src="/img/tecnologia/smartconnect.webp"
+                    alt={t.smartconnect.alt}
+                    width="1400"
+                    height="715"
+                    loading="lazy"
+                  />
+                </div>
+                <div class="txt">
+                  <h3>{smartconnect.nombre}</h3>
+                  <p class="frase">
+                    {t.smartconnect.frase[0]}
+                    <b>{t.smartconnect.frase[1]}</b>
+                    {t.smartconnect.frase[2]}
+                  </p>
+                  <ul class="puntos">
+                    {t.smartconnect.puntos.map((p) => (
+                      <li>{p}</li>
+                    ))}
+                  </ul>
+                  <p class="modelos">
+                    <b>{t.lollevan}</b>
+                    {smartconnect.modelos.map((m, j) => (
+                      <>
+                        {j > 0 && ' · '}
+                        <a href={enlace(m.href)}>{unir(lang, m.nombres)}</a>
+                      </>
+                    ))}
+                  </p>
+                  <a class="btn red entrar" href={smartconnect.acceso} target="_blank" rel="noopener">
+                    {t.smartconnect.entrar}
+                  </a>
+                </div>
+              </>
+            )}
 
-    <!-- El resto: una imagen o un esquema técnico cada uno -->
-    <div class="tres">
-      {sistemas.map((s) => (
-        <article class="sis ap">
-          <Borde
-            lado={s.id === 'pantalla' ? 'izquierda' : s.id === 'pcbs' ? 'abajo' : 'derecha'}
-            retraso={s.id === 'pantalla' ? 0 : s.id === 'pcbs' ? 0.9 : 1.8}
-          />
-          <div class={`vis ${s.id === 'pantalla' ? 'foto' : 'plano'}`}>
-            {s.id === 'pantalla' && (
-              <img
-                src="/img/tecnologia/pantalla-tactil.webp"
-                alt={t.pantalla.alt}
-                width="1000"
-                height="495"
-                loading="lazy"
-              />
+            {i === 2 && (
+              <>
+                <div class="foto">
+                  <img
+                    src="/img/tecnologia/configurador.webp"
+                    alt={t.configurador.alt}
+                    width="786"
+                    height="862"
+                    loading="lazy"
+                  />
+                  <p class="seis">
+                    {t.configurador.cifra}
+                    <small>{t.configurador.cifraTexto}</small>
+                  </p>
+                </div>
+                <div class="txt">
+                  <h3>{t.configurador.nombre}</h3>
+                  <p class="frase">
+                    {t.configurador.frase[0]}
+                    <b>{t.configurador.frase[1]}</b>
+                    {t.configurador.frase[2]}
+                  </p>
+                  <ol class="seis-pasos">
+                    {t.configurador.pasos.map((p, j) => (
+                      <li>
+                        <span class="ico">
+                          <i style={`--ico: url(/img/iconos/${configurador.iconos[j]}.svg)`} />
+                        </span>
+                        <span class="paso-t">
+                          <b>{j + 1}</b>
+                          {p}
+                        </span>
+                        <span class="luz" aria-hidden="true" />
+                      </li>
+                    ))}
+                  </ol>
+                  <a class="btn red entrar" href={configurador.href}>
+                    {t.configurador.empezar}
+                  </a>
+                </div>
+              </>
             )}
-            {s.id === 'pcbs' && (
-              <svg viewBox="0 0 600 360" role="img" aria-label={t.pcbs.esquema}>
-                <path class="eje" d="M60 40 V300 H570" />
-                <text x="60" y="30">
-                  rpm
-                </text>
-                <text x="570" y="332" text-anchor="end">
-                  {t.pcbs.tiempo}
-                </text>
-                <path class="curva" pathLength="1" d="M60 300 C95 300 110 90 150 80 H330" />
-                <path class="brusca" d="M330 80 C345 90 352 300 372 300" />
-                <path class="media" pathLength="1" d="M330 80 C380 100 410 300 450 300" />
-                <path class="suave" pathLength="1" d="M330 80 C430 110 500 300 555 300" />
-                <text x="300" y="200" text-anchor="end">
-                  {t.pcbs.brusco}
-                </text>
-                <path class="guia" d="M306 194 H352" />
-                <text class="rojo" x="430" y="128">
-                  {t.pcbs.progresivo}
-                </text>
-              </svg>
-            )}
-            {s.id === 'uls' && (
-              <svg viewBox="0 0 600 360" role="img" aria-label={t.uls.esquema}>
-                <g transform="translate(220 180)">
-                  <circle class="orbita" r="150" />
-                  <path class="brazo" d="M-78 -78 L78 78 M78 -78 L-78 78" />
-                  <circle class="eje-rotor" r="26" />
-                  <circle class="centro" r="9" />
-                  <circle class="vaso" cx="-92" cy="-92" r="40" />
-                  <circle class="vaso" cx="92" cy="-92" r="40" />
-                  <circle class="vaso" cx="-92" cy="92" r="40" />
-                  <circle class="vaso mal" cx="92" cy="92" r="40" />
-                  <circle class="halo" cx="92" cy="92" r="52" />
-                  <text class="n" x="-92" y="-83">
-                    1
-                  </text>
-                  <text class="n" x="92" y="-83">
-                    2
-                  </text>
-                  <text class="n" x="-92" y="101">
-                    4
-                  </text>
-                  <text class="n rojo" x="92" y="101">
-                    3
-                  </text>
-                </g>
-                <path class="guia roja" d="M366 272 H410" />
-                <rect class="aviso" x="410" y="238" width="170" height="68" />
-                <text class="aviso-t" x="424" y="265">
-                  {t.uls.desequilibrio}
-                </text>
-                <text class="aviso-v" x="424" y="290">
-                  {t.uls.vaso}
-                </text>
-              </svg>
-            )}
-          </div>
-          <div class="t">
-            <h3>{t[s.id].nombre}</h3>
-            <p>{t[s.id].texto}</p>
-            <p class="cifra">
-              {t[s.id].cifra}
-              <small>{t[s.id].unidad}</small>
-            </p>
-            <p class="modelos">
-              <b>{s.id === 'pantalla' ? t.lallevan : t.lollevan}</b>
-              {s.id === 'pcbs' && `${t.pcbs.antes} `}
-              {s.modelos.map((m, i) => (
-                <>
-                  {i > 0 && ' · '}
-                  <a href={enlace(m.href)}>{unir(lang, m.nombres)}</a>
-                </>
-              ))}
-            </p>
           </div>
         </article>
       ))}
-    </div>
-
-    <div class="ap">
-      <p class="frase mas-t">
-        {t.ademasTitulo[0]}
-        <b>{t.ademasTitulo[1]}</b>
-        {t.ademasTitulo[2]}
-      </p>
-      <dl class="mas">
-        {t.ademas.map((a) => (
-          <div>
-            <dt>{a.titulo}</dt>
-            <dd>{a.texto}</dd>
-          </div>
-        ))}
-      </dl>
     </div>
   </div>
 </section>
 
 <script>
-  // Cada bloque entra suave la primera vez que se ve; los esquemas se dibujan solos
+  // Cada bloque entra suave la primera vez que se ve
   const bloques = document.querySelectorAll('#tecnologia .ap');
   if (bloques.length && 'IntersectionObserver' in window) {
     document.documentElement.classList.add('js');
@@ -269,6 +178,32 @@ const enlace = (href: string) => ruta(lang, href);
       { threshold: 0.2 },
     );
     bloques.forEach((b) => obs.observe(b));
+  }
+
+  // Acordeón: al pulsar una tira se abre su panel y se cierra el que estaba abierto. Lo cerrado queda inerte para
+  // que el tabulador no se meta en texto que no se ve.
+  const acordeon = document.querySelector<HTMLElement>('#tecnologia .acordeon');
+  if (acordeon) {
+    const paneles = [...acordeon.querySelectorAll<HTMLElement>('.panel')];
+    const abrir = (i: number) => {
+      paneles.forEach((p, j) => {
+        const si = j === i;
+        p.classList.toggle('abierto', si);
+        const lomo = p.querySelector<HTMLButtonElement>('.lomo');
+        if (lomo) {
+          lomo.setAttribute('aria-expanded', String(si));
+          lomo.tabIndex = si ? -1 : 0;
+        }
+        p.querySelector('.contenido')?.toggleAttribute('inert', !si);
+      });
+    };
+    paneles.forEach((p, i) => p.querySelector('.lomo')?.addEventListener('click', () => abrir(i)));
+    // "Empezar" y los enlaces a #configurador abren su panel
+    const alConfigurador = () => {
+      if (location.hash === '#configurador') abrir(2);
+    };
+    window.addEventListener('hashchange', alConfigurador);
+    alConfigurador();
   }
 </script>
 
@@ -299,6 +234,10 @@ const enlace = (href: string) => ruta(lang, href);
     font-size: var(--t-titulo);
     line-height: 0.94;
   }
+  /* "propia" en rojo, como "ción" en el titular del inicio */
+  h2 b {
+    color: var(--red);
+  }
   .cab p {
     color: var(--texto);
     font-size: var(--t-sub);
@@ -310,48 +249,160 @@ const enlace = (href: string) => ruta(lang, href);
     line-height: 1.1;
   }
 
-  /* REI y SmartConnect: foto grande + texto, alternando lados */
-  .gran {
-    display: grid;
-    grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
-    background: var(--oscuro);
-  }
-  .gran {
-    position: relative;
-  }
-
-  /* SmartConnect y Configurador: dos tarjetas iguales, foto arriba y botón al pie */
-  .dos {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: clamp(20px, 2vw, 28px);
-    margin-top: clamp(20px, 2vw, 28px);
-  }
-  .par {
+  /* Acordeón: tres franjas en fila. La abierta crece y enseña foto y texto; las cerradas se quedan en tiras
+     con su número, el nombre en vertical y un "+" */
+  .acordeon {
+    --lomo: 92px;
+    --hueco: 12px;
     position: relative;
     display: flex;
-    flex-direction: column;
+    gap: var(--hueco);
+    height: clamp(560px, 44vw, 620px);
+    container-type: inline-size;
+  }
+  .panel {
+    position: relative;
+    flex: 0 0 var(--lomo);
+    overflow: hidden;
     background: #33383c;
+    transition: flex-grow 0.7s var(--ease);
   }
-  .par .foto {
+  .panel.abierto {
+    flex-grow: 1;
+  }
+  .ancla {
+    position: absolute;
+    top: -120px;
+  }
+  /* El contenido tiene siempre el ancho del panel abierto: al abrirse no se recoloca, solo se destapa */
+  .contenido {
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: calc(100cqw - 2 * (var(--lomo) + var(--hueco)));
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  }
+  .contenido .foto {
     min-height: 0;
-    aspect-ratio: 16 / 8.5;
   }
-  .par .txt {
-    flex: 1;
+  .contenido .txt {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    padding: clamp(28px, 3.4vw, 48px);
+    padding: clamp(28px, 3vw, 48px);
+    transition: opacity 0.35s var(--ease) 0.35s;
   }
-  .par h3 {
-    font-size: clamp(36px, 3.6vw, 56px);
+  .panel:not(.abierto) .txt,
+  .panel:not(.abierto) .seis {
+    opacity: 0;
+    transition-delay: 0s;
+  }
+  .panel h3 {
+    font-size: clamp(36px, 3.4vw, 52px);
     line-height: 0.95;
     margin-bottom: 12px;
   }
-  .par .modelos {
+  .panel .modelos {
     align-self: stretch;
-    margin-bottom: 28px;
+    margin-bottom: 26px;
+  }
+  .rei .modelos {
+    margin-bottom: 0;
+  }
+
+  /* Tira de un panel cerrado: deja ver un trozo de su foto por debajo */
+  .lomo {
+    position: absolute;
+    z-index: 4;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    padding: 26px 0;
+    border: 0;
+    background: linear-gradient(180deg, rgba(36, 39, 42, 0.7), rgba(36, 39, 42, 0.94));
+    color: #fff;
+    font: inherit;
+    cursor: pointer;
+    transition:
+      opacity 0.3s var(--ease),
+      background 0.3s var(--ease);
+  }
+  .lomo::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 3px;
+    height: 0;
+    background: var(--red);
+    transition: height 0.4s var(--ease);
+  }
+  .lomo:hover,
+  .lomo:focus-visible {
+    background: linear-gradient(180deg, rgba(36, 39, 42, 0.45), rgba(36, 39, 42, 0.85));
+  }
+  .lomo:hover::before,
+  .lomo:focus-visible::before {
+    height: 100%;
+  }
+  .lomo .num {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--red);
+  }
+  .lomo .nombre {
+    writing-mode: vertical-rl;
+    rotate: 180deg;
+    font-size: 26px;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .lomo .mas {
+    position: relative;
+    width: 34px;
+    height: 34px;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    border-radius: 50%;
+    transition:
+      background 0.3s,
+      border-color 0.3s;
+  }
+  .lomo .mas::before,
+  .lomo .mas::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 12px;
+    height: 2px;
+    background: #fff;
+    translate: -50% -50%;
+    transition: rotate 0.3s var(--ease);
+  }
+  .lomo .mas::after {
+    rotate: 90deg;
+  }
+  .lomo:hover .mas,
+  .lomo:focus-visible .mas {
+    background: var(--red);
+    border-color: var(--red);
+  }
+  .abierto .lomo {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* Cortina roja: barre la foto del panel que se abre y, al retirarse, la descubre */
+  .contenido .foto::before {
+    content: '';
+    position: absolute;
+    z-index: 3;
+    inset: 0;
+    background: var(--red);
+    transform: scaleX(0);
+    pointer-events: none;
   }
   .entrar {
     margin-top: auto;
@@ -376,7 +427,7 @@ const enlace = (href: string) => ruta(lang, href);
     position: absolute;
     z-index: 1;
     left: clamp(28px, 3.4vw, 48px);
-    bottom: 24px;
+    bottom: 28px;
     font-weight: 700;
     font-size: clamp(56px, 6vw, 96px);
     line-height: 0.85;
@@ -393,8 +444,8 @@ const enlace = (href: string) => ruta(lang, href);
     align-self: stretch;
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 12px 20px;
-    margin: 24px 0 28px;
+    gap: 10px 14px;
+    margin: 22px 0 26px;
   }
   /* Cada paso, como las placas del inicio: cristal, icono de la marca en un círculo rojo y, al pasar el ratón,
      raya roja arriba, esquina roja, destello de luz y un rojo neón suave */
@@ -404,8 +455,10 @@ const enlace = (href: string) => ruta(lang, href);
     display: grid;
     grid-template-columns: auto 1fr;
     align-items: center;
-    gap: 14px;
-    padding: 12px 14px;
+    gap: 12px;
+    padding: 10px 12px;
+    font-size: 15px;
+    line-height: 1.2;
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.14);
     color: #e7eaec;
@@ -417,22 +470,22 @@ const enlace = (href: string) => ruta(lang, href);
   .seis-pasos .ico {
     display: grid;
     place-items: center;
-    width: 40px;
-    height: 40px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
     background: var(--red);
     color: #fff;
     transition: box-shadow 0.45s var(--ease);
   }
   .seis-pasos .ico i {
-    width: 22px;
-    height: 22px;
+    width: 20px;
+    height: 20px;
     background: currentColor;
     -webkit-mask: var(--ico) center / contain no-repeat;
     mask: var(--ico) center / contain no-repeat;
   }
   .paso-t b {
-    margin-right: 8px;
+    margin-right: 6px;
     color: var(--red);
   }
   .seis-pasos li::before {
@@ -499,15 +552,6 @@ const enlace = (href: string) => ruta(lang, href);
       transform: scale(0.96) rotate(2deg);
     }
   }
-  .gran .txt {
-    padding: clamp(28px, 4vw, 56px);
-    background: #33383c;
-  }
-  .gran h3 {
-    font-size: clamp(36px, 3.6vw, 56px);
-    line-height: 0.95;
-    margin-bottom: 12px;
-  }
   .foto {
     position: relative;
     overflow: hidden;
@@ -521,8 +565,7 @@ const enlace = (href: string) => ruta(lang, href);
     object-fit: cover;
     transition: transform 0.6s var(--ease);
   }
-  .gran:hover .foto img,
-  .sis:hover .foto img {
+  .abierto:hover .foto img {
     transform: scale(1.03);
   }
   .foto.negra {
@@ -607,193 +650,6 @@ const enlace = (href: string) => ruta(lang, href);
     background-size: 100% 2px;
   }
 
-  /* Pantalla, PCBS y ULS */
-  .tres {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: clamp(20px, 2vw, 28px);
-    margin-top: clamp(20px, 2vw, 28px);
-  }
-  .sis {
-    display: flex;
-    flex-direction: column;
-    background: #33383c;
-  }
-  .vis {
-    position: relative;
-    height: 260px;
-  }
-  .plano {
-    background-color: var(--oscuro);
-    background-image:
-      linear-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
-    background-size: 40px 40px;
-  }
-  .plano svg {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-  }
-  .t {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    padding: 24px 26px 26px;
-  }
-  .t h3 {
-    font-size: 28px;
-    line-height: 1;
-  }
-  .t > p:not(.cifra):not(.modelos) {
-    margin-top: 10px;
-    color: #e7eaec;
-  }
-  .cifra {
-    margin-top: 14px;
-    font-weight: 700;
-    font-size: 48px;
-    line-height: 1;
-  }
-  .cifra small {
-    margin-left: 6px;
-    font-size: 16px;
-    font-weight: 400;
-    color: var(--texto);
-  }
-  .t .modelos {
-    margin-top: auto;
-  }
-  .t .cifra + .modelos {
-    margin-top: 16px;
-  }
-
-  /* Esquemas (estilo plano) */
-  svg text {
-    font-family: var(--f);
-    fill: var(--texto);
-    font-size: 22px;
-  }
-  svg .rojo {
-    fill: var(--red);
-    font-weight: 700;
-    font-size: 24px;
-  }
-  .eje {
-    fill: none;
-    stroke: #8d949a;
-    stroke-width: 1.5;
-  }
-  .curva {
-    fill: none;
-    stroke: #fff;
-    stroke-width: 3;
-  }
-  .brusca {
-    fill: none;
-    stroke: #8d949a;
-    stroke-width: 2;
-    stroke-dasharray: 5 5;
-  }
-  .media {
-    fill: none;
-    stroke: var(--texto);
-    stroke-width: 2;
-  }
-  .suave {
-    fill: none;
-    stroke: var(--red);
-    stroke-width: 3.5;
-  }
-  .guia {
-    stroke: #8d949a;
-    stroke-width: 1.5;
-  }
-  .guia.roja {
-    stroke: var(--red);
-  }
-  .orbita {
-    fill: none;
-    stroke: #8d949a;
-    stroke-width: 1.5;
-    stroke-dasharray: 4 6;
-  }
-  .brazo {
-    stroke: var(--texto);
-    stroke-width: 10;
-    stroke-linecap: round;
-  }
-  .eje-rotor {
-    fill: var(--mas-oscuro);
-    stroke: #fff;
-    stroke-width: 2;
-  }
-  .centro {
-    fill: var(--red);
-  }
-  .vaso {
-    fill: var(--oscuro);
-    stroke: #fff;
-    stroke-width: 2;
-  }
-  .vaso.mal {
-    fill: var(--red);
-    stroke: var(--red);
-  }
-  .halo {
-    fill: none;
-    stroke: var(--red);
-    stroke-width: 1.5;
-    opacity: 0.6;
-  }
-  svg .n {
-    fill: #fff;
-    font-size: 26px;
-    font-weight: 700;
-    text-anchor: middle;
-  }
-  svg .n.rojo {
-    fill: #fff;
-  }
-  .aviso {
-    fill: #fff;
-  }
-  svg .aviso-t {
-    fill: var(--ink);
-    font-size: 18px;
-    font-weight: 700;
-  }
-  svg .aviso-v {
-    fill: var(--red);
-    font-size: 18px;
-    font-weight: 700;
-  }
-
-  /* Lo demás */
-  .mas-t {
-    margin-top: clamp(40px, 4vw, 56px);
-  }
-  .mas {
-    margin-top: 16px;
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 0 24px;
-    border-top: 1px solid var(--raya);
-  }
-  .mas div {
-    padding-top: 18px;
-  }
-  .mas dt {
-    font-weight: 700;
-    font-size: 18px;
-  }
-  .mas dd {
-    margin: 4px 0 0;
-    font-size: 15px;
-    color: var(--texto);
-  }
-
   /* ---- Movimiento: entradas, esquemas que se dibujan y efectos al pasar el ratón ---- */
   .ap {
     transition:
@@ -804,11 +660,34 @@ const enlace = (href: string) => ruta(lang, href);
     opacity: 0;
     transform: translateY(28px);
   }
-  .tres .ap:nth-child(2) {
-    transition-delay: 0.1s;
+  @media (prefers-reduced-motion: no-preference) {
+    .acordeon.vista .abierto .foto::before {
+      animation: cortina 1.1s var(--ease) 0.15s;
+    }
   }
-  .tres .ap:nth-child(3) {
-    transition-delay: 0.2s;
+  @media (prefers-reduced-motion: reduce) {
+    .panel,
+    .contenido .txt {
+      transition: none;
+    }
+  }
+  @keyframes cortina {
+    0% {
+      transform: scaleX(0);
+      transform-origin: left;
+    }
+    45% {
+      transform: scaleX(1);
+      transform-origin: left;
+    }
+    55% {
+      transform: scaleX(1);
+      transform-origin: right;
+    }
+    100% {
+      transform: scaleX(0);
+      transform-origin: right;
+    }
   }
   /* Los pasos del REI aparecen uno detrás de otro */
   .pasos li {
@@ -822,94 +701,9 @@ const enlace = (href: string) => ruta(lang, href);
   .pasos li:nth-child(3) {
     transition-delay: 0.3s;
   }
-  :global(.js) .rei:not(.vista) .pasos li {
+  :global(.js) .acordeon:not(.vista) .rei .pasos li {
     opacity: 0;
     transform: translateX(-12px);
-  }
-  /* PCBS: la curva se dibuja y el frenado progresivo llega el último */
-  .curva,
-  .media,
-  .suave {
-    stroke-dasharray: 1;
-    stroke-dashoffset: 0;
-    transition: stroke-dashoffset 1.1s var(--ease);
-  }
-  .media {
-    transition-delay: 0.9s;
-  }
-  .suave {
-    transition-duration: 1.4s;
-    transition-delay: 1.1s;
-  }
-  :global(.js) .sis:not(.vista) :is(.curva, .media, .suave) {
-    stroke-dashoffset: 1;
-  }
-  .brusca,
-  .rojo,
-  .aviso,
-  .aviso-t,
-  .aviso-v,
-  .guia {
-    transition: opacity 0.5s var(--ease);
-  }
-  .brusca,
-  svg > text:not(.rojo) {
-    transition-delay: 0.8s;
-  }
-  svg .rojo:not(.n) {
-    transition-delay: 2.1s;
-  }
-  :global(.js) .sis:not(.vista) :is(.brusca, .guia, .rojo, .aviso, .aviso-t, .aviso-v) {
-    opacity: 0;
-  }
-  /* ULS: el vaso con desequilibrio late dos veces y sale el aviso */
-  .guia.roja,
-  .aviso,
-  .aviso-t,
-  .aviso-v {
-    transition-delay: 0.9s;
-  }
-  .halo {
-    transform-box: fill-box;
-    transform-origin: center;
-  }
-  .sis.vista .halo {
-    animation: late 1.2s var(--ease) 0.4s 2;
-  }
-  @keyframes late {
-    0% {
-      transform: scale(0.8);
-      opacity: 0.9;
-    }
-    100% {
-      transform: scale(1.35);
-      opacity: 0;
-    }
-  }
-
-  /* Tarjetas: suben un poco y una raya roja crece arriba, como la barra del filtro de la gama */
-  .sis {
-    position: relative;
-    transition:
-      opacity 0.7s var(--ease),
-      transform 0.35s var(--ease);
-  }
-  .sis::before {
-    content: '';
-    position: absolute;
-    z-index: 1;
-    left: 0;
-    top: 0;
-    height: 4px;
-    width: 0;
-    background: var(--red);
-    transition: width 0.4s var(--ease);
-  }
-  .sis.vista:hover {
-    transform: translateY(-4px);
-  }
-  .sis:hover::before {
-    width: 100%;
   }
   /* "Ver el vídeo" y los modelos se subrayan en rojo al pasar el ratón, como "Ver en la gama" */
   .video {
@@ -930,49 +724,61 @@ const enlace = (href: string) => ruta(lang, href);
   .video:focus-visible::before {
     width: calc(100% - 16px);
   }
-  .mas div {
-    position: relative;
-  }
-  .mas div::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: -1px;
-    width: 0;
-    height: 2px;
-    background: var(--red);
-    transition: width 0.4s var(--ease);
-  }
-  .mas div:hover::before {
-    width: 48px;
-  }
 
   @media (max-width: 1000px) {
-    .cab,
-    .gran,
-    .dos {
+    .cab {
       grid-template-columns: 1fr;
     }
-    .gran .foto {
-      min-height: 0;
+  }
+  /* Tablet y móvil: las franjas, una encima de otra; la tira pasa a cabecera y el panel abierto, foto y texto */
+  @media (max-width: 1000px) {
+    .acordeon {
+      flex-direction: column;
+      height: auto;
+      gap: 10px;
+    }
+    .panel {
+      flex: none;
+    }
+    .lomo {
+      position: relative;
+      inset: auto;
+      width: 100%;
+      flex-direction: row;
+      justify-content: flex-start;
+      gap: 14px;
+      padding: 18px 20px;
+      background: #33383c;
+    }
+    .lomo .nombre {
+      writing-mode: horizontal-tb;
+      rotate: none;
+      font-size: 20px;
+    }
+    .lomo .mas {
+      margin-left: auto;
+    }
+    .abierto .lomo {
+      opacity: 1;
+    }
+    .abierto .lomo .mas::after {
+      rotate: 0deg;
+    }
+    .contenido {
+      position: static;
+      width: auto;
+      display: none;
+      grid-template-columns: 1fr;
+    }
+    .abierto .contenido {
+      display: grid;
+    }
+    .contenido .foto {
       aspect-ratio: 16 / 10;
-    }
-    .tres {
-      grid-template-columns: 1fr;
-    }
-    .mas {
-      grid-template-columns: 1fr 1fr;
-      gap: 0 20px;
-    }
-    .mas div {
-      padding-bottom: 6px;
     }
   }
   @media (max-width: 480px) {
     .seis-pasos {
-      grid-template-columns: 1fr;
-    }
-    .mas {
       grid-template-columns: 1fr;
     }
   }

@@ -14,7 +14,6 @@ export const es = {
   meta: {
     locale: 'es_ES',
     fechas: 'es-ES',
-    pestana: 'Expertos en centrifugación · desde 1949',
     saltar: 'Saltar al contenido',
   },
   nav: {
@@ -83,7 +82,6 @@ export const es = {
     intro:
       'Lo que diferencia a una centrífuga Orto Alresa está dentro. Estos son los sistemas que desarrollamos nosotros.',
     lollevan: 'Lo llevan',
-    lallevan: 'La llevan',
     rei: {
       alt: 'Rotores con REI System: una mano levanta el tirador rojo para sacar el rotor',
       frase: ['Cambiar de rotor en ', 'segundos, con una mano', ' y sin herramientas.'],
@@ -114,40 +112,6 @@ export const es = {
       pasos: ['Tipo de centrífuga', 'Ubicación', 'Tipo de tubo', 'Velocidad', 'Nº de posiciones', 'Tipo de rotor'],
       empezar: 'Empezar',
     },
-    pantalla: {
-      nombre: 'Pantalla táctil',
-      texto: 'A color, fácil de leer y de programar. FCR real según el adaptador y hasta 8 programas enlazados.',
-      cifra: '100',
-      unidad: 'memorias',
-      alt: 'Pantalla táctil de una Consul 22 con rotor, velocidad, FCR y rampas',
-    },
-    pcbs: {
-      nombre: 'PCBS',
-      texto: 'Frenado progresivo para que la muestra no se vuelva a mezclar tras la separación.',
-      cifra: '175',
-      unidad: 'rampas de frenado',
-      antes: 'todas las de pantalla táctil, y',
-      esquema: 'Esquema: velocidad frente a tiempo con un frenado brusco y otro progresivo',
-      tiempo: 'tiempo',
-      brusco: 'brusco',
-      progresivo: 'progresivo',
-    },
-    uls: {
-      nombre: 'ULS',
-      texto: 'Si la centrífuga para por desequilibrio, la pantalla dice qué vaso lo ha causado.',
-      cifra: 'Nº',
-      unidad: 'del vaso, en pantalla',
-      esquema: 'Esquema: rotor visto desde arriba con el vaso 3 señalado por desequilibrio',
-      desequilibrio: 'Desequilibrio',
-      vaso: 'Vaso 3',
-    },
-    ademasTitulo: ['Y además, ', 'según el modelo', ':'],
-    ademas: [
-      { titulo: 'Reconoce el rotor', texto: 'Lo identifica solo y protege ante exceso de velocidad.' },
-      { titulo: 'Tapa segura', texto: 'Cierre motorizado, bloqueo en marcha y apertura de emergencia.' },
-      { titulo: 'De −20 a 80 °C', texto: 'En refrigeradas y calefactadas, en pasos de 1 °C.' },
-      { titulo: 'Menos de 60 dB', texto: 'Motor de inducción sin escobillas y sin mantenimiento.' },
-    ],
   },
 
   empresa: {

@@ -144,7 +144,7 @@ Ponerlos antes haría que todos los enlaces llevaran a la portada.
 - **Antes (primera versión nueva):** una línea pequeña en mayúsculas encima del titular, "FABRICANTES EN MADRID
   DESDE 1949".
 - **Ahora:** fuera. El dato no se pierde: la frase de debajo empieza por "Desde 1949 diseñamos y fabricamos
-  centrífugas de laboratorio en Daganzo (Madrid)…", y la pestaña roja lateral sigue diciendo "desde 1949".
+  centrífugas de laboratorio en Daganzo (Madrid)…". (La pestaña roja lateral que también lo decía se quitó después: ver §16.)
 - **Por qué:** un texto pequeño encima de un titular enorme compite con él y recarga la pantalla. Es el mismo
   criterio que en la gama: una sola jerarquía, el titular manda.
 
@@ -817,3 +817,58 @@ entera delante, si se ensancha el contenido de 1280 a 1440 px.
 - **Por qué:** lo pidió la empresa (5-10-2026). La foto respira entera y los dos caminos (gama y distribuidor) son
   lo único que pide atención. Las cifras no se pierden: respuesta, entrega y garantía siguen en Distribuidores, y
   las certificaciones en Empresa.
+
+## 16. Pie con el rojo de marca y fuera la pestaña lateral
+
+### 16.1 El logo del pie, con "orto" en rojo
+
+- **Antes:** el pie usaba el logo entero en blanco; era el único sitio de la web donde "orto" no salía rojo.
+- **Ahora:** `logo-ortoalresa-oscuro.svg`: "orto" en el rojo de marca y "alresa" en blanco, igual que el logo en
+  color pero para fondo oscuro.
+- **Por qué:** lo pidió la empresa (5-10-2026). El logo se reconoce por el "orto" rojo; en blanco parecía otro.
+
+### 16.2 Más rojo en el pie
+
+- **Ahora:** filo rojo de 4 px arriba del pie, raya roja corta bajo cada título de columna (el mismo gesto que el
+  subrayado del teléfono) y todos los enlaces en rojo al pasar el ratón, al pulsarlos o al llegar con el teclado.
+- **Por qué:** el pie era todo gris y blanco; el rojo, en poca cantidad, lo une con el resto de la web y deja claro
+  qué se puede pulsar.
+
+### 16.3 Fuera la pestaña roja vertical
+
+- **Antes:** una pestaña roja fija a la izquierda, "Expertos en centrifugación · desde 1949", copiada del catálogo.
+- **Ahora:** no hay pestaña.
+- **Por qué:** lo pidió la empresa (5-10-2026). En pantalla tapaba el borde del contenido y repetía el titular del
+  inicio; en el catálogo impreso sirve para hojear, en la web no tiene esa función.
+
+### 16.4 Logos de las ayudas en color, sin ficha blanca y a plena luz
+
+- **Antes:** cada logo en su ficha blanca, que en el pie oscuro se veía como una fila de pegatinas.
+- **Ahora:** los logos van en su color directamente sobre el pie, sin apagar. Los archivos de
+  `public/img/ayudas/` vienen ya preparados para fondo oscuro, como las versiones en negativo oficiales:
+  - los bloques de color (bandera de la UE, rojo de Madrid, naranja del FSE+, amarillo de Gobierno y SEPE) quedan
+    intactos, con lo que llevan dentro;
+  - el fondo blanco de fuera pasa a transparente con los bordes suaves;
+  - el texto y las rayas oscuras sueltas (negro, gris, azul oscuro) pasan a blanco; las estrellas doradas
+    conservan su color.
+- **Por qué:** lo pidió la empresa (5-10-2026). Se descartó pasarlos a blanco con un filtro (perdían los colores
+  oficiales) y dejarlos tal cual sin fondo (el texto negro desaparecía sobre el pie).
+
+## 17. Tecnología propia en acordeón
+
+- **Antes:** cinco pisos: REI a lo grande, SmartConnect y Configurador a la par, tres tarjetas con foto o esquema
+  (Pantalla táctil, PCBS, ULS) y la lista "Y además, según el modelo". Unos 2.800 px en escritorio.
+- **Ahora:** solo REI System, SmartConnect y Configurador, en un acordeón de tres franjas. La abierta enseña su
+  foto y su texto enteros; las cerradas son tiras estrechas con el número en rojo, el nombre en vertical, un "+" y
+  un trozo de su foto por debajo. Al pulsar una tira se abre (y se cierra la otra) y una cortina roja barre la foto
+  y la descubre. En tablet y móvil las franjas van una encima de otra, con cabecera, "+" y "−". Unos 1.050 px.
+  "Propia", en rojo, como "ción" en el inicio.
+- **Por qué:** lo pidió la empresa (5-10-2026). La sección era la más larga de la portada y lo de abajo (cifras de
+  pantalla, rampas y vaso) pesaba menos que lo de arriba. Los tres que quedan son los que de verdad diferencian a
+  Orto Alresa; en el acordeón se ven los tres a la vez y cada uno conserva su foto, su texto y su botón.
+- **Detalles:** se abre al pulsar, no al pasar el ratón (para llegar a un enlace del panel abierto se cruza por
+  encima de las tiras). No pasa solo: en un acordeón molesta que se cierre lo que se está leyendo. Lo cerrado queda
+  inerte para el teclado. Sin movimiento si el sistema lo pide.
+- **Descartado:** una tira de cifras con Pantalla, PCBS y ULS (seguía alargando la sección), un mosaico con REI a la
+  izquierda y las otras dos apiladas (tarjetas apretadas y desiguales) y un carrusel con pestañas (correcto, pero
+  solo enseñaba una tecnología cada vez).

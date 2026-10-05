@@ -31,6 +31,11 @@ Hasta que se publique la web, todo va en "Sin publicar"; al publicar se cierra l
 
 ### Cambiado
 
+- Tecnología propia en acordeón: REI System, SmartConnect y Configurador en tres franjas; la abierta enseña foto y texto y las cerradas son tiras con número, nombre en vertical y "+". Al abrir una, una cortina roja barre su foto. En móvil, una encima de otra. "Propia" en rojo. La sección pasa de unos 2.800 px a unos 1.050 en escritorio.
+- Más rojo de marca en los títulos: "en el laboratorio" (Aplicaciones), como "propia" en Tecnología. En Empresa, "más allá de lo estándar" se queda en blanco con una raya roja más fina: sobre la foto de tapones rojos, más rojo la cargaba.
+- Cabecera a todo el ancho de la pantalla, como la de la web actual: logo pegado a la izquierda y banderas, lupa y Contacto a la derecha (antes iba en el ancho máximo de la página, centrada).
+- Pie con más rojo de marca: el logo con "orto" en rojo (`logo-ortoalresa-oscuro.svg`), un filo rojo arriba, una raya roja corta bajo cada título de columna y todos los enlaces en rojo al pasar el ratón o pulsarlos.
+- Logos de las ayudas en su color, sin la ficha blanca y a plena luz: archivos de `public/img/ayudas/` preparados para fondo oscuro (fondo transparente, bloques de color intactos y el texto oscuro suelto en blanco).
 - Catálogo en su propia página, `/centrifugas/`: todas las series agrupadas por familia, sin filtros, con foto, frase y tres cifras. Sale de la portada para dejarla más limpia; "Centrífugas", "Ver la gama", "Toda la gama", los modelos de Tecnología y la lupa llevan allí. (#28)
 - Menú y pie sin "Elegir centrífuga": llevaba al mismo sitio que "Centrífugas". Volverá cuando exista la página del Configurador. (#28)
 
@@ -73,5 +78,7 @@ Hasta que se publique la web, todo va en "Sin publicar"; al publicar se cierra l
 
 ### Quitado
 
+- Tecnología: las tarjetas de Pantalla táctil, PCBS y ULS (con su foto y sus esquemas) y la lista "Y además, según el modelo". Fuera sus textos de los tres idiomas y `sistemas` de `src/data/tecnologia.ts`.
+- Pestaña roja vertical de la izquierda ("Expertos en centrifugación · desde 1949"): tapaba el contenido y repetía lo que ya dice el inicio. Fuera también el texto `meta.pestana` de los tres idiomas.
 - Las cuatro tarjetas de la portada (48 h, 1 semana, 3 años, ISO 13485): la primera pantalla queda con el titular, la frase y los dos botones sobre la foto del rotor. Fuera `src/data/cifras.ts` y los textos `hero.cifras` de los tres idiomas. Los datos siguen en Distribuidores y Empresa.
 - Botón "Ver antes y después" y sus notas en cada sección: fuera de la web. Las notas se guardan en `docs/antes-y-despues.md`.
