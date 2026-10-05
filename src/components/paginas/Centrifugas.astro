@@ -1,8 +1,7 @@
 ---
-// Catálogo de productos, en oscuro como la portada: los 23 modelos de centrífuga (fotos y aplicaciones de la página de
-// productos de la web actual), los accesorios y los otros productos de laboratorio. Una barra de cristal fija con las
-// aplicaciones como pestañas y "Más filtros" (buscador, temperatura, pantalla y orden); cada modelo en una tarjeta de
-// cristal ahumado, con la máquina bajo un foco y sus cuatro datos en fichas con el icono de la web actual.
+// Catálogo de productos: un hero grande con una foto de la empresa y badges de cristal, y debajo la página en blanco
+// con filtros sencillos (buscador, temperatura y aplicaciones) y una tarjeta por modelo: los 23 de centrífuga (fotos y
+// aplicaciones de la página de productos de la web actual), los accesorios y los otros productos de laboratorio.
 // Los filtros se guardan en la dirección para poder compartir una búsqueda.
 import Base from '../../layouts/Base.astro';
 import {
@@ -44,7 +43,6 @@ const grupoDe = (c: Cat) =>
       : t.catalogo.grupos.otros;
 
 const temperaturas: Temperatura[] = ['ventilada', 'refrigerada', 'calefactada'];
-const pantallas = ['TFT', 'LCD', 'LED'] as const;
 
 // Tarjetas en el orden del catálogo: por aplicación, y dentro de cada una como en la web actual
 type Ficha = { tipo: 'modelo'; cat: Cat; m: Modelo } | { tipo: 'lab'; cat: Cat; p: ProductoLab };
@@ -63,269 +61,233 @@ const capacidad = (m: Modelo) =>
 ---
 
 <Base title={t.catalogo.title} description={t.catalogo.description(productos.length, totalModelos)}>
-  <div class="pagina">
-    <!-- Cabecera: título con "productos" en rojo y tres cifras en placas de cristal -->
-    <section class="cab">
-      <div class="wrap">
-        <h1>
-          {t.catalogo.titulo[0]}
-          <b>{t.catalogo.titulo[1]}</b>
-        </h1>
-        <p class="lead">{t.catalogo.lead(productos.length, totalModelos)}</p>
-        <ul class="cifras">
-          <li>
-            <b>{modelos.length}</b> {t.catalogo.cifras.centrifugas}
-          </li>
-          <li>
-            <b>{categorias.generales.length + categorias.especiales.length}</b> {t.catalogo.cifras.aplicaciones}
-          </li>
-          <li>
-            <b>{accesorios.length + equipos.length}</b> {t.catalogo.cifras.otros}
-          </li>
-        </ul>
-      </div>
-    </section>
+  <!-- Hero: una centrífuga en uso, a todo el ancho, con el título y los badges de cristal encima -->
+  <section class="hero">
+    <img
+      class="hero-foto"
+      src="/img/fotos/productos-hero.webp"
+      srcset="/img/fotos/productos-hero-960.webp 960w, /img/fotos/productos-hero.webp 1800w"
+      sizes="100vw"
+      alt=""
+      width="1800"
+      height="1199"
+      fetchpriority="high"
+      decoding="async"
+    />
+    <div class="wrap hero-in">
+      <h1>
+        {t.catalogo.titulo[0]}
+        <b>{t.catalogo.titulo[1]}</b>
+      </h1>
+      <p class="lead">{t.catalogo.lead(productos.length, totalModelos)}</p>
+      <ul class="badges">
+        <li>
+          <b>{modelos.length}</b>
+          <span>{t.catalogo.cifras.centrifugas}</span>
+        </li>
+        <li>
+          <b>{categorias.generales.length + categorias.especiales.length}</b>
+          <span>{t.catalogo.cifras.aplicaciones}</span>
+        </li>
+        <li>
+          <b>1949</b>
+          <span>{t.catalogo.cifras.desde}</span>
+        </li>
+        <li class="stock">
+          <i aria-hidden="true"></i>
+          <span>{t.catalogo.cifras.stock}</span>
+        </li>
+      </ul>
+    </div>
+  </section>
 
-    <!-- Barra fija de cristal: las aplicaciones como pestañas y "Más filtros". Sin JS no aparece y se ve todo -->
-    <form
-      class="barra"
-      id="filtros"
-      role="search"
-      aria-label={f.titulo}
-      data-uno={f.resultados(1)}
-      data-varios={f.resultados(999)}
-      hidden
-    >
-      <div class="wrap barra-in">
-        <div class="pestanas" role="group" aria-label={f.titulo}>
-          <button type="button" class="pestana" data-c="" aria-pressed="true">
-            {f.todo} <span class="n"></span>
-          </button>
-          {todas.map((c) => (
-            <button type="button" class="pestana" data-c={c} aria-pressed="false" title={grupoDe(c)}>
-              {nombreCorto(c)} <span class="n" />
+  <!-- Filtros sencillos en una barra blanca fija. Sin JS no aparece y se ve todo el catálogo -->
+  <form
+    class="filtros"
+    id="filtros"
+    role="search"
+    aria-label={f.titulo}
+    data-uno={f.resultados(1)}
+    data-varios={f.resultados(999)}
+    hidden
+  >
+    <div class="wrap filtros-in">
+      <div class="arriba">
+        <label class="buscar">
+          <span class="sr">{f.buscar}</span>
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+            <circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="1.6"></circle>
+            <path d="M15.5 15.5 21 21" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path>
+          </svg>
+          <input type="search" name="q" placeholder={f.buscar} autocomplete="off" />
+        </label>
+        <div class="temps" role="group" aria-label={f.temperatura}>
+          {temperaturas.map((x) => (
+            <button type="button" class="temp" data-v={x} aria-pressed="false">
+              {may(t.temperatura[x])}
             </button>
           ))}
         </div>
+        <p class="total" aria-live="polite"></p>
         <button type="button" class="borrar limpiar" hidden>
           <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
             <path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
           </svg>
           {f.limpiar}
         </button>
-        <button type="button" class="mas" aria-expanded="false" aria-controls="mas-filtros">
-          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
-            <path
-              d="M4 7h10M18 7h2M4 17h4M12 17h8"
-              stroke="currentColor"
-              stroke-width="1.8"
-              stroke-linecap="round"
-            ></path>
-            <circle cx="16" cy="7" r="2.2" fill="none" stroke="currentColor" stroke-width="1.8"></circle>
-            <circle cx="10" cy="17" r="2.2" fill="none" stroke="currentColor" stroke-width="1.8"></circle>
-          </svg>
-          <span>{f.abrir}</span>
-          <span class="activos" hidden></span>
+      </div>
+      <div class="cats" role="group" aria-label={f.titulo}>
+        <button type="button" class="cat" data-c="" aria-pressed="true">
+          {f.todo} <span class="n"></span>
         </button>
+        {todas.map((c) => (
+          <button type="button" class="cat" data-c={c} aria-pressed="false" title={grupoDe(c)}>
+            {nombreCorto(c)} <span class="n" />
+          </button>
+        ))}
       </div>
+    </div>
+  </form>
 
-      <!-- Más filtros: se despliega bajo la barra -->
-      <div class="panel" id="mas-filtros" hidden>
-        <div class="wrap panel-in">
-          <label class="buscar">
-            <span class="sr">{f.buscar}</span>
-            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
-              <circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="1.6"></circle>
-              <path d="M15.5 15.5 21 21" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path>
-            </svg>
-            <input type="search" name="q" placeholder={f.buscar} autocomplete="off" />
-          </label>
-          <div class="grupo" role="group" aria-label={f.temperatura}>
-            <p class="etq">{f.temperatura}</p>
-            <div class="chips">
-              {temperaturas.map((x) => (
-                <button type="button" class="chip" data-f="t" data-v={x} aria-pressed="false">
-                  {may(t.temperatura[x])} <span class="n" />
-                </button>
-              ))}
-            </div>
-          </div>
-          <div class="grupo" role="group" aria-label={f.pantalla}>
-            <p class="etq">{f.pantalla}</p>
-            <div class="chips">
-              {pantallas.map((x) => (
-                <button type="button" class="chip" data-f="p" data-v={x} aria-pressed="false">
-                  {x} <span class="n" />
-                </button>
-              ))}
-            </div>
-          </div>
-          <label class="grupo orden">
-            <span class="etq">{f.orden}</span>
-            <select name="o">
-              <option value="">{f.ordenes.catalogo}</option>
-              <option value="rapidas">{f.ordenes.rapidas}</option>
-              <option value="lentas">{f.ordenes.lentas}</option>
-              <option value="nombre">{f.ordenes.nombre}</option>
-            </select>
-          </label>
-        </div>
-      </div>
-    </form>
-
-    <section class="cat">
-      <div class="wrap">
-        <div class="estado">
-          <p class="total" aria-live="polite"></p>
-          <button type="button" class="limpiar" hidden>
+  <section class="catalogo">
+    <div class="wrap">
+      <ul class="rejilla" id="rejilla">
+        {todas.map((c, i) => (
+          <>
+            <li class="titulo" data-cat={c}>
+              <span class="num">{String(i + 1).padStart(2, '0')}</span>
+              <h2>{nombreCat(c)}</h2>
+              <span class="grupo-n">{grupoDe(c)}</span>
+            </li>
+            {fichas
+              .filter((x) => x.cat === c)
+              .map((x) =>
+                x.tipo === 'modelo' ? (
+                  <li
+                    class="ficha"
+                    id={x.m.principal ? x.m.serie : x.m.slug}
+                    data-cat={c}
+                    data-t={x.m.temperatura}
+                    data-texto={plano(
+                      x.m.nombre,
+                      nombreCat(c),
+                      grupoDe(c),
+                      textoSerie(lang, x.m.serie).frase,
+                      capacidad(x.m),
+                      x.m.pantalla,
+                      t.temperatura[x.m.temperatura],
+                    )}
+                  >
+                    <article>
+                      <div class="foto">
+                        <img
+                          src={x.m.imagen.src}
+                          alt={x.m.nombre}
+                          width={x.m.imagen.ancho}
+                          height={x.m.imagen.alto}
+                          loading="lazy"
+                          decoding="async"
+                        />
+                        <span class="temp-tag" data-t={x.m.temperatura}>
+                          {may(t.temperatura[x.m.temperatura])}
+                        </span>
+                      </div>
+                      <div class="cuerpo">
+                        <p class="cat-n">{nombreCat(c)}</p>
+                        <h3>{x.m.nombre}</h3>
+                        <p class="frase">{textoSerie(lang, x.m.serie).frase}</p>
+                        {/* Los datos de la web actual, cada uno con su icono */}
+                        <ul class="datos">
+                          <li>
+                            <i style="--ico: url(/img/iconos/ficha-capacidad.svg)" aria-hidden="true" />
+                            <span>{t.catalogo.iconos.capacidad}</span>
+                            <b>{capacidad(x.m)}</b>
+                          </li>
+                          <li>
+                            <i style="--ico: url(/img/iconos/ficha-velocidad.svg)" aria-hidden="true" />
+                            <span>{t.catalogo.iconos.velocidad}</span>
+                            <b>
+                              {numero(lang, x.m.rpm)} rpm
+                              {x.m.xg && <small> · {numero(lang, x.m.xg)} xg</small>}
+                            </b>
+                          </li>
+                          <li>
+                            <i style="--ico: url(/img/iconos/ficha-pantalla.svg)" aria-hidden="true" />
+                            <span>{t.catalogo.iconos.pantalla}</span>
+                            <b>{x.m.pantalla}</b>
+                          </li>
+                        </ul>
+                      </div>
+                    </article>
+                  </li>
+                ) : (
+                  <li
+                    class="ficha lab"
+                    id={x.p.slug}
+                    data-cat={c}
+                    data-texto={plano(
+                      t.laboratorio.items[x.p.slug].nombre,
+                      x.p.modelo,
+                      nombreCat(c),
+                      t.laboratorio.items[x.p.slug].frase,
+                      t.laboratorio.items[x.p.slug].datos,
+                    )}
+                  >
+                    <article>
+                      <div class:list={['foto', { doble: x.p.imagen2 }]}>
+                        <img
+                          src={x.p.imagen.src}
+                          alt={t.laboratorio.items[x.p.slug].nombre}
+                          width={x.p.imagen.ancho}
+                          height={x.p.imagen.alto}
+                          loading="lazy"
+                          decoding="async"
+                        />
+                        {x.p.imagen2 && (
+                          <img
+                            class="segunda"
+                            src={x.p.imagen2.src}
+                            alt=""
+                            width={x.p.imagen2.ancho}
+                            height={x.p.imagen2.alto}
+                            loading="lazy"
+                            decoding="async"
+                          />
+                        )}
+                      </div>
+                      <div class="cuerpo">
+                        <p class="cat-n">{nombreCat(c)}</p>
+                        <h3>
+                          {t.laboratorio.items[x.p.slug].nombre} <span>{x.p.modelo}</span>
+                        </h3>
+                        <p class="frase">{t.laboratorio.items[x.p.slug].frase}</p>
+                        <p class="linea">{t.laboratorio.items[x.p.slug].datos}</p>
+                        {x.p.pdf && (
+                          <a class="arrow pdf" href={x.p.pdf} target="_blank" rel="noopener">
+                            {t.laboratorio.pdf}
+                          </a>
+                        )}
+                      </div>
+                    </article>
+                  </li>
+                ),
+              )}
+          </>
+        ))}
+        <li class="vacio" hidden>
+          <p>{f.vacio}</p>
+          <button type="button" class="btn red limpiar">
             {f.limpiar}
           </button>
-        </div>
-
-        <ul class="rejilla" id="rejilla">
-          {todas.map((c, i) => (
-            <>
-              <li class="titulo" data-cat={c}>
-                <span class="num">{String(i + 1).padStart(2, '0')}</span>
-                <h2>{nombreCat(c)}</h2>
-                <span class="grupo-n">{grupoDe(c)}</span>
-              </li>
-              {fichas
-                .filter((x) => x.cat === c)
-                .map((x) =>
-                  x.tipo === 'modelo' ? (
-                    <li
-                      class="ficha"
-                      id={x.m.principal ? x.m.serie : x.m.slug}
-                      data-cat={c}
-                      data-t={x.m.temperatura}
-                      data-p={x.m.pantalla}
-                      data-rpm={x.m.rpm.replace(/\./g, '')}
-                      data-nombre={x.m.nombre}
-                      data-texto={plano(
-                        x.m.nombre,
-                        nombreCat(c),
-                        grupoDe(c),
-                        textoSerie(lang, x.m.serie).frase,
-                        capacidad(x.m),
-                        x.m.pantalla,
-                        t.temperatura[x.m.temperatura],
-                      )}
-                    >
-                      <article>
-                        <div class="foto">
-                          <img
-                            src={x.m.imagen.src}
-                            alt={x.m.nombre}
-                            width={x.m.imagen.ancho}
-                            height={x.m.imagen.alto}
-                            loading="lazy"
-                            decoding="async"
-                          />
-                          <span class="luz" aria-hidden="true" />
-                        </div>
-                        <div class="cuerpo">
-                          <p class="cat-n">{nombreCat(c)}</p>
-                          <h3>{x.m.nombre}</h3>
-                          <p class="frase">{textoSerie(lang, x.m.serie).frase}</p>
-                          {/* Los cuatro datos de la web actual, cada uno en su ficha con el icono */}
-                          <ul class="datos">
-                            <li>
-                              <i style="--ico: url(/img/iconos/ficha-capacidad.svg)" aria-hidden="true" />
-                              <b>{capacidad(x.m)}</b>
-                              <span>{t.catalogo.iconos.capacidad}</span>
-                            </li>
-                            <li>
-                              <i style="--ico: url(/img/iconos/ficha-pantalla.svg)" aria-hidden="true" />
-                              <b>{x.m.pantalla}</b>
-                              <span>{t.catalogo.iconos.pantalla}</span>
-                            </li>
-                            <li>
-                              <i style="--ico: url(/img/iconos/ficha-velocidad.svg)" aria-hidden="true" />
-                              <b>{numero(lang, x.m.rpm)} rpm</b>
-                              <span>{x.m.xg ? `${numero(lang, x.m.xg)} xg` : t.catalogo.iconos.velocidad}</span>
-                            </li>
-                            <li>
-                              <i style="--ico: url(/img/iconos/ficha-info.svg)" aria-hidden="true" />
-                              <b>{may(t.temperatura[x.m.temperatura])}</b>
-                              <span>{t.catalogo.iconos.temperatura}</span>
-                            </li>
-                          </ul>
-                        </div>
-                      </article>
-                    </li>
-                  ) : (
-                    <li
-                      class="ficha lab"
-                      id={x.p.slug}
-                      data-cat={c}
-                      data-rpm="0"
-                      data-nombre={t.laboratorio.items[x.p.slug].nombre}
-                      data-texto={plano(
-                        t.laboratorio.items[x.p.slug].nombre,
-                        x.p.modelo,
-                        nombreCat(c),
-                        t.laboratorio.items[x.p.slug].frase,
-                        t.laboratorio.items[x.p.slug].datos,
-                      )}
-                    >
-                      <article>
-                        <div class:list={['foto', { doble: x.p.imagen2 }]}>
-                          <img
-                            src={x.p.imagen.src}
-                            alt={t.laboratorio.items[x.p.slug].nombre}
-                            width={x.p.imagen.ancho}
-                            height={x.p.imagen.alto}
-                            loading="lazy"
-                            decoding="async"
-                          />
-                          {x.p.imagen2 && (
-                            <img
-                              class="segunda"
-                              src={x.p.imagen2.src}
-                              alt=""
-                              width={x.p.imagen2.ancho}
-                              height={x.p.imagen2.alto}
-                              loading="lazy"
-                              decoding="async"
-                            />
-                          )}
-                          <span class="luz" aria-hidden="true" />
-                        </div>
-                        <div class="cuerpo">
-                          <p class="cat-n">{nombreCat(c)}</p>
-                          <h3>
-                            {t.laboratorio.items[x.p.slug].nombre} <span>{x.p.modelo}</span>
-                          </h3>
-                          <p class="frase">{t.laboratorio.items[x.p.slug].frase}</p>
-                          <p class="linea">{t.laboratorio.items[x.p.slug].datos}</p>
-                          {x.p.pdf && (
-                            <a class="arrow pdf" href={x.p.pdf} target="_blank" rel="noopener">
-                              {t.laboratorio.pdf}
-                            </a>
-                          )}
-                        </div>
-                      </article>
-                    </li>
-                  ),
-                )}
-            </>
-          ))}
-          <li class="vacio" hidden>
-            <p>{f.vacio}</p>
-            <button type="button" class="btn red limpiar">
-              {f.limpiar}
-            </button>
-          </li>
-        </ul>
-      </div>
-    </section>
-  </div>
+        </li>
+      </ul>
+    </div>
+  </section>
 </Base>
 
 <script>
-  // Filtros del catálogo: una aplicación (pestañas), temperatura y pantalla (dentro de cada una se suma, entre ellas
-  // se cruza), buscador sin tildes y orden. Cada botón dice cuántos productos quedarían al pulsarlo.
+  // Filtros sencillos: una aplicación, la temperatura (se pueden sumar) y el buscador sin tildes.
+  // Cada aplicación dice cuántos productos quedarían al pulsarla.
   const form = document.getElementById('filtros') as HTMLFormElement | null;
   const rejilla = document.getElementById('rejilla');
   if (form && rejilla) {
@@ -334,28 +296,18 @@ const capacidad = (m: Modelo) =>
     const fichas = [...rejilla.querySelectorAll<HTMLElement>('.ficha')];
     const titulos = [...rejilla.querySelectorAll<HTMLElement>('.titulo')];
     const vacio = rejilla.querySelector<HTMLElement>('.vacio')!;
-    const pestanas = [...form.querySelectorAll<HTMLButtonElement>('.pestana')];
-    const chips = [...form.querySelectorAll<HTMLButtonElement>('.chip')];
+    const cats = [...form.querySelectorAll<HTMLButtonElement>('.cat')];
+    const temps = [...form.querySelectorAll<HTMLButtonElement>('.temp')];
     const q = form.querySelector<HTMLInputElement>('input[name=q]')!;
-    const orden = form.querySelector<HTMLSelectElement>('select[name=o]')!;
-    const mas = form.querySelector<HTMLButtonElement>('.mas')!;
-    const panel = form.querySelector<HTMLElement>('.panel')!;
-    const activos = mas.querySelector<HTMLElement>('.activos')!;
-    const limpiar = [...document.querySelectorAll<HTMLButtonElement>('.limpiar')];
-    const totalEl = document.querySelector<HTMLElement>('.estado .total')!;
+    const borrar = [...document.querySelectorAll<HTMLButtonElement>('.limpiar')];
+    const totalEl = form.querySelector<HTMLElement>('.total')!;
 
     let cat = '';
-    const estado: Record<'t' | 'p', Set<string>> = { t: new Set(), p: new Set() };
+    const elegidas = new Set<string>();
     const plano = (s: string) => s.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().trim();
-    // ¿Cumple los filtros? Se puede probar con otra aplicación u otro valor para contar cuántos quedarían
-    const cumple = (el: HTMLElement, prueba?: { c?: string; f?: 't' | 'p'; v?: string }) => {
-      const c = prueba && 'c' in prueba ? prueba.c! : cat;
+    const cumple = (el: HTMLElement, c = cat) => {
       if (c && el.dataset.cat !== c) return false;
-      for (const k of ['t', 'p'] as const) {
-        const valores = new Set(estado[k]);
-        if (prueba?.f === k) valores.add(prueba.v!);
-        if (valores.size && !valores.has(el.dataset[k] ?? '')) return false;
-      }
+      if (elegidas.size && !elegidas.has(el.dataset.t ?? '')) return false;
       const texto = plano(q.value);
       return !texto || texto.split(/\s+/).every((p) => (el.dataset.texto ?? '').includes(p));
     };
@@ -375,123 +327,71 @@ const capacidad = (m: Modelo) =>
         if (ver) i++;
         el.hidden = !ver;
       }
-      // Orden: por aplicación (con sus títulos), por velocidad o por nombre
-      const o = orden.value;
-      const lista = [...fichas];
-      if (o === 'rapidas' || o === 'lentas') {
-        const s = o === 'rapidas' ? -1 : 1;
-        lista.sort((a, b) => {
-          const ra = Number(a.dataset.rpm),
-            rb = Number(b.dataset.rpm);
-          if (!ra || !rb) return ra ? -1 : rb ? 1 : 0;
-          return s * (ra - rb);
-        });
-      } else if (o === 'nombre') {
-        lista.sort((a, b) =>
-          (a.dataset.nombre ?? '').localeCompare(b.dataset.nombre ?? '', document.documentElement.lang),
-        );
-      }
-      lista.forEach((el, n) => (el.style.order = o ? String(n) : ''));
       for (const ti of titulos) {
-        ti.hidden = !!o || !fichas.some((el) => visibles.has(el) && el.dataset.cat === ti.dataset.cat);
+        ti.hidden = !fichas.some((el) => visibles.has(el) && el.dataset.cat === ti.dataset.cat);
       }
-      // Pestañas y botones: cuántos quedarían; los que dejarían cero, apagados
-      for (const p of pestanas) {
-        const c = p.dataset.c ?? '';
-        const n = fichas.filter((el) => cumple(el, { c })).length;
-        p.setAttribute('aria-pressed', String(c === cat));
-        p.disabled = c !== cat && n === 0;
-        p.querySelector('.n')!.textContent = String(n);
+      for (const b of cats) {
+        const c = b.dataset.c ?? '';
+        const n = fichas.filter((el) => cumple(el, c)).length;
+        b.setAttribute('aria-pressed', String(c === cat));
+        b.disabled = c !== cat && n === 0;
+        b.querySelector('.n')!.textContent = String(n);
       }
-      for (const ch of chips) {
-        const k = ch.dataset.f as 't' | 'p',
-          v = ch.dataset.v!;
-        const n = fichas.filter((el) => cumple(el, { f: k, v })).length;
-        const activo = estado[k].has(v);
-        ch.setAttribute('aria-pressed', String(activo));
-        ch.disabled = !activo && n === 0;
-        ch.querySelector('.n')!.textContent = String(n);
-      }
-      const extra = estado.t.size + estado.p.size + (q.value.trim() ? 1 : 0) + (o ? 1 : 0);
-      activos.hidden = !extra;
-      activos.textContent = String(extra);
-      const hay = !!cat || extra > 0;
-      for (const b of limpiar) if (!b.closest('.vacio')) b.hidden = !hay;
+      for (const b of temps) b.setAttribute('aria-pressed', String(elegidas.has(b.dataset.v!)));
+      const hay = !!cat || elegidas.size > 0 || !!q.value.trim();
+      for (const b of borrar) if (!b.closest('.vacio')) b.hidden = !hay;
       totalEl.textContent = total(visibles.size);
       vacio.hidden = visibles.size > 0;
       // La búsqueda queda en la dirección para poder compartirla
       const url = new URL(location.href);
       const poner = (k: string, v: string) => (v ? url.searchParams.set(k, v) : url.searchParams.delete(k));
       poner('c', cat);
-      poner('t', [...estado.t].join(','));
-      poner('p', [...estado.p].join(','));
+      poner('t', [...elegidas].join(','));
       poner('q', q.value.trim());
-      poner('o', o);
       history.replaceState(null, '', url);
       primera = false;
     };
 
-    // Estado inicial desde la dirección
+    // Estado inicial desde la dirección; si se llega a una ficha concreta (lupa, Tecnología), se ve todo
     const url = new URL(location.href);
-    cat = url.searchParams.get('c') ?? '';
-    for (const k of ['t', 'p'] as const) {
-      for (const v of url.searchParams.get(k)?.split(',') ?? []) if (v) estado[k].add(v);
-    }
-    q.value = url.searchParams.get('q') ?? '';
-    orden.value = url.searchParams.get('o') ?? '';
-    // Si se llega a una ficha concreta (lupa, Tecnología), se ve todo para que esté
-    if (location.hash && document.getElementById(location.hash.slice(1))?.classList.contains('ficha')) {
-      cat = '';
-      estado.t.clear();
-      estado.p.clear();
-      q.value = '';
-    }
-    if (estado.t.size || estado.p.size || q.value || orden.value) {
-      panel.hidden = false;
-      mas.setAttribute('aria-expanded', 'true');
+    const aFicha = location.hash && document.getElementById(location.hash.slice(1))?.classList.contains('ficha');
+    if (!aFicha) {
+      cat = url.searchParams.get('c') ?? '';
+      for (const v of url.searchParams.get('t')?.split(',') ?? []) if (v) elegidas.add(v);
+      q.value = url.searchParams.get('q') ?? '';
     }
 
-    // Al cambiar de pestaña, la rejilla sube bajo la barra para ver el resultado desde arriba
+    // Al cambiar de aplicación, el catálogo sube bajo la barra para verlo desde arriba
     const subir = () => {
-      const y = rejilla.getBoundingClientRect().top + window.scrollY - form.offsetHeight - 110;
+      const y = rejilla.getBoundingClientRect().top + window.scrollY - form.offsetHeight - 100;
       if (window.scrollY > y) window.scrollTo({ top: y, behavior: 'smooth' });
     };
-    for (const p of pestanas) {
-      p.addEventListener('click', () => {
-        cat = p.dataset.c ?? '';
+    for (const b of cats) {
+      b.addEventListener('click', () => {
+        cat = b.dataset.c ?? '';
         aplicar();
         subir();
       });
     }
-    for (const ch of chips) {
-      ch.addEventListener('click', () => {
-        const k = ch.dataset.f as 't' | 'p',
-          v = ch.dataset.v!;
-        if (estado[k].has(v)) estado[k].delete(v);
-        else estado[k].add(v);
+    for (const b of temps) {
+      b.addEventListener('click', () => {
+        const v = b.dataset.v!;
+        if (elegidas.has(v)) elegidas.delete(v);
+        else elegidas.add(v);
         aplicar();
       });
     }
-    mas.addEventListener('click', () => {
-      const abrir = panel.hidden;
-      panel.hidden = !abrir;
-      mas.setAttribute('aria-expanded', String(abrir));
-      if (abrir) q.focus({ preventScroll: true });
-    });
     let espera = 0;
     q.addEventListener('input', () => {
       clearTimeout(espera);
       espera = window.setTimeout(aplicar, 120);
     });
-    orden.addEventListener('change', aplicar);
     form.addEventListener('submit', (e) => e.preventDefault());
-    for (const b of limpiar) {
+    for (const b of borrar) {
       b.addEventListener('click', () => {
         cat = '';
-        estado.t.clear();
-        estado.p.clear();
+        elegidas.clear();
         q.value = '';
-        orden.value = '';
         aplicar();
       });
     }
@@ -501,24 +401,42 @@ const capacidad = (m: Modelo) =>
 
 <style>
   /* Lo que el filtro oculta, oculto aunque tenga su propio display */
-  .pagina [hidden] {
+  [hidden] {
     display: none !important;
   }
-  /* Toda la página en el oscuro de la portada */
-  .pagina {
-    --fondo: #111315;
-    --cristal: rgba(255, 255, 255, 0.045);
-    --filo: rgba(255, 255, 255, 0.1);
-    --texto: rgba(255, 255, 255, 0.72);
-    --tenue: rgba(255, 255, 255, 0.5);
-    background: var(--fondo);
+
+  /* ——— Hero: foto a todo el ancho, oscurecida a la izquierda para el texto ——— */
+  .hero {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+    background: #111315;
     color: #fff;
   }
-
-  /* ——— Cabecera ——— */
-  .cab {
-    padding-block: clamp(56px, 8vw, 104px) clamp(36px, 4vw, 56px);
-    border-bottom: 1px solid var(--filo);
+  .hero-foto {
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 70% 40%;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background:
+      linear-gradient(90deg, rgba(10, 11, 12, 0.9) 0%, rgba(10, 11, 12, 0.72) 40%, rgba(10, 11, 12, 0.1) 75%),
+      linear-gradient(0deg, rgba(10, 11, 12, 0.55) 0%, rgba(10, 11, 12, 0) 40%);
+  }
+  .hero-in {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    min-height: min(68vh, 640px);
+    padding-block: clamp(64px, 9vw, 120px) clamp(36px, 4.5vw, 56px);
   }
   h1 {
     font-size: var(--t-titulo);
@@ -533,231 +451,112 @@ const capacidad = (m: Modelo) =>
     color: var(--red);
   }
   .lead {
-    margin-top: 22px;
-    max-width: 48ch;
+    margin-top: 20px;
+    max-width: 44ch;
     font-size: var(--t-sub);
-    color: var(--texto);
+    color: rgba(255, 255, 255, 0.86);
   }
-  .cifras {
-    margin: 32px 0 0;
+  /* Badges de cristal, como los botones de la portada: cifra grande y qué es */
+  .badges {
+    margin: clamp(28px, 4vw, 40px) 0 0;
     padding: 0;
     list-style: none;
     display: flex;
     flex-wrap: wrap;
-    gap: 12px;
-  }
-  .cifras li {
-    display: flex;
-    align-items: baseline;
     gap: 10px;
-    padding: 12px 18px;
-    border: 1px solid var(--filo);
-    background: var(--cristal);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
-    font-size: 16px;
-    color: var(--texto);
   }
-  .cifras b {
-    font-size: 30px;
+  .badges li {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 64px;
+    padding: 10px 20px 10px 18px;
+    border: 1px solid rgba(255, 255, 255, 0.26);
+    background: rgba(255, 255, 255, 0.08);
+    -webkit-backdrop-filter: blur(14px) saturate(160%);
+    backdrop-filter: blur(14px) saturate(160%);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  }
+  .badges li::before {
+    content: '';
+    position: absolute;
+    top: -1px;
+    left: -1px;
+    width: 24px;
+    height: 3px;
+    background: var(--red);
+  }
+  .badges b {
+    font-size: 34px;
     line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+  .badges span {
+    max-width: 11ch;
+    font-size: 15px;
+    line-height: 1.15;
+    color: rgba(255, 255, 255, 0.86);
+  }
+  /* "Siempre en stock": punto rojo que late */
+  .stock i {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--red);
+    box-shadow: 0 0 0 0 rgba(221, 4, 10, 0.7);
+  }
+  .stock span {
+    max-width: none;
+    font-weight: 700;
     color: #fff;
   }
 
-  /* ——— Barra fija de cristal con las pestañas ——— */
-  .barra {
+  /* ——— Filtros sencillos: barra blanca fija ——— */
+  .filtros {
     position: sticky;
     top: 0;
     z-index: 15;
-    background: rgba(17, 19, 21, 0.78);
-    -webkit-backdrop-filter: blur(18px) saturate(150%);
-    backdrop-filter: blur(18px) saturate(150%);
-    border-bottom: 1px solid var(--filo);
+    background: rgba(255, 255, 255, 0.9);
+    -webkit-backdrop-filter: blur(16px) saturate(160%);
+    backdrop-filter: blur(16px) saturate(160%);
+    border-bottom: 1px solid var(--line);
+    box-shadow: 0 12px 30px -26px rgba(17, 19, 21, 0.5);
     transition: top 0.35s var(--ease);
   }
   /* Con la cabecera de la web a la vista, la barra va justo debajo */
-  :global(html:has(#top:not(.oculta))) .barra {
+  :global(html:has(#top:not(.oculta))) .filtros {
     top: 76px;
   }
-  .barra-in {
-    display: flex;
-    align-items: stretch;
-    gap: 16px;
-  }
-  .pestanas {
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    gap: 4px;
-    overflow-x: auto;
-    scrollbar-width: none;
-    mask-image: linear-gradient(90deg, #000 calc(100% - 32px), transparent);
-  }
-  /* Escritorio: todas a la vista, en dos filas si hace falta */
-  @media (min-width: 901px) {
-    .pestanas {
-      flex-wrap: wrap;
-      overflow: visible;
-      mask-image: none;
-      row-gap: 0;
-    }
-    .pestana {
-      padding-block: 13px;
-    }
-  }
-  .pestanas::-webkit-scrollbar {
-    display: none;
-  }
-  .pestana {
-    position: relative;
-    flex: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 18px 9px;
-    border: 0;
-    background: none;
-    font: 400 15px var(--f);
-    color: var(--texto);
-    white-space: nowrap;
-    cursor: pointer;
-    transition: color 0.2s var(--ease);
-  }
-  .pestana::after {
-    content: '';
-    position: absolute;
-    left: 9px;
-    right: 9px;
-    bottom: 0;
-    height: 3px;
-    background: var(--red);
-    transform: scaleX(0);
-    transition: transform 0.3s var(--ease);
-  }
-  .pestana[aria-pressed='true'] {
-    color: #fff;
-    font-weight: 700;
-  }
-  .pestana[aria-pressed='true']::after {
-    transform: scaleX(1);
-    box-shadow: 0 0 12px rgba(221, 4, 10, 0.8);
-  }
-  .n {
-    font-size: 12px;
-    font-weight: 700;
-    color: var(--tenue);
-    font-variant-numeric: tabular-nums;
-  }
-  .pestana[aria-pressed='true'] .n {
-    color: var(--red);
-  }
-  .pestana:disabled {
-    opacity: 0.3;
-    cursor: default;
-  }
-  @media (hover: hover) {
-    .pestana:not(:disabled, [aria-pressed='true']):hover {
-      color: #fff;
-    }
-    .pestana:not(:disabled, [aria-pressed='true']):hover::after {
-      transform: scaleX(0.4);
-    }
-  }
-  .mas {
-    flex: none;
-    align-self: center;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    height: 40px;
-    padding: 0 14px;
-    border: 1px solid rgba(255, 255, 255, 0.28);
-    background: var(--cristal);
-    font: 700 15px var(--f);
-    color: #fff;
-    cursor: pointer;
-    transition:
-      border-color 0.2s var(--ease),
-      background 0.2s var(--ease);
-  }
-  .borrar {
-    flex: none;
-    align-self: center;
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    height: 40px;
-    padding: 0 14px;
-    border: 1px solid var(--red);
-    background: var(--red);
-    font: 700 15px var(--f);
-    color: #fff;
-    cursor: pointer;
-    box-shadow: 0 0 18px -6px rgba(221, 4, 10, 0.9);
-    animation: baja 0.25s var(--ease);
-  }
-  .borrar:focus-visible {
-    outline: 2px solid #fff;
-    outline-offset: 2px;
-  }
-  .mas[aria-expanded='true'] {
-    border-color: var(--red);
-    background: rgba(221, 4, 10, 0.18);
-  }
-  .activos[hidden] {
-    display: none;
-  }
-  .activos {
+  .filtros-in {
     display: grid;
-    place-items: center;
-    min-width: 20px;
-    height: 20px;
-    padding: 0 5px;
-    background: var(--red);
-    font-size: 12px;
+    gap: 12px;
+    padding-block: 16px 14px;
   }
-  .pestana:focus-visible,
-  .mas:focus-visible,
-  .chip:focus-visible,
-  .limpiar:focus-visible {
-    outline: 2px solid var(--red);
-    outline-offset: 2px;
-  }
-
-  /* Más filtros, bajo la barra */
-  .panel {
-    border-top: 1px solid var(--filo);
-    animation: baja 0.3s var(--ease);
-  }
-  .panel-in {
+  .arriba {
     display: flex;
     flex-wrap: wrap;
-    align-items: flex-end;
-    gap: 16px 32px;
-    padding-block: 18px 20px;
-  }
-  .etq {
-    display: block;
-    margin: 0 0 8px;
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--tenue);
+    align-items: center;
+    gap: 12px 16px;
   }
   .buscar {
     flex: 1 1 280px;
+    max-width: 420px;
     display: flex;
     align-items: center;
     gap: 10px;
     height: 44px;
     padding: 0 14px;
-    border: 1px solid var(--filo);
-    background: rgba(255, 255, 255, 0.06);
-    color: var(--tenue);
-    transition: border-color 0.2s var(--ease);
+    background: var(--panel);
+    border: 1px solid transparent;
+    color: var(--muted);
+    transition:
+      border-color 0.2s var(--ease),
+      background 0.2s var(--ease);
   }
   .buscar:focus-within {
-    border-color: var(--red);
+    background: #fff;
+    border-color: var(--ink);
   }
   .buscar input {
     flex: 1;
@@ -766,104 +565,134 @@ const capacidad = (m: Modelo) =>
     outline: 0;
     background: none;
     font: 400 17px var(--f);
+    color: var(--ink);
+  }
+  /* Temperatura: tres botones pegados, como un interruptor */
+  .temps {
+    display: flex;
+    border: 1px solid var(--line);
+  }
+  .temp {
+    height: 42px;
+    padding: 0 14px;
+    border: 0;
+    border-left: 1px solid var(--line);
+    background: #fff;
+    font: 400 15px var(--f);
+    color: var(--ink);
+    cursor: pointer;
+    transition:
+      background 0.2s var(--ease),
+      color 0.2s var(--ease);
+  }
+  .temp:first-child {
+    border-left: 0;
+  }
+  .temp[aria-pressed='true'] {
+    background: var(--ink);
     color: #fff;
+    font-weight: 700;
   }
-  .buscar input::placeholder {
-    color: var(--tenue);
+  .total {
+    margin: 0 0 0 auto;
+    font-size: 16px;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
   }
-  .chips {
+  .borrar {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    height: 42px;
+    padding: 0 14px;
+    border: 1px solid var(--red);
+    background: var(--red);
+    font: 700 15px var(--f);
+    color: #fff;
+    cursor: pointer;
+    animation: aparece 0.25s var(--ease);
+  }
+  /* Aplicaciones: texto con su número; la elegida, en rojo */
+  .cats {
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
   }
-  .chip {
+  .cat {
+    position: relative;
     display: inline-flex;
     align-items: center;
-    gap: 7px;
+    gap: 6px;
     height: 36px;
     padding: 0 12px;
-    border: 1px solid var(--filo);
-    background: var(--cristal);
+    border: 1px solid transparent;
+    background: var(--panel);
     font: 400 15px var(--f);
-    color: #fff;
+    color: var(--ink);
+    white-space: nowrap;
     cursor: pointer;
     transition:
       background 0.2s var(--ease),
+      color 0.2s var(--ease),
       border-color 0.2s var(--ease);
   }
-  .chip[aria-pressed='true'] {
-    background: var(--red);
-    border-color: var(--red);
+  .n {
+    font-size: 12px;
     font-weight: 700;
-    box-shadow: 0 0 18px -6px rgba(221, 4, 10, 0.9);
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
   }
-  .chip[aria-pressed='true'] .n {
+  .cat[aria-pressed='true'] {
+    background: var(--red);
+    color: #fff;
+    font-weight: 700;
+  }
+  .cat[aria-pressed='true'] .n {
     color: rgba(255, 255, 255, 0.8);
   }
-  .chip:disabled {
-    opacity: 0.3;
+  .cat:disabled {
+    opacity: 0.35;
     cursor: default;
   }
   @media (hover: hover) {
-    .chip:not(:disabled, [aria-pressed='true']):hover {
-      border-color: rgba(221, 4, 10, 0.7);
+    .cat:not(:disabled, [aria-pressed='true']):hover {
+      border-color: var(--red);
+      color: var(--red);
+      background: #fff;
+    }
+    .temp:not([aria-pressed='true']):hover {
+      color: var(--red);
     }
   }
-  .orden select {
-    height: 36px;
-    padding: 0 10px;
-    border: 1px solid var(--filo);
-    background: #1b1e21;
-    font: 700 15px var(--f);
-    color: #fff;
-    cursor: pointer;
+  .cat:focus-visible,
+  .temp:focus-visible,
+  .borrar:focus-visible {
+    outline: 2px solid var(--red);
+    outline-offset: 2px;
   }
 
-  /* ——— Catálogo ——— */
-  .cat {
-    padding-block: 28px clamp(72px, 9vw, 120px);
-  }
-  .estado {
-    display: flex;
-    align-items: center;
-    gap: 18px;
-    min-height: 28px;
-  }
-  .total {
-    margin: 0;
-    font-size: 16px;
-    color: var(--tenue);
-    font-variant-numeric: tabular-nums;
-  }
-  .limpiar:not(.btn) {
-    border: 0;
-    background: none;
-    padding: 0;
-    font: 700 15px var(--f);
-    color: var(--red);
-    cursor: pointer;
+  /* ——— Catálogo en blanco ——— */
+  .catalogo {
+    padding-block: 8px clamp(72px, 9vw, 120px);
   }
   .rejilla {
-    margin: 12px 0 0;
+    margin: 0;
     padding: 0;
     list-style: none;
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 28px 24px;
   }
-  /* Título de cada aplicación: número rojo, nombre grande y fino, y su grupo a la derecha */
+  /* Título de cada aplicación: número rojo, nombre grande y fino y su grupo a la derecha */
   .titulo {
     grid-column: 1 / -1;
     display: flex;
     align-items: baseline;
-    gap: 16px;
-    margin-top: 40px;
-    padding-bottom: 16px;
-    border-bottom: 1px solid var(--filo);
-    scroll-margin-top: 180px;
-  }
-  .titulo:first-child {
-    margin-top: 12px;
+    gap: 14px;
+    margin-top: 48px;
+    padding-bottom: 14px;
+    border-bottom: 2px solid var(--ink);
+    scroll-margin-top: 220px;
   }
   .num {
     font-size: 15px;
@@ -872,93 +701,113 @@ const capacidad = (m: Modelo) =>
     font-variant-numeric: tabular-nums;
   }
   .titulo h2 {
-    font-size: clamp(32px, 3.4vw, 48px);
+    font-size: clamp(32px, 3.4vw, 46px);
     font-weight: 300;
     line-height: 1;
   }
   .grupo-n {
     margin-left: auto;
     font-size: 14px;
-    color: var(--tenue);
+    color: var(--muted);
   }
 
-  /* Tarjeta de cristal ahumado */
+  /* Tarjeta: escenario gris claro con la máquina recortada y su sombra; ficha blanca debajo */
   .ficha {
-    scroll-margin-top: 180px;
+    scroll-margin-top: 220px;
   }
   .ficha article {
     position: relative;
     height: 100%;
     display: flex;
     flex-direction: column;
-    overflow: hidden;
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.025));
-    border: 1px solid var(--filo);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    background: #fff;
+    border: 1px solid var(--line);
     transition:
       transform 0.4s var(--ease),
-      border-color 0.4s var(--ease),
-      box-shadow 0.4s var(--ease);
+      box-shadow 0.4s var(--ease),
+      border-color 0.4s var(--ease);
   }
-  /* Raya roja arriba que crece al pasar, como el resto de tarjetas de la web */
   .ficha article::before {
     content: '';
     position: absolute;
     z-index: 2;
-    top: 0;
-    left: 0;
+    top: -1px;
+    left: -1px;
     width: 36px;
     height: 3px;
     background: var(--red);
     transition: width 0.5s var(--ease);
   }
-  /* La máquina recortada, bajo un foco: luz suave detrás y su sombra en el suelo */
   .foto {
     position: relative;
-    aspect-ratio: 1 / 0.82;
+    aspect-ratio: 1 / 0.8;
     overflow: hidden;
+    background: linear-gradient(180deg, #f5f6f7 0%, #eceef0 100%);
   }
-  .foto::before {
+  /* Sombra de la máquina en el suelo del escenario */
+  .foto::after {
     content: '';
     position: absolute;
-    inset: 0;
-    background:
-      radial-gradient(ellipse 34% 7% at 50% 88%, rgba(0, 0, 0, 0.55), transparent 100%),
-      radial-gradient(ellipse 55% 50% at 50% 46%, rgba(255, 255, 255, 0.11), transparent 72%);
-    transition: opacity 0.4s var(--ease);
+    left: 25%;
+    right: 25%;
+    bottom: 9%;
+    height: 8%;
+    background: radial-gradient(closest-side, rgba(17, 19, 21, 0.28), transparent);
+    transition: transform 0.6s var(--ease);
   }
   .foto img {
     position: absolute;
+    z-index: 1;
     left: 50%;
-    top: 50%;
-    width: 86%;
+    top: 49%;
+    width: 84%;
     height: auto;
     translate: -50% -50%;
-    filter: drop-shadow(0 18px 22px rgba(0, 0, 0, 0.45));
     transition:
       transform 0.7s var(--ease),
       opacity 0.45s var(--ease);
   }
-  /* La segunda foto (el accesorio en uso) es una escena: se funde con el oscuro por los bordes */
   .foto .segunda {
     opacity: 0;
-    filter: none;
-    -webkit-mask-image: radial-gradient(ellipse 50% 50% at 50% 50%, #000 60%, transparent 100%);
-    mask-image: radial-gradient(ellipse 50% 50% at 50% 50%, #000 60%, transparent 100%);
+    width: 100%;
+    top: 50%;
   }
-  /* Destello que cruza al pasar el ratón, el de los botones de la portada */
-  .luz {
+  /* Temperatura en una etiqueta sobre el escenario: refrigerada en azul hielo, calefactada en ámbar */
+  .temp-tag {
     position: absolute;
-    inset: 0;
-    background: linear-gradient(105deg, transparent 35%, rgba(255, 255, 255, 0.18) 50%, transparent 65%);
-    translate: -110% 0;
-    pointer-events: none;
+    z-index: 2;
+    top: 14px;
+    right: 14px;
+    padding: 5px 10px;
+    background: rgba(255, 255, 255, 0.85);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(26, 26, 26, 0.08);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ink);
+  }
+  .temp-tag::before {
+    content: '';
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    margin-right: 7px;
+    border-radius: 50%;
+    background: var(--steel);
+    vertical-align: 1px;
+  }
+  .temp-tag[data-t='refrigerada']::before {
+    background: #4a90c8;
+  }
+  .temp-tag[data-t='calefactada']::before {
+    background: #d9822b;
   }
   .cuerpo {
     flex: 1;
     display: flex;
     flex-direction: column;
-    padding: 0 18px 18px;
+    padding: 18px 20px 20px;
   }
   .cat-n {
     margin: 0;
@@ -970,78 +819,70 @@ const capacidad = (m: Modelo) =>
   }
   h3 {
     margin-top: 6px;
-    font-size: 26px;
+    font-size: 28px;
     font-weight: 700;
     line-height: 1.02;
   }
   h3 span {
     display: block;
     margin-top: 4px;
-    font-size: 15px;
+    font-size: 16px;
     font-weight: 300;
-    color: var(--tenue);
+    color: var(--muted);
   }
   .frase {
     margin-top: 8px;
     font-size: 15px;
     line-height: 1.35;
-    color: var(--texto);
+    color: var(--body);
   }
-  /* Los cuatro datos: fichas de cristal con el icono en su cuadrado rojo, el valor en grande y qué es debajo */
+  /* Datos: icono de la web actual en su cuadrado rojo, qué es y el valor, en filas finas */
   .datos {
     margin: auto 0 0;
-    padding: 16px 0 0;
+    padding: 18px 0 0;
     list-style: none;
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 6px;
   }
   .datos li {
     display: grid;
-    grid-template-columns: 30px minmax(0, 1fr);
-    grid-template-rows: auto auto;
-    column-gap: 10px;
+    grid-template-columns: 26px auto minmax(0, 1fr);
     align-items: center;
-    padding: 8px;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.07);
+    gap: 12px;
+    padding: 8px 0;
+    border-top: 1px solid var(--panel);
   }
   .datos i {
-    grid-row: 1 / 3;
-    width: 30px;
-    height: 30px;
+    width: 26px;
+    height: 26px;
     background: var(--red) var(--ico) center / 58% 58% no-repeat;
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.35),
-      0 0 14px -4px rgba(221, 4, 10, 0.7);
-    transition: box-shadow 0.4s var(--ease);
-  }
-  .datos b {
-    font-size: 15px;
-    line-height: 1.1;
-    color: #fff;
-    font-variant-numeric: tabular-nums;
-    overflow-wrap: anywhere;
   }
   .datos span {
-    font-size: 11px;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--tenue);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .datos b {
+    justify-self: end;
+    text-align: right;
+    font-size: 16px;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+  }
+  .datos small {
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--muted);
   }
   .linea {
     margin-top: auto;
     padding-top: 14px;
+    border-top: 1px solid var(--panel);
     font-size: 14px;
-    color: var(--tenue);
+    color: var(--muted);
   }
   .pdf {
     margin-top: 12px;
     font-size: 16px;
-    color: #fff;
+    color: var(--ink);
   }
   .ficha:target article {
     border-color: var(--red);
@@ -1050,27 +891,17 @@ const capacidad = (m: Modelo) =>
   @media (hover: hover) {
     .ficha article:hover {
       transform: translateY(-6px);
-      border-color: rgba(221, 4, 10, 0.55);
-      box-shadow:
-        inset 0 1px 0 rgba(255, 255, 255, 0.1),
-        0 0 0 1px rgba(221, 4, 10, 0.25),
-        0 28px 60px -28px rgba(221, 4, 10, 0.55);
+      border-color: rgba(26, 26, 26, 0.2);
+      box-shadow: 0 30px 50px -30px rgba(17, 19, 21, 0.4);
     }
     .ficha article:hover::before {
-      width: 100%;
+      width: calc(100% + 2px);
     }
     .ficha article:hover .foto img {
       transform: scale(1.05);
     }
-    .ficha article:hover .foto::before {
-      background:
-        radial-gradient(ellipse 34% 7% at 50% 88%, rgba(0, 0, 0, 0.55), transparent 100%),
-        radial-gradient(ellipse 55% 50% at 50% 46%, rgba(221, 4, 10, 0.16), transparent 72%);
-    }
-    .ficha article:hover .datos i {
-      box-shadow:
-        inset 0 1px 0 rgba(255, 255, 255, 0.45),
-        0 0 20px -2px rgba(255, 40, 40, 0.9);
+    .ficha article:hover .foto::after {
+      transform: scaleX(1.12);
     }
     .ficha article:hover .foto.doble img:first-child {
       opacity: 0;
@@ -1079,29 +910,24 @@ const capacidad = (m: Modelo) =>
       opacity: 1;
     }
   }
-  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
-    .ficha article:hover .luz {
-      translate: 110% 0;
-      transition: translate 0.8s var(--ease);
-    }
-  }
-  /* Al filtrar, las que vuelven entran suaves una detrás de otra */
   @media (prefers-reduced-motion: no-preference) {
+    .stock i {
+      animation: late 2s ease-out infinite;
+    }
     .ficha.entra {
-      animation: entra 0.45s var(--ease) both;
+      animation: aparece 0.45s var(--ease) both;
       animation-delay: calc(var(--i, 0) * 35ms);
     }
   }
-  @keyframes entra {
-    from {
-      opacity: 0;
-      transform: translateY(14px);
+  @keyframes late {
+    to {
+      box-shadow: 0 0 0 10px rgba(221, 4, 10, 0);
     }
   }
-  @keyframes baja {
+  @keyframes aparece {
     from {
       opacity: 0;
-      transform: translateY(-6px);
+      transform: translateY(12px);
     }
   }
 
@@ -1109,12 +935,11 @@ const capacidad = (m: Modelo) =>
     grid-column: 1 / -1;
     padding: 56px 24px;
     text-align: center;
-    border: 1px dashed var(--filo);
+    border: 1px dashed var(--line);
   }
   .vacio p {
     margin: 0 0 20px;
     font-size: 20px;
-    color: var(--texto);
   }
   .sr {
     position: absolute;
@@ -1126,64 +951,62 @@ const capacidad = (m: Modelo) =>
   }
 
   @media (max-width: 1439px) {
-    :global(html:has(#top:not(.oculta))) .barra {
+    :global(html:has(#top:not(.oculta))) .filtros {
       top: 60px;
     }
   }
-  @media (max-width: 860px) {
+  @media (max-width: 1000px) {
     .rejilla {
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 16px 12px;
+    }
+  }
+  /* Móvil: las aplicaciones se deslizan de lado y la temperatura ocupa el ancho */
+  @media (max-width: 640px) {
+    .hero-in {
+      min-height: 0;
+    }
+    .badges li {
+      min-height: 54px;
+      padding: 8px 14px;
+    }
+    .badges b {
+      font-size: 26px;
+    }
+    .buscar {
+      max-width: none;
+    }
+    .temps {
+      flex: 1;
+    }
+    .temp {
+      flex: 1;
+      padding: 0 8px;
+    }
+    .total {
+      margin-left: 0;
+    }
+    .cats {
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      scrollbar-width: none;
+      margin-inline: calc(-1 * var(--gut));
+      padding-inline: var(--gut);
+    }
+    .cats::-webkit-scrollbar {
+      display: none;
+    }
+    .rejilla {
+      grid-template-columns: 1fr;
     }
     .grupo-n {
       display: none;
     }
   }
-  /* Móvil: las pestañas se deslizan; "Filtros" queda en icono para dejarles sitio */
-  @media (max-width: 560px) {
-    .mas span:not(.activos) {
-      position: absolute;
-      width: 1px;
-      height: 1px;
-      overflow: hidden;
-      clip-path: inset(50%);
-    }
-    .cuerpo {
-      padding: 0 12px 12px;
-    }
-    h3 {
-      font-size: 20px;
-    }
-    .frase {
-      display: none;
-    }
-    .datos {
-      grid-template-columns: 1fr;
-      gap: 4px;
-    }
-    .datos li {
-      padding: 6px;
-      grid-template-columns: 24px minmax(0, 1fr);
-      column-gap: 8px;
-    }
-    .datos i {
-      width: 24px;
-      height: 24px;
-    }
-    .datos b {
-      font-size: 13px;
-    }
-    .datos span {
-      font-size: 10px;
-    }
-  }
   @media (prefers-reduced-motion: reduce) {
     .ficha article,
     .foto img,
-    .panel,
-    .barra {
+    .filtros {
       transition: none;
-      animation: none;
     }
   }
 </style>

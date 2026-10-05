@@ -894,27 +894,28 @@ entera delante, si se ensancha el contenido de 1280 a 1440 px.
   izquierda y las otras dos apiladas (tarjetas apretadas y desiguales) y un carrusel con pestañas (correcto, pero
   solo enseñaba una tecnología cada vez).
 
-## 18. Productos: el catálogo entero, en oscuro y con filtros
+## 18. Productos: hero, filtros sencillos y una tarjeta por modelo
 
 - **Antes:** `/centrifugas/` tenía las 17 series en blanco, agrupadas en cinco familias propias, con fotos recortadas
   muy de cerca (la Magnus 22, que es de suelo, parecía de sobremesa) y una línea de cifras. Ni accesorios ni
   otros productos de laboratorio.
-- **Ahora (5-10-2026, primera versión para revisar con la empresa):**
-  - **Toda la página en el oscuro de la portada.** Título con "productos" en rojo y tres cifras en placas de cristal.
+- **Ahora (5-10-2026, versión para revisar con la empresa):**
+  - **Hero grande** con una foto de la empresa (una mano con guante sobre la pantalla de una centrífuga), el título
+    con "productos" en rojo y **badges de cristal** como los botones de la portada: 23 centrífugas, 9 aplicaciones,
+    1949 y "Siempre en stock" con un punto rojo que late.
+  - **Filtros sencillos** en una barra blanca fija: buscador (sin tildes), temperatura (ventilada, refrigerada,
+    calefactada), las 9 aplicaciones de la web actual más Accesorios y Laboratorio con su número, y **Borrar
+    filtros**. Cada aplicación dice cuántos productos quedarían; la búsqueda se guarda en la dirección.
   - **Una tarjeta por modelo (23)**, como la web actual, con la foto entera de su página de productos recortada sobre
-    el oscuro, bajo un foco suave con su sombra. Al pasar el ratón la tarjeta sube, se enciende en rojo y cruza el
-    destello de los botones de la portada.
-  - **Los cuatro datos de la web actual** (capacidad, pantalla, velocidad y temperatura) en fichas de cristal con su
-    icono en un cuadrado rojo, el valor en grande y qué es debajo; las xg, bajo las rpm.
-  - **Barra fija de cristal** con las 9 aplicaciones de la web actual como pestañas (Minicentrífuga, Pequeña,
-    Microcentrífuga, Universal, Gran capacidad, Sobrepiso, Oil/Petrol, Tejidos, Lácteos/Vet), más Accesorios y
-    Laboratorio. "Filtros" despliega buscador (sin tildes), temperatura, pantalla y orden. Cada botón dice cuántos
-    productos quedarían y se apaga si no queda ninguno; la búsqueda se guarda en la dirección para compartirla.
+    un escenario gris claro con su sombra. La temperatura va en una etiqueta (azul la refrigerada, ámbar la
+    calefactada) y capacidad, velocidad (con las xg) y pantalla, en filas con los iconos de la web actual.
   - **Accesorios** (mesas móviles y GRS, con una segunda foto al pasar el ratón) y **otros productos de laboratorio**
     (tamizadora, molino de bolas y destiladores) con su catálogo en PDF.
-- **Por qué:** lo pidió la empresa: todo lo que vende en un sitio, ordenado como lo conocen sus distribuidores y con el
-  aspecto de la portada. Los iconos siguen fuera de la portada, que era lo que la dirección veía agresivo (13.1).
-- **Descartado:** la primera versión en blanco con panel de filtros grande (pesada y con mucho blanco), y el foco
-  como mancha blanca alrededor de la foto (se veían los bordes): las fotos se recortan.
+- **Por qué:** lo pidió la empresa: todo lo que vende en un sitio, ordenado como lo conocen sus distribuidores, con un
+  hero a la altura de la portada y el catálogo limpio en blanco. Los iconos siguen fuera de la portada, que era lo que
+  la dirección veía agresivo (13.1).
+- **Descartado:** una primera versión en blanco con un panel de filtros grande (pesada); una versión toda en oscuro
+  con tarjetas de cristal ahumado (demasiado oscura para un catálogo); repetir la foto del rotor de la portada en la
+  cabecera; y filtrar por pantalla u ordenar (complicaban la barra; la pantalla sigue en cada tarjeta).
 - **Pendiente:** los 73 rotores (en la web actual van dentro de la ficha de cada centrífuga) y las tablas de tamices y
   de eficacia del destilado, para las fichas de cada producto.
