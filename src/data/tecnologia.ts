@@ -39,24 +39,3 @@ export const smartconnect = {
   acceso: 'https://ortoalresa-frontend-j56qpltrua-ew.a.run.app/login',
   modelos: modelos('digicen-22', 'cyto-22'),
 };
-
-const tactiles = [
-  'digicen-22',
-  'consul-22',
-  'digtor-22',
-  'magnus-22',
-  'dilitcen-22-r',
-  'digtor-22-c',
-  'digtor-22-col',
-  'cyto-22',
-];
-
-export const sistemas = [
-  { id: 'pantalla', modelos: modelos(...tactiles) },
-  // Todas las de pantalla táctil y las LCD con PCBS (tabla comparativa del catálogo, pág. 30-31)
-  { id: 'pcbs', modelos: modelos('biocen-22-r', 'bioprocen-22-r', 'lacter-21', 'plasma-22') },
-  {
-    id: 'uls',
-    modelos: modelos('consul-22', 'digtor-22', 'dilitcen-22-r', 'magnus-22', 'digtor-22-c', 'digtor-22-col'),
-  },
-] as const;
