@@ -15,7 +15,7 @@ export interface ProductoLab {
   pdf?: string;
 }
 
-const img = (slug: string) => ({ src: `/img/productos-lab/${slug}.webp`, ancho: 720, alto: 720 });
+const img = (slug: string) => ({ src: `/img/productos-lab/${slug}.webp`, ancho: 640, alto: 640 });
 
 export const equipos: ProductoLab[] = [
   {
