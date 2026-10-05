@@ -37,37 +37,9 @@ const base = sinIdioma(Astro.url.pathname);
   </head>
   <body>
     <Header />
-    <div class="tab" aria-hidden="true">
-      {t.meta.pestana}
-    </div>
     <main id="inicio" tabindex="-1">
       <slot />
     </main>
     <Footer />
   </body>
 </html>
-
-<style>
-  /* Pestaña roja vertical: el elemento de navegación más reconocible del catálogo */
-  .tab {
-    position: fixed;
-    left: 0;
-    top: 50%;
-    transform: translateY(-50%);
-    z-index: 10;
-    background: var(--red);
-    color: #fff;
-    writing-mode: vertical-rl;
-    rotate: 180deg;
-    padding: 18px 7px;
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-  }
-  @media (max-width: 760px) {
-    .tab {
-      display: none;
-    }
-  }
-</style>

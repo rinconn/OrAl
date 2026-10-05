@@ -40,7 +40,7 @@ public/                  Se publica tal cual
     productos/  fotos/  marca/  iconos/ (iconos: fase 1)
 src/
   pages/                 Cada archivo es una URL (index.astro → /, 404.astro → página de error)
-  layouts/Base.astro     Estructura común: <head>, cabecera, pie, pestaña roja, botón "antes y después"
+  layouts/Base.astro     Estructura común: <head>, cabecera y pie
   components/            Una sección por archivo, con sus estilos dentro
   data/                  Datos tipados: navegación, productos...
   styles/global.css      Variables de marca y utilidades comunes

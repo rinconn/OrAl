@@ -6,14 +6,18 @@ export const fr: Textos = {
   meta: {
     locale: 'fr_FR',
     fechas: 'fr-FR',
-    pestana: 'Experts en centrifugation · depuis 1949',
     saltar: 'Aller au contenu',
   },
   nav: {
-    centrifugas: 'Centrifugeuses',
+    centrifugas: 'Produits',
     tecnologia: 'Technologie',
+    smartconnect: 'SmartConnect',
+    rei: 'REI System',
+    configurador: 'Configurateur',
     distribuidores: 'Distributeurs',
     servicio: 'Service technique',
+    descargas: 'Téléchargements',
+    noticias: 'Actualités',
     empresa: 'Entreprise',
   },
   cabecera: {
@@ -67,12 +71,6 @@ export const fr: Textos = {
     lead: 'Depuis 1949, nous concevons et fabriquons des centrifugeuses de laboratoire à Daganzo (Madrid) et nous les diffusons dans le monde entier grâce à un réseau de distributeurs spécialisés.',
     gama: 'Voir la gamme',
     distribuidor: 'Je suis distributeur',
-    cifras: {
-      respuesta: { valor: '48 h', texto: 'de délai de réponse' },
-      entrega: { valor: '1 semaine', texto: 'de délai de livraison' },
-      garantia: { valor: '3 ans', texto: 'de garantie' },
-      iso: { valor: 'ISO 13485', texto: '9001 · 14001 · IVDR' },
-    },
   },
 
   tecnologia: {
@@ -80,7 +78,6 @@ export const fr: Textos = {
     intro:
       'Ce qui distingue une centrifugeuse Orto Alresa se trouve à l’intérieur. Voici les systèmes que nous développons nous-mêmes.',
     lollevan: 'Disponible sur',
-    lallevan: 'Disponible sur',
     rei: {
       alt: 'Rotors avec REI System : une main soulève la poignée rouge pour retirer le rotor',
       frase: ['Changer de rotor en ', 'quelques secondes, d’une seule main', ' et sans outils.'],
@@ -111,41 +108,6 @@ export const fr: Textos = {
       pasos: ['Type de centrifugeuse', 'Emplacement', 'Type de tube', 'Vitesse', 'Nb de positions', 'Type de rotor'],
       empezar: 'Commencer',
     },
-    pantalla: {
-      nombre: 'Écran tactile',
-      texto:
-        'En couleur, facile à lire et à programmer. FCR réelle selon l’adaptateur et jusqu’à 8 programmes enchaînés.',
-      cifra: '100',
-      unidad: 'mémoires',
-      alt: 'Écran tactile d’une Consul 22 avec rotor, vitesse, FCR et rampes',
-    },
-    pcbs: {
-      nombre: 'PCBS',
-      texto: 'Freinage progressif pour que l’échantillon ne se remélange pas après la séparation.',
-      cifra: '175',
-      unidad: 'rampes de freinage',
-      antes: 'tous les modèles à écran tactile, ainsi que',
-      esquema: 'Schéma : vitesse en fonction du temps avec un freinage brusque et un freinage progressif',
-      tiempo: 'temps',
-      brusco: 'brusque',
-      progresivo: 'progressif',
-    },
-    uls: {
-      nombre: 'ULS',
-      texto: 'Si la centrifugeuse s’arrête pour déséquilibre, l’écran indique quel godet en est la cause.',
-      cifra: 'N°',
-      unidad: 'du godet, à l’écran',
-      esquema: 'Schéma : rotor vu de dessus avec le godet 3 signalé pour déséquilibre',
-      desequilibrio: 'Déséquilibre',
-      vaso: 'Godet 3',
-    },
-    ademasTitulo: ['Et aussi, ', 'selon le modèle', ' :'],
-    ademas: [
-      { titulo: 'Reconnaissance du rotor', texto: 'Il l’identifie seul et protège contre la survitesse.' },
-      { titulo: 'Couvercle sécurisé', texto: 'Fermeture motorisée, verrouillage en marche et ouverture d’urgence.' },
-      { titulo: 'De −20 à 80 °C', texto: 'Sur les modèles réfrigérés et chauffés, par pas de 1 °C.' },
-      { titulo: 'Moins de 60 dB', texto: 'Moteur à induction sans balais et sans entretien.' },
-    ],
   },
 
   empresa: {

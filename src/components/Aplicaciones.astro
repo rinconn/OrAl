@@ -6,55 +6,73 @@ const lang = idioma(Astro.currentLocale);
 const t = textos(lang);
 
 // Las cinco últimas notas del blog; al publicar una nueva, la portada se actualiza sola.
-const notas = (await getCollection('notas'))
+// La más reciente va en grande y las otras cuatro en lista.
+const [destacada, ...resto] = (await getCollection('notas'))
   .sort((a, b) => b.data.fecha.valueOf() - a.data.fecha.valueOf())
   .slice(0, 5);
 const fmt = new Intl.DateTimeFormat(t.meta.fechas, { day: 'numeric', month: 'long', year: 'numeric' });
+
+type Nota = typeof destacada;
+const titulo = (n: Nota) => (lang !== 'es' && n.data[lang]?.titulo) || n.data.titulo;
+const alt = (n: Nota) => (lang !== 'es' && n.data[lang]?.alt) || n.data.alt;
+const area = (n: Nota) => (lang !== 'es' && n.data[lang]?.area) || n.data.area;
+// Mientras las notas no tengan página en la web nueva, cada una lleva a la suya en el blog actual
+const enlace = (n: Nota) => n.data.origen ?? ruta(lang, `/noticias/${n.id}/`);
+const blog = 'https://ortoalresa.com/blog/';
 ---
 
 <section class="sec apl" id="aplicaciones">
   <div class="wrap">
-    <h2 class="ap">
-      {t.aplicaciones.titulo[0]}
-      <b>{t.aplicaciones.titulo[1]}</b>
-    </h2>
-  </div>
-
-  <!-- La baraja usa más ancho que el resto de la página para que cinco cartas no queden estrechas -->
-  <div class="ancho">
-    <ul class="baraja ap">
-      {notas.map((n) => (
-        <li>
-          <a class="carta" href={ruta(lang, `/noticias/${n.id}/`)}>
-            <span class="marcas" aria-hidden="true" />
-            <div class="foto">
-              <img
-                src={n.data.foto}
-                alt={(lang !== 'es' && n.data[lang]?.alt) || n.data.alt}
-                loading="lazy"
-                decoding="async"
-              />
-            </div>
-            <div class="texto">
-              {!n.data.fechaPendiente && (
-                <time datetime={n.data.fecha.toISOString().slice(0, 10)}>{fmt.format(n.data.fecha)}</time>
-              )}
-              <h3>{(lang !== 'es' && n.data[lang]?.titulo) || n.data.titulo}</h3>
-            </div>
-            <span class="leer">
-              {t.aplicaciones.leer} <i aria-hidden="true">»</i>
-            </span>
-          </a>
-        </li>
-      ))}
-    </ul>
-  </div>
-
-  <div class="wrap">
-    <div class="cta ap">
-      <a class="btn ghost" href={ruta(lang, '/noticias/')}>
-        {t.aplicaciones.todas} <span aria-hidden="true">»</span>
+    <div class="cab ap">
+      <h2>
+        {t.aplicaciones.titulo[0]}
+        <b>{t.aplicaciones.titulo[1]}</b>
+      </h2>
+      <a class="arrow todas" href={blog}>
+        {t.aplicaciones.todas}
       </a>
+    </div>
+
+    <div class="notas">
+      {destacada && (
+        <a class="destacada ap" href={enlace(destacada)}>
+          <div class="foto">
+            <img src={destacada.data.foto} alt={alt(destacada)} loading="lazy" decoding="async" />
+          </div>
+          <p class="meta">
+            <span class="area">{area(destacada)}</span>
+            {!destacada.data.fechaPendiente && (
+              <time datetime={destacada.data.fecha.toISOString().slice(0, 10)}>{fmt.format(destacada.data.fecha)}</time>
+            )}
+          </p>
+          <h3>{titulo(destacada)}</h3>
+          <span class="leer">{t.aplicaciones.leer}</span>
+        </a>
+      )}
+
+      <ul class="lista ap">
+        {resto.map((n) => (
+          <li>
+            <a class="fila" href={enlace(n)}>
+              <div class="foto">
+                <img src={n.data.foto} alt={alt(n)} loading="lazy" decoding="async" />
+              </div>
+              <div class="texto">
+                <p class="meta">
+                  <span class="area">{area(n)}</span>
+                  {!n.data.fechaPendiente && (
+                    <time datetime={n.data.fecha.toISOString().slice(0, 10)}>{fmt.format(n.data.fecha)}</time>
+                  )}
+                </p>
+                <h3>{titulo(n)}</h3>
+              </div>
+              <span class="flecha" aria-hidden="true">
+                »
+              </span>
+            </a>
+          </li>
+        ))}
+      </ul>
     </div>
   </div>
 </section>
@@ -73,153 +91,53 @@ const fmt = new Intl.DateTimeFormat(t.meta.fechas, { day: 'numeric', month: 'lon
           }
         }
       },
-      { threshold: 0.2 },
+      { threshold: 0.15 },
     );
     bloques.forEach((b) => obs.observe(b));
-
-    // La baraja se reparte sola una vez al llegar a ella y se queda abierta
-    const baraja = document.querySelector('#aplicaciones .baraja');
-    if (baraja) {
-      const abrir = new IntersectionObserver(
-        (entradas) => {
-          if (entradas[0]?.isIntersecting) {
-            window.setTimeout(() => baraja.classList.add('abierta'), 500);
-            abrir.disconnect();
-          }
-        },
-        { threshold: 0.35 },
-      );
-      abrir.observe(baraja);
-    }
   }
 </script>
 
 <style>
+  /* Cabecera: título a la izquierda, como en el resto de secciones, y "Ver todas las notas" a la derecha */
+  .cab {
+    display: flex;
+    justify-content: space-between;
+    align-items: end;
+    gap: 16px 32px;
+    flex-wrap: wrap;
+    margin-bottom: clamp(32px, 4vw, 56px);
+  }
   h2 {
-    margin: 0 0 clamp(32px, 4vw, 56px);
-    text-align: center;
+    margin: 0;
     font-weight: 300;
     font-size: var(--t-titulo);
     line-height: 0.95;
   }
-
-  /* La baraja: cinco fotos en fila que, mientras está cerrada, se apilan en el centro un poco giradas */
-  .ancho {
-    max-width: 1560px;
-    margin: 0 auto;
-    padding-inline: var(--gut);
+  /* "En el laboratorio" en rojo, como "propia" en Tecnología */
+  h2 b {
+    color: var(--red);
   }
-  .baraja {
-    --gap: clamp(14px, 1.4vw, 22px);
-    --paso: calc(100% + var(--gap));
-    list-style: none;
-    margin: 0;
-    padding: 0;
+  .todas {
+    font-size: 18px;
+    color: var(--ink);
+    padding-bottom: 6px;
+  }
+
+  /* Nota destacada a la izquierda y las otras cuatro en lista a la derecha */
+  .notas {
     display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
-    gap: var(--gap);
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+    gap: clamp(32px, 4.5vw, 72px);
+    align-items: start;
   }
-  .baraja li {
-    position: relative;
-    transition: transform 0.75s cubic-bezier(0.25, 0.9, 0.3, 1.1);
-  }
-  .baraja li:nth-child(1) {
-    z-index: 5;
-  }
-  .baraja li:nth-child(2) {
-    z-index: 4;
-    transition-delay: 0.04s;
-  }
-  .baraja li:nth-child(3) {
-    z-index: 3;
-    transition-delay: 0.08s;
-  }
-  .baraja li:nth-child(4) {
-    z-index: 2;
-    transition-delay: 0.12s;
-  }
-  .baraja li:nth-child(5) {
-    z-index: 1;
-    transition-delay: 0.16s;
-  }
-  :global(.js) .baraja:not(.abierta) li:nth-child(1) {
-    transform: translateX(calc(2 * var(--paso))) rotate(-2deg);
-  }
-  :global(.js) .baraja:not(.abierta) li:nth-child(2) {
-    transform: translateX(var(--paso)) rotate(4deg);
-  }
-  :global(.js) .baraja:not(.abierta) li:nth-child(3) {
-    transform: rotate(-6deg);
-  }
-  :global(.js) .baraja:not(.abierta) li:nth-child(4) {
-    transform: translateX(calc(-1 * var(--paso))) rotate(7deg);
-  }
-  :global(.js) .baraja:not(.abierta) li:nth-child(5) {
-    transform: translateX(calc(-2 * var(--paso))) rotate(-9deg);
-  }
-
-  /* La carta: borde gris oscuro marcado, marcas de esquina grises y franja inferior; todo se pone rojo al pasar */
-  .carta {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    background: var(--white);
-    border: 2px solid #3b4045;
-    box-shadow: 0 18px 40px -24px rgba(0, 0, 0, 0.45);
+  a {
     color: var(--ink);
     text-decoration: none;
-    transition:
-      transform 0.35s var(--ease),
-      box-shadow 0.35s var(--ease),
-      border-color 0.3s var(--ease);
   }
-  .marcas {
-    position: absolute;
-    inset: -9px;
-    z-index: 1;
-    pointer-events: none;
-    --c: var(--steel);
-    background:
-      linear-gradient(var(--c), var(--c)) top left / 16px 2px,
-      linear-gradient(var(--c), var(--c)) top left / 2px 16px,
-      linear-gradient(var(--c), var(--c)) top right / 16px 2px,
-      linear-gradient(var(--c), var(--c)) top right / 2px 16px,
-      linear-gradient(var(--c), var(--c)) bottom left / 16px 2px,
-      linear-gradient(var(--c), var(--c)) bottom left / 2px 16px,
-      linear-gradient(var(--c), var(--c)) bottom right / 16px 2px,
-      linear-gradient(var(--c), var(--c)) bottom right / 2px 16px;
-    background-repeat: no-repeat;
-    opacity: 0;
-    transition:
-      opacity 0.3s var(--ease),
-      inset 0.3s var(--ease);
-  }
-  .carta:is(:hover, :focus-visible) {
-    transform: translateY(-6px);
-    border-color: var(--red);
-    box-shadow: 0 26px 50px -24px rgba(0, 0, 0, 0.5);
-  }
-  .carta:is(:hover, :focus-visible) .marcas {
-    --c: var(--red);
-    opacity: 1;
-    inset: -12px;
-  }
-  .baraja.abierta .marcas {
-    opacity: 1;
-  }
-  .carta:focus-visible {
-    outline: none;
-  }
+
   .foto {
-    aspect-ratio: 1 / 1;
     overflow: hidden;
     background: var(--panel);
-    border-bottom: 2px solid #3b4045;
-    transition: border-color 0.3s var(--ease);
-  }
-  .carta:is(:hover, :focus-visible) .foto {
-    border-color: var(--red);
   }
   .foto img {
     display: block;
@@ -228,115 +146,173 @@ const fmt = new Intl.DateTimeFormat(t.meta.fechas, { day: 'numeric', month: 'lon
     object-fit: cover;
     transition: transform 0.8s var(--ease);
   }
-  .carta:hover .foto img {
-    transform: scale(1.06);
+  a:hover .foto img {
+    transform: scale(1.05);
+  }
+
+  /* Área en rojo y fecha en gris, separadas por una raya fina */
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 12px;
+    margin: 0;
+    font-size: 14px;
+  }
+  .area {
+    color: var(--red);
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-size: 13px;
+  }
+  time {
+    color: var(--muted);
+  }
+  .area + time::before {
+    content: '';
+    display: inline-block;
+    width: 1px;
+    height: 12px;
+    margin-right: 12px;
+    background: var(--line);
+    vertical-align: -1px;
+  }
+  h3 {
+    margin: 0;
+    font-weight: 700;
+    text-wrap: balance;
+    transition: color 0.25s var(--ease);
+  }
+
+  /* La destacada: foto ancha con raya roja que crece al pasar, título grande */
+  .destacada {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .destacada .foto {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    margin-bottom: 6px;
+  }
+  .destacada .foto::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    height: 4px;
+    width: 64px;
+    background: var(--red);
+    transition: width 0.6s var(--ease);
+  }
+  .destacada:is(:hover, :focus-visible) .foto::after {
+    width: 100%;
+  }
+  .destacada h3 {
+    font-size: clamp(28px, 2.6vw, 40px);
+    line-height: 1.04;
+  }
+  .leer {
+    display: inline-flex;
+    gap: 6px;
+    font-weight: 700;
+    font-size: 17px;
+  }
+  .leer::after {
+    content: '»';
+    color: var(--red);
+    transition: transform 0.2s var(--ease);
+  }
+  .destacada:is(:hover, :focus-visible) .leer::after {
+    transform: translateX(4px);
+  }
+  .destacada:is(:hover, :focus-visible) h3 {
+    color: var(--red);
+  }
+
+  /* La lista: foto pequeña, área, fecha y título, separadas por rayas finas */
+  .lista {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-top: 2px solid var(--ink);
+  }
+  .lista li {
+    border-bottom: 1px solid var(--line);
+  }
+  .fila {
+    display: grid;
+    grid-template-columns: clamp(96px, 9vw, 136px) minmax(0, 1fr) auto;
+    gap: 20px;
+    align-items: center;
+    padding-block: 20px;
+  }
+  .fila .foto {
+    aspect-ratio: 4 / 3;
   }
   .texto {
     display: flex;
     flex-direction: column;
     gap: 8px;
-    flex: 1;
-    padding: 18px 20px 20px;
   }
-  time {
-    font-size: 14px;
-    color: var(--muted);
+  .fila h3 {
+    font-size: clamp(18px, 1.45vw, 21px);
+    line-height: 1.15;
   }
-  h3 {
-    margin: 0;
-    font-size: clamp(18px, 1.4vw, 21px);
-    line-height: 1.18;
+  .flecha {
+    color: var(--red);
+    font-size: 22px;
     font-weight: 700;
-    text-wrap: balance;
+    transition: transform 0.2s var(--ease);
   }
-  /* Franja inferior: gris oscuro que se pone roja */
-  .leer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 13px 20px;
-    background: #3b4045;
-    color: var(--white);
-    font-weight: 700;
-    font-size: 15px;
-    transition: background 0.3s var(--ease);
+  .fila:is(:hover, :focus-visible) h3 {
+    color: var(--red);
   }
-  .leer i {
-    font-style: normal;
-    transition: transform 0.3s var(--ease);
-  }
-  .carta:is(:hover, :focus-visible) .leer {
-    background: var(--red);
-  }
-  .carta:is(:hover, :focus-visible) .leer i {
+  .fila:is(:hover, :focus-visible) .flecha {
     transform: translateX(4px);
   }
 
-  .cta {
-    margin-top: clamp(40px, 5vw, 64px);
-    text-align: center;
+  a:focus-visible {
+    outline: 2px solid var(--red);
+    outline-offset: 4px;
   }
 
-  /* Entrada suave, como en el resto de la portada */
+  /* Entrada suave, como en el resto de la portada; la lista entra un poco después */
   .ap {
     transition:
       opacity 0.7s var(--ease),
       transform 0.7s var(--ease);
+  }
+  .lista.ap {
+    transition-delay: 0.12s;
   }
   :global(.js) #aplicaciones .ap:not(.vista) {
     opacity: 0;
     transform: translateY(24px);
   }
 
-  /* En móvil van una debajo de otra; cerrada, la baraja se apila sobre la primera */
-  /* Tableta: dos filas no quedan bien, así que las cartas se deslizan de lado */
-  @media (max-width: 1100px) and (min-width: 901px) {
-    .baraja {
-      grid-template-columns: repeat(5, 240px);
-      overflow-x: auto;
-      padding: 14px 4px 20px;
+  /* Tableta y móvil: la destacada arriba y la lista debajo */
+  @media (max-width: 960px) {
+    .notas {
+      grid-template-columns: 1fr;
     }
   }
-  /* En móvil van una debajo de otra; cerrada, la baraja se apila sobre la primera */
-  @media (max-width: 900px) {
-    .baraja {
-      --paso: calc(100% + var(--gap));
-      --gap: 28px;
-      grid-template-columns: 1fr;
-      max-width: 440px;
-      margin: 0 auto;
+  @media (max-width: 480px) {
+    .fila {
+      grid-template-columns: 88px minmax(0, 1fr);
+      gap: 14px;
+      padding-block: 16px;
     }
-    .foto {
-      aspect-ratio: 16 / 10;
-    }
-    .marcas {
-      opacity: 1;
-    }
-    :global(.js) .baraja:not(.abierta) li:nth-child(1) {
-      transform: rotate(-2deg);
-    }
-    :global(.js) .baraja:not(.abierta) li:nth-child(2) {
-      transform: translateY(calc(-1 * var(--paso))) rotate(3deg);
-    }
-    :global(.js) .baraja:not(.abierta) li:nth-child(3) {
-      transform: translateY(calc(-2 * var(--paso))) rotate(-4deg);
-    }
-    :global(.js) .baraja:not(.abierta) li:nth-child(4) {
-      transform: translateY(calc(-3 * var(--paso))) rotate(5deg);
-    }
-    :global(.js) .baraja:not(.abierta) li:nth-child(5) {
-      transform: translateY(calc(-4 * var(--paso))) rotate(-6deg);
+    .flecha {
+      display: none;
     }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    :global(.js) .baraja li {
-      transform: none !important;
-      transition: none;
-    }
     .ap,
-    .carta,
-    .foto img {
+    .foto img,
+    .destacada .foto::after {
       transition: none;
     }
   }

@@ -91,7 +91,7 @@ const actual = (href: string) => !href.startsWith('/#') && base.startsWith(href)
   const top = document.getElementById('top');
   const nav = document.getElementById('nav');
   const btn = document.getElementById('menuBtn');
-  const movil = window.matchMedia('(max-width: 1220px)');
+  const movil = window.matchMedia('(max-width: 1439px)');
 
   // Menú móvil
   const abrir = (abierto: boolean) => {
@@ -159,31 +159,37 @@ const actual = (href: string) => !href.startsWith('/#') && base.startsWith(href)
     });
   }
 
-  // En la portada, marca en el menú la sección que se está viendo
+  // En la portada, marca en el menú la sección que se está viendo. Si un enlace apunta a un panel dentro de una
+  // sección (SmartConnect, REI System, Configurador), cuenta su sección y se marca el del panel abierto.
   const enlaces = [...(nav?.querySelectorAll<HTMLAnchorElement>('ul a[href*="/#"]') ?? [])];
-  const porSeccion = new Map<string, HTMLAnchorElement>();
+  const porSeccion = new Map<HTMLElement, HTMLAnchorElement[]>();
   for (const a of enlaces) {
-    const id = a.hash.slice(1);
-    if (!porSeccion.has(id)) porSeccion.set(id, a);
+    const destino = document.getElementById(a.hash.slice(1));
+    const seccion = destino?.closest<HTMLElement>('section[id]') ?? destino;
+    if (seccion) porSeccion.set(seccion, [...(porSeccion.get(seccion) ?? []), a]);
   }
   if (top?.hasAttribute('data-portada')) {
-    const visibles = new Set<string>();
+    const visibles = new Set<Element>();
+    const marcar = () => {
+      const activa = [...porSeccion.keys()].find((s) => visibles.has(s));
+      const candidatos = activa ? porSeccion.get(activa)! : [];
+      const elegido =
+        candidatos.find((a) => document.getElementById(a.hash.slice(1))?.closest('.abierto')) ?? candidatos[0];
+      for (const a of enlaces) a.removeAttribute('aria-current');
+      elegido?.setAttribute('aria-current', 'location');
+    };
     const obs = new IntersectionObserver(
       (entradas) => {
         for (const en of entradas) {
-          if (en.isIntersecting) visibles.add(en.target.id);
-          else visibles.delete(en.target.id);
+          if (en.isIntersecting) visibles.add(en.target);
+          else visibles.delete(en.target);
         }
-        const activa = [...porSeccion.keys()].find((id) => visibles.has(id));
-        for (const a of enlaces) a.removeAttribute('aria-current');
-        if (activa) porSeccion.get(activa)?.setAttribute('aria-current', 'location');
+        marcar();
       },
       { rootMargin: '-45% 0px -50% 0px' },
     );
-    for (const id of porSeccion.keys()) {
-      const s = document.getElementById(id);
-      if (s) obs.observe(s);
-    }
+    for (const s of porSeccion.keys()) obs.observe(s);
+    document.addEventListener('panel-abierto', marcar);
   }
 </script>
 
@@ -228,17 +234,21 @@ const actual = (href: string) => !href.startsWith('/#') && base.startsWith(href)
     transform: translateY(-100%);
     box-shadow: none;
   }
+  /* A todo el ancho de la pantalla, como la cabecera de la web actual: logo pegado a la izquierda y banderas,
+     lupa y Contacto a la derecha, sin el ancho máximo del resto de la página */
   .bar {
     display: flex;
     align-items: center;
     gap: 40px;
-    height: 96px;
+    height: 76px;
+    max-width: none;
+    padding-inline: clamp(16px, 2.6vw, 48px);
   }
   .marca {
     flex: none;
   }
   .logo {
-    height: 52px;
+    height: 42px;
     width: auto;
   }
 
@@ -246,7 +256,7 @@ const actual = (href: string) => !href.startsWith('/#') && base.startsWith(href)
     margin-left: auto;
   }
   /* Escritorio: el mismo hueco a cada lado del menú, entre el logo y las banderas */
-  @media (min-width: 1221px) {
+  @media (min-width: 1440px) {
     .bar {
       justify-content: space-between;
     }
@@ -256,7 +266,7 @@ const actual = (href: string) => !href.startsWith('/#') && base.startsWith(href)
   }
   .nav ul {
     display: flex;
-    gap: 30px;
+    gap: 22px;
     list-style: none;
     margin: 0;
     padding: 0;
@@ -267,7 +277,7 @@ const actual = (href: string) => !href.startsWith('/#') && base.startsWith(href)
     display: block;
     white-space: nowrap;
     text-decoration: none;
-    padding-block: 36px;
+    padding-block: 26px;
     box-shadow: inset 0 -3px 0 transparent;
     transition: box-shadow 0.2s var(--ease);
   }
@@ -352,23 +362,24 @@ const actual = (href: string) => !href.startsWith('/#') && base.startsWith(href)
     transform: rotate(-45deg);
   }
 
-  /* Portátiles: menos hueco entre elementos para que el menú respire */
-  @media (max-width: 1360px) {
+  /* Hasta 1520 px, menos hueco entre elementos para que las nueve entradas quepan a 1440 px en los tres idiomas
+     (el francés es el más largo) */
+  @media (max-width: 1520px) {
     .bar {
-      gap: 32px;
+      gap: 28px;
     }
     .nav ul {
-      gap: 24px;
+      gap: 16px;
     }
   }
 
-  @media (max-width: 1220px) {
+  @media (max-width: 1439px) {
     .bar {
-      height: 72px;
+      height: 60px;
       gap: 20px;
     }
     .logo {
-      height: 42px;
+      height: 36px;
     }
     /* En móvil solo quedan las banderas a la vista; Contacto va dentro del menú */
     .der {
@@ -385,7 +396,7 @@ const actual = (href: string) => !href.startsWith('/#') && base.startsWith(href)
     .nav {
       display: none;
       position: fixed;
-      inset: 72px 0 0;
+      inset: 60px 0 0;
       overflow-y: auto;
       background: #fff;
       padding: 8px var(--gut) calc(32px + env(safe-area-inset-bottom, 0px));

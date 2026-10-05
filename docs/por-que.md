@@ -99,17 +99,32 @@ web nueva resuelve, y todo lo demás de este documento sale de aquí:
 
 ## 3. Cabecera
 
-| Antes                                                   | Ahora                                                                                                                 | Por qué es mejor                                                          |
-| ------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
-| 10 entradas de menú al mismo nivel                      | 6 entradas (Centrífugas, Elegir centrífuga, Tecnología, Distribuidores, Servicio técnico, Empresa) y Contacto en rojo | Menos opciones y más claras; Contacto, que es lo que más importa, destaca |
-| Menú con huecos desiguales                              | El mismo hueco a cada lado de cada entrada                                                                            | La barra se ve ordenada y equilibrada                                     |
-| Idioma en texto                                         | Banderas                                                                                                              | Se reconoce sin leer, en cualquier idioma                                 |
-| Para buscar un modelo había que recorrer menús          | Lupa: se escribe el modelo y aparece, sin tildes ni mayúsculas                                                        | El distribuidor que sabe lo que quiere llega directo a la ficha           |
-| Barra negra superior con teléfono y correo              | Fuera; teléfono y correo siguen en el menú móvil y en el pie                                                          | Más aire arriba y la cabecera queda para navegar                          |
-| Sellos ODS y Empresa Solidaria apretados en la cabecera | En el pie, en todas las pantallas                                                                                     | Se ven enteros y no compiten con el menú                                  |
-| Cabecera fija ocupando pantalla mientras se lee         | Se aparta al bajar y vuelve en cuanto se sube                                                                         | Más espacio para el contenido, sobre todo en móvil                        |
-| En móvil, menú pequeño                                  | Banderas y lupa siempre a la vista; menú a pantalla completa con Contacto, teléfono y correo                          | Se usa con el pulgar; se llama en un toque                                |
-| Logo en una línea                                       | Logo en dos líneas, la versión del manual                                                                             | Más compacto y reconocible                                                |
+| Antes                                                   | Ahora                                                                                                                                                                       | Por qué es mejor                                                                                                                                    |
+| ------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 10 entradas de menú al mismo nivel                      | 9 entradas en el orden de la portada (Productos, REI System, SmartConnect, Configurador, Empresa, Distribuidores, Noticias, Servicio técnico, Descargas) y Contacto en rojo | Lo mismo que la web actual, con Guías y Descargas juntas; el menú se lee como se baja por la portada y Contacto, que es lo que más importa, destaca |
+| Menú con huecos desiguales                              | El mismo hueco a cada lado de cada entrada                                                                                                                                  | La barra se ve ordenada y equilibrada                                                                                                               |
+| Idioma en texto                                         | Banderas                                                                                                                                                                    | Se reconoce sin leer, en cualquier idioma                                                                                                           |
+| Para buscar un modelo había que recorrer menús          | Lupa: se escribe el modelo y aparece, sin tildes ni mayúsculas                                                                                                              | El distribuidor que sabe lo que quiere llega directo a la ficha                                                                                     |
+| Barra negra superior con teléfono y correo              | Fuera; teléfono y correo siguen en el menú móvil y en el pie                                                                                                                | Más aire arriba y la cabecera queda para navegar                                                                                                    |
+| Sellos ODS y Empresa Solidaria apretados en la cabecera | En el pie, en todas las pantallas                                                                                                                                           | Se ven enteros y no compiten con el menú                                                                                                            |
+| Cabecera fija ocupando pantalla mientras se lee         | Se aparta al bajar y vuelve en cuanto se sube                                                                                                                               | Más espacio para el contenido, sobre todo en móvil                                                                                                  |
+| En móvil, menú pequeño                                  | Banderas y lupa siempre a la vista; menú a pantalla completa con Contacto, teléfono y correo                                                                                | Se usa con el pulgar; se llama en un toque                                                                                                          |
+| Logo en una línea                                       | Logo en dos líneas, la versión del manual                                                                                                                                   | Más compacto y reconocible                                                                                                                          |
+
+La barra se parece a la de la web actual a propósito: a la empresa le gusta que la navegación no cambie, así que la
+simplificación va dentro de cada página, no en la barra.
+
+- **Productos**, como en la web actual (antes "Centrífugas").
+- **REI System, SmartConnect y Configurador** seguidos y con su nombre, en el orden del acordeón de Tecnología, en
+  lugar de un solo "Tecnología": son lo que distingue a la marca. Cada uno abre su panel en la portada y, al leer esa
+  sección, el menú marca el panel abierto. Sin los iconos de la web actual: desentonaban con el resto de la barra.
+- **Descargas** junta las Guías y las Descargas de la web actual: las dos son documentos, y dentro de la página cada
+  cosa tiene su sección. **Noticias** lleva a las notas de la portada hasta que tenga página propia.
+- Nueve entradas caben a 1440 px en los tres idiomas (el francés es el más largo) con 16 px entre ellas; por debajo
+  de 1440 px se usa el menú a pantalla completa.
+- Descartado: agrupar REI System, SmartConnect y Configurador en un desplegable bajo un título común, porque escondía
+  justo lo que la empresa quiere enseñar; y juntar Contacto con Servicio técnico, porque son públicos distintos
+  (comprar frente a una máquina averiada).
 
 Pendiente, a propósito: los desplegables de Centrífugas y Distribuidores llegan cuando existan esas páginas.
 Ponerlos antes haría que todos los enlaces llevaran a la portada.
@@ -144,7 +159,7 @@ Ponerlos antes haría que todos los enlaces llevaran a la portada.
 - **Antes (primera versión nueva):** una línea pequeña en mayúsculas encima del titular, "FABRICANTES EN MADRID
   DESDE 1949".
 - **Ahora:** fuera. El dato no se pierde: la frase de debajo empieza por "Desde 1949 diseñamos y fabricamos
-  centrífugas de laboratorio en Daganzo (Madrid)…", y la pestaña roja lateral sigue diciendo "desde 1949".
+  centrífugas de laboratorio en Daganzo (Madrid)…". (La pestaña roja lateral que también lo decía se quitó después: ver §16.)
 - **Por qué:** un texto pequeño encima de un titular enorme compite con él y recarga la pantalla. Es el mismo
   criterio que en la gama: una sola jerarquía, el titular manda.
 
@@ -623,35 +638,41 @@ estándar"; en la portada va un poco más corta para que se lea de un golpe.
 - **Antes:** en la portada de la web actual no había notas de aplicación. Solo estaban dentro de Noticias,
   en una rejilla de fotos con una etiqueta roja ("Artículos y novedades") encima y el título tapando la imagen,
   mezcladas con ferias y retrospectivas.
-- **Ahora:** las cinco últimas notas en la portada, como una baraja de cartas apiladas que se reparte sola
-  al llegar a ella y se queda abierta, con las cinco en fila. Cada carta lleva la foto limpia, la fecha y el título debajo, y una
-  franja gris oscuro con "Leer la nota". En móvil,
-  sin ratón, la baraja se abre sola al llegar a ella y quedan una debajo de otra. Botón "Ver todas las notas".
+- **Ahora (5-10-2026):** las cinco últimas notas del blog en la portada. La más reciente va en grande a la
+  izquierda (foto ancha, área, fecha, título grande y "Leer la nota »"); las otras cuatro, en lista a la derecha,
+  con foto pequeña, área, fecha y título, separadas por rayas finas. "Ver todas las notas »" junto al título.
+  En tableta y móvil, la destacada arriba y la lista debajo.
+- Las notas son las del blog actual, con su texto, su fecha y su foto destacada, sacados de su WordPress
+  (`wp.ortoalresa.com/wp-json`). Cada nota guarda la dirección de la original en `origen`.
 
 ### 9.2 Por qué es mejor
 
 - Enseña al distribuidor que la empresa sabe de centrifugación, no solo que vende centrífugas.
-- La portada se actualiza sola: cada nota es un archivo (`src/content/notas/`) y la portada coge las tres
+- **Jerarquía:** antes eran cinco cajas iguales y el ojo no sabía por dónde empezar. Ahora la última nota manda y
+  las demás acompañan, y los títulos largos se leen en dos o tres líneas en lugar de en cinco apretadas.
+- **El área de aplicación en rojo** (Alimentación, Microbiología, Diagnóstico clínico...) dice al distribuidor,
+  antes de leer el título, a qué cliente le sirve la nota. El blog no lo tenía: el área sale del tema de cada nota.
+- **Fotos de verdad:** cada nota lleva la foto de su tema, en vez de las provisionales, que repetían la misma
+  pantalla de una centrífuga.
+- **Todas con fecha:** las de células NK y Helicobacter pylori ya tienen la suya (la del blog).
+- La portada se actualiza sola: cada nota es un archivo (`src/content/notas/`) y la portada coge las cinco
   últimas. Nadie tiene que tocar la portada al publicar.
-- La foto se ve entera y limpia, sin etiquetas ni texto encima, y el título se lee bien porque va debajo.
-- Rompe el ritmo de la portada: arriba ya hay tarjetas con borde (Distribuidores, Empresa); repetirlas quitaba
-  riqueza visual. La baraja es un gesto propio de esta sección y se recuerda.
 
 ### 9.3 Movimiento y efectos
 
-- La baraja se reparte una sola vez, con un pequeño rebote y una carta detrás de otra, y se queda abierta. Al
-  principio se abría al pasar el ratón y se cerraba al salir, pero cerrada dejaba un hueco vacío en la página.
-- Carta con borde gris oscuro marcado y marcas de esquina grises, como las de un plano técnico. Al pasar el ratón
-  el borde, las marcas y la franja inferior se ponen rojos.
-- Sobre cada foto, la carta sube, la foto se acerca un poco y el título se pone rojo.
-- Con "reducir movimiento" activado en el sistema, las fotos aparecen ya abiertas y sin animación.
+- Entrada suave al llegar, como en el resto de la portada; la lista entra un poco después que la destacada.
+- En la destacada, la raya roja de la foto se alarga de lado a lado al pasar el ratón, la foto se acerca un poco y
+  el título se pone rojo. En la lista, el título se pone rojo y la `»` se adelanta.
+- Con "reducir movimiento" activado en el sistema, sin animaciones.
 
 ### 9.4 Descartados
 
+- **La baraja de cinco cartas iguales que se repartía al llegar** (la versión anterior): llamativa al entrar, pero
+  después eran cinco cajas iguales en fila, sin jerarquía, con títulos de cinco líneas en tarjetas estrechas y una
+  franja gris de "Leer la nota" repetida cinco veces que pesaba más que los títulos. Era la sección más sosa.
 - **Índice grande sobre fondo oscuro con la foto al pasar el ratón:** se llegó a montar, pero junto al pie, que
   también es oscuro, las dos cosas se fundían.
 - **Tres tarjetas iguales a las de Distribuidores:** repetía el molde de las secciones de arriba.
-- **Nota destacada con foto y dos tarjetas al lado:** menos visual que la baraja.
 - **Tres tarjetas con la fecha grande:** poco visual.
 - **Rejilla de fotos con el título encima, como el blog actual:** el texto sobre la foto se lee mal y tapa la imagen.
 - **Quitar las fechas por si dejan de publicar:** se mantienen porque la empresa publica una nota al mes y la
@@ -659,11 +680,11 @@ estándar"; en la portada va un poco más corta para que se lea de un golpe.
 
 ### 9.5 Lo que viene después
 
-- **Fotos originales** de cada nota (ahora hay fotos de la empresa en su hueco).
-- **Fechas** de las notas de células NK y Helicobacter pylori: mientras no se confirmen, esas dos cartas no
-  enseñan fecha (campo `fechaPendiente`).
-- La **página de Noticias** con todas las notas y cada nota con su página. Hasta que exista, los enlaces llevan
-  a la página de error.
+- La **página de Noticias** con todas las notas y cada nota con su página (el texto ya está en cada archivo).
+  Hasta que exista, cada nota y "Ver todas las notas" llevan a su página del blog actual.
+- **Fotos:** son las del blog y casi todas de banco de imágenes. Si la empresa tiene fotos propias de cada
+  aplicación, se cambian en `public/img/notas/`.
+- Que la empresa confirme las **áreas** de cada nota (las puso el equipo web a partir del tema).
 - Más adelante, un editor web sencillo para que la empresa publique notas sin tocar código.
 
 ---
@@ -808,3 +829,67 @@ entera delante, si se ensancha el contenido de 1280 a 1440 px.
 - **Ahora:** cada paso lleva un icono de la propia marca (los del sistema de diseño, no genéricos) en un círculo
   rojo, con el mismo efecto al pasar el ratón que las placas del inicio.
 - **Por qué:** se lee de un vistazo qué pregunta cada paso, y repetir el efecto del inicio hace la web coherente.
+
+## 15. Portada sin las cuatro tarjetas
+
+- **Antes:** al pie de la primera pantalla, cuatro tarjetas de cristal con icono: 48 h de respuesta, 1 semana de
+  entrega, 3 años de garantía e ISO 13485.
+- **Ahora:** la primera pantalla tiene solo el titular, la frase y los dos botones sobre la foto del rotor.
+- **Por qué:** lo pidió la empresa (5-10-2026). La foto respira entera y los dos caminos (gama y distribuidor) son
+  lo único que pide atención. Las cifras no se pierden: respuesta, entrega y garantía siguen en Distribuidores, y
+  las certificaciones en Empresa.
+
+## 16. Pie con el rojo de marca y fuera la pestaña lateral
+
+### 16.1 El logo del pie, con "orto" en rojo
+
+- **Antes:** el pie usaba el logo entero en blanco; era el único sitio de la web donde "orto" no salía rojo.
+- **Ahora:** `logo-ortoalresa-oscuro.svg`: "orto" en el rojo de marca y "alresa" en blanco, igual que el logo en
+  color pero para fondo oscuro.
+- **Por qué:** lo pidió la empresa (5-10-2026). El logo se reconoce por el "orto" rojo; en blanco parecía otro.
+
+### 16.2 Más rojo en el pie
+
+- **Ahora:** filo rojo de 4 px arriba del pie, raya roja corta bajo cada título de columna (el mismo gesto que el
+  subrayado del teléfono) y todos los enlaces en rojo al pasar el ratón, al pulsarlos o al llegar con el teclado.
+- **Por qué:** el pie era todo gris y blanco; el rojo, en poca cantidad, lo une con el resto de la web y deja claro
+  qué se puede pulsar.
+
+### 16.3 Fuera la pestaña roja vertical
+
+- **Antes:** una pestaña roja fija a la izquierda, "Expertos en centrifugación · desde 1949", copiada del catálogo.
+- **Ahora:** no hay pestaña.
+- **Por qué:** lo pidió la empresa (5-10-2026). En pantalla tapaba el borde del contenido y repetía el titular del
+  inicio; en el catálogo impreso sirve para hojear, en la web no tiene esa función.
+
+### 16.4 Logos de las ayudas en color, sin ficha blanca y a plena luz
+
+- **Antes:** cada logo en su ficha blanca, que en el pie oscuro se veía como una fila de pegatinas.
+- **Ahora:** los logos van en su color directamente sobre el pie, sin apagar. Los archivos de
+  `public/img/ayudas/` vienen ya preparados para fondo oscuro, como las versiones en negativo oficiales:
+  - los bloques de color (bandera de la UE, rojo de Madrid, naranja del FSE+, amarillo de Gobierno y SEPE) quedan
+    intactos, con lo que llevan dentro;
+  - el fondo blanco de fuera pasa a transparente con los bordes suaves;
+  - el texto y las rayas oscuras sueltas (negro, gris, azul oscuro) pasan a blanco; las estrellas doradas
+    conservan su color.
+- **Por qué:** lo pidió la empresa (5-10-2026). Se descartó pasarlos a blanco con un filtro (perdían los colores
+  oficiales) y dejarlos tal cual sin fondo (el texto negro desaparecía sobre el pie).
+
+## 17. Tecnología propia en acordeón
+
+- **Antes:** cinco pisos: REI a lo grande, SmartConnect y Configurador a la par, tres tarjetas con foto o esquema
+  (Pantalla táctil, PCBS, ULS) y la lista "Y además, según el modelo". Unos 2.800 px en escritorio.
+- **Ahora:** solo REI System, SmartConnect y Configurador, en un acordeón de tres franjas. La abierta enseña su
+  foto y su texto enteros; las cerradas son tiras estrechas con el número en rojo, el nombre en vertical, un "+" y
+  un trozo de su foto por debajo. Al pulsar una tira se abre (y se cierra la otra) y una cortina roja barre la foto
+  y la descubre. En tablet y móvil las franjas van una encima de otra, con cabecera, "+" y "−". Unos 1.050 px.
+  "Propia", en rojo, como "ción" en el inicio.
+- **Por qué:** lo pidió la empresa (5-10-2026). La sección era la más larga de la portada y lo de abajo (cifras de
+  pantalla, rampas y vaso) pesaba menos que lo de arriba. Los tres que quedan son los que de verdad diferencian a
+  Orto Alresa; en el acordeón se ven los tres a la vez y cada uno conserva su foto, su texto y su botón.
+- **Detalles:** se abre al pulsar, no al pasar el ratón (para llegar a un enlace del panel abierto se cruza por
+  encima de las tiras). No pasa solo: en un acordeón molesta que se cierre lo que se está leyendo. Lo cerrado queda
+  inerte para el teclado. Sin movimiento si el sistema lo pide.
+- **Descartado:** una tira de cifras con Pantalla, PCBS y ULS (seguía alargando la sección), un mosaico con REI a la
+  izquierda y las otras dos apiladas (tarjetas apretadas y desiguales) y un carrusel con pestañas (correcto, pero
+  solo enseñaba una tecnología cada vez).

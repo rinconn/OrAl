@@ -189,7 +189,7 @@ const primero = certificados[1];
 </script>
 
 <style>
-  /* Sección en blanco: foto baja a lo ancho, tres tubos con los datos y certificados en una franja gris claro */
+  /* Sección en blanco: foto baja a lo ancho, tres tubos con los datos y certificados en una franja oscura */
   .company {
     position: relative;
     overflow: hidden;
@@ -240,11 +240,13 @@ const primero = certificados[1];
       opacity 0.7s var(--ease),
       transform 0.7s var(--ease);
   }
+  /* "Más allá de lo estándar" en blanco con una raya roja fina debajo: la foto ya trae tapones rojos y la raya de
+     arriba, así que el rojo se queda en un solo toque */
   h2 b {
     font-weight: 700;
     text-transform: uppercase;
-    background: linear-gradient(var(--red), var(--red)) left bottom / 100% 3px no-repeat;
-    padding-bottom: 2px;
+    background: linear-gradient(var(--red), var(--red)) left bottom / 100% 2px no-repeat;
+    padding-bottom: 4px;
   }
   .cuerpo,
   .sellos {
@@ -454,7 +456,7 @@ const primero = certificados[1];
     transform: translateX(5px);
   }
 
-  /* Certificados: placas claras de cristal; la del centro se enciende con un borde rojo suave */
+  /* Certificados: placas blancas sobre la franja gris; la del centro se enciende en rojo */
   .franja {
     margin-top: clamp(48px, 5vw, 72px);
     background: var(--panel);
@@ -488,9 +490,12 @@ const primero = certificados[1];
     justify-content: center;
     gap: 12px;
   }
+  /* Placas con el gesto de las cifras de la portada, pero en blanco mate para que la letra se lea bien sobre el gris:
+     línea roja que crece, esquina que se enciende y un destello estrecho que cruza por detrás del texto */
   .rueda li button {
     position: relative;
     overflow: hidden;
+    isolation: isolate;
     display: grid;
     gap: 2px;
     width: 158px;
@@ -499,25 +504,58 @@ const primero = certificados[1];
     color: var(--ink);
     cursor: pointer;
     background: #fff;
-    border: 2px solid #3b4045;
+    /* El filo va por dentro (sombra interior, no borde) para que la esquina y la línea roja queden a ras */
+    border: 0;
+    box-shadow:
+      inset 0 0 0 1px rgba(26, 26, 26, 0.1),
+      0 6px 16px -10px rgba(26, 26, 26, 0.3);
     transition:
-      border-color 0.45s var(--ease),
+      transform 0.35s var(--ease),
       box-shadow 0.45s var(--ease),
       background 0.45s var(--ease),
       color 0.45s var(--ease);
   }
+  .rueda li button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 3px;
+    width: 0;
+    background: var(--red);
+    transition: width 0.4s var(--ease);
+  }
+  .rueda li button::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 16px;
+    height: 16px;
+    background: rgba(26, 26, 26, 0.12);
+    clip-path: polygon(0 0, 100% 0, 100% 100%);
+    transition: background 0.3s var(--ease);
+  }
   .rueda li b {
+    position: relative;
+    z-index: 1;
     font-size: 21px;
   }
-  .rueda li span {
+  .rueda li span:not(.luz) {
+    position: relative;
+    z-index: 1;
     font-size: 13px;
-    color: var(--muted);
+    color: #5a5a5a;
   }
+  /* Destello: una banda estrecha e inclinada que sale por la izquierda y se va entera por la derecha */
   .luz {
     position: absolute;
-    inset: 0;
-    background: linear-gradient(105deg, transparent 30%, rgba(255, 255, 255, 0.35) 50%, transparent 70%);
-    translate: -110% 0;
+    top: -20%;
+    bottom: -20%;
+    left: 0;
+    width: 45%;
+    background: linear-gradient(90deg, transparent, rgba(221, 4, 10, 0.1), transparent);
+    transform: translateX(-120%) skewX(-18deg);
     pointer-events: none;
   }
   .flecha {
@@ -527,7 +565,7 @@ const primero = certificados[1];
     display: none;
   }
 
-  /* Con JS la lista se convierte en rueda: el del centro se enciende en rojo neón y le cruza un destello */
+  /* Con JS la lista se convierte en rueda: el del centro se enciende en rojo; el destello solo cruza al pasar el ratón */
   .rueda.viva {
     height: 116px;
   }
@@ -552,13 +590,17 @@ const primero = certificados[1];
     opacity: 0;
     pointer-events: none;
   }
+  /* La del centro, en el rojo de la marca con un halo suave */
   .rueda.viva li.activo button {
     background: var(--red);
-    border-color: var(--red);
     color: #fff;
-    box-shadow:
-      0 0 26px -6px rgba(221, 4, 10, 0.55),
-      0 16px 30px -18px rgba(120, 0, 0, 0.6);
+    box-shadow: 0 0 18px -4px rgba(221, 4, 10, 0.45);
+  }
+  .rueda.viva li.activo button::after {
+    background: rgba(255, 255, 255, 0.35);
+  }
+  .rueda.viva li.activo .luz {
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.28), transparent);
   }
   .rueda.viva li.activo span {
     color: rgba(255, 255, 255, 0.85);
@@ -605,8 +647,17 @@ const primero = certificados[1];
     .pompas li:hover .cifra {
       color: var(--red);
     }
-    .rueda.viva li:not(.activo) button:hover {
-      border-color: rgba(221, 4, 10, 0.4);
+    .rueda li:not(.activo) button:hover {
+      transform: translateY(-4px);
+      box-shadow:
+        inset 0 0 0 1px rgba(221, 4, 10, 0.35),
+        0 0 16px -6px rgba(221, 4, 10, 0.35);
+    }
+    .rueda li:not(.activo) button:hover::before {
+      width: 100%;
+    }
+    .rueda li:not(.activo) button:hover::after {
+      background: var(--red);
     }
   }
   @media (hover: hover) and (prefers-reduced-motion: no-preference) {
@@ -622,9 +673,11 @@ const primero = certificados[1];
   }
 
   @media (prefers-reduced-motion: no-preference) {
-    .rueda.viva li.activo .luz {
-      translate: 110% 0;
-      transition: translate 1s var(--ease);
+    @media (hover: hover) {
+      .rueda li button:hover .luz {
+        transform: translateX(260%) skewX(-18deg);
+        transition: transform 0.9s var(--ease);
+      }
     }
     .expl.cambio {
       animation: aparecer 0.5s var(--ease);
