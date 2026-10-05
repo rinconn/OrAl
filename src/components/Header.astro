@@ -159,31 +159,37 @@ const actual = (href: string) => !href.startsWith('/#') && base.startsWith(href)
     });
   }
 
-  // En la portada, marca en el menú la sección que se está viendo
+  // En la portada, marca en el menú la sección que se está viendo. Si un enlace apunta a un panel dentro de una
+  // sección (SmartConnect, REI System, Configurador), cuenta su sección y se marca el del panel abierto.
   const enlaces = [...(nav?.querySelectorAll<HTMLAnchorElement>('ul a[href*="/#"]') ?? [])];
-  const porSeccion = new Map<string, HTMLAnchorElement>();
+  const porSeccion = new Map<HTMLElement, HTMLAnchorElement[]>();
   for (const a of enlaces) {
-    const id = a.hash.slice(1);
-    if (!porSeccion.has(id)) porSeccion.set(id, a);
+    const destino = document.getElementById(a.hash.slice(1));
+    const seccion = destino?.closest<HTMLElement>('section[id]') ?? destino;
+    if (seccion) porSeccion.set(seccion, [...(porSeccion.get(seccion) ?? []), a]);
   }
   if (top?.hasAttribute('data-portada')) {
-    const visibles = new Set<string>();
+    const visibles = new Set<Element>();
+    const marcar = () => {
+      const activa = [...porSeccion.keys()].find((s) => visibles.has(s));
+      const candidatos = activa ? porSeccion.get(activa)! : [];
+      const elegido =
+        candidatos.find((a) => document.getElementById(a.hash.slice(1))?.closest('.abierto')) ?? candidatos[0];
+      for (const a of enlaces) a.removeAttribute('aria-current');
+      elegido?.setAttribute('aria-current', 'location');
+    };
     const obs = new IntersectionObserver(
       (entradas) => {
         for (const en of entradas) {
-          if (en.isIntersecting) visibles.add(en.target.id);
-          else visibles.delete(en.target.id);
+          if (en.isIntersecting) visibles.add(en.target);
+          else visibles.delete(en.target);
         }
-        const activa = [...porSeccion.keys()].find((id) => visibles.has(id));
-        for (const a of enlaces) a.removeAttribute('aria-current');
-        if (activa) porSeccion.get(activa)?.setAttribute('aria-current', 'location');
+        marcar();
       },
       { rootMargin: '-45% 0px -50% 0px' },
     );
-    for (const id of porSeccion.keys()) {
-      const s = document.getElementById(id);
-      if (s) obs.observe(s);
-    }
+    for (const s of porSeccion.keys()) obs.observe(s);
+    document.addEventListener('panel-abierto', marcar);
   }
 </script>
 

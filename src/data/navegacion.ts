@@ -7,7 +7,10 @@ import type { Textos } from '../i18n/es';
 
 export const principal: { href: string; clave: keyof Textos['nav'] }[] = [
   { href: '/centrifugas/', clave: 'centrifugas' },
-  { href: '/#tecnologia', clave: 'tecnologia' },
+  // La tecnología propia, seguida y con el nombre de cada pieza, como en la web actual. Cada enlace abre su panel.
+  { href: '/#smartconnect', clave: 'smartconnect' },
+  { href: '/#rei-system', clave: 'rei' },
+  { href: '/#configurador', clave: 'configurador' },
   { href: '/#distribuidores', clave: 'distribuidores' },
   { href: '/#contacto', clave: 'servicio' },
   { href: '/#empresa', clave: 'empresa' },

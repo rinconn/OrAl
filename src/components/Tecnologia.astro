@@ -26,7 +26,8 @@ const enlace = (href: string) => ruta(lang, href);
       <Borde lado="arriba" />
       {[rei.nombre, smartconnect.nombre, t.configurador.nombre].map((nombre, i) => (
         <article class:list={['panel', ['rei', 'sc', 'cfg'][i], { abierto: i === 0 }]}>
-          {i === 2 && <span id="configurador" class="ancla" />}
+          <span id={['rei-system', 'smartconnect', 'configurador'][i]} class="ancla" />
+
           <button
             class="lomo"
             type="button"
@@ -196,14 +197,23 @@ const enlace = (href: string) => ruta(lang, href);
         }
         p.querySelector('.contenido')?.toggleAttribute('inert', !si);
       });
+      // La cabecera marca en el menú el enlace del panel abierto
+      document.dispatchEvent(new Event('panel-abierto'));
     };
     paneles.forEach((p, i) => p.querySelector('.lomo')?.addEventListener('click', () => abrir(i)));
-    // "Empezar" y los enlaces a #configurador abren su panel
-    const alConfigurador = () => {
-      if (location.hash === '#configurador') abrir(2);
+    // Los enlaces del menú (#rei-system, #smartconnect, #configurador) y "Empezar" abren su panel, también si se
+    // pulsan con ese mismo ancla ya en la dirección
+    const anclas = paneles.map((p) => p.querySelector('.ancla')?.id);
+    const alAncla = (hash: string) => {
+      const i = anclas.indexOf(hash.slice(1));
+      if (i >= 0) abrir(i);
     };
-    window.addEventListener('hashchange', alConfigurador);
-    alConfigurador();
+    window.addEventListener('hashchange', () => alAncla(location.hash));
+    document.addEventListener('click', (e) => {
+      const a = (e.target as HTMLElement).closest<HTMLAnchorElement>('a[href*="#"]');
+      if (a && a.pathname === location.pathname) alAncla(a.hash);
+    });
+    alAncla(location.hash);
   }
 </script>
 
