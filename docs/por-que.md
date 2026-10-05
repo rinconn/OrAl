@@ -638,35 +638,41 @@ estándar"; en la portada va un poco más corta para que se lea de un golpe.
 - **Antes:** en la portada de la web actual no había notas de aplicación. Solo estaban dentro de Noticias,
   en una rejilla de fotos con una etiqueta roja ("Artículos y novedades") encima y el título tapando la imagen,
   mezcladas con ferias y retrospectivas.
-- **Ahora:** las cinco últimas notas en la portada, como una baraja de cartas apiladas que se reparte sola
-  al llegar a ella y se queda abierta, con las cinco en fila. Cada carta lleva la foto limpia, la fecha y el título debajo, y una
-  franja gris oscuro con "Leer la nota". En móvil,
-  sin ratón, la baraja se abre sola al llegar a ella y quedan una debajo de otra. Botón "Ver todas las notas".
+- **Ahora (5-10-2026):** las cinco últimas notas del blog en la portada. La más reciente va en grande a la
+  izquierda (foto ancha, área, fecha, título grande y "Leer la nota »"); las otras cuatro, en lista a la derecha,
+  con foto pequeña, área, fecha y título, separadas por rayas finas. "Ver todas las notas »" junto al título.
+  En tableta y móvil, la destacada arriba y la lista debajo.
+- Las notas son las del blog actual, con su texto, su fecha y su foto destacada, sacados de su WordPress
+  (`wp.ortoalresa.com/wp-json`). Cada nota guarda la dirección de la original en `origen`.
 
 ### 9.2 Por qué es mejor
 
 - Enseña al distribuidor que la empresa sabe de centrifugación, no solo que vende centrífugas.
-- La portada se actualiza sola: cada nota es un archivo (`src/content/notas/`) y la portada coge las tres
+- **Jerarquía:** antes eran cinco cajas iguales y el ojo no sabía por dónde empezar. Ahora la última nota manda y
+  las demás acompañan, y los títulos largos se leen en dos o tres líneas en lugar de en cinco apretadas.
+- **El área de aplicación en rojo** (Alimentación, Microbiología, Diagnóstico clínico...) dice al distribuidor,
+  antes de leer el título, a qué cliente le sirve la nota. El blog no lo tenía: el área sale del tema de cada nota.
+- **Fotos de verdad:** cada nota lleva la foto de su tema, en vez de las provisionales, que repetían la misma
+  pantalla de una centrífuga.
+- **Todas con fecha:** las de células NK y Helicobacter pylori ya tienen la suya (la del blog).
+- La portada se actualiza sola: cada nota es un archivo (`src/content/notas/`) y la portada coge las cinco
   últimas. Nadie tiene que tocar la portada al publicar.
-- La foto se ve entera y limpia, sin etiquetas ni texto encima, y el título se lee bien porque va debajo.
-- Rompe el ritmo de la portada: arriba ya hay tarjetas con borde (Distribuidores, Empresa); repetirlas quitaba
-  riqueza visual. La baraja es un gesto propio de esta sección y se recuerda.
 
 ### 9.3 Movimiento y efectos
 
-- La baraja se reparte una sola vez, con un pequeño rebote y una carta detrás de otra, y se queda abierta. Al
-  principio se abría al pasar el ratón y se cerraba al salir, pero cerrada dejaba un hueco vacío en la página.
-- Carta con borde gris oscuro marcado y marcas de esquina grises, como las de un plano técnico. Al pasar el ratón
-  el borde, las marcas y la franja inferior se ponen rojos.
-- Sobre cada foto, la carta sube, la foto se acerca un poco y el título se pone rojo.
-- Con "reducir movimiento" activado en el sistema, las fotos aparecen ya abiertas y sin animación.
+- Entrada suave al llegar, como en el resto de la portada; la lista entra un poco después que la destacada.
+- En la destacada, la raya roja de la foto se alarga de lado a lado al pasar el ratón, la foto se acerca un poco y
+  el título se pone rojo. En la lista, el título se pone rojo y la `»` se adelanta.
+- Con "reducir movimiento" activado en el sistema, sin animaciones.
 
 ### 9.4 Descartados
 
+- **La baraja de cinco cartas iguales que se repartía al llegar** (la versión anterior): llamativa al entrar, pero
+  después eran cinco cajas iguales en fila, sin jerarquía, con títulos de cinco líneas en tarjetas estrechas y una
+  franja gris de "Leer la nota" repetida cinco veces que pesaba más que los títulos. Era la sección más sosa.
 - **Índice grande sobre fondo oscuro con la foto al pasar el ratón:** se llegó a montar, pero junto al pie, que
   también es oscuro, las dos cosas se fundían.
 - **Tres tarjetas iguales a las de Distribuidores:** repetía el molde de las secciones de arriba.
-- **Nota destacada con foto y dos tarjetas al lado:** menos visual que la baraja.
 - **Tres tarjetas con la fecha grande:** poco visual.
 - **Rejilla de fotos con el título encima, como el blog actual:** el texto sobre la foto se lee mal y tapa la imagen.
 - **Quitar las fechas por si dejan de publicar:** se mantienen porque la empresa publica una nota al mes y la
@@ -674,11 +680,11 @@ estándar"; en la portada va un poco más corta para que se lea de un golpe.
 
 ### 9.5 Lo que viene después
 
-- **Fotos originales** de cada nota (ahora hay fotos de la empresa en su hueco).
-- **Fechas** de las notas de células NK y Helicobacter pylori: mientras no se confirmen, esas dos cartas no
-  enseñan fecha (campo `fechaPendiente`).
-- La **página de Noticias** con todas las notas y cada nota con su página. Hasta que exista, los enlaces llevan
-  a la página de error.
+- La **página de Noticias** con todas las notas y cada nota con su página (el texto ya está en cada archivo).
+  Hasta que exista, cada nota y "Ver todas las notas" llevan a su página del blog actual.
+- **Fotos:** son las del blog y casi todas de banco de imágenes. Si la empresa tiene fotos propias de cada
+  aplicación, se cambian en `public/img/notas/`.
+- Que la empresa confirme las **áreas** de cada nota (las puso el equipo web a partir del tema).
 - Más adelante, un editor web sencillo para que la empresa publique notas sin tocar código.
 
 ---
