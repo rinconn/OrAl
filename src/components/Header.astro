@@ -91,7 +91,7 @@ const actual = (href: string) => !href.startsWith('/#') && base.startsWith(href)
   const top = document.getElementById('top');
   const nav = document.getElementById('nav');
   const btn = document.getElementById('menuBtn');
-  const movil = window.matchMedia('(max-width: 1220px)');
+  const movil = window.matchMedia('(max-width: 1439px)');
 
   // Menú móvil
   const abrir = (abierto: boolean) => {
@@ -256,7 +256,7 @@ const actual = (href: string) => !href.startsWith('/#') && base.startsWith(href)
     margin-left: auto;
   }
   /* Escritorio: el mismo hueco a cada lado del menú, entre el logo y las banderas */
-  @media (min-width: 1221px) {
+  @media (min-width: 1440px) {
     .bar {
       justify-content: space-between;
     }
@@ -266,7 +266,7 @@ const actual = (href: string) => !href.startsWith('/#') && base.startsWith(href)
   }
   .nav ul {
     display: flex;
-    gap: 30px;
+    gap: 22px;
     list-style: none;
     margin: 0;
     padding: 0;
@@ -362,17 +362,18 @@ const actual = (href: string) => !href.startsWith('/#') && base.startsWith(href)
     transform: rotate(-45deg);
   }
 
-  /* Portátiles: menos hueco entre elementos para que el menú respire */
-  @media (max-width: 1360px) {
+  /* Hasta 1520 px, menos hueco entre elementos para que las nueve entradas quepan a 1440 px en los tres idiomas
+     (el francés es el más largo) */
+  @media (max-width: 1520px) {
     .bar {
-      gap: 32px;
+      gap: 28px;
     }
     .nav ul {
-      gap: 24px;
+      gap: 16px;
     }
   }
 
-  @media (max-width: 1220px) {
+  @media (max-width: 1439px) {
     .bar {
       height: 60px;
       gap: 20px;

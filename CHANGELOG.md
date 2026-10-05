@@ -7,7 +7,7 @@ Hasta que se publique la web, todo va en "Sin publicar"; al publicar se cierra l
 
 ### Añadido
 
-- Cabecera: SmartConnect, REI System y Configurador seguidos en el menú, como en la web actual, en lugar de "Tecnología". Cada uno abre su panel de Tecnología en la portada y el menú marca el panel abierto. Enlaces en `src/data/navegacion.ts`.
+- Cabecera con las entradas de la web actual: Productos, REI System, SmartConnect, Configurador, Distribuidores, Servicio técnico, Descargas (Guías y Descargas juntas), Noticias y Empresa. REI System, SmartConnect y Configurador abren su panel de Tecnología en la portada y el menú marca el panel abierto. Menos hueco entre entradas y menú a pantalla completa por debajo de 1440 px para que quepan en los tres idiomas. Enlaces en `src/data/navegacion.ts`.
 - Tecnología: SmartConnect y Configurador a la par, con botón "Iniciar sesión" al panel de SmartConnect y "Empezar" para el Configurador de 6 pasos (su página está por hacer). Las tarjetas llevan una raya roja que les da una vuelta y deja su último tramo respirando con un punto que late en la punta. Componente `ui/Borde.astro`.
 - Web en inglés (`/en/`) y francés (`/fr/`): las banderas de la cabecera llevan a la misma página en el otro idioma. Portada y Centrífugas traducidas; los textos de cada idioma están en `src/i18n/` (es, en, fr). Traducción provisional, pendiente de revisar por la empresa.
 - Paso entre secciones oscuras seguidas (inicio → Tecnología → foto de Empresa): el color se funde y una raya roja se dibuja con un destello que la recorre cada pocos segundos. Componente `Paso.astro`. (#28)
