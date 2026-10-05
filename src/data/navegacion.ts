@@ -6,7 +6,7 @@
 import type { Textos } from '../i18n/es';
 
 // En el orden en que aparecen las secciones al bajar por la portada: inicio ("Ver la gama"), Tecnología, Empresa,
-// Distribuidores, notas y pie. Descargas no tiene sección; va junto al pie, que enlaza el catálogo.
+// Distribuidores, notas y pie. Descargas no tiene sección; va al final.
 export const principal: { href: string; clave: keyof Textos['nav'] }[] = [
   { href: '/centrifugas/', clave: 'centrifugas' },
   // La tecnología propia, seguida y con el nombre de cada pieza, como en la web actual, en el orden del acordeón
@@ -17,9 +17,9 @@ export const principal: { href: string; clave: keyof Textos['nav'] }[] = [
   { href: '/#empresa', clave: 'empresa' },
   { href: '/#distribuidores', clave: 'distribuidores' },
   { href: '/#aplicaciones', clave: 'noticias' },
+  { href: '/#contacto', clave: 'servicio' },
   // Guías y descargas juntas en una página, con una sección para cada cosa
   { href: '/descargas/', clave: 'descargas' },
-  { href: '/#contacto', clave: 'servicio' },
 ];
 
 export const contacto = {
