@@ -789,14 +789,26 @@ const descripcion = m
     background: var(--t-calefactada);
   }
 
-  /* Placa de características, como la placa CE de la máquina: marco negro, cabecera negra, una fila por dato
-     y el fabricante al pie */
+  /* Placa de características, como la placa CE de la máquina pero suave: tarjeta blanca con borde fino y sombra
+     difusa, la raya roja de marca arriba, una fila por dato y el fabricante al pie */
   .placa {
+    position: relative;
     margin-top: 24px;
     max-width: 520px;
     background: #fff;
-    border: 2px solid var(--ink);
-    box-shadow: 6px 6px 0 rgba(26, 26, 26, 0.08);
+    border: 1px solid #e3e5e8;
+    box-shadow:
+      0 1px 2px rgba(20, 22, 24, 0.04),
+      0 18px 40px -22px rgba(20, 22, 24, 0.22);
+  }
+  .placa::before {
+    content: '';
+    position: absolute;
+    top: -1px;
+    left: -1px;
+    width: 48px;
+    height: 3px;
+    background: var(--red);
   }
   .placa-cabeza,
   .placa-pie {
@@ -805,54 +817,55 @@ const descripcion = m
     justify-content: space-between;
     gap: 12px;
     margin: 0;
-    padding: 9px 16px;
+    padding: 14px 20px;
   }
   .placa-cabeza {
-    color: #fff;
-    background: var(--ink);
+    border-bottom: 1px solid #eceef0;
   }
   .placa-cabeza span {
     font-size: 12px;
     font-weight: 700;
     letter-spacing: 0.14em;
     text-transform: uppercase;
-    color: var(--on-dark);
+    color: var(--muted);
   }
   .placa-cabeza b {
     font-size: 17px;
+    color: var(--ink);
   }
   .placa dl {
     margin: 0;
-    padding: 4px 16px;
+    padding: 2px 20px;
   }
   .placa dl div {
     display: flex;
     align-items: baseline;
     justify-content: space-between;
     gap: 16px;
-    padding: 9px 0;
-    border-bottom: 1px dashed #c9cdd1;
+    padding: 11px 0;
+    border-bottom: 1px solid #f0f1f3;
   }
   .placa dl div:last-child {
     border-bottom: 0;
   }
-  /* Qué es, en negrita; el dato, en normal */
+  /* Qué es, en gris; el dato, en tinta */
   .placa dt {
     font-size: 16px;
-    font-weight: 700;
-    color: var(--ink);
+    font-weight: 400;
+    color: var(--body);
   }
   .placa dd {
     margin: 0;
     font-size: 19px;
-    font-weight: 400;
+    font-weight: 700;
     text-align: right;
     font-variant-numeric: tabular-nums;
+    color: var(--ink);
   }
   .placa dd small {
     font-size: 0.7em;
     font-weight: 400;
-    color: var(--body);
+    color: var(--muted);
   }
   .placa-temp {
     display: inline-flex;
@@ -861,14 +874,16 @@ const descripcion = m
     color: var(--c);
   }
   .placa-pie {
-    border-top: 2px solid var(--ink);
+    padding-block: 11px;
+    background: #f7f8f9;
+    border-top: 1px solid #eceef0;
     font-size: 13px;
-    color: var(--body);
+    color: var(--muted);
   }
   .placa-pie b {
-    font-size: 18px;
+    font-size: 16px;
     letter-spacing: 0.04em;
-    color: var(--ink);
+    color: var(--body);
   }
   .linea {
     margin-top: 24px;
