@@ -265,6 +265,21 @@ export const es = {
       limpiar: 'Borrar filtros',
       vacio: 'Ningún producto cumple todos estos filtros.',
     },
+    // Comparador del catálogo: 2 o 3 centrífugas lado a lado
+    comparar: {
+      comparar: 'Comparar',
+      maximo: 'Puedes comparar hasta 3',
+      otra: 'Elige otra para comparar',
+      abrir: (n: number) => `Comparar ${n}`,
+      vaciar: 'Vaciar',
+      titulo: 'Comparar centrífugas',
+      quitar: (nombre: string) => `Quitar ${nombre} de la comparación`,
+      cerrar: 'Cerrar',
+      aplicacion: 'Aplicación',
+      temperatura: 'Temperatura',
+      rotores: 'Rotores compatibles',
+      mejor: 'El mayor de la comparación',
+    },
     visor: {
       nombre: 'Digicen 22',
       etiqueta: 'Modelo 3D',

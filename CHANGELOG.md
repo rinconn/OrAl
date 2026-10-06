@@ -7,6 +7,8 @@ Hasta que se publique la web, todo va en "Sin publicar"; al publicar se cierra l
 
 ### Añadido
 
+- Productos: **comparador** en el catálogo. Cada centrífuga lleva "Comparar" (hasta 3) en una etiqueta blanca junto a la de temperatura; abajo aparece una barra con las elegidas y al abrirla se ven lado a lado: aplicación, temperatura, capacidad, velocidad, fuerza, pantalla, medidas, peso, consumo y rotores, con el mayor de cada cifra marcado. La elección se mantiene al ir a una ficha y volver. En móvil, barra de una línea y ventana a pantalla completa (`src/scripts/comparador.ts`).
+- Ficha de producto: placa de datos técnicos más suave (tarjeta blanca, borde fino, sombra difusa, raya roja arriba).
 - Ficha de producto: la descripción en una columna a la izquierda (entradilla y párrafos) y "De un vistazo" a la derecha en 2 × 2, fijo al bajar; en móvil, las placas arriba. Fuera la línea "Datos de la ficha de producto de ortoalresa.com".
 - Productos: el hero entra con la Digicen 22 ya montada y la cámara asentándose en tres cuartos (antes llegaba en despiece y medio transparente). Se prueba un catálogo nuevo como exposición (capítulos por familia, filtros fijos y comparador) y se vuelve al anterior, que gustaba más; queda en el historial (9dc360e).
 - Productos: placa bajo la máquina 3D con su nombre y su aplicación (Modelo 3D · Universal · Digicen 22) y "Ver ficha", que lleva a la ficha de la Digicen 22. Se oculta durante el recorrido.

@@ -17,7 +17,8 @@ import {
   type Temperatura,
 } from '../../data/productos';
 import { accesorios, equipos, type ProductoLab } from '../../data/laboratorio';
-import { idioma, textoSerie, textos } from '../../i18n';
+import { cifra, fichaCentrifuga } from '../../data/fichas';
+import { idioma, numero, ruta, textoSerie, textos } from '../../i18n';
 
 const lang = idioma(Astro.currentLocale);
 const t = textos(lang);
@@ -61,6 +62,52 @@ const capacidad = (m: Modelo) =>
   m.capacidad === productos.find((p) => p.slug === m.serie)?.capacidad
     ? (textoSerie(lang, m.serie).capacidad ?? m.capacidad)
     : m.capacidad;
+
+// Comparador: los datos que el distribuidor mira para elegir, de la tabla de la serie y de la ficha de cada modelo
+const tc = t.catalogo.comparar;
+const tf = t.catalogo.ficha;
+const aNumero = (s?: string) => (s ? Number(s.replace(/\D/g, '')) : undefined);
+const comparables = Object.fromEntries(
+  modelos.map((m) => {
+    const web = fichaCentrifuga(m.slug);
+    const v0 = web?.versiones[0];
+    const xg = m.xg ?? web?.xg;
+    return [
+      m.slug,
+      {
+        nombre: m.nombre,
+        img: m.imagen.src,
+        href: ruta(lang, `/centrifugas/${m.slug}/`),
+        filas: {
+          aplicacion: t.catalogo.categorias[m.categoria],
+          temperatura: may(t.temperatura[m.temperatura]),
+          capacidad: capacidad(m),
+          velocidad: `${numero(lang, m.rpm)} rpm`,
+          fuerza: xg ? `${m.xg ? numero(lang, m.xg) : cifra(lang, xg)} xg` : undefined,
+          pantalla: m.pantalla,
+          medidas: v0?.medidas ? `${v0.medidas.replace(/x/g, ' × ')} mm` : undefined,
+          peso: v0?.peso ? `${v0.peso} kg` : undefined,
+          consumo: v0?.consumo ? `${v0.consumo} W` : undefined,
+          rotores: web?.rotores.length ? String(web.rotores.length) : undefined,
+        },
+        // Para marcar el mayor de cada fila numérica
+        num: { velocidad: aNumero(m.rpm), fuerza: aNumero(xg), rotores: web?.rotores.length },
+      },
+    ];
+  }),
+);
+const filasComparar = [
+  { k: 'aplicacion', nombre: tc.aplicacion },
+  { k: 'temperatura', nombre: tc.temperatura },
+  { k: 'capacidad', nombre: tf.capacidad },
+  { k: 'velocidad', nombre: tf.velocidad },
+  { k: 'fuerza', nombre: tf.fuerza },
+  { k: 'pantalla', nombre: tf.pantalla },
+  { k: 'medidas', nombre: tf.versiones.medidas },
+  { k: 'peso', nombre: tf.versiones.peso },
+  { k: 'consumo', nombre: tf.versiones.consumo },
+  { k: 'rotores', nombre: tc.rotores },
+];
 ---
 
 <Base title={t.catalogo.title} description={t.catalogo.description(productos.length, totalModelos)}>
@@ -150,6 +197,12 @@ const capacidad = (m: Modelo) =>
                 )}
               >
                 <Tarjeta cat={nombreCat(x.cat)} modelo={x.m} capacidad={capacidad(x.m)} />
+                <label class="comparar">
+                  <input type="checkbox" value={x.m.slug} />
+                  <span class="caja" aria-hidden="true" />
+                  {tc.comparar}
+                  <span class="sr">{x.m.nombre}</span>
+                </label>
               </li>
             ) : (
               <li
@@ -178,9 +231,46 @@ const capacidad = (m: Modelo) =>
       </div>
     </div>
   </section>
+
+  <!-- Comparador: barra abajo con las elegidas y, al abrirla, las máquinas lado a lado -->
+  <div class="barra-comparar" id="barra-comparar" role="region" aria-label={tc.titulo} hidden>
+    <ul class="elegidas"></ul>
+    <p class="pista-otra">{tc.otra}</p>
+    <div class="barra-acciones">
+      <button type="button" class="vaciar">
+        {tc.vaciar}
+      </button>
+      <button type="button" class="abrir-comparar" data-txt={tc.abrir(999)}></button>
+    </div>
+  </div>
+
+  <dialog class="comparador" id="comparador" aria-labelledby="comparador-tit">
+    <div class="comp-cab">
+      <h2 id="comparador-tit">{tc.titulo}</h2>
+      <button type="button" class="cerrar-comp" aria-label={tc.cerrar}>
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+          <path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path>
+        </svg>
+      </button>
+    </div>
+    <div class="comp-tabla"></div>
+  </dialog>
+
+  <script
+    type="application/json"
+    id="datos-comparar"
+    set:html={JSON.stringify({
+      maquinas: comparables,
+      filas: filasComparar,
+      textos: { quitar: tc.quitar('{n}'), maximo: tc.maximo, verFicha: tf.verFicha, mejor: tc.mejor },
+    })}
+  />
 </Base>
 
 <script>
+  import { iniciarComparador } from '../../scripts/comparador';
+  iniciarComparador();
+
   // Filtros sencillos: una aplicación, la temperatura (se pueden sumar) y el buscador sin tildes.
   // Cada aplicación dice cuántos productos quedarían al pulsarla y el título de la lista cambia con ella.
   const form = document.getElementById('filtros') as HTMLFormElement | null;
@@ -563,7 +653,456 @@ const capacidad = (m: Modelo) =>
 
   /* Cada tarjeta deja sitio a la cabecera al llegar con un enlace a ella */
   .ficha {
+    position: relative;
     scroll-margin-top: 120px;
+  }
+
+  /* "Comparar": una etiqueta blanca arriba a la derecha de la foto, a juego con la de la temperatura */
+  .comparar {
+    position: absolute;
+    top: 1px;
+    right: 1px;
+    z-index: 3;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 12px 5px 10px;
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--ink);
+    background: #fff;
+    border-left: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    cursor: pointer;
+    transition:
+      color 0.2s var(--ease),
+      background 0.2s var(--ease);
+  }
+  .comparar input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+  }
+  .caja {
+    position: relative;
+    width: 15px;
+    height: 15px;
+    border: 1.5px solid var(--ink);
+    background: #fff;
+  }
+  .caja::after {
+    content: '';
+    position: absolute;
+    left: 3.5px;
+    top: 0.5px;
+    width: 4px;
+    height: 8px;
+    border: solid var(--red);
+    border-width: 0 2px 2px 0;
+    rotate: 45deg;
+    opacity: 0;
+  }
+  .comparar:has(input:checked) {
+    color: #fff;
+    background: var(--red);
+    border-color: var(--red);
+  }
+  .comparar input:checked + .caja {
+    border-color: #fff;
+  }
+  .comparar input:checked + .caja::after {
+    opacity: 1;
+  }
+  .comparar input:focus-visible + .caja {
+    outline: 2px solid var(--ink);
+    outline-offset: 2px;
+  }
+  .comparar:has(input:disabled) {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+
+  /* Los botones que se pintan desde JS no llevan el ámbito del componente */
+  :global(:where(.barra-comparar, .comparador) button) {
+    border: 0;
+    background: none;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+  }
+
+  /* ——— Comparador ——— */
+  .barra-comparar {
+    position: fixed;
+    left: 50%;
+    bottom: 20px;
+    z-index: 30;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    width: max-content;
+    max-width: calc(100% - 2 * var(--gut));
+    padding: 10px 10px 10px 16px;
+    background: rgba(21, 23, 25, 0.96);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    color: #fff;
+    box-shadow: 0 24px 60px -20px rgba(0, 0, 0, 0.55);
+    translate: -50% 0;
+    animation: sube-barra 0.45s var(--ease);
+  }
+  .barra-comparar::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto;
+    height: 2px;
+    background: var(--red);
+  }
+  .elegidas {
+    display: flex;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .elegidas :global(li) {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 48px;
+    padding: 0 6px 0 4px;
+    background: rgba(255, 255, 255, 0.07);
+    animation: entra-chip 0.3s var(--ease);
+  }
+  .elegidas :global(img) {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+    background: #fff;
+  }
+  .elegidas :global(span) {
+    font-size: 15px;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .elegidas :global(button) {
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    color: var(--on-dark);
+  }
+  .pista-otra {
+    font-size: 15px;
+    color: var(--on-dark);
+    white-space: nowrap;
+  }
+  .barra-acciones {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .vaciar {
+    height: 44px;
+    padding: 0 14px;
+    font-size: 15px;
+    color: var(--on-dark);
+  }
+  .abrir-comparar {
+    height: 44px;
+    padding: 0 20px;
+    font-size: 16px;
+    font-weight: 700;
+    color: #fff;
+    background: var(--red);
+    transition: background 0.25s var(--ease);
+  }
+  .abrir-comparar::after {
+    content: ' »';
+    font-weight: 300;
+  }
+  .abrir-comparar:disabled {
+    background: #4a4f53;
+    color: #a9afb3;
+    cursor: default;
+  }
+  .barra-comparar button:focus-visible {
+    outline-color: #fff;
+  }
+
+  .comparador {
+    width: min(1080px, calc(100% - 2 * var(--gut)));
+    max-height: calc(100% - 48px);
+    padding: 0;
+    border: 0;
+    background: #fff;
+    color: var(--ink);
+    box-shadow: 0 40px 100px -30px rgba(0, 0, 0, 0.5);
+  }
+  .comparador[open] {
+    animation: abre 0.4s var(--ease);
+  }
+  .comparador::backdrop {
+    background: rgba(21, 23, 25, 0.55);
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+  }
+  .comp-cab {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 22px clamp(20px, 3vw, 36px);
+    background: #fff;
+    border-top: 3px solid var(--red);
+    border-bottom: 1px solid var(--line);
+  }
+  .comp-cab h2 {
+    font-size: clamp(26px, 2.6vw, 34px);
+    font-weight: 300;
+  }
+  .cerrar-comp {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+  }
+  .comp-tabla {
+    overflow-x: auto;
+    padding: 0 clamp(20px, 3vw, 36px) 32px;
+  }
+  .comp-tabla :global(table) {
+    width: 100%;
+    min-width: 560px;
+    border-collapse: collapse;
+    table-layout: fixed;
+  }
+  .comp-tabla :global(th),
+  .comp-tabla :global(td) {
+    padding: 14px 16px;
+    text-align: left;
+    vertical-align: top;
+    border-bottom: 1px solid #ececec;
+    font-variant-numeric: tabular-nums;
+  }
+  .comp-tabla :global(tbody th) {
+    width: 190px;
+    font-size: 15px;
+    font-weight: 300;
+    color: var(--muted);
+  }
+  .comp-tabla :global(td) {
+    font-size: 17px;
+    font-weight: 400;
+  }
+  .comp-tabla :global(td.mejor) {
+    font-weight: 700;
+  }
+  .comp-tabla :global(td.mejor::after) {
+    content: '';
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    margin-left: 8px;
+    vertical-align: middle;
+    border-radius: 50%;
+    background: var(--red);
+  }
+  .comp-tabla :global(thead th) {
+    padding-top: 28px;
+    border-bottom: 0;
+    text-align: center;
+  }
+  .comp-tabla :global(.comp-maq) {
+    position: relative;
+    display: block;
+  }
+  .comp-tabla :global(.comp-foto) {
+    position: relative;
+    z-index: 0;
+    display: block;
+    aspect-ratio: 10 / 8;
+  }
+  .comp-tabla :global(.comp-foto img) {
+    position: absolute;
+    left: 50%;
+    bottom: 10%;
+    height: 84%;
+    width: auto;
+    max-width: 90%;
+    object-fit: contain;
+    translate: -50% 0;
+  }
+  .comp-tabla :global(.comp-foto::after) {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: 10%;
+    z-index: -1;
+    width: 72%;
+    aspect-ratio: 5.2;
+    border: 1.5px solid var(--red);
+    border-radius: 50%;
+    translate: -50% 50%;
+  }
+  .comp-tabla :global(.comp-nombre) {
+    display: block;
+    margin-top: 18px;
+    font-size: 24px;
+    font-weight: 700;
+  }
+  .comp-tabla :global(.comp-quitar) {
+    position: absolute;
+    top: 0;
+    right: 0;
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    color: var(--muted);
+  }
+  .comp-tabla :global(.comp-ver) {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--red);
+    text-decoration: none;
+  }
+  .comp-tabla :global(.comp-ver::after) {
+    content: ' »';
+    font-weight: 300;
+  }
+  .comp-tabla :global(tfoot td) {
+    border-bottom: 0;
+    padding-top: 22px;
+  }
+
+  @media (hover: hover) {
+    .comparar:hover:not(:has(input:checked, input:disabled)) {
+      background: #f2f2f2;
+    }
+    .abrir-comparar:hover:not(:disabled) {
+      background: var(--red-d);
+    }
+    .vaciar:hover,
+    .elegidas :global(button:hover) {
+      color: #fff;
+    }
+    .comp-tabla :global(.comp-ver:hover) {
+      text-decoration: underline;
+      text-underline-offset: 4px;
+    }
+    .comp-tabla :global(.comp-quitar:hover),
+    .cerrar-comp:hover {
+      color: var(--red);
+    }
+  }
+  @keyframes sube-barra {
+    from {
+      opacity: 0;
+      transform: translateY(24px);
+    }
+  }
+  @keyframes abre {
+    from {
+      opacity: 0;
+      transform: translateY(18px) scale(0.985);
+    }
+  }
+  @keyframes entra-chip {
+    from {
+      opacity: 0;
+    }
+  }
+
+  /* Móvil: la barra en una línea, con las fotos y su aspa, y la ventana a pantalla completa */
+  @media (max-width: 900px) {
+    .barra-comparar {
+      left: 12px;
+      right: 12px;
+      bottom: 12px;
+      gap: 8px;
+      width: auto;
+      max-width: none;
+      padding: 10px;
+      translate: none;
+    }
+    .elegidas {
+      flex: 1;
+      gap: 10px;
+    }
+    .elegidas :global(li) {
+      position: relative;
+      height: auto;
+      padding: 0;
+      background: none;
+    }
+    .elegidas :global(img) {
+      width: 44px;
+      height: 44px;
+    }
+    .elegidas :global(button) {
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: #3a3f43;
+      color: #fff;
+    }
+    .elegidas :global(button svg) {
+      width: 12px;
+      height: 12px;
+    }
+    .elegidas :global(span),
+    .pista-otra {
+      display: none;
+    }
+    .vaciar {
+      padding: 0 8px;
+    }
+    .abrir-comparar {
+      padding: 0 14px;
+    }
+    .comparador {
+      width: 100%;
+      max-width: none;
+      height: 100%;
+      max-height: none;
+      margin: 0;
+    }
+    .comp-tabla :global(tbody th) {
+      position: sticky;
+      left: 0;
+      z-index: 1;
+      width: 120px;
+      background: #fff;
+    }
+    .comp-tabla :global(table) {
+      min-width: 0;
+    }
+    .comp-tabla :global(th),
+    .comp-tabla :global(td) {
+      padding: 12px 10px;
+    }
+    .comp-tabla :global(td) {
+      min-width: 150px;
+      font-size: 16px;
+    }
+    .comp-tabla :global(.comp-nombre) {
+      font-size: 20px;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .barra-comparar,
+    .comparador[open],
+    .elegidas :global(li) {
+      animation: none;
+    }
   }
   .revela .ficha:not(.visto) {
     opacity: 0;
