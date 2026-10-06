@@ -266,10 +266,15 @@ const descripcion = m
         {txt?.descripcion.length ? (
           <div class="panel" id="descripcion" role="tabpanel" aria-labelledby="tab-descripcion">
             <div class="desc">
-              <div class="texto">
-                {txt.descripcion.map((d) => (
-                  <p>{d}</p>
-                ))}
+              <div class:list={['texto', { solo: txt.descripcion.length === 1 }]}>
+                <p class="entradilla">{txt.descripcion[0]}</p>
+                {txt.descripcion.length > 1 && (
+                  <div class="resto">
+                    {txt.descripcion.slice(1).map((d) => (
+                      <p>{d}</p>
+                    ))}
+                  </div>
+                )}
               </div>
               {vistazo.length > 0 && (
                 <aside class="vistazo">
@@ -1069,24 +1074,38 @@ const descripcion = m
     font-size: 17px;
     color: var(--ink);
   }
+  /* Como una página de revista: la entradilla grande a la izquierda y el resto del texto en una columna a la derecha,
+     las dos empezando a la misma altura y alineadas con las placas de "De un vistazo" */
   .texto {
-    columns: 2 380px;
-    column-gap: clamp(32px, 4vw, 64px);
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 24px 10px;
+    align-items: start;
+  }
+  .texto.solo {
+    grid-template-columns: minmax(0, 1fr);
+    max-width: 62ch;
   }
   .texto p {
-    margin: 0 0 1em;
-    font-size: 18px;
-    line-height: 1.65;
+    margin: 0;
     color: var(--ink);
-    break-inside: avoid;
   }
-  /* La primera frase, como entradilla, a todo el ancho */
-  .texto p:first-child {
-    column-span: all;
-    max-width: 62ch;
-    margin-bottom: 1.2em;
+  .entradilla {
+    grid-column: 1 / 3;
+    padding-right: clamp(24px, 3vw, 48px);
     font-size: clamp(21px, 1.8vw, 25px);
     line-height: 1.4;
+  }
+  .resto {
+    grid-column: 3 / 5;
+    padding-top: 6px;
+    border-top: 2px solid var(--red);
+  }
+  .resto p {
+    margin-top: 16px;
+    font-size: 18px;
+    line-height: 1.65;
+    color: var(--body);
   }
 
   /* Ficha técnica como una hoja de especificaciones: una fila por bloque, título a la izquierda y los puntos en
@@ -1435,6 +1454,14 @@ const descripcion = m
     }
   }
   @media (max-width: 1000px) {
+    .texto {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .entradilla,
+    .resto {
+      grid-column: auto;
+      padding-right: 0;
+    }
     .cabecera-in {
       grid-template-columns: minmax(0, 1fr);
       grid-template-areas: 'migas' 'foto' 'datos';
