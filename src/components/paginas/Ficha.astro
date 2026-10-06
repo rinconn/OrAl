@@ -642,7 +642,7 @@ const descripcion = m
     font-weight: 700;
     color: var(--ink);
   }
-  /* Foto de estudio, como en las tarjetas: blanco, suelo gris, línea de color y contorno negro */
+  /* Foto de estudio, como en las tarjetas: blanco, suelo gris y contorno negro */
   .escaparate {
     grid-area: foto;
     position: relative;
@@ -653,7 +653,6 @@ const descripcion = m
     overflow: hidden;
     background: linear-gradient(#fff 0 68%, #eceef0 68% 100%);
     border: 1px solid var(--ink);
-    border-bottom: 4px solid var(--c);
   }
   @media (prefers-reduced-motion: no-preference) {
     .escaparate > img {
@@ -688,7 +687,6 @@ const descripcion = m
     padding: 18px 22px;
     color: #fff;
     background: var(--carbon);
-    border-bottom-width: 1px;
   }
   .escaparate.oscuro::after {
     content: none;
@@ -840,14 +838,16 @@ const descripcion = m
   .placa dl div:last-child {
     border-bottom: 0;
   }
+  /* Qué es, en negrita; el dato, en normal */
   .placa dt {
-    font-size: 15px;
-    color: var(--body);
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--ink);
   }
   .placa dd {
     margin: 0;
-    font-size: 20px;
-    font-weight: 700;
+    font-size: 19px;
+    font-weight: 400;
     text-align: right;
     font-variant-numeric: tabular-nums;
   }
