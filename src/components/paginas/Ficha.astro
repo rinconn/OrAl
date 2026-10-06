@@ -6,6 +6,8 @@
 import Base from '../../layouts/Base.astro';
 import Tarjeta from '../Tarjeta.astro';
 import Visor3D from '../Visor3D.astro';
+import IconoTemp from '../ui/IconoTemp.astro';
+import { contacto } from '../../data/navegacion';
 import { modelos, productos, type Modelo } from '../../data/productos';
 import { accesorios, equipos, type ProductoLab } from '../../data/laboratorio';
 import {
@@ -91,13 +93,18 @@ const secciones = [
 const v0 = versiones[0];
 const voltajes = [...new Set(versiones.map((v) => v.voltaje).filter(Boolean))].join(' / ');
 const vistazo = [
-  versiones.length && { k: tf.versiones.codigo, v: versiones.map((v) => v.codigo).join(' · ') },
   v0?.medidas && { k: tf.versiones.medidas, v: valor('medidas', v0.medidas) },
   v0?.peso && { k: tf.versiones.peso, v: valor('peso', v0.peso) },
   v0?.consumo && { k: tf.versiones.consumo, v: valor('consumo', v0.consumo) },
-  voltajes && { k: tf.versiones.voltaje, v: `${voltajes} V` },
   rotores.length && { k: tf.secciones.rotores, v: String(rotores.length) },
 ].filter(Boolean) as { k: string; v: string }[];
+
+// Placa de características: como la placa CE que lleva cada máquina
+const frecuencias = [...new Set(versiones.map((v) => v.frecuencia).filter(Boolean))].join(' / ');
+const codigos = versiones.map((v) => v.codigo).join(' · ');
+
+// Rotores: tipos de tubo que admite alguno de ellos, para buscar por tubo
+const tiposTubo = [...new Set(rotores.flatMap((r) => r.tubos.map((x) => x.tipo).filter(Boolean)))] as string[];
 
 const conVisor = m?.slug === 'digicen-22';
 const titulo = `${nombre} · ${cat} · Orto Alresa`;
@@ -124,12 +131,10 @@ const descripcion = m
           <Visor3D />
         ) : (
           <>
-            <span class="fondo" aria-hidden="true">
-              {nombre.split(' ')[0]}
-            </span>
             <img src={imagen.src} alt={nombre} width={imagen.ancho} height={imagen.alto} fetchpriority="high" />
             {m && (
-              <span class="temp" data-t={m.temperatura}>
+              <span class="temp">
+                <IconoTemp t={m.temperatura} size={18} />
                 {may(t.temperatura[m.temperatura])}
               </span>
             )}
@@ -165,30 +170,61 @@ const descripcion = m
         )}
 
         {m ? (
-          <dl class="cifras">
-            <div>
-              <dt>{tf.capacidad}</dt>
-              <dd>{capacidad}</dd>
-            </div>
-            <div>
-              <dt>{tf.velocidad}</dt>
-              <dd>
-                {numero(lang, m.rpm)} <small>rpm</small>
-              </dd>
-            </div>
-            {xg && (
+          <div class="placa">
+            <p class="placa-cabeza">
+              <span>{tf.placa}</span>
+              <b>{nombre}</b>
+            </p>
+            <dl>
               <div>
-                <dt>{tf.fuerza}</dt>
+                <dt>{tf.capacidad}</dt>
+                <dd>{capacidad}</dd>
+              </div>
+              <div>
+                <dt>{tf.velocidad}</dt>
                 <dd>
-                  {xg} <small>xg</small>
+                  {numero(lang, m.rpm)} <small>rpm</small>
                 </dd>
               </div>
-            )}
-            <div>
-              <dt>{tf.pantalla}</dt>
-              <dd>{m.pantalla}</dd>
-            </div>
-          </dl>
+              {xg && (
+                <div>
+                  <dt>{tf.fuerza}</dt>
+                  <dd>
+                    {xg} <small>xg</small>
+                  </dd>
+                </div>
+              )}
+              <div>
+                <dt>{tf.pantalla}</dt>
+                <dd>{m.pantalla}</dd>
+              </div>
+              <div>
+                <dt>{t.catalogo.iconos.temperatura}</dt>
+                <dd class="placa-temp">
+                  <IconoTemp t={m.temperatura} />
+                  {may(t.temperatura[m.temperatura])}
+                </dd>
+              </div>
+              {voltajes && (
+                <div>
+                  <dt>{tf.versiones.voltaje}</dt>
+                  <dd>
+                    {voltajes} V{frecuencias && <small> · {frecuencias} Hz</small>}
+                  </dd>
+                </div>
+              )}
+              {codigos && (
+                <div>
+                  <dt>{tf.versiones.codigo}</dt>
+                  <dd>{codigos}</dd>
+                </div>
+              )}
+            </dl>
+            <p class="placa-pie">
+              <span>{contacto.empresa}</span>
+              <b>CE</b>
+            </p>
+          </div>
         ) : (
           <p class="linea">{t.laboratorio.items[p!.slug].datos}</p>
         )}
@@ -290,109 +326,120 @@ const descripcion = m
         {rotores.length > 0 && (
           <div class="panel" id="rotores" role="tabpanel" aria-labelledby="tab-rotores">
             <p class="intro">{tf.rotores.intro(rotores.length)}</p>
-            <ul class="rotores">
-              {rotores.map((r, i) => (
-                <li>
-                  <button type="button" class="rotor" data-abre={`rotor-${i}`}>
-                    <span class="r-foto">
-                      {r.imagen && (
-                        <img src={r.imagen} alt="" width="480" height="480" loading="lazy" decoding="async" />
-                      )}
-                    </span>
-                    <span class="r-nombre">{r.nombre}</span>
-                    <span class="r-tipo">{tipoRotor(lang, r.tipo)}</span>
-                    <span class="r-cap">{medida(lang, r.capacidad)}</span>
-                    <span class="r-vel">
-                      {cifra(lang, r.rpm)} rpm · {cifra(lang, r.xg)} xg
-                    </span>
+            {tiposTubo.length > 1 && (
+              <div class="por-tubo" role="group" aria-label={tf.rotores.porTubo}>
+                <p>{tf.rotores.porTubo}</p>
+                <button type="button" data-tubo="" aria-pressed="true">
+                  {tf.rotores.todos}
+                </button>
+                {tiposTubo.map((x) => (
+                  <button type="button" data-tubo={x} aria-pressed="false">
+                    {may(tipoTubo(lang, x)!)}
                   </button>
-                  <dialog class="modal" id={`rotor-${i}`} aria-labelledby={`rotor-${i}-t`}>
-                    <div class="modal-in">
-                      <button type="button" class="cerrar" aria-label={t.catalogo.visor.cerrar} data-cierra>
-                        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
-                          <path
-                            d="M6 6l12 12M18 6 6 18"
-                            stroke="currentColor"
-                            stroke-width="1.8"
-                            stroke-linecap="round"
-                          />
-                        </svg>
-                      </button>
-                      <div class="m-top">
-                        <span class="m-foto">
-                          {r.imagen && <img src={r.imagen} alt={r.nombre} width="480" height="480" loading="lazy" />}
-                        </span>
-                        <div>
-                          <p class="cat">{tipoRotor(lang, r.tipo)}</p>
-                          <h3 id={`rotor-${i}-t`}>{r.nombre}</h3>
-                          <dl class="m-cifras">
-                            <div>
-                              <dt>{tf.capacidad}</dt>
-                              <dd>{medida(lang, r.capacidad)}</dd>
-                            </div>
-                            <div>
-                              <dt>{tf.velocidad}</dt>
-                              <dd>{cifra(lang, r.rpm)} rpm</dd>
-                            </div>
-                            <div>
-                              <dt>{tf.fuerza}</dt>
-                              <dd>{cifra(lang, r.xg)} xg</dd>
-                            </div>
-                            {r.radio && (
-                              <div>
-                                <dt>{tf.rotores.radio}</dt>
-                                <dd>{r.radio} mm</dd>
-                              </div>
-                            )}
-                            {r.angulo && (
-                              <div>
-                                <dt>{tf.rotores.angulo}</dt>
-                                <dd>{r.angulo}°</dd>
-                              </div>
-                            )}
-                            {r.tempMin && (
-                              <div>
-                                <dt>{tf.rotores.tempMin}</dt>
-                                <dd>{r.tempMin} °C</dd>
-                              </div>
-                            )}
-                          </dl>
-                        </div>
-                      </div>
-                      {r.tubos.length > 0 && (
-                        <>
-                          <h4>{tf.rotores.tubos}</h4>
-                          <div class="tabla-scroll">
-                            <table>
-                              <thead>
-                                <tr>
-                                  <th scope="col">{tf.rotores.posiciones}</th>
-                                  <th scope="col">{tf.rotores.tubo}</th>
-                                  <th scope="col">{tf.rotores.capacidadTubo}</th>
-                                  <th scope="col">{tf.rotores.medidas}</th>
-                                  <th scope="col">{tf.rotores.reductor}</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {r.tubos.map((tb) => (
-                                  <tr>
-                                    <td class="num">{tb.posiciones}</td>
-                                    <td>{tipoTubo(lang, tb.tipo)}</td>
-                                    <td>{medida(lang, tb.capacidad) ?? '—'}</td>
-                                    <td>{medida(lang, tb.medidas) ?? '—'}</td>
-                                    <td>{tb.reductor ?? tf.rotores.directo}</td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
+                ))}
+              </div>
+            )}
+            <div class="selector">
+              <ul class="lista-rotores">
+                {rotores.map((r, i) => (
+                  <li data-tubos={r.tubos.map((x) => x.tipo).join('|')}>
+                    <button
+                      type="button"
+                      class="r-item"
+                      data-rotor={`rotor-${i}`}
+                      aria-pressed={i === 0 ? 'true' : 'false'}
+                    >
+                      <span class="r-mini">
+                        {r.imagen && (
+                          <img src={r.imagen} alt="" width="480" height="480" loading="lazy" decoding="async" />
+                        )}
+                      </span>
+                      <span class="r-texto">
+                        <span class="r-nombre">{r.nombre}</span>
+                        <span class="r-tipo">{tipoRotor(lang, r.tipo)}</span>
+                        <span class="r-cap">{medida(lang, r.capacidad)}</span>
+                      </span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+              <div class="r-detalles" aria-live="polite">
+                {rotores.map((r, i) => (
+                  <article class="r-detalle" id={`rotor-${i}`}>
+                    <div class="r-top">
+                      <span class="r-foto">
+                        {r.imagen && <img src={r.imagen} alt={r.nombre} width="480" height="480" loading="lazy" />}
+                      </span>
+                      <div>
+                        <p class="r-tipo">{tipoRotor(lang, r.tipo)}</p>
+                        <h3>{r.nombre}</h3>
+                        <dl class="r-cifras">
+                          <div>
+                            <dt>{tf.capacidad}</dt>
+                            <dd>{medida(lang, r.capacidad)}</dd>
                           </div>
-                        </>
-                      )}
+                          <div>
+                            <dt>{tf.velocidad}</dt>
+                            <dd>{cifra(lang, r.rpm)} rpm</dd>
+                          </div>
+                          <div>
+                            <dt>{tf.fuerza}</dt>
+                            <dd>{cifra(lang, r.xg)} xg</dd>
+                          </div>
+                          {r.radio && (
+                            <div>
+                              <dt>{tf.rotores.radio}</dt>
+                              <dd>{r.radio} mm</dd>
+                            </div>
+                          )}
+                          {r.angulo && (
+                            <div>
+                              <dt>{tf.rotores.angulo}</dt>
+                              <dd>{r.angulo}°</dd>
+                            </div>
+                          )}
+                          {r.tempMin && (
+                            <div>
+                              <dt>{tf.rotores.tempMin}</dt>
+                              <dd>{r.tempMin} °C</dd>
+                            </div>
+                          )}
+                        </dl>
+                      </div>
                     </div>
-                  </dialog>
-                </li>
-              ))}
-            </ul>
+                    {r.tubos.length > 0 && (
+                      <>
+                        <h4>{tf.rotores.tubos}</h4>
+                        <div class="tabla-scroll">
+                          <table>
+                            <thead>
+                              <tr>
+                                <th scope="col">{tf.rotores.posiciones}</th>
+                                <th scope="col">{tf.rotores.tubo}</th>
+                                <th scope="col">{tf.rotores.capacidadTubo}</th>
+                                <th scope="col">{tf.rotores.medidas}</th>
+                                <th scope="col">{tf.rotores.reductor}</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {r.tubos.map((tb) => (
+                                <tr data-tubo={tb.tipo}>
+                                  <td class="num">{tb.posiciones}</td>
+                                  <td>{tipoTubo(lang, tb.tipo)}</td>
+                                  <td>{medida(lang, tb.capacidad) ?? '—'}</td>
+                                  <td>{medida(lang, tb.medidas) ?? '—'}</td>
+                                  <td>{tb.reductor ?? tf.rotores.directo}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </>
+                    )}
+                  </article>
+                ))}
+              </div>
+            </div>
           </div>
         )}
 
@@ -478,15 +525,40 @@ const descripcion = m
 </Base>
 
 <script>
-  // Rotores: cada tarjeta abre su ventana con las cifras y los tubos. Se cierra con la X, Esc o pulsando fuera.
-  for (const b of document.querySelectorAll<HTMLButtonElement>('[data-abre]')) {
-    const d = document.getElementById(b.dataset.abre!) as HTMLDialogElement | null;
-    if (!d) continue;
-    b.addEventListener('click', () => d.showModal());
-    d.querySelector('[data-cierra]')?.addEventListener('click', () => d.close());
-    d.addEventListener('click', (e) => {
-      if (e.target === d) d.close();
-    });
+  // Rotores: la lista a la izquierda y el elegido a la derecha. "¿Qué tubo usas?" deja solo los rotores que lo
+  // admiten y resalta sus filas en la tabla. Sin JS se ven todos, uno debajo de otro.
+  const selector = document.querySelector<HTMLElement>('.selector');
+  if (selector) {
+    selector.classList.add('activo');
+    const items = [...selector.querySelectorAll<HTMLButtonElement>('.r-item')];
+    const detalles = [...selector.querySelectorAll<HTMLElement>('.r-detalle')];
+    const filtros = [...document.querySelectorAll<HTMLButtonElement>('.por-tubo button')];
+    let tubo = '';
+    const elegir = (id: string) => {
+      for (const b of items) b.setAttribute('aria-pressed', String(b.dataset.rotor === id));
+      for (const d of detalles) {
+        d.hidden = d.id !== id;
+        for (const tr of d.querySelectorAll<HTMLElement>('tr[data-tubo]')) {
+          tr.classList.toggle('marcada', !!tubo && tr.dataset.tubo === tubo);
+        }
+      }
+    };
+    for (const b of items) b.addEventListener('click', () => elegir(b.dataset.rotor!));
+    for (const f of filtros) {
+      f.addEventListener('click', () => {
+        tubo = f.dataset.tubo ?? '';
+        for (const g of filtros) g.setAttribute('aria-pressed', String(g === f));
+        let primero = '';
+        for (const b of items) {
+          const li = b.parentElement!;
+          li.hidden = !!tubo && !(li.dataset.tubos ?? '').split('|').includes(tubo);
+          if (!li.hidden && !primero) primero = b.dataset.rotor!;
+        }
+        const actual = items.find((b) => b.getAttribute('aria-pressed') === 'true');
+        elegir(actual && !actual.parentElement!.hidden ? actual.dataset.rotor! : primero);
+      });
+    }
+    elegir(items[0].dataset.rotor!);
   }
 
   // Pestañas: se ve un panel cada vez. Sin JS se ven todos, uno debajo de otro.
@@ -527,46 +599,28 @@ const descripcion = m
 </script>
 
 <style>
-  /* ——— Cabecera oscura: el escenario con la máquina a la izquierda y los datos en placas de cristal ——— */
+  /* ——— Cabecera clara: la foto de estudio a la izquierda y los datos con su placa a la derecha ——— */
   .cabecera {
     --c: var(--t-ventilada);
-    --halo: rgba(154, 161, 166, 0.5);
-    position: relative;
-    overflow: hidden;
-    isolation: isolate;
-    color: #fff;
-    background: var(--carbon);
+    background: var(--band);
+    border-bottom: 1px solid var(--line);
   }
   .cabecera[data-t='refrigerada'] {
     --c: var(--t-refrigerada);
-    --halo: rgba(58, 140, 214, 0.55);
   }
   .cabecera[data-t='calefactada'] {
     --c: var(--t-calefactada);
-    --halo: rgba(222, 120, 40, 0.5);
   }
   .cabecera[data-t='lab'] {
     --c: var(--red);
-    --halo: rgba(221, 4, 10, 0.35);
-  }
-  /* La luz del estudio: un halo del color de la temperatura detrás de la máquina */
-  .cabecera::before {
-    content: '';
-    position: absolute;
-    z-index: -1;
-    top: -10%;
-    left: -10%;
-    width: 75%;
-    height: 120%;
-    background: radial-gradient(closest-side, var(--halo), rgba(21, 23, 25, 0));
   }
   .cabecera-in {
     display: grid;
-    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
     grid-template-areas:
       'migas migas'
       'foto datos';
-    gap: 16px clamp(32px, 5vw, 80px);
+    gap: 16px clamp(32px, 5vw, 72px);
     padding-block: 24px clamp(40px, 5vw, 64px);
   }
   .migas {
@@ -575,52 +629,35 @@ const descripcion = m
     flex-wrap: wrap;
     gap: 6px 10px;
     font-size: 15px;
-    color: var(--on-dark);
+    color: var(--body);
   }
   .migas a {
-    color: var(--on-dark);
+    color: var(--body);
     text-decoration: none;
   }
   .migas a:hover {
-    color: #fff;
+    color: var(--red);
   }
   .migas [aria-current] {
     font-weight: 700;
-    color: #fff;
+    color: var(--ink);
   }
+  /* Foto de estudio, como en las tarjetas: blanco, suelo gris, línea de color y contorno negro */
   .escaparate {
     grid-area: foto;
     position: relative;
+    align-self: start;
     display: grid;
     place-items: center;
     aspect-ratio: 1 / 0.86;
-    isolation: isolate;
-  }
-  /* El nombre de la serie, enorme y apenas visible, detrás de la máquina */
-  .fondo {
-    position: absolute;
-    z-index: -1;
-    left: 0;
-    top: 2%;
-    font-size: clamp(96px, 13vw, 200px);
-    font-weight: 700;
-    line-height: 0.85;
-    letter-spacing: -0.03em;
-    color: rgba(255, 255, 255, 0.06);
-    white-space: nowrap;
+    overflow: hidden;
+    background: linear-gradient(#fff 0 68%, #eceef0 68% 100%);
+    border: 1px solid var(--ink);
+    border-bottom: 4px solid var(--c);
   }
   @media (prefers-reduced-motion: no-preference) {
-    .fondo {
-      animation: desliza 1.4s var(--ease) both;
-    }
     .escaparate > img {
-      animation: sube 1s 0.15s var(--ease) both;
-    }
-  }
-  @keyframes desliza {
-    from {
-      opacity: 0;
-      transform: translateX(8%);
+      animation: sube 1s 0.1s var(--ease) both;
     }
   }
   @keyframes sube {
@@ -634,20 +671,24 @@ const descripcion = m
     position: absolute;
     left: 22%;
     right: 22%;
-    bottom: 7%;
+    bottom: 10%;
     height: 7%;
-    background: radial-gradient(closest-side, rgba(0, 0, 0, 0.75), transparent);
+    background: radial-gradient(closest-side, rgba(17, 19, 21, 0.3), transparent);
   }
   .escaparate img {
     position: relative;
     z-index: 1;
-    width: 80%;
+    width: 76%;
     height: auto;
   }
   .escaparate.oscuro {
     display: flex;
     aspect-ratio: auto;
     min-height: 560px;
+    padding: 18px 22px;
+    color: #fff;
+    background: var(--carbon);
+    border-bottom-width: 1px;
   }
   .escaparate.oscuro::after {
     content: none;
@@ -655,18 +696,16 @@ const descripcion = m
   .escaparate.oscuro > :global(.visor) {
     flex: 1;
   }
-  .escaparate > .temp {
+  .temp {
     position: absolute;
     z-index: 2;
     left: 0;
     top: 0;
-    padding: 9px 18px 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px 8px 12px;
     font-size: 17px;
-  }
-  .temp {
-    display: inline-block;
-    padding: 6px 14px 7px;
-    font-size: 15px;
     font-weight: 700;
     line-height: 1;
     color: #fff;
@@ -685,12 +724,8 @@ const descripcion = m
     text-transform: uppercase;
     color: var(--red);
   }
-  /* Sobre el carbón, el rojo de marca un punto más claro para que el texto pequeño se lea (contraste AA) */
-  .datos .cat {
-    color: #ff4c51;
-  }
   h1 {
-    margin-top: 10px;
+    margin-top: 8px;
     font-size: clamp(48px, 5.6vw, 84px);
     font-weight: 700;
     line-height: 0.95;
@@ -702,19 +737,19 @@ const descripcion = m
     font-size: 0.36em;
     font-weight: 300;
     letter-spacing: 0;
-    color: var(--on-dark);
+    color: var(--body);
   }
   .frase {
-    margin-top: 14px;
+    margin-top: 12px;
     max-width: 40ch;
     font-size: var(--t-sub);
     line-height: 1.35;
-    color: var(--on-dark);
+    color: var(--body);
   }
 
-  /* Versión: botones de cristal pegados; la elegida, en el color de su temperatura */
+  /* Versión: botones pegados; la elegida, en el color de su temperatura */
   .version {
-    margin-top: 26px;
+    margin-top: 22px;
   }
   .version p {
     margin: 0 0 8px;
@@ -722,7 +757,6 @@ const descripcion = m
     font-weight: 700;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: var(--on-dark);
   }
   .version ul {
     display: inline-flex;
@@ -730,25 +764,26 @@ const descripcion = m
     margin: 0;
     padding: 0;
     list-style: none;
-    border: 1px solid rgba(255, 255, 255, 0.24);
-    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--ink);
+    background: #fff;
   }
   .version li + li {
-    border-left: 1px solid rgba(255, 255, 255, 0.24);
+    border-left: 1px solid var(--ink);
   }
   .version a {
     display: block;
-    padding: 11px 22px;
+    padding: 10px 22px;
     font-size: 17px;
-    color: #fff;
+    color: var(--ink);
     text-decoration: none;
     transition: background 0.2s var(--ease);
   }
   .version a:hover {
-    background: rgba(255, 255, 255, 0.12);
+    background: var(--panel);
   }
   .version a[aria-current] {
     font-weight: 700;
+    color: #fff;
     background: var(--t-ventilada);
   }
   .version a[aria-current][data-t='refrigerada'] {
@@ -758,56 +793,90 @@ const descripcion = m
     background: var(--t-calefactada);
   }
 
-  /* Cuatro cifras en placas de cristal, con la raya roja de marca arriba */
-  .cifras {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px;
-    margin: 28px 0 0;
+  /* Placa de características, como la placa CE de la máquina: marco negro, cabecera negra, una fila por dato
+     y el fabricante al pie */
+  .placa {
+    margin-top: 24px;
+    max-width: 520px;
+    background: #fff;
+    border: 2px solid var(--ink);
+    box-shadow: 6px 6px 0 rgba(26, 26, 26, 0.08);
   }
-  .cifras div {
-    position: relative;
+  .placa-cabeza,
+  .placa-pie {
     display: flex;
-    flex-direction: column-reverse;
-    justify-content: flex-end;
-    gap: 4px;
-    padding: 16px 18px 15px;
-    background: rgba(255, 255, 255, 0.07);
-    -webkit-backdrop-filter: blur(14px) saturate(150%);
-    backdrop-filter: blur(14px) saturate(150%);
-    border: 1px solid rgba(255, 255, 255, 0.16);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 0;
+    padding: 9px 16px;
   }
-  .cifras div::before {
-    content: '';
-    position: absolute;
-    top: -1px;
-    left: -1px;
-    width: 24px;
-    height: 3px;
-    background: var(--red);
+  .placa-cabeza {
+    color: #fff;
+    background: var(--ink);
   }
-  .cifras dt {
-    font-size: 15px;
+  .placa-cabeza span {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
     color: var(--on-dark);
   }
-  .cifras dd {
+  .placa-cabeza b {
+    font-size: 17px;
+  }
+  .placa dl {
     margin: 0;
-    font-size: clamp(26px, 2.4vw, 34px);
+    padding: 4px 16px;
+  }
+  .placa dl div {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 9px 0;
+    border-bottom: 1px dashed #c9cdd1;
+  }
+  .placa dl div:last-child {
+    border-bottom: 0;
+  }
+  .placa dt {
+    font-size: 15px;
+    color: var(--body);
+  }
+  .placa dd {
+    margin: 0;
+    font-size: 20px;
     font-weight: 700;
-    line-height: 1.05;
+    text-align: right;
     font-variant-numeric: tabular-nums;
   }
-  .cifras small {
-    font-size: 0.55em;
+  .placa dd small {
+    font-size: 0.7em;
     font-weight: 400;
-    color: var(--on-dark);
+    color: var(--body);
+  }
+  .placa-temp {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--c);
+  }
+  .placa-pie {
+    border-top: 2px solid var(--ink);
+    font-size: 13px;
+    color: var(--body);
+  }
+  .placa-pie b {
+    font-size: 18px;
+    letter-spacing: 0.04em;
+    color: var(--ink);
   }
   .linea {
-    margin-top: 26px;
+    margin-top: 24px;
     padding: 16px 18px;
-    background: rgba(255, 255, 255, 0.07);
-    border: 1px solid rgba(255, 255, 255, 0.16);
+    background: #fff;
+    border: 2px solid var(--ink);
     font-size: 18px;
     font-weight: 700;
   }
@@ -815,14 +884,9 @@ const descripcion = m
     display: flex;
     flex-wrap: wrap;
     gap: 12px;
-    margin-top: 28px;
+    margin-top: 24px;
   }
   .btn.ghost {
-    color: #fff;
-    border-color: rgba(255, 255, 255, 0.6);
-    background: transparent;
-  }
-  .btn.ghost:hover {
     color: var(--ink);
     background: #fff;
   }
@@ -1105,181 +1169,201 @@ const descripcion = m
     background: var(--steel);
   }
 
-  /* Rotores: tarjetas con su foto; cada una abre su ventana */
-  .rotores {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
-    gap: 16px;
-  }
-  .rotor {
-    position: relative;
-    width: 100%;
-    height: 100%;
+  /* Rotores: "¿Qué tubo usas?" arriba; la lista a la izquierda y el elegido, grande, a la derecha */
+  .por-tubo {
     display: flex;
-    flex-direction: column;
+    flex-wrap: wrap;
     align-items: center;
-    gap: 2px;
-    padding: 0 14px 18px;
+    gap: 8px;
+    margin-bottom: 24px;
+  }
+  .por-tubo p {
+    margin: 0 8px 0 0;
+    font-size: 17px;
+    font-weight: 700;
+  }
+  .por-tubo button {
+    height: 36px;
+    padding: 0 14px;
+    border: 1px solid var(--ink);
     background: #fff;
-    border: 1px solid var(--line);
-    font: inherit;
-    text-align: center;
+    font: 400 15px var(--f);
     color: var(--ink);
     cursor: pointer;
     transition:
-      transform 0.35s var(--ease),
-      box-shadow 0.35s var(--ease),
-      border-color 0.35s var(--ease);
+      background 0.2s var(--ease),
+      color 0.2s var(--ease);
   }
-  .rotor::before {
+  .por-tubo button:hover {
+    background: var(--panel);
+  }
+  .por-tubo button[aria-pressed='true'] {
+    font-weight: 700;
+    color: #fff;
+    background: var(--ink);
+  }
+  .selector.activo {
+    display: grid;
+    grid-template-columns: minmax(260px, 0.36fr) minmax(0, 1fr);
+    gap: 24px;
+    align-items: start;
+  }
+  .lista-rotores {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border: 1px solid var(--ink);
+  }
+  .selector:not(.activo) .lista-rotores {
+    display: none;
+  }
+  .selector.activo .lista-rotores {
+    position: sticky;
+    top: 160px;
+    max-height: calc(100vh - 190px);
+    overflow-y: auto;
+  }
+  .lista-rotores li + li {
+    border-top: 1px solid var(--line);
+  }
+  .r-item {
+    position: relative;
+    display: grid;
+    grid-template-columns: 64px minmax(0, 1fr);
+    gap: 14px;
+    align-items: center;
+    width: 100%;
+    padding: 10px 14px 10px 10px;
+    border: 0;
+    background: #fff;
+    font: inherit;
+    text-align: left;
+    color: var(--ink);
+    cursor: pointer;
+    transition: background 0.2s var(--ease);
+  }
+  .r-item::before {
     content: '';
     position: absolute;
-    top: -1px;
-    left: -1px;
-    width: 28px;
-    height: 3px;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
     background: var(--red);
-    transition: width 0.45s var(--ease);
+    transform: scaleY(0);
+    transition: transform 0.3s var(--ease);
   }
-  .r-foto {
+  .r-item:hover {
+    background: var(--band);
+  }
+  .r-item[aria-pressed='true'] {
+    background: var(--band);
+  }
+  .r-item[aria-pressed='true']::before {
+    transform: scaleY(1);
+  }
+  .r-item:focus-visible {
+    outline: 2px solid var(--red);
+    outline-offset: -2px;
+  }
+  .r-mini {
     display: grid;
     place-items: center;
-    width: 100%;
-    aspect-ratio: 1 / 0.8;
-    margin-bottom: 8px;
+    width: 64px;
+    height: 56px;
   }
-  .r-foto img {
-    width: 82%;
+  .r-mini img {
+    width: 100%;
     height: auto;
-    transition: transform 0.6s var(--ease);
+  }
+  .r-texto {
+    display: grid;
+    gap: 1px;
   }
   .r-nombre {
-    font-size: 22px;
+    font-size: 19px;
     font-weight: 700;
     line-height: 1.1;
   }
   .r-tipo {
-    font-size: 13px;
+    margin: 0;
+    font-size: 12px;
     font-weight: 700;
     letter-spacing: 0.1em;
     text-transform: uppercase;
     color: var(--red);
   }
   .r-cap {
-    margin-top: 8px;
-    font-size: 17px;
-    font-weight: 700;
-  }
-  .r-vel {
     font-size: 15px;
     color: var(--body);
-    font-variant-numeric: tabular-nums;
-  }
-  .rotor:focus-visible {
-    outline: 2px solid var(--red);
-    outline-offset: 3px;
-  }
-  @media (hover: hover) {
-    .rotor:hover {
-      transform: translateY(-4px);
-      border-color: rgba(26, 26, 26, 0.2);
-      box-shadow: 0 24px 40px -28px rgba(17, 19, 21, 0.4);
-    }
-    .rotor:hover::before {
-      width: calc(100% + 2px);
-    }
-    .rotor:hover .r-foto img {
-      transform: scale(1.06) rotate(-6deg);
-    }
   }
 
-  /* Ventana del rotor */
-  .modal {
-    width: min(920px, calc(100vw - 32px));
-    max-height: calc(100vh - 48px);
-    padding: 0;
-    border: 0;
-    border-top: 4px solid var(--red);
-    background: #fff;
-    color: var(--ink);
-    box-shadow: 0 40px 80px -30px rgba(0, 0, 0, 0.5);
+  /* El rotor elegido: foto de estudio, cifras y tabla de tubos */
+  .r-detalle {
+    padding: clamp(20px, 2.5vw, 32px);
+    border: 1px solid var(--ink);
   }
-  .modal::backdrop {
-    background: rgba(17, 19, 21, 0.6);
-    -webkit-backdrop-filter: blur(4px);
-    backdrop-filter: blur(4px);
+  .selector:not(.activo) .r-detalle + .r-detalle {
+    margin-top: 24px;
   }
-  .modal[open] {
-    animation: abre 0.35s var(--ease);
+  .selector.activo .r-detalle {
+    animation: aparece 0.35s var(--ease);
   }
-  .modal-in {
-    position: relative;
-    padding: clamp(24px, 4vw, 40px);
-  }
-  .cerrar {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    display: grid;
-    place-items: center;
-    width: 44px;
-    height: 44px;
-    border: 0;
-    background: none;
-    color: var(--ink);
-    cursor: pointer;
-  }
-  .cerrar:hover {
-    color: var(--red);
-  }
-  .m-top {
+  .r-top {
     display: grid;
     grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
-    gap: 32px;
+    gap: 28px;
     align-items: center;
   }
-  .m-foto {
+  .r-foto {
     display: grid;
     place-items: center;
-    aspect-ratio: 1;
-    background: var(--band);
+    aspect-ratio: 1 / 0.85;
+    /* Las fotos de los rotores vienen con fondo blanco: sin suelo gris, para que no se vea el recuadro */
+    background: #fff;
+    border-bottom: 3px solid var(--red);
   }
-  .m-foto img {
-    width: 84%;
+  .r-foto img {
+    width: 80%;
     height: auto;
   }
-  .modal h3 {
-    margin: 4px 0 18px;
+  .r-detalle h3 {
+    margin: 2px 0 14px;
     font-size: 44px;
     font-weight: 700;
     line-height: 1;
   }
-  .m-cifras {
+  .r-cifras {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     margin: 0;
     border-top: 2px solid var(--ink);
   }
-  .m-cifras div {
+  .r-cifras div {
+    display: flex;
+    flex-direction: column-reverse;
+    justify-content: flex-end;
     padding: 10px 12px 10px 0;
     border-bottom: 1px solid var(--line);
   }
-  .m-cifras dt {
+  .r-cifras dt {
     font-size: 14px;
     color: var(--body);
   }
-  .m-cifras dd {
-    margin: 2px 0 0;
+  .r-cifras dd {
+    margin: 0 0 2px;
     font-size: 20px;
     font-weight: 700;
   }
-  .modal h4 {
-    margin: 32px 0 12px;
+  .r-detalle h4 {
+    margin: 28px 0 12px;
     font-size: 22px;
     font-weight: 700;
+  }
+  /* Filas del tubo buscado, marcadas */
+  tr.marcada {
+    background: rgba(221, 4, 10, 0.07);
+    box-shadow: inset 4px 0 0 var(--red);
   }
 
   /* Tablas: cabecera oscura, filas finas y números alineados */
@@ -1344,12 +1428,6 @@ const descripcion = m
       transform: translateY(10px);
     }
   }
-  @keyframes abre {
-    from {
-      opacity: 0;
-      transform: translateY(16px) scale(0.98);
-    }
-  }
 
   @media (max-width: 1439px) {
     :global(html:has(#top:not(.oculta))) .pestanas-barra {
@@ -1373,36 +1451,37 @@ const descripcion = m
     .rejilla {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
+    /* El selector de rotores, en una columna: la lista se desliza de lado */
+    .selector.activo {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .selector.activo .lista-rotores {
+      position: static;
+      display: flex;
+      max-height: none;
+      overflow-x: auto;
+    }
+    .lista-rotores li {
+      flex: 0 0 220px;
+    }
+    .lista-rotores li + li {
+      border-top: 0;
+      border-left: 1px solid var(--line);
+    }
   }
   @media (max-width: 640px) {
     .escaparate.oscuro {
       min-height: 0;
     }
-    .cifras dd {
-      font-size: 24px;
-    }
     .botones .btn {
       flex: 1 1 100%;
       justify-content: center;
     }
-    .rotores {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 10px;
-    }
-    .r-nombre {
-      font-size: 19px;
-    }
-    .m-top {
+    .r-top {
       grid-template-columns: minmax(0, 1fr);
       gap: 16px;
     }
-    .m-foto {
-      aspect-ratio: 1 / 0.6;
-    }
-    .m-foto img {
-      width: 50%;
-    }
-    .modal h3 {
+    .r-detalle h3 {
       font-size: 36px;
     }
     .tarjetas-texto article {
@@ -1416,9 +1495,10 @@ const descripcion = m
     }
   }
   @media (prefers-reduced-motion: reduce) {
-    .rotor,
-    .r-foto img,
-    .modal[open] {
+    .r-item,
+    .r-item::before,
+    .r-detalle,
+    .escaparate > img {
       transition: none;
       animation: none;
     }

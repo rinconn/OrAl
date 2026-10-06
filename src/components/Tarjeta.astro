@@ -1,8 +1,9 @@
 ---
-// Tarjeta de un producto en el catálogo. Escenario de estudio oscuro con un halo del color de su temperatura detrás
-// de la máquina (azul la refrigerada, ámbar la calefactada, acero la ventilada): las centrífugas, blancas y grises,
-// resaltan sobre el carbón. Detrás, el nombre de la serie en grande; al pie del escenario, las tres cifras en una
-// franja de cristal. Debajo, en blanco, la aplicación y el nombre. Toda la tarjeta lleva a la ficha del producto.
+// Tarjeta de un producto en el catálogo, como una foto de estudio: la máquina sobre blanco, apoyada en un suelo gris
+// con una línea del color de su temperatura (verde la ventilada, azul la refrigerada, ámbar la calefactada) y su
+// etiqueta con icono. Contorno negro bien visible. Debajo, la aplicación, el nombre y tres cifras. Toda la tarjeta
+// lleva a su ficha.
+import IconoTemp from './ui/IconoTemp.astro';
 import type { Modelo } from '../data/productos';
 import type { ProductoLab } from '../data/laboratorio';
 import { idioma, numero, ruta, textos } from '../i18n';
@@ -22,15 +23,10 @@ const slug = m?.slug ?? p!.slug;
 const href = ruta(lang, `/centrifugas/${slug}/`);
 const item = p && t.laboratorio.items[p.slug];
 const nombre = m ? m.nombre : item!.nombre;
-// La primera palabra del nombre ("Digicen", "Consul", "Mesas"), de fondo
-const fondo = nombre.split(' ')[0];
 ---
 
 <a class:list={['tarjeta', { lab: p }]} href={href} data-t={m?.temperatura ?? 'lab'}>
   <div class:list={['foto', { doble: p?.imagen2 }]}>
-    <span class="fondo" aria-hidden="true">
-      {fondo}
-    </span>
     <img
       src={(m ?? p)!.imagen.src}
       alt=""
@@ -50,7 +46,16 @@ const fondo = nombre.split(' ')[0];
         decoding="async"
       />
     )}
-    {m && <span class="temp">{may(t.temperatura[m.temperatura])}</span>}
+    {m && (
+      <span class="temp">
+        <IconoTemp t={m.temperatura} />
+        {may(t.temperatura[m.temperatura])}
+      </span>
+    )}
+  </div>
+  <div class="cuerpo">
+    <p class="cat">{cat}</p>
+    <h3 class="nombre">{nombre}</h3>
     {m ? (
       <dl class="cifras">
         <div>
@@ -67,71 +72,45 @@ const fondo = nombre.split(' ')[0];
         </div>
       </dl>
     ) : (
-      <p class="cifras modelo">{p!.modelo}</p>
+      <p class="modelo">{p!.modelo}</p>
     )}
-  </div>
-  <div class="cuerpo">
-    <p class="cat">{cat}</p>
-    <h3 class="nombre">{nombre}</h3>
     <span class="ver">{t.catalogo.ficha.verFicha}</span>
   </div>
 </a>
 
 <style>
-  /* Cada temperatura, su color: etiqueta, halo del escenario y raya al pasar el ratón */
+  /* Cada temperatura, su color: etiqueta, línea del suelo y sombra al pasar el ratón */
   .tarjeta {
     --c: var(--t-ventilada);
-    --halo: rgba(154, 161, 166, 0.55);
     position: relative;
     height: 100%;
     display: flex;
     flex-direction: column;
     background: #fff;
-    border: 1px solid #c9ced2;
-    box-shadow:
-      0 1px 0 rgba(17, 19, 21, 0.04),
-      0 14px 30px -24px rgba(17, 19, 21, 0.45);
+    border: 1px solid var(--ink);
     color: var(--ink);
     text-decoration: none;
     transition:
-      transform 0.45s var(--ease),
-      box-shadow 0.45s var(--ease),
-      border-color 0.45s var(--ease);
+      transform 0.35s var(--ease),
+      box-shadow 0.35s var(--ease);
   }
   .tarjeta[data-t='refrigerada'] {
     --c: var(--t-refrigerada);
-    --halo: rgba(58, 140, 214, 0.6);
   }
   .tarjeta[data-t='calefactada'] {
     --c: var(--t-calefactada);
-    --halo: rgba(222, 120, 40, 0.55);
   }
   .tarjeta[data-t='lab'] {
     --c: var(--red);
-    --halo: rgba(221, 4, 10, 0.4);
   }
 
-  /* ——— Escenario oscuro con el halo detrás de la máquina ——— */
+  /* ——— Foto de estudio: fondo blanco, suelo gris y línea de color ——— */
   .foto {
     position: relative;
-    aspect-ratio: 1 / 0.98;
+    aspect-ratio: 1 / 0.8;
     overflow: hidden;
-    isolation: isolate;
-    background: radial-gradient(58% 50% at 50% 48%, var(--halo), rgba(21, 23, 25, 0) 72%), var(--carbon);
-  }
-  /* El nombre de la serie, enorme y apenas visible, detrás de la máquina */
-  .fondo {
-    position: absolute;
-    z-index: -1;
-    left: 6%;
-    top: 5%;
-    font-size: clamp(56px, 6.2vw, 96px);
-    font-weight: 700;
-    line-height: 0.85;
-    letter-spacing: -0.03em;
-    color: rgba(255, 255, 255, 0.07);
-    white-space: nowrap;
-    transition: transform 0.9s var(--ease);
+    background: linear-gradient(#fff 0 66%, #eceef0 66% 100%);
+    border-bottom: 3px solid var(--c);
   }
   /* Sombra en el suelo: se encoge cuando la máquina se eleva */
   .foto::after {
@@ -139,9 +118,9 @@ const fondo = nombre.split(' ')[0];
     position: absolute;
     left: 22%;
     right: 22%;
-    bottom: 25%;
-    height: 7%;
-    background: radial-gradient(closest-side, rgba(0, 0, 0, 0.75), transparent);
+    bottom: 12%;
+    height: 8%;
+    background: radial-gradient(closest-side, rgba(17, 19, 21, 0.32), transparent);
     transition:
       transform 0.6s var(--ease),
       opacity 0.6s var(--ease);
@@ -150,8 +129,8 @@ const fondo = nombre.split(' ')[0];
     position: absolute;
     z-index: 1;
     left: 50%;
-    top: 40%;
-    width: 68%;
+    top: 49%;
+    width: 74%;
     height: auto;
     translate: -50% -50%;
     transition:
@@ -161,14 +140,16 @@ const fondo = nombre.split(' ')[0];
   .foto .segunda {
     opacity: 0;
     width: 100%;
-    top: 50%;
   }
   .temp {
     position: absolute;
-    z-index: 3;
+    z-index: 2;
     top: 0;
     left: 0;
-    padding: 7px 14px 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 6px 13px 6px 10px;
     font-size: 15px;
     font-weight: 700;
     line-height: 1;
@@ -177,78 +158,14 @@ const fondo = nombre.split(' ')[0];
     background: var(--c);
   }
 
-  /* Las tres cifras en una franja de cristal al pie del escenario */
-  .cifras {
-    position: absolute;
-    z-index: 2;
-    left: 12px;
-    right: 12px;
-    bottom: 12px;
-    margin: 0;
-    display: grid;
-    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 0.8fr);
-    background: rgba(255, 255, 255, 0.1);
-    -webkit-backdrop-filter: blur(14px) saturate(150%);
-    backdrop-filter: blur(14px) saturate(150%);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
-    color: #fff;
-    text-align: center;
-  }
-  .cifras div {
-    display: flex;
-    flex-direction: column-reverse;
-    padding: 10px 6px 9px;
-  }
-  .cifras div + div {
-    border-left: 1px solid rgba(255, 255, 255, 0.16);
-  }
-  .cifras dd {
-    margin: 0;
-    font-size: 18px;
-    font-weight: 700;
-    line-height: 1.15;
-    white-space: nowrap;
-    font-variant-numeric: tabular-nums;
-  }
-  .cifras dd.largo {
-    font-size: 15px;
-    white-space: normal;
-  }
-  .cifras dt {
-    margin-top: 2px;
-    font-size: 13px;
-    color: rgba(255, 255, 255, 0.78);
-  }
-  .cifras.modelo {
-    display: block;
-    padding: 12px 10px;
-    font-size: 17px;
-    font-weight: 700;
-  }
-
-  /* ——— Ficha blanca ——— */
+  /* ——— Ficha ——— */
   .cuerpo {
-    position: relative;
     flex: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 18px 20px 20px;
+    padding: 18px 18px 20px;
     text-align: center;
-  }
-  /* Raya del color de la temperatura entre el escenario y la ficha; crece al pasar el ratón */
-  .cuerpo::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 3px;
-    background: var(--c);
-    transform: scaleX(0.12);
-    transform-origin: left;
-    transition: transform 0.6s var(--ease);
   }
   .cat {
     margin: 0;
@@ -264,9 +181,48 @@ const fondo = nombre.split(' ')[0];
     font-weight: 700;
     line-height: 1.02;
   }
+  .modelo {
+    margin: 8px 0 0;
+    font-size: 17px;
+    color: var(--body);
+  }
+  /* Tres cifras centradas, bajo una raya negra y separadas por rayas finas */
+  .cifras {
+    width: 100%;
+    margin: 16px 0 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 0.8fr);
+    border-top: 2px solid var(--ink);
+  }
+  .cifras div {
+    display: flex;
+    flex-direction: column-reverse;
+    justify-content: flex-end;
+    gap: 2px;
+    padding: 12px 6px 0;
+  }
+  .cifras div + div {
+    border-left: 1px solid #c9cdd1;
+  }
+  .cifras dd {
+    margin: 0;
+    font-size: 19px;
+    font-weight: 700;
+    line-height: 1.15;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+  .cifras dd.largo {
+    font-size: 15px;
+    white-space: normal;
+  }
+  .cifras dt {
+    font-size: 14px;
+    color: var(--body);
+  }
   .ver {
     margin-top: auto;
-    padding-top: 12px;
+    padding-top: 16px;
     font-size: 16px;
     font-weight: 700;
     color: var(--red);
@@ -283,24 +239,17 @@ const fondo = nombre.split(' ')[0];
   }
 
   @media (hover: hover) {
+    /* La tarjeta se levanta con una sombra dura del color de su temperatura, y la máquina se eleva */
     .tarjeta:hover {
-      transform: translateY(-6px);
-      border-color: var(--c);
-      box-shadow: 0 34px 50px -30px rgba(17, 19, 21, 0.55);
+      transform: translate(-4px, -4px);
+      box-shadow: 6px 6px 0 var(--c);
     }
-    /* La máquina se eleva sobre su sombra y el nombre de fondo se desliza */
     .tarjeta:hover .foto img {
-      transform: translateY(-10px) scale(1.05);
+      transform: translateY(-8px) scale(1.04);
     }
     .tarjeta:hover .foto::after {
       transform: scaleX(0.8);
-      opacity: 0.55;
-    }
-    .tarjeta:hover .fondo {
-      transform: translateX(-8%);
-    }
-    .tarjeta:hover .cuerpo::before {
-      transform: scaleX(1);
+      opacity: 0.6;
     }
     .tarjeta:hover .ver::after {
       transform: translateX(5px);
@@ -313,24 +262,18 @@ const fondo = nombre.split(' ')[0];
     }
   }
 
-  /* Móvil: una por fila, con el escenario más bajo */
+  /* Móvil: una por fila, con la foto más baja */
   @media (max-width: 640px) {
     .foto {
-      aspect-ratio: 1 / 0.8;
+      aspect-ratio: 1 / 0.66;
     }
     .foto img {
-      width: 56%;
-      top: 42%;
-    }
-    .fondo {
-      font-size: 84px;
+      width: 58%;
     }
   }
   @media (prefers-reduced-motion: reduce) {
     .tarjeta,
-    .foto img,
-    .fondo,
-    .cuerpo::before {
+    .foto img {
       transition: none;
     }
   }

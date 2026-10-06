@@ -6,6 +6,7 @@
 import Base from '../../layouts/Base.astro';
 import Tarjeta from '../Tarjeta.astro';
 import Visor3D from '../Visor3D.astro';
+import IconoTemp from '../ui/IconoTemp.astro';
 import {
   categorias,
   modelos,
@@ -121,7 +122,7 @@ const capacidad = (m: Modelo) =>
           <div class="temps" role="group" aria-label={f.temperatura}>
             {temperaturas.map((x) => (
               <button type="button" class="temp" data-v={x} aria-pressed="false">
-                <i data-t={x} aria-hidden="true" />
+                <IconoTemp t={x} />
                 {may(t.temperatura[x])}
               </button>
             ))}
@@ -558,21 +559,25 @@ const capacidad = (m: Modelo) =>
       color 0.2s var(--ease),
       border-color 0.2s var(--ease);
   }
-  .temp i {
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    background: var(--t-ventilada);
+  /* Cada temperatura con su icono y su color; elegida, la casilla entera se pinta de ese color */
+  .temp {
+    --c: var(--t-ventilada);
   }
-  .temp i[data-t='refrigerada'] {
-    background: var(--t-refrigerada);
+  .temp[data-v='refrigerada'] {
+    --c: var(--t-refrigerada);
   }
-  .temp i[data-t='calefactada'] {
-    background: var(--t-calefactada);
+  .temp[data-v='calefactada'] {
+    --c: var(--t-calefactada);
+  }
+  .temp :global(.icono-temp) {
+    color: var(--c);
+  }
+  .temp[aria-pressed='true'] :global(.icono-temp) {
+    color: #fff;
   }
   .temp[aria-pressed='true'] {
-    background: var(--ink);
-    border-color: var(--ink);
+    background: var(--c);
+    border-color: var(--c);
     color: #fff;
     font-weight: 700;
   }

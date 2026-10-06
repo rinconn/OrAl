@@ -287,6 +287,7 @@ export const es = {
       productos: 'Productos',
       volver: 'Volver al catálogo',
       verFicha: 'Ver ficha',
+      placa: 'Datos técnicos',
       vistazo: 'De un vistazo',
       capacidad: 'Capacidad máx.',
       velocidad: 'Velocidad máx.',
@@ -306,13 +307,15 @@ export const es = {
         titulo: 'Rotores compatibles',
         intro: (n: number) =>
           n === 1
-            ? '1 rotor compatible. Pulsa para ver sus tubos y adaptadores.'
-            : `${n} rotores compatibles. Pulsa uno para ver sus tubos y adaptadores.`,
+            ? '1 rotor compatible. Elígelo para ver sus tubos y adaptadores.'
+            : `${n} rotores compatibles. Elige uno para ver sus tubos y adaptadores.`,
         tipo: 'Tipo',
         radio: 'Radio',
         angulo: 'Ángulo',
         tempMin: 'Temp. mín. a vel. máx.',
         tubos: 'Tubos y adaptadores',
+        porTubo: '¿Qué tubo usas?',
+        todos: 'Todos',
         reductor: 'Adaptador',
         posiciones: 'Posiciones',
         tubo: 'Tubo',
