@@ -1,0 +1,278 @@
+---
+// Tarjeta de un producto en el catálogo, como una foto de estudio: la máquina sobre blanco, apoyada en un suelo gris
+// y su etiqueta de temperatura con icono y color (verde la ventilada, azul la refrigerada, ámbar la calefactada).
+// Contorno negro bien visible. Debajo, la aplicación, el nombre y tres cifras. Toda la tarjeta lleva a su ficha.
+import IconoTemp from './ui/IconoTemp.astro';
+import type { Modelo } from '../data/productos';
+import type { ProductoLab } from '../data/laboratorio';
+import { idioma, numero, ruta, textos } from '../i18n';
+
+interface Props {
+  cat: string;
+  modelo?: Modelo;
+  lab?: ProductoLab;
+  capacidad?: string;
+}
+
+const { cat, modelo: m, lab: p, capacidad } = Astro.props;
+const lang = idioma(Astro.currentLocale);
+const t = textos(lang);
+const may = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+const slug = m?.slug ?? p!.slug;
+const href = ruta(lang, `/centrifugas/${slug}/`);
+const item = p && t.laboratorio.items[p.slug];
+const nombre = m ? m.nombre : item!.nombre;
+---
+
+<a class:list={['tarjeta', { lab: p }]} href={href} data-t={m?.temperatura ?? 'lab'}>
+  <div class:list={['foto', { doble: p?.imagen2 }]}>
+    <img
+      src={(m ?? p)!.imagen.src}
+      alt=""
+      width={(m ?? p)!.imagen.ancho}
+      height={(m ?? p)!.imagen.alto}
+      loading="lazy"
+      decoding="async"
+    />
+    {p?.imagen2 && (
+      <img
+        class="segunda"
+        src={p.imagen2.src}
+        alt=""
+        width={p.imagen2.ancho}
+        height={p.imagen2.alto}
+        loading="lazy"
+        decoding="async"
+      />
+    )}
+    {m && (
+      <span class="temp">
+        <IconoTemp t={m.temperatura} />
+        {may(t.temperatura[m.temperatura])}
+      </span>
+    )}
+  </div>
+  <div class="cuerpo">
+    <p class="cat">{cat}</p>
+    <h3 class="nombre">{nombre}</h3>
+    {m ? (
+      <dl class="cifras">
+        <div>
+          <dt>{t.catalogo.iconos.capacidad}</dt>
+          <dd class:list={{ largo: (capacidad ?? '').length > 10 }}>{capacidad}</dd>
+        </div>
+        <div>
+          <dt>rpm</dt>
+          <dd>{numero(lang, m.rpm)}</dd>
+        </div>
+        <div>
+          <dt>{t.catalogo.iconos.pantalla}</dt>
+          <dd>{m.pantalla}</dd>
+        </div>
+      </dl>
+    ) : (
+      <p class="modelo">{p!.modelo}</p>
+    )}
+    <span class="ver">{t.catalogo.ficha.verFicha}</span>
+  </div>
+</a>
+
+<style>
+  /* Cada temperatura, su color en la etiqueta */
+  .tarjeta {
+    --c: var(--t-ventilada);
+    position: relative;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    border: 1px solid var(--ink);
+    color: var(--ink);
+    text-decoration: none;
+    transition:
+      transform 0.35s var(--ease),
+      box-shadow 0.35s var(--ease);
+  }
+  .tarjeta[data-t='refrigerada'] {
+    --c: var(--t-refrigerada);
+  }
+  .tarjeta[data-t='calefactada'] {
+    --c: var(--t-calefactada);
+  }
+  .tarjeta[data-t='lab'] {
+    --c: var(--red);
+  }
+
+  /* ——— Foto de estudio: fondo blanco y suelo gris ——— */
+  .foto {
+    position: relative;
+    aspect-ratio: 1 / 0.8;
+    overflow: hidden;
+    background: linear-gradient(#fff 0 66%, #eceef0 66% 100%);
+  }
+  /* Sombra en el suelo: se encoge cuando la máquina se eleva */
+  .foto::after {
+    content: '';
+    position: absolute;
+    left: 22%;
+    right: 22%;
+    bottom: 12%;
+    height: 8%;
+    background: radial-gradient(closest-side, rgba(17, 19, 21, 0.32), transparent);
+    transition:
+      transform 0.6s var(--ease),
+      opacity 0.6s var(--ease);
+  }
+  .foto img {
+    position: absolute;
+    z-index: 1;
+    left: 50%;
+    top: 49%;
+    width: 74%;
+    height: auto;
+    translate: -50% -50%;
+    transition:
+      transform 0.7s var(--ease),
+      opacity 0.45s var(--ease);
+  }
+  .foto .segunda {
+    opacity: 0;
+    width: 100%;
+  }
+  .temp {
+    position: absolute;
+    z-index: 2;
+    top: 0;
+    left: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 6px 13px 6px 10px;
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: 0.02em;
+    color: #fff;
+    background: var(--c);
+  }
+
+  /* ——— Ficha ——— */
+  .cuerpo {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 18px 18px 20px;
+    text-align: center;
+  }
+  .cat {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--red);
+  }
+  .nombre {
+    margin: 4px 0 0;
+    font-size: 30px;
+    font-weight: 700;
+    line-height: 1.02;
+  }
+  .modelo {
+    margin: 8px 0 0;
+    font-size: 17px;
+    color: var(--body);
+  }
+  /* Tres cifras centradas, bajo una raya negra y separadas por rayas finas */
+  .cifras {
+    width: 100%;
+    margin: 16px 0 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 0.8fr);
+    border-top: 2px solid var(--ink);
+  }
+  .cifras div {
+    display: flex;
+    flex-direction: column-reverse;
+    justify-content: flex-end;
+    gap: 2px;
+    padding: 12px 6px 0;
+  }
+  .cifras div + div {
+    border-left: 1px solid #c9cdd1;
+  }
+  .cifras dd {
+    margin: 0;
+    font-size: 19px;
+    font-weight: 700;
+    line-height: 1.15;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+  .cifras dd.largo {
+    font-size: 15px;
+    white-space: normal;
+  }
+  .cifras dt {
+    font-size: 14px;
+    color: var(--body);
+  }
+  .ver {
+    margin-top: auto;
+    padding-top: 16px;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--red);
+  }
+  .ver::after {
+    content: '»';
+    display: inline-block;
+    margin-left: 6px;
+    transition: transform 0.3s var(--ease);
+  }
+  .tarjeta:focus-visible {
+    outline: 2px solid var(--red);
+    outline-offset: 3px;
+  }
+
+  @media (hover: hover) {
+    /* La tarjeta se levanta un poco con una sombra suave, y la máquina se eleva sobre la suya */
+    .tarjeta:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 22px 36px -22px rgba(17, 19, 21, 0.45);
+    }
+    .tarjeta:hover .foto img {
+      transform: translateY(-8px) scale(1.04);
+    }
+    .tarjeta:hover .foto::after {
+      transform: scaleX(0.8);
+      opacity: 0.6;
+    }
+    .tarjeta:hover .ver::after {
+      transform: translateX(5px);
+    }
+    .tarjeta:hover .foto.doble img:first-of-type {
+      opacity: 0;
+    }
+    .tarjeta:hover .foto.doble .segunda {
+      opacity: 1;
+    }
+  }
+
+  /* Móvil: una por fila, con la foto más baja */
+  @media (max-width: 640px) {
+    .foto {
+      aspect-ratio: 1 / 0.66;
+    }
+    .foto img {
+      width: 58%;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .tarjeta,
+    .foto img {
+      transition: none;
+    }
+  }
+</style>

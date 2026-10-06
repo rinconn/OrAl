@@ -893,3 +893,171 @@ entera delante, si se ensancha el contenido de 1280 a 1440 px.
 - **Descartado:** una tira de cifras con Pantalla, PCBS y ULS (seguía alargando la sección), un mosaico con REI a la
   izquierda y las otras dos apiladas (tarjetas apretadas y desiguales) y un carrusel con pestañas (correcto, pero
   solo enseñaba una tecnología cada vez).
+
+## 18. Productos: hero, filtros sencillos y una tarjeta por modelo
+
+- **Antes:** `/centrifugas/` tenía las 17 series en blanco, agrupadas en cinco familias propias, con fotos recortadas
+  muy de cerca (la Magnus 22, que es de suelo, parecía de sobremesa) y una línea de cifras. Ni accesorios ni
+  otros productos de laboratorio.
+- **Ahora (5-10-2026, versión para revisar con la empresa):**
+  - **Hero grande** con una foto de la empresa (una mano con guante sobre la pantalla de una centrífuga), el título
+    con "productos" en rojo y **badges de cristal** como los botones de la portada: 23 centrífugas, 9 aplicaciones,
+    1949 y "Siempre en stock" con un punto rojo que late.
+  - **Filtros sencillos** en una barra blanca fija: buscador (sin tildes), temperatura (ventilada, refrigerada,
+    calefactada), las 9 aplicaciones de la web actual más Accesorios y Laboratorio con su número, y **Borrar
+    filtros**. Cada aplicación dice cuántos productos quedarían; la búsqueda se guarda en la dirección.
+  - **Una tarjeta por modelo (23)**, como la web actual, con la foto entera de su página de productos recortada sobre
+    un escenario gris claro con su sombra. La temperatura va en una etiqueta (azul la refrigerada, ámbar la
+    calefactada) y capacidad, velocidad (con las xg) y pantalla, en filas con los iconos de la web actual.
+  - **Accesorios** (mesas móviles y GRS, con una segunda foto al pasar el ratón) y **otros productos de laboratorio**
+    (tamizadora, molino de bolas y destiladores) con su catálogo en PDF.
+- **Por qué:** lo pidió la empresa: todo lo que vende en un sitio, ordenado como lo conocen sus distribuidores, con un
+  hero a la altura de la portada y el catálogo limpio en blanco. Los iconos siguen fuera de la portada, que era lo que
+  la dirección veía agresivo (13.1).
+- **Descartado:** una primera versión en blanco con un panel de filtros grande (pesada); una versión toda en oscuro
+  con tarjetas de cristal ahumado (demasiado oscura para un catálogo); repetir la foto del rotor de la portada en la
+  cabecera; y filtrar por pantalla u ordenar (complicaban la barra; la pantalla sigue en cada tarjeta).
+- **Pendiente:** los 73 rotores (en la web actual van dentro de la ficha de cada centrífuga) y las tablas de tamices y
+  de eficacia del destilado, para las fichas de cada producto.
+
+## 19. Productos con vida: el 3D, tarjetas nuevas y una ficha por producto
+
+### 19.1 La Digicen 22 en 3D, en el hero
+
+- **Antes:** una foto de la empresa (una mano con guante sobre la pantalla) a todo el ancho; a la dirección le pareció fea.
+- **Ahora:** fondo carbón con el título a la izquierda y la **Digicen 22 en 3D** a la derecha, del modelo de
+  SolidWorks de la empresa. Gira sola (una vuelta cada 40 s), se gira arrastrando y con **Ver por dentro** se abre
+  en despiece vertical, como un plano: la tapa sube, el cuerpo se levanta, la carátula sale hacia delante y quedan a
+  la vista depósito, motor y base, con su etiqueta y su código (PP 367 Tapa, PI 448 Depósito, PE 494 Motor de
+  inducción…). Mientras carga se ve la foto de la Digicen 22; sin WebGL, se queda la foto.
+- **Por qué:** es lo que ningún otro fabricante enseña en su web: la máquina por dentro, con las piezas que fabrica
+  la empresa. Dice "fabricante" sin escribirlo.
+- **Detalles:** solo dibuja mientras se ve; quieta si el sistema pide menos movimiento; en pantallas táctiles no se
+  gira con el dedo, para que el dedo siga bajando la página.
+- **Descartado:** el visor de Google que traía el zip (`<model-viewer>`): no deja separar piezas.
+
+### 19.2 Catálogo sin huecos
+
+- **Antes:** un título por aplicación y sus tarjetas debajo; como muchas aplicaciones tienen 1 o 2 modelos, quedaban
+  filas medio vacías. La barra de filtros ocupaba dos líneas.
+- **Ahora:** índice fijo a la izquierda, como el de un catálogo impreso (buscador, temperatura, aplicaciones por
+  grupos en negrita con su número) y una **rejilla continua** a la derecha con el título de lo elegido en grande. En
+  móvil el índice es la barra fija de arriba. El texto pequeño pasa de gris claro a gris oscuro: se leía mal.
+
+### 19.3 Tarjetas con vida
+
+- **Ahora:** el escenario de la foto toma el **tono de su temperatura** (azul hielo, arena, gris) y lleva el nombre de
+  la serie enorme y en blanco detrás de la máquina, como el catálogo impreso. La temperatura va en una **etiqueta de
+  color lleno**; debajo, nombre y tres cifras **centradas** (capacidad, rpm, pantalla). Al pasar el ratón la máquina
+  se eleva sobre su sombra, el nombre de fondo se desliza y se pinta una raya del color de la temperatura. Al bajar,
+  las tarjetas entran escalonadas.
+- **Por qué:** antes la temperatura era un punto de 7 px; ahora la rejilla se lee por colores. El color sirve para
+  algo, no decora.
+- **Descartado:** tarjetas con iconos en filas (abarrotadas) y una frase en cada tarjeta (va en la ficha).
+
+### 19.4 Una ficha por producto
+
+- **Antes:** no se podía entrar en un producto. En la web actual sí, pero la ficha era un bloque de texto con
+  desplegables y los rotores un carrusel de fotos sin cifras.
+- **Ahora:** `/centrifugas/<modelo>/`. Arriba, foto (o el 3D en la Digicen 22) con el tono de su temperatura,
+  versión para saltar entre ventilada y refrigerada, cuatro cifras grandes y dos botones (catálogo PDF y pedir a un
+  distribuidor). Debajo, **pestañas** en una barra oscura fija: Descripción (con "De un vistazo": código, medidas,
+  peso, consumo, voltaje y número de rotores), Ficha técnica (en dos columnas que encajan sin huecos), Rotores (cada
+  uno abre una ventana con sus cifras y la tabla de tubos y adaptadores), Versiones y Accesorios. Al final, otros
+  modelos de la misma aplicación.
+- **Por qué:** todo lo que el distribuidor necesita para pedir, en una página y sin bajar por huecos en blanco. Los
+  rotores con sus tubos no estaban visibles en ninguna web de la empresa: el dato existía en su ERP.
+- **De dónde sale:** de la web actual y su ERP, importado con `scripts/importar-web-actual.mjs` (decisión 0009). Las
+  cifras de cabecera siguen siendo las del Catálogo 2025.
+- **Descartado:** secciones apiladas una tras otra (la primera versión: mucho hueco en blanco) y la ficha en una
+  ventana sobre el catálogo (sin dirección propia).
+
+### 19.5 Segunda vuelta: escenario oscuro y cristal
+
+- **Problema:** con el escenario claro la tarjeta parecía no tener bordes y la máquina no resaltaba; las cifras en
+  filas finas apenas se veían; en la ficha, la descripción dejaba una columna vacía, la ficha técnica en tarjetas de
+  alturas desiguales se veía desordenada y los accesorios quedaban apagados.
+- **Ahora:**
+  - **Tarjeta:** escenario de estudio en carbón con un halo del color de su temperatura detrás de la máquina (azul,
+    ámbar, acero; rojo de marca en accesorios y laboratorio). Las centrífugas, blancas y grises, resaltan sobre el
+    oscuro. Las tres cifras van en una **franja de cristal** al pie del escenario; borde y sombra más marcados, y el
+    borde toma el color de la temperatura al pasar el ratón.
+  - **Cabecera de la ficha:** también en carbón con el halo, y las cuatro cifras en **placas de cristal** con la raya
+    roja de marca. La versión, en botones de cristal. El rojo del antetítulo, un punto más claro sobre el oscuro para
+    que se lea.
+  - **Descripción:** "De un vistazo" pasa a una fila de placas arriba y el texto debajo, a dos columnas si es largo.
+    Sin columnas vacías.
+  - **Ficha técnica:** como una hoja de especificaciones: una fila por bloque, el título a la izquierda (fijo al bajar)
+    y los puntos en dos columnas a la derecha.
+  - **Más de…:** incluye también las otras versiones de la serie, para que las fichas cortas no acaben de golpe.
+- **Por qué:** el producto es lo primero que se ve y el color dice su temperatura sin leer. El halo es la luz de un
+  estudio fotográfico, no un adorno: sin él, la máquina se pierde en el negro.
+- **Descartado:** el escenario de color claro de la primera vuelta (la tarjeta se confundía con la página).
+
+### 19.6 Tercera vuelta: foto de estudio, placa de características y selector de rotores
+
+- **Problema:** el escenario negro con el nombre detrás no gustó; lo que pedía la dirección era un **contorno** que se
+  viera. Ventilada en gris no se distinguía. Las cuatro cifras en cajas de cristal parecían de plantilla. Los rotores
+  en ventanas obligaban a abrir y cerrar uno a uno.
+- **Ahora:**
+  - **Tarjeta como foto de estudio:** fondo blanco y suelo gris; **contorno
+    negro**; sin nombre de fondo. Al pasar el ratón la tarjeta se levanta un poco con una sombra suave.
+  - **Temperatura con icono propio**, dibujado para la web (`ui/IconoTemp.astro`): hélice la ventilada, copo la
+    refrigerada, llama la calefactada. **Ventilada pasa a verde** (`--t-ventilada: #1e7f5c`). Los mismos iconos en
+    el filtro del catálogo, que al elegirse se pinta del color de su temperatura.
+  - **Ficha con cabecera clara** y la foto como en la tarjeta. Las cifras van en una **placa de características**,
+    como la placa CE que lleva cada máquina: marco y cabecera negros, una fila por dato (capacidad, velocidad, fuerza,
+    pantalla, temperatura, voltaje y frecuencia, códigos) y el fabricante con "CE" al pie. Qué es cada dato, en
+    negrita; el valor, en normal.
+  - **Rotores en un selector:** la lista a la izquierda (fija al bajar) y el elegido a la derecha, con su foto, sus
+    cifras y su tabla de tubos. Encima, **"¿Qué tubo usas?"**: al elegir un tubo quedan solo los rotores que lo
+    admiten y su fila sale marcada en la tabla. En móvil la lista se desliza de lado.
+- **Por qué:** la placa es algo que solo tiene un fabricante y que el distribuidor reconoce de la máquina real; el
+  selector y la búsqueda por tubo responden a la pregunta con la que llega ("¿qué rotor me vale para criotubos?").
+- **Descartado:** escenario negro con halo y cristal (19.5), una línea del color de la temperatura bajo la foto y una
+  sombra dura de color al pasar el ratón (demasiado bastas), medidores frente a la gama y una cifra protagonista
+  (opciones enseñadas en maqueta), tabla comparativa de rotores.
+
+## 20. Hero de Productos: la Digicen 22 en un estudio, que se recorre por dentro
+
+- **Problema:** el hero anterior no gustó: las cuatro cifras en cajas de cristal de anchos distintos se partían en
+  dos filas descuadradas, la máquina flotaba en un hueco con un foco blanco detrás que "rayaba", y la barra de
+  "Digicen 22 · Ver por dentro" quedaba suelta. Se pedía una primera impresión que dejara en shock, moderna, y poder
+  girar la máquina de verdad (verla desde arriba).
+- **Ahora** (`HeroProductos.astro` y `src/scripts/escena-productos.ts`):
+  - **Dos columnas a toda pantalla:** a la izquierda el título, la entrada, "Ver las 23 centrífugas" (baja al
+    catálogo), la **raya roja con destello blanco** de los pasos de la portada y las cuatro cifras con los **iconos
+    de la marca** (`public/img/iconos/`: velocímetro, gradilla de tubos, escudo y tabla). A la derecha, la máquina:
+    la cámara la centra en su columna y la ajusta a su tamaño, así nunca pisa el texto.
+  - **Estudio:** suelo que se funde con el negro, un haz de luz desde arriba con motas de polvo, un aro rojo en el
+    suelo que recorre un destello blanco (el mismo de la raya) y una luz roja suave que sigue al ratón y cambia el
+    reflejo de los cantos. Detrás, un **remolino de luz** generado en directo: las estelas de un rotor girando, como
+    la foto de larga exposición de la portada; gira despacio y se acelera, en el mismo sentido, al girar la máquina.
+  - **Mandos bajo la máquina:** acabado **Real / Rayos X** (carcasa casi transparente y las aristas de cada pieza en
+    rojo), **vistas** 3/4, frente, lado y arriba con giro libre arrastrando, **Despiece** y **Recorrido por dentro**.
+    Arriba a la derecha, los grados (AZ/EL) y el **zoom**: botones + y −, Ctrl + rueda o pellizco, y doble clic en una
+    pieza para acercarse a ese punto. La rueda sola sigue bajando la página.
+  - **Despiece:** las etiquetas van en **una columna a la derecha**, en el orden de arriba abajo de las piezas, con
+    una línea hasta un **punto blanco con borde negro** que late sobre cada pieza (se ve igual sobre la carcasa blanca
+    que sobre las piezas oscuras). La máquina se aparta a la izquierda para dejarles sitio.
+  - **Recorrido por dentro:** la cámara viaja pieza a pieza (tapa, amortiguador, depósito, motor, carátula y base),
+    cada una desde el ángulo en que mejor se ve; la pieza se ve real y el resto transparente con sus aristas en rojo
+    tenue. Una tarjeta dice el paso (03 / 06), el nombre, el código y una **descripción sacada de la ficha de la
+    Digicen 22 en ortoalresa.com** (en los tres idiomas). Flechas del teclado y Esc. El texto de la izquierda se apaga
+    mientras dura.
+  - **Entrada:** la máquina llega en despiece vista desde arriba y se monta sola mientras la cámara baja a tres
+    cuartos.
+- **Rendimiento:** el modelo pasa de 585.000 a 169.000 triángulos (`public/3d/digicen22.glb`, de 1,45 MB a 594 KB,
+  sin diferencia a la vista; también aligera la ficha de la Digicen 22). Sin posprocesos, píxeles limitados a 1,5× y
+  la escena se para fuera de pantalla o en otra pestaña. Con "reducir movimiento" no hay animaciones y solo se dibuja
+  cuando algo cambia. Sin WebGL queda la foto de la Digicen 22 y no salen los mandos.
+- **Por qué:** es la única web del sector donde el distribuidor puede abrir la máquina y ver qué lleva dentro, con
+  los códigos de las piezas que fabrica la empresa. El rojo se usa en detalles (aro, raya, iconos, aristas) y no en
+  neón por todas partes.
+- **Descartado:** un primer prototipo con mucho neón (aros gigantes girando, tubos de neón con suelo espejo, brillo
+  de posproceso): demasiado futurista y pesado. Un suelo de rejilla tipo CAD (abstracto, simple). El nombre "Digicen
+  22" gigante detrás de la máquina y en una esquina. Iconos dibujados para la ocasión (genéricos): se usan los de la
+  marca.
+- **Pendiente de confirmar con la empresa:** que el amortiguador presurizado es lo que da la "protección ante caída
+  de la tapa" y que el "Depósito" (PI 448) es la cámara de centrifugación; la base no lleva descripción porque la
+  ficha no dice nada de ella.
