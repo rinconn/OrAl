@@ -1045,6 +1045,7 @@ entera delante, si se ensancha el contenido de 1280 a 1440 px.
     tenue. Una tarjeta dice el paso (03 / 06), el nombre, el código y una **descripción sacada de la ficha de la
     Digicen 22 en ortoalresa.com** (en los tres idiomas). Flechas del teclado y Esc. El texto de la izquierda se apaga
     mientras dura.
+  - **Placa con el nombre:** bajo la máquina, como la cartela de una pieza de museo: "Modelo 3D · Universal", **Digicen 22** y "Ver ficha", que lleva a su ficha. Así se sabe qué modelo es el que se está viendo por dentro. (En una vuelta anterior se quitó el nombre gigante del fondo y el de la esquina; esta placa es pequeña y sirve de enlace.)
   - **Entrada:** la máquina llega en despiece vista desde arriba y se monta sola mientras la cámara baja a tres
     cuartos.
 - **Rendimiento:** el modelo pasa de 585.000 a 169.000 triángulos (`public/3d/digicen22.glb`, de 1,45 MB a 594 KB,
