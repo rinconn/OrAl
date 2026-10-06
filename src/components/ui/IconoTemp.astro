@@ -1,0 +1,43 @@
+---
+// Icono de la temperatura de una centrífuga, dibujado para la web: hélice de ventilador (ventilada), copo
+// (refrigerada) y llama (calefactada). Trazo en el color del texto, para etiquetas y filtros.
+import type { Temperatura } from '../../data/productos';
+
+interface Props {
+  t: Temperatura;
+  size?: number;
+}
+
+const { t, size = 16 } = Astro.props;
+---
+
+<svg
+  class="icono-temp"
+  viewBox="0 0 24 24"
+  width={size}
+  height={size}
+  fill="none"
+  stroke="currentColor"
+  stroke-width="1.8"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+>
+  {t === 'ventilada' && (
+    <>
+      <circle cx="12" cy="12" r="1.6" />
+      <path d="M12 10.4c-.6-3.2.4-6.4 3.4-6.4 2.2 0 2.6 2.8.6 4.2-1.2.9-2.6 1.6-4 2.2" />
+      <path d="M13.4 12.8c2.5 2.1 3.3 5.4.7 6.9-1.9 1.1-3.7-1.1-2.6-3.3.6-1.3 1.5-2.6 2.5-3.6" />
+      <path d="M10.6 12.8c-3 1.1-6.3.3-6.6-2.7-.2-2.2 2.5-3.1 4.1-1.4 1 1 1.9 2.3 2.5 3.6" />
+    </>
+  )}
+  {t === 'refrigerada' && (
+    <>
+      <path d="M12 3v18M4.2 7.5l15.6 9M4.2 16.5l15.6-9" />
+      <path d="M9.5 4.5 12 6.5l2.5-2M9.5 19.5 12 17.5l2.5 2M4.6 10.4l3.1-.6-1-3M19.4 13.6l-3.1.6 1 3M4.6 13.6l3.1.6-1 3M19.4 10.4l-3.1-.6 1-3" />
+    </>
+  )}
+  {t === 'calefactada' && (
+    <path d="M12 21c-3.9 0-6.5-2.6-6.5-6.1 0-3.4 2.4-5.4 3.6-8.4.3 2 1.3 3.2 2.4 3.9.1-2.9 1.3-5.6 3.5-7.4-.3 3.3 1.6 5 2.8 6.8 1 1.5 1.7 3.1 1.7 5.1 0 3.5-2.6 6.1-7.5 6.1Z M12 21c-1.8 0-3-1.2-3-2.9 0-1.6 1.2-2.6 2.2-3.9.2 1 .8 1.6 1.4 1.9.5-.9 1.2-1.6 1.4-2.7 1 1.2 1 2.4 1 3.5 0 2.1-1.2 4.1-3 4.1Z" />
+  )}
+</svg>
