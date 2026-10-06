@@ -282,6 +282,38 @@ export const es = {
         'PC 279': 'Base',
       },
     },
+    // Hero de Productos: la escena 3D. Las descripciones del recorrido son frases de la ficha de la Digicen 22 en
+    // ortoalresa.com; la base no tiene ninguna.
+    escena: {
+      verTodas: (n: number) => `Ver las ${n} centrífugas`,
+      acabado: 'Acabado',
+      real: 'Real',
+      rayos: 'Rayos X',
+      vista: 'Vista',
+      vistas: { tres: '3/4', frente: 'Frente', lado: 'Lado', arriba: 'Arriba' },
+      despiece: 'Despiece',
+      cerrarDespiece: 'Cerrar despiece',
+      recorrido: 'Recorrido por dentro',
+      anterior: 'Pieza anterior',
+      siguiente: 'Pieza siguiente',
+      salir: 'Salir',
+      zoom: 'Zoom',
+      acercar: 'Acercar',
+      alejar: 'Alejar',
+      pista: ['Doble clic en una pieza para acercarte', 'Ctrl + rueda o pellizco para el zoom'],
+      descripciones: {
+        'PP 367':
+          'Cierre automático, motorizado con doble anclaje, y apertura manual de emergencia. Bloqueada mientras gira, con visor para calibración y comprobación del funcionamiento.',
+        'PC 497': 'Protección ante caída de la tapa.',
+        'PI 448':
+          'Cámara de centrifugación de acero inoxidable, de fácil limpieza, con aro de seguridad protector entre la cámara y el exterior del equipo.',
+        'PE 494':
+          'Motor de inducción libre de mantenimiento, sin escobillas. Sistema de desequilibrio con parada automática y protección ante exceso de velocidad.',
+        'PP 821':
+          'Pantalla TFT táctil a color: R.P.M. y F.C.R., tiempo y rampas de aceleración y frenado (PCBS). 100 memorias programables con contraseña.',
+        'PC 279': '',
+      } as Record<string, string>,
+    },
     ficha: {
       inicio: 'Inicio',
       productos: 'Productos',

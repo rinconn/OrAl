@@ -1017,3 +1017,47 @@ entera delante, si se ensancha el contenido de 1280 a 1440 px.
 - **Descartado:** escenario negro con halo y cristal (19.5), una línea del color de la temperatura bajo la foto y una
   sombra dura de color al pasar el ratón (demasiado bastas), medidores frente a la gama y una cifra protagonista
   (opciones enseñadas en maqueta), tabla comparativa de rotores.
+
+## 20. Hero de Productos: la Digicen 22 en un estudio, que se recorre por dentro
+
+- **Problema:** el hero anterior no gustó: las cuatro cifras en cajas de cristal de anchos distintos se partían en
+  dos filas descuadradas, la máquina flotaba en un hueco con un foco blanco detrás que "rayaba", y la barra de
+  "Digicen 22 · Ver por dentro" quedaba suelta. Se pedía una primera impresión que dejara en shock, moderna, y poder
+  girar la máquina de verdad (verla desde arriba).
+- **Ahora** (`HeroProductos.astro` y `src/scripts/escena-productos.ts`):
+  - **Dos columnas a toda pantalla:** a la izquierda el título, la entrada, "Ver las 23 centrífugas" (baja al
+    catálogo), la **raya roja con destello blanco** de los pasos de la portada y las cuatro cifras con los **iconos
+    de la marca** (`public/img/iconos/`: velocímetro, gradilla de tubos, escudo y tabla). A la derecha, la máquina:
+    la cámara la centra en su columna y la ajusta a su tamaño, así nunca pisa el texto.
+  - **Estudio:** suelo que se funde con el negro, un haz de luz desde arriba con motas de polvo, un aro rojo en el
+    suelo que recorre un destello blanco (el mismo de la raya) y una luz roja suave que sigue al ratón y cambia el
+    reflejo de los cantos. Detrás, un **remolino de luz** generado en directo: las estelas de un rotor girando, como
+    la foto de larga exposición de la portada; gira despacio y se acelera, en el mismo sentido, al girar la máquina.
+  - **Mandos bajo la máquina:** acabado **Real / Rayos X** (carcasa casi transparente y las aristas de cada pieza en
+    rojo), **vistas** 3/4, frente, lado y arriba con giro libre arrastrando, **Despiece** y **Recorrido por dentro**.
+    Arriba a la derecha, los grados (AZ/EL) y el **zoom**: botones + y −, Ctrl + rueda o pellizco, y doble clic en una
+    pieza para acercarse a ese punto. La rueda sola sigue bajando la página.
+  - **Despiece:** las etiquetas van en **una columna a la derecha**, en el orden de arriba abajo de las piezas, con
+    una línea hasta un **punto blanco con borde negro** que late sobre cada pieza (se ve igual sobre la carcasa blanca
+    que sobre las piezas oscuras). La máquina se aparta a la izquierda para dejarles sitio.
+  - **Recorrido por dentro:** la cámara viaja pieza a pieza (tapa, amortiguador, depósito, motor, carátula y base),
+    cada una desde el ángulo en que mejor se ve; la pieza se ve real y el resto transparente con sus aristas en rojo
+    tenue. Una tarjeta dice el paso (03 / 06), el nombre, el código y una **descripción sacada de la ficha de la
+    Digicen 22 en ortoalresa.com** (en los tres idiomas). Flechas del teclado y Esc. El texto de la izquierda se apaga
+    mientras dura.
+  - **Entrada:** la máquina llega en despiece vista desde arriba y se monta sola mientras la cámara baja a tres
+    cuartos.
+- **Rendimiento:** el modelo pasa de 585.000 a 169.000 triángulos (`public/3d/digicen22.glb`, de 1,45 MB a 594 KB,
+  sin diferencia a la vista; también aligera la ficha de la Digicen 22). Sin posprocesos, píxeles limitados a 1,5× y
+  la escena se para fuera de pantalla o en otra pestaña. Con "reducir movimiento" no hay animaciones y solo se dibuja
+  cuando algo cambia. Sin WebGL queda la foto de la Digicen 22 y no salen los mandos.
+- **Por qué:** es la única web del sector donde el distribuidor puede abrir la máquina y ver qué lleva dentro, con
+  los códigos de las piezas que fabrica la empresa. El rojo se usa en detalles (aro, raya, iconos, aristas) y no en
+  neón por todas partes.
+- **Descartado:** un primer prototipo con mucho neón (aros gigantes girando, tubos de neón con suelo espejo, brillo
+  de posproceso): demasiado futurista y pesado. Un suelo de rejilla tipo CAD (abstracto, simple). El nombre "Digicen
+  22" gigante detrás de la máquina y en una esquina. Iconos dibujados para la ocasión (genéricos): se usan los de la
+  marca.
+- **Pendiente de confirmar con la empresa:** que el amortiguador presurizado es lo que da la "protección ante caída
+  de la tapa" y que el "Depósito" (PI 448) es la cámara de centrifugación; la base no lleva descripción porque la
+  ficha no dice nada de ella.

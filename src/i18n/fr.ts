@@ -277,6 +277,36 @@ export const fr: Textos = {
         'PC 279': 'Base',
       },
     },
+    escena: {
+      verTodas: (n: number) => `Voir les ${n} centrifugeuses`,
+      acabado: 'Finition',
+      real: 'Réel',
+      rayos: 'Rayons X',
+      vista: 'Vue',
+      vistas: { tres: '3/4', frente: 'Face', lado: 'Côté', arriba: 'Dessus' },
+      despiece: 'Vue éclatée',
+      cerrarDespiece: 'Fermer la vue éclatée',
+      recorrido: 'Visite à l’intérieur',
+      anterior: 'Pièce précédente',
+      siguiente: 'Pièce suivante',
+      salir: 'Quitter',
+      zoom: 'Zoom',
+      acercar: 'Zoomer',
+      alejar: 'Dézoomer',
+      pista: ['Double-cliquez sur une pièce pour vous en approcher', 'Ctrl + molette ou pincement pour zoomer'],
+      descripciones: {
+        'PP 367':
+          'Fermeture automatique et motorisée, et ouverture manuelle d’urgence. Verrouillée pendant le fonctionnement, avec voyant pour l’étalonnage et les tests fonctionnels.',
+        'PC 497': 'Protection contre la chute du couvercle.',
+        'PI 448':
+          'Chambre de centrifugation en acier inoxydable (facile à nettoyer), avec anneau de protection entre la chambre et l’extérieur de l’appareil.',
+        'PE 494':
+          'Moteur à induction sans entretien (sans balais). Système de déséquilibre avec arrêt automatique et protection contre la survitesse.',
+        'PP 821':
+          'Écran tactile couleur TFT : R.P.M. et A.C.R., temps et rampes d’accélération et de freinage (PCBS). 100 mémoires programmables avec protection des données par mot de passe.',
+        'PC 279': '',
+      },
+    },
     ficha: {
       inicio: 'Accueil',
       productos: 'Produits',

@@ -276,6 +276,36 @@ export const en: Textos = {
         'PC 279': 'Base',
       },
     },
+    escena: {
+      verTodas: (n: number) => `See all ${n} centrifuges`,
+      acabado: 'Finish',
+      real: 'Real',
+      rayos: 'X-ray',
+      vista: 'View',
+      vistas: { tres: '3/4', frente: 'Front', lado: 'Side', arriba: 'Top' },
+      despiece: 'Exploded view',
+      cerrarDespiece: 'Close exploded view',
+      recorrido: 'Tour inside',
+      anterior: 'Previous part',
+      siguiente: 'Next part',
+      salir: 'Exit',
+      zoom: 'Zoom',
+      acercar: 'Zoom in',
+      alejar: 'Zoom out',
+      pista: ['Double-click a part to zoom in on it', 'Ctrl + wheel or pinch to zoom'],
+      descripciones: {
+        'PP 367':
+          'Automatic lid lock, motorized with double lock, and emergency lid-lock release. Locked while running, with a port for calibration and operation checking.',
+        'PC 497': 'Lid dropping protection.',
+        'PI 448':
+          'Chamber of centrifugation in stainless steel (easy cleaning), with a protection safety ring between the chamber and the housing.',
+        'PE 494':
+          'Induction motor, maintenance free (brushless). Unbalance detection and switch off, and over-speed protection.',
+        'PP 821':
+          'TFT colour touch screen: RPM and RCF, time and acceleration/deceleration ramps (PCBS). 100 programmable memories with password protection.',
+        'PC 279': '',
+      },
+    },
     ficha: {
       inicio: 'Home',
       productos: 'Products',
