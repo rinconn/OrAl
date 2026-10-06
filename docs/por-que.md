@@ -1000,19 +1000,20 @@ entera delante, si se ensancha el contenido de 1280 a 1440 px.
   viera. Ventilada en gris no se distinguía. Las cuatro cifras en cajas de cristal parecían de plantilla. Los rotores
   en ventanas obligaban a abrir y cerrar uno a uno.
 - **Ahora:**
-  - **Tarjeta como foto de estudio:** fondo blanco, suelo gris y una línea del color de su temperatura; **contorno
-    negro**; sin nombre de fondo. Al pasar el ratón la tarjeta se levanta con una sombra dura del color de su
-    temperatura.
+  - **Tarjeta como foto de estudio:** fondo blanco y suelo gris; **contorno
+    negro**; sin nombre de fondo. Al pasar el ratón la tarjeta se levanta un poco con una sombra suave.
   - **Temperatura con icono propio**, dibujado para la web (`ui/IconoTemp.astro`): hélice la ventilada, copo la
     refrigerada, llama la calefactada. **Ventilada pasa a verde** (`--t-ventilada: #1e7f5c`). Los mismos iconos en
     el filtro del catálogo, que al elegirse se pinta del color de su temperatura.
   - **Ficha con cabecera clara** y la foto como en la tarjeta. Las cifras van en una **placa de características**,
     como la placa CE que lleva cada máquina: marco y cabecera negros, una fila por dato (capacidad, velocidad, fuerza,
-    pantalla, temperatura, voltaje y frecuencia, códigos) y el fabricante con "CE" al pie.
+    pantalla, temperatura, voltaje y frecuencia, códigos) y el fabricante con "CE" al pie. Qué es cada dato, en
+    negrita; el valor, en normal.
   - **Rotores en un selector:** la lista a la izquierda (fija al bajar) y el elegido a la derecha, con su foto, sus
     cifras y su tabla de tubos. Encima, **"¿Qué tubo usas?"**: al elegir un tubo quedan solo los rotores que lo
     admiten y su fila sale marcada en la tabla. En móvil la lista se desliza de lado.
 - **Por qué:** la placa es algo que solo tiene un fabricante y que el distribuidor reconoce de la máquina real; el
   selector y la búsqueda por tubo responden a la pregunta con la que llega ("¿qué rotor me vale para criotubos?").
-- **Descartado:** escenario negro con halo y cristal (19.5), medidores frente a la gama y una cifra protagonista
+- **Descartado:** escenario negro con halo y cristal (19.5), una línea del color de la temperatura bajo la foto y una
+  sombra dura de color al pasar el ratón (demasiado bastas), medidores frente a la gama y una cifra protagonista
   (opciones enseñadas en maqueta), tabla comparativa de rotores.

@@ -1,8 +1,7 @@
 ---
 // Tarjeta de un producto en el catálogo, como una foto de estudio: la máquina sobre blanco, apoyada en un suelo gris
-// con una línea del color de su temperatura (verde la ventilada, azul la refrigerada, ámbar la calefactada) y su
-// etiqueta con icono. Contorno negro bien visible. Debajo, la aplicación, el nombre y tres cifras. Toda la tarjeta
-// lleva a su ficha.
+// y su etiqueta de temperatura con icono y color (verde la ventilada, azul la refrigerada, ámbar la calefactada).
+// Contorno negro bien visible. Debajo, la aplicación, el nombre y tres cifras. Toda la tarjeta lleva a su ficha.
 import IconoTemp from './ui/IconoTemp.astro';
 import type { Modelo } from '../data/productos';
 import type { ProductoLab } from '../data/laboratorio';
@@ -79,7 +78,7 @@ const nombre = m ? m.nombre : item!.nombre;
 </a>
 
 <style>
-  /* Cada temperatura, su color: etiqueta, línea del suelo y sombra al pasar el ratón */
+  /* Cada temperatura, su color en la etiqueta */
   .tarjeta {
     --c: var(--t-ventilada);
     position: relative;
@@ -104,13 +103,12 @@ const nombre = m ? m.nombre : item!.nombre;
     --c: var(--red);
   }
 
-  /* ——— Foto de estudio: fondo blanco, suelo gris y línea de color ——— */
+  /* ——— Foto de estudio: fondo blanco y suelo gris ——— */
   .foto {
     position: relative;
     aspect-ratio: 1 / 0.8;
     overflow: hidden;
     background: linear-gradient(#fff 0 66%, #eceef0 66% 100%);
-    border-bottom: 3px solid var(--c);
   }
   /* Sombra en el suelo: se encoge cuando la máquina se eleva */
   .foto::after {
@@ -239,10 +237,10 @@ const nombre = m ? m.nombre : item!.nombre;
   }
 
   @media (hover: hover) {
-    /* La tarjeta se levanta con una sombra dura del color de su temperatura, y la máquina se eleva */
+    /* La tarjeta se levanta un poco con una sombra suave, y la máquina se eleva sobre la suya */
     .tarjeta:hover {
-      transform: translate(-4px, -4px);
-      box-shadow: 6px 6px 0 var(--c);
+      transform: translateY(-4px);
+      box-shadow: 0 22px 36px -22px rgba(17, 19, 21, 0.45);
     }
     .tarjeta:hover .foto img {
       transform: translateY(-8px) scale(1.04);
