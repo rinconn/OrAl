@@ -1,0 +1,14 @@
+---
+// Una página por producto: los 23 modelos de centrífuga, los accesorios y los otros equipos de laboratorio
+import Ficha from '../../components/paginas/Ficha.astro';
+import { modelos } from '../../data/productos';
+import { accesorios, equipos } from '../../data/laboratorio';
+
+export function getStaticPaths() {
+  return [...modelos, ...accesorios, ...equipos].map((x) => ({ params: { slug: x.slug } }));
+}
+
+const { slug } = Astro.params;
+---
+
+<Ficha slug={slug} />

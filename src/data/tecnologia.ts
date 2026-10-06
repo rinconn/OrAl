@@ -11,12 +11,12 @@ export interface Modelo {
   nombres: string[];
 }
 
-/** Enlaza cada modelo con su ficha del catálogo (/centrifugas/#slug) y le pone su nombre con variantes */
+/** Enlaza cada modelo con su ficha (/centrifugas/slug/) y le pone su nombre con variantes */
 const modelos = (...slugs: string[]): Modelo[] =>
   slugs.map((slug) => {
     const p = productos.find((x) => x.slug === slug);
     if (!p) throw new Error(`Tecnología: no existe la serie "${slug}"`);
-    return { href: `/centrifugas/#${slug}`, nombres: [p.nombre, ...(p.variantes?.split(' · ') ?? [])] };
+    return { href: `/centrifugas/${slug}/`, nombres: [p.nombre, ...(p.variantes?.split(' · ') ?? [])] };
   });
 
 export const rei = {

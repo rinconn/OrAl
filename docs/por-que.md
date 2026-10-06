@@ -919,3 +919,55 @@ entera delante, si se ensancha el contenido de 1280 a 1440 px.
   cabecera; y filtrar por pantalla u ordenar (complicaban la barra; la pantalla sigue en cada tarjeta).
 - **Pendiente:** los 73 rotores (en la web actual van dentro de la ficha de cada centrífuga) y las tablas de tamices y
   de eficacia del destilado, para las fichas de cada producto.
+
+## 19. Productos con vida: el 3D, tarjetas nuevas y una ficha por producto
+
+### 19.1 La Digicen 22 en 3D, en el hero
+
+- **Antes:** una foto de la empresa (una mano con guante sobre la pantalla) a todo el ancho; a la dirección le pareció fea.
+- **Ahora:** fondo carbón con el título a la izquierda y la **Digicen 22 en 3D** a la derecha, del modelo de
+  SolidWorks de la empresa. Gira sola (una vuelta cada 40 s), se gira arrastrando y con **Ver por dentro** se abre
+  en despiece vertical, como un plano: la tapa sube, el cuerpo se levanta, la carátula sale hacia delante y quedan a
+  la vista depósito, motor y base, con su etiqueta y su código (PP 367 Tapa, PI 448 Depósito, PE 494 Motor de
+  inducción…). Mientras carga se ve la foto de la Digicen 22; sin WebGL, se queda la foto.
+- **Por qué:** es lo que ningún otro fabricante enseña en su web: la máquina por dentro, con las piezas que fabrica
+  la empresa. Dice "fabricante" sin escribirlo.
+- **Detalles:** solo dibuja mientras se ve; quieta si el sistema pide menos movimiento; en pantallas táctiles no se
+  gira con el dedo, para que el dedo siga bajando la página.
+- **Descartado:** el visor de Google que traía el zip (`<model-viewer>`): no deja separar piezas.
+
+### 19.2 Catálogo sin huecos
+
+- **Antes:** un título por aplicación y sus tarjetas debajo; como muchas aplicaciones tienen 1 o 2 modelos, quedaban
+  filas medio vacías. La barra de filtros ocupaba dos líneas.
+- **Ahora:** índice fijo a la izquierda, como el de un catálogo impreso (buscador, temperatura, aplicaciones por
+  grupos en negrita con su número) y una **rejilla continua** a la derecha con el título de lo elegido en grande. En
+  móvil el índice es la barra fija de arriba. El texto pequeño pasa de gris claro a gris oscuro: se leía mal.
+
+### 19.3 Tarjetas con vida
+
+- **Ahora:** el escenario de la foto toma el **tono de su temperatura** (azul hielo, arena, gris) y lleva el nombre de
+  la serie enorme y en blanco detrás de la máquina, como el catálogo impreso. La temperatura va en una **etiqueta de
+  color lleno**; debajo, nombre y tres cifras **centradas** (capacidad, rpm, pantalla). Al pasar el ratón la máquina
+  se eleva sobre su sombra, el nombre de fondo se desliza y se pinta una raya del color de la temperatura. Al bajar,
+  las tarjetas entran escalonadas.
+- **Por qué:** antes la temperatura era un punto de 7 px; ahora la rejilla se lee por colores. El color sirve para
+  algo, no decora.
+- **Descartado:** tarjetas con iconos en filas (abarrotadas) y una frase en cada tarjeta (va en la ficha).
+
+### 19.4 Una ficha por producto
+
+- **Antes:** no se podía entrar en un producto. En la web actual sí, pero la ficha era un bloque de texto con
+  desplegables y los rotores un carrusel de fotos sin cifras.
+- **Ahora:** `/centrifugas/<modelo>/`. Arriba, foto (o el 3D en la Digicen 22) con el tono de su temperatura,
+  versión para saltar entre ventilada y refrigerada, cuatro cifras grandes y dos botones (catálogo PDF y pedir a un
+  distribuidor). Debajo, **pestañas** en una barra oscura fija: Descripción (con "De un vistazo": código, medidas,
+  peso, consumo, voltaje y número de rotores), Ficha técnica (en dos columnas que encajan sin huecos), Rotores (cada
+  uno abre una ventana con sus cifras y la tabla de tubos y adaptadores), Versiones y Accesorios. Al final, otros
+  modelos de la misma aplicación.
+- **Por qué:** todo lo que el distribuidor necesita para pedir, en una página y sin bajar por huecos en blanco. Los
+  rotores con sus tubos no estaban visibles en ninguna web de la empresa: el dato existía en su ERP.
+- **De dónde sale:** de la web actual y su ERP, importado con `scripts/importar-web-actual.mjs` (decisión 0009). Las
+  cifras de cabecera siguen siendo las del Catálogo 2025.
+- **Descartado:** secciones apiladas una tras otra (la primera versión: mucho hueco en blanco) y la ficha en una
+  ventana sobre el catálogo (sin dirección propia).
