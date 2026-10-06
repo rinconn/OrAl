@@ -971,3 +971,25 @@ entera delante, si se ensancha el contenido de 1280 a 1440 px.
   cifras de cabecera siguen siendo las del Catálogo 2025.
 - **Descartado:** secciones apiladas una tras otra (la primera versión: mucho hueco en blanco) y la ficha en una
   ventana sobre el catálogo (sin dirección propia).
+
+### 19.5 Segunda vuelta: escenario oscuro y cristal
+
+- **Problema:** con el escenario claro la tarjeta parecía no tener bordes y la máquina no resaltaba; las cifras en
+  filas finas apenas se veían; en la ficha, la descripción dejaba una columna vacía, la ficha técnica en tarjetas de
+  alturas desiguales se veía desordenada y los accesorios quedaban apagados.
+- **Ahora:**
+  - **Tarjeta:** escenario de estudio en carbón con un halo del color de su temperatura detrás de la máquina (azul,
+    ámbar, acero; rojo de marca en accesorios y laboratorio). Las centrífugas, blancas y grises, resaltan sobre el
+    oscuro. Las tres cifras van en una **franja de cristal** al pie del escenario; borde y sombra más marcados, y el
+    borde toma el color de la temperatura al pasar el ratón.
+  - **Cabecera de la ficha:** también en carbón con el halo, y las cuatro cifras en **placas de cristal** con la raya
+    roja de marca. La versión, en botones de cristal. El rojo del antetítulo, un punto más claro sobre el oscuro para
+    que se lea.
+  - **Descripción:** "De un vistazo" pasa a una fila de placas arriba y el texto debajo, a dos columnas si es largo.
+    Sin columnas vacías.
+  - **Ficha técnica:** como una hoja de especificaciones: una fila por bloque, el título a la izquierda (fijo al bajar)
+    y los puntos en dos columnas a la derecha.
+  - **Más de…:** incluye también las otras versiones de la serie, para que las fichas cortas no acaben de golpe.
+- **Por qué:** el producto es lo primero que se ve y el color dice su temperatura sin leer. El halo es la luz de un
+  estudio fotográfico, no un adorno: sin él, la máquina se pierde en el negro.
+- **Descartado:** el escenario de color claro de la primera vuelta (la tarjeta se confundía con la página).
