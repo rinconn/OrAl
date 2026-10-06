@@ -418,9 +418,9 @@ export async function crearEscena(o: Opciones): Promise<Escena> {
   }
 
   let zona = { cx: 0.66, cy: 0.5, w: 0.55, h: 0.8 };
-  let e = 1;
-  let desde = 1;
-  let hacia = 1;
+  let e = 0;
+  let desde = 0;
+  let hacia = 0;
   let t0 = 0;
   let dur = 1400;
   let etiquetasOn = false;
@@ -690,20 +690,16 @@ export async function crearEscena(o: Opciones): Promise<Escena> {
   new ResizeObserver(medir).observe(lienzo);
   medir();
 
-  // Entrada: llega abierta, vista desde arriba, y se monta mientras la cámara baja a tres cuartos
-  for (const p of piezas) p.obj.position.copy(p.fin);
+  // Entrada: la máquina aparece ya montada, un poco más lejos y más alta, y la cámara se asienta en tres cuartos
   {
     const { objetivo, dist } = encuadre();
     controls.target.copy(objetivo);
-    ponerCamara(dist, o.quieto ? vistas.tres.phi : 0.25, o.quieto ? vistas.tres.theta : -0.7);
+    if (o.quieto) ponerCamara(dist, vistas.tres.phi, vistas.tres.theta);
+    else {
+      ponerCamara(dist * 1.12, vistas.tres.phi - 0.22, vistas.tres.theta - 0.35);
+      irA(vistas.tres, 1800);
+    }
   }
-  setTimeout(
-    () => {
-      abrir(false, 1800);
-      irA(vistas.tres, 2000);
-    },
-    o.quieto ? 0 : 300,
-  );
   // Las aristas de rayos X se preparan cuando el navegador está libre, para que el botón responda al momento
   (window.requestIdleCallback ?? setTimeout)(() => prepararAristas());
 

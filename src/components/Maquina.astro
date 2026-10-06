@@ -1,0 +1,311 @@
+---
+// Una máquina del catálogo, presentada como la del hero: grande, recortada sobre blanco y apoyada en una elipse roja
+// fina con su sombra. Debajo, el nombre y una línea con tres datos. Al pasar el ratón (o con el foco) la máquina sube,
+// la elipse se enciende, la raya roja crece y aparece "Ver ficha". Las centrífugas llevan además "Comparar", fuera del
+// enlace para que se pueda marcar sin abrir la ficha.
+import { idioma, ruta, textos } from '../i18n';
+
+interface Props {
+  slug: string;
+  nombre: string;
+  /** La línea de datos: capacidad · rpm · pantalla, o el modelo en los accesorios y equipos */
+  datos: string;
+  imagen: { src: string; ancho: number; alto: number };
+  /** Solo las centrífugas se comparan */
+  comparable?: boolean;
+}
+
+const { slug, nombre, datos, imagen, comparable = false } = Astro.props;
+const lang = idioma(Astro.currentLocale);
+const t = textos(lang);
+---
+
+<article class="maquina">
+  <a class="enlace" href={ruta(lang, `/centrifugas/${slug}/`)}>
+    <span class="escena" aria-hidden="true">
+      <span class="sombra"></span>
+      <span class="elipse"></span>
+      <img src={imagen.src} alt="" width={imagen.ancho} height={imagen.alto} loading="lazy" decoding="async" />
+    </span>
+    <span class="texto">
+      <span class="raya" aria-hidden="true"></span>
+      <h3 class="nombre">{nombre}</h3>
+      <span class="datos">{datos}</span>
+      <span class="ver" aria-hidden="true">
+        {t.catalogo.ficha.verFicha}
+      </span>
+    </span>
+  </a>
+  {comparable && (
+    <label class="comparar">
+      <input type="checkbox" value={slug} data-nombre={nombre} />
+      <span class="caja" aria-hidden="true" />
+      <span class="txt">{t.catalogo.comparar.comparar}</span>
+      <span class="sr">{nombre}</span>
+    </label>
+  )}
+</article>
+
+<style>
+  .maquina {
+    position: relative;
+  }
+  .enlace {
+    display: block;
+    text-decoration: none;
+    color: var(--ink);
+    outline: none;
+  }
+
+  /* La máquina sobre su elipse */
+  .escena {
+    position: relative;
+    display: block;
+    aspect-ratio: 10 / 9;
+    background: linear-gradient(180deg, #eceef0 0%, #e4e7ea 68%, #d9dde1 100%);
+    transition: background 0.5s var(--ease);
+  }
+  .elipse,
+  .sombra {
+    position: absolute;
+    left: 50%;
+    bottom: 13%;
+    border-radius: 50%;
+    translate: -50% 50%;
+  }
+  .elipse {
+    width: 64%;
+    aspect-ratio: 5.2;
+    border: 1.5px solid var(--red);
+    transition:
+      box-shadow 0.5s var(--ease),
+      border-color 0.5s var(--ease);
+  }
+  /* La sombra: se aclara y se encoge un poco cuando la máquina sube */
+  .sombra {
+    width: 54%;
+    aspect-ratio: 5.8;
+    background: radial-gradient(closest-side, rgba(20, 22, 24, 0.38), rgba(20, 22, 24, 0));
+    transition:
+      opacity 0.5s var(--ease),
+      scale 0.5s var(--ease);
+  }
+  .escena img {
+    position: absolute;
+    left: 50%;
+    bottom: 8%;
+    width: auto;
+    max-width: 84%;
+    height: 84%;
+    object-fit: contain;
+    object-position: center bottom;
+    translate: -50% 0;
+    transition:
+      transform 0.55s var(--ease),
+      opacity 0.6s var(--ease);
+  }
+  /* Con JS, cada foto aparece suave al terminar de cargar (sin JS se ve tal cual) */
+  :global(.con-js) .escena img:not(:global(.cargada)) {
+    opacity: 0;
+  }
+
+  /* Nombre grande y una sola línea de datos */
+  .texto {
+    position: relative;
+    display: block;
+    padding-top: 20px;
+  }
+  .raya {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 40px;
+    height: 3px;
+    background: var(--red);
+    transition: width 0.55s var(--ease);
+  }
+  .nombre {
+    font-size: clamp(26px, 2.2vw, 32px);
+    font-weight: 700;
+    line-height: 1.05;
+    letter-spacing: -0.005em;
+  }
+  .datos {
+    display: block;
+    margin-top: 8px;
+    font-size: 17px;
+    font-weight: 400;
+    color: var(--body);
+    font-variant-numeric: tabular-nums;
+  }
+  .ver {
+    position: absolute;
+    top: 22px;
+    right: 0;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--red);
+    opacity: 0;
+    translate: 0 6px;
+    transition:
+      opacity 0.4s var(--ease),
+      translate 0.4s var(--ease);
+  }
+  .ver::after {
+    content: ' »';
+    font-weight: 300;
+  }
+
+  /* Encendida: al pasar el ratón, con el foco del teclado o al llegar desde un enlace a esta máquina */
+  .enlace:focus-visible .escena img,
+  .maquina:global(.marcada) .escena img {
+    transform: translateY(-14px);
+  }
+  .enlace:focus-visible .elipse,
+  .maquina:global(.marcada) .elipse {
+    border-color: #ff2329;
+    box-shadow:
+      0 0 0 1px rgba(255, 35, 41, 0.35),
+      0 0 18px rgba(221, 4, 10, 0.55),
+      inset 0 0 12px rgba(221, 4, 10, 0.35);
+  }
+  .enlace:focus-visible .sombra,
+  .maquina:global(.marcada) .sombra {
+    opacity: 0.6;
+    scale: 0.88;
+  }
+  .enlace:focus-visible .raya,
+  .maquina:global(.marcada) .raya {
+    width: 100%;
+  }
+  .enlace:focus-visible .ver,
+  .maquina:global(.marcada) .ver {
+    opacity: 1;
+    translate: 0 0;
+  }
+  .enlace:focus-visible .nombre {
+    text-decoration: underline;
+    text-decoration-color: var(--red);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 5px;
+  }
+  @media (hover: hover) {
+    .enlace:hover .escena {
+      background: linear-gradient(180deg, #f1f2f4 0%, #e8eaed 68%, #dde1e5 100%);
+    }
+    .enlace:hover .escena img {
+      transform: translateY(-14px);
+    }
+    .enlace:hover .elipse {
+      border-color: #ff2329;
+      box-shadow:
+        0 0 0 1px rgba(255, 35, 41, 0.35),
+        0 0 18px rgba(221, 4, 10, 0.55),
+        inset 0 0 12px rgba(221, 4, 10, 0.35);
+    }
+    .enlace:hover .sombra {
+      opacity: 0.6;
+      scale: 0.88;
+    }
+    .enlace:hover .raya {
+      width: 100%;
+    }
+    .enlace:hover .ver {
+      opacity: 1;
+      translate: 0 0;
+    }
+  }
+
+  /* Comparar: una casilla discreta arriba a la derecha, fuera del enlace */
+  .comparar {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    font-size: 15px;
+    color: var(--body);
+    cursor: pointer;
+    transition: color 0.2s var(--ease);
+  }
+  .comparar input {
+    position: absolute;
+    opacity: 0;
+    width: 1px;
+    height: 1px;
+  }
+  .caja {
+    position: relative;
+    width: 18px;
+    height: 18px;
+    border: 1.5px solid #6e6e6e;
+    background: #fff;
+    transition:
+      background 0.2s var(--ease),
+      border-color 0.2s var(--ease);
+  }
+  .caja::after {
+    content: '';
+    position: absolute;
+    left: 5px;
+    top: 1px;
+    width: 5px;
+    height: 10px;
+    border: solid #fff;
+    border-width: 0 2px 2px 0;
+    rotate: 45deg;
+    opacity: 0;
+  }
+  .comparar input:checked + .caja {
+    background: var(--red);
+    border-color: var(--red);
+  }
+  .comparar input:checked + .caja::after {
+    opacity: 1;
+  }
+  .comparar:has(input:checked) {
+    color: var(--ink);
+  }
+  .comparar input:focus-visible + .caja {
+    outline: 2px solid var(--ink);
+    outline-offset: 2px;
+  }
+  .comparar:has(input:disabled) {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+  @media (hover: hover) {
+    .comparar:hover {
+      color: var(--ink);
+    }
+    .comparar:hover .caja {
+      border-color: var(--ink);
+    }
+  }
+  .sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .escena img,
+    .elipse,
+    .sombra,
+    .raya,
+    .ver {
+      transition: none;
+    }
+    .enlace:hover .escena img,
+    .enlace:focus-visible .escena img,
+    .maquina:global(.marcada) .escena img {
+      transform: none;
+    }
+  }
+</style>
