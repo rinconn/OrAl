@@ -46,7 +46,9 @@ const recorrido = ['PP 367', 'PC 497', 'PI 448', 'PE 494', 'PP 821', 'PC 279'];
     try {
       if (document.createElement('canvas').getContext('webgl2'))
         document.getElementById('hero-productos').classList.add('con-3d');
-    } catch {}
+    } catch {
+      /* sin WebGL se queda la foto */
+    }
   </script>
   <i class="carga" aria-hidden="true">
     <i></i>
@@ -327,7 +329,7 @@ const recorrido = ['PP 367', 'PC 497', 'PI 448', 'PE 494', 'PP 821', 'PC 279'];
     height: 100% !important;
     cursor: grab;
     opacity: 0;
-    transition: opacity 1s var(--ease);
+    transition: opacity 0.45s var(--ease);
   }
   .escena :global(canvas:active) {
     cursor: grabbing;

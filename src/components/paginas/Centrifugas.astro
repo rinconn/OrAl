@@ -1,27 +1,35 @@
 ---
-// Catálogo de productos: el hero con la Digicen 22 en 3D (HeroProductos.astro), y debajo el catálogo en blanco con
-// un índice fijo a la izquierda (buscador, aplicaciones y temperatura) y una rejilla continua de tarjetas: los 23
-// modelos de centrífuga (fotos y aplicaciones de la página de productos de la web actual), los accesorios y los otros
-// productos de laboratorio. Los filtros se guardan en la dirección para poder compartir una búsqueda.
+// Página de Productos. Arriba, el hero con la Digicen 22 en 3D (HeroProductos.astro). Debajo, el catálogo: la misma
+// exposición con la luz encendida. Las máquinas, recortadas sobre blanco y apoyadas en una elipse roja, agrupadas por
+// familia en capítulos como los del catálogo impreso; al final, los accesorios y los equipos de laboratorio.
+// Una barra fina fija arriba filtra por texto, temperatura y aplicación (en móvil, en un panel que sube desde abajo),
+// y un comparador pone 2 o 3 centrífugas lado a lado. La lógica está en src/scripts/catalogo.ts.
+// Los filtros se guardan en la dirección (?c=, ?t=, ?q=) para poder compartir una búsqueda.
 import Base from '../../layouts/Base.astro';
-import Tarjeta from '../Tarjeta.astro';
 import HeroProductos from '../HeroProductos.astro';
+import Maquina from '../Maquina.astro';
+import Paso from '../Paso.astro';
 import IconoTemp from '../ui/IconoTemp.astro';
 import {
   categorias,
+  familias,
   modelos,
   productos,
   totalModelos,
   type Categoria,
+  type Familia,
   type Modelo,
   type Temperatura,
 } from '../../data/productos';
 import { accesorios, equipos, type ProductoLab } from '../../data/laboratorio';
-import { idioma, textoSerie, textos } from '../../i18n';
+import { cifra, fichaCentrifuga } from '../../data/fichas';
+import { idioma, numero, ruta, textoSerie, textos } from '../../i18n';
 
 const lang = idioma(Astro.currentLocale);
 const t = textos(lang);
 const f = t.catalogo.filtros;
+const tc = t.catalogo.comparar;
+const tf = t.catalogo.ficha;
 
 const may = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 // Texto para el buscador: sin tildes ni mayúsculas, como la lupa de la cabecera
@@ -35,7 +43,6 @@ const grupos: { nombre: string; cats: Cat[] }[] = [
   { nombre: t.catalogo.grupos.especiales, cats: [...categorias.especiales] },
   { nombre: t.catalogo.grupos.otros, cats: ['accesorios', 'laboratorio'] },
 ];
-const todas = grupos.flatMap((g) => g.cats);
 const nombreCat = (c: Cat) =>
   c === 'accesorios'
     ? t.laboratorio.accesorios
@@ -43,53 +50,128 @@ const nombreCat = (c: Cat) =>
       ? t.laboratorio.equipos
       : t.catalogo.categorias[c];
 const nombreCorto = (c: Cat) => (c === 'accesorios' || c === 'laboratorio' ? f.cortos[c] : nombreCat(c));
-const grupoDe = (c: Cat) => grupos.find((g) => g.cats.includes(c))!.nombre;
-
 const temperaturas: Temperatura[] = ['ventilada', 'refrigerada', 'calefactada'];
 
-// Tarjetas en el orden del catálogo: por aplicación, y dentro de cada una como en la web actual
-type Ficha = { tipo: 'modelo'; cat: Cat; m: Modelo } | { tipo: 'lab'; cat: Cat; p: ProductoLab };
-const lab = (c: Otro, items: ProductoLab[]): Ficha[] => items.map((p) => ({ tipo: 'lab', cat: c, p }));
-const fichas = todas.flatMap((c): Ficha[] =>
-  c === 'accesorios'
-    ? lab(c, accesorios)
-    : c === 'laboratorio'
-      ? lab(c, equipos)
-      : modelos.filter((m) => m.categoria === c).map((m): Ficha => ({ tipo: 'modelo', cat: c, m })),
-);
+const serieDe = (m: Modelo) => productos.find((p) => p.slug === m.serie)!;
+// La capacidad como la cuenta el catálogo de cada idioma; si la versión tiene la suya (Digtor 22 C-8), esa
 const capacidad = (m: Modelo) =>
-  m.capacidad === productos.find((p) => p.slug === m.serie)?.capacidad
-    ? (textoSerie(lang, m.serie).capacidad ?? m.capacidad)
-    : m.capacidad;
+  m.capacidad === serieDe(m).capacidad ? (textoSerie(lang, m.serie).capacidad ?? m.capacidad) : m.capacidad;
+const datosDe = (m: Modelo) => `${capacidad(m)} · ${numero(lang, m.rpm)} rpm · ${m.pantalla}`;
+
+// Capítulos: una familia cada uno, en el orden del catálogo impreso, y al final accesorios y laboratorio
+type Item = { tipo: 'modelo'; cat: Cat; m: Modelo } | { tipo: 'lab'; cat: Otro; p: ProductoLab };
+const capitulos: { clave: string; nombre: string; items: Item[] }[] = [
+  ...(Object.keys(familias) as Familia[]).map((fam) => ({
+    clave: fam,
+    nombre: t.familias[fam],
+    items: modelos
+      .filter((m) => serieDe(m).familia === fam)
+      .map((m): Item => ({ tipo: 'modelo', cat: m.categoria, m })),
+  })),
+  {
+    clave: 'accesorios',
+    nombre: t.laboratorio.accesorios,
+    items: accesorios.map((p): Item => ({ tipo: 'lab', cat: 'accesorios', p })),
+  },
+  {
+    clave: 'laboratorio',
+    nombre: t.laboratorio.equipos,
+    items: equipos.map((p): Item => ({ tipo: 'lab', cat: 'laboratorio', p })),
+  },
+].filter((c) => c.items.length);
+const total = capitulos.reduce((n, c) => n + c.items.length, 0);
+
+// Comparador: los datos que el distribuidor mira para elegir, de la tabla de la serie y de la ficha de cada modelo
+const aNumero = (s?: string) => (s ? Number(s.replace(/\D/g, '')) : undefined);
+const comparables = Object.fromEntries(
+  modelos.map((m) => {
+    const web = fichaCentrifuga(m.slug);
+    const v0 = web?.versiones[0];
+    const xg = m.xg ?? web?.xg;
+    return [
+      m.slug,
+      {
+        nombre: m.nombre,
+        img: m.imagen.src,
+        href: ruta(lang, `/centrifugas/${m.slug}/`),
+        filas: {
+          aplicacion: t.catalogo.categorias[m.categoria],
+          temperatura: may(t.temperatura[m.temperatura]),
+          capacidad: capacidad(m),
+          velocidad: `${numero(lang, m.rpm)} rpm`,
+          fuerza: xg ? `${m.xg ? numero(lang, m.xg) : cifra(lang, xg)} xg` : undefined,
+          pantalla: m.pantalla,
+          medidas: v0?.medidas ? `${v0.medidas.replace(/x/g, ' × ')} mm` : undefined,
+          peso: v0?.peso ? `${v0.peso} kg` : undefined,
+          consumo: v0?.consumo ? `${v0.consumo} W` : undefined,
+          rotores: web?.rotores.length ? String(web.rotores.length) : undefined,
+        },
+        // Para marcar el mayor de cada fila numérica
+        num: { velocidad: aNumero(m.rpm), fuerza: aNumero(xg), rotores: web?.rotores.length },
+      },
+    ];
+  }),
+);
+const filasComparar = [
+  { k: 'aplicacion', nombre: tc.aplicacion },
+  { k: 'temperatura', nombre: tc.temperatura },
+  { k: 'capacidad', nombre: tf.capacidad },
+  { k: 'velocidad', nombre: tf.velocidad },
+  { k: 'fuerza', nombre: tf.fuerza },
+  { k: 'pantalla', nombre: tf.pantalla },
+  { k: 'medidas', nombre: tf.versiones.medidas },
+  { k: 'peso', nombre: tf.versiones.peso },
+  { k: 'consumo', nombre: tf.versiones.consumo },
+  { k: 'rotores', nombre: tc.rotores },
+];
 ---
 
 <Base title={t.catalogo.title} description={t.catalogo.description(productos.length, totalModelos)}>
   <HeroProductos />
 
-  <section class="catalogo" id="catalogo">
-    <div class="wrap catalogo-in">
-      <!-- Índice fijo a la izquierda; en móvil, barra fija arriba. Sin JS no aparece y se ve todo el catálogo -->
-      <form
-        class="indice"
-        id="filtros"
-        role="search"
-        aria-label={f.titulo}
-        data-uno={f.resultados(1)}
-        data-varios={f.resultados(999)}
-        hidden
-      >
+  <section class="catalogo" id="catalogo" aria-label={t.catalogo.indice}>
+    <Paso desde="#fff" />
+
+    <!-- Barra de filtros: fija arriba al bajar. Sin JS no aparece y se ve todo el catálogo -->
+    <div class="filtros" id="filtros" hidden>
+      <form class="wrap filtros-in" role="search" aria-label={f.titulo}>
         <label class="buscar">
           <span class="sr">{f.buscar}</span>
-          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
-            <circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="1.6"></circle>
-            <path d="M15.5 15.5 21 21" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path>
+          <svg viewBox="0 0 24 24" width="19" height="19" aria-hidden="true">
+            <circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="1.5"></circle>
+            <path d="M15.5 15.5 21 21" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"></path>
           </svg>
-          <input type="search" name="q" placeholder={f.buscar} autocomplete="off" />
+          <input type="search" name="q" placeholder={f.buscar} autocomplete="off" enterkeyhint="search" />
         </label>
 
-        <div class="bloque temp-bloque">
-          <p class="rotulo">{f.temperatura}</p>
+        <button type="button" class="abrir-panel" aria-expanded="false" aria-controls="panel-filtros">
+          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+            <path
+              d="M4 7h10M18 7h2M4 17h2M10 17h10"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+            ></path>
+            <circle cx="16" cy="7" r="2" fill="none" stroke="currentColor" stroke-width="1.5"></circle>
+            <circle cx="8" cy="17" r="2" fill="none" stroke="currentColor" stroke-width="1.5"></circle>
+          </svg>
+          {f.filtros}
+          <span class="cuenta" hidden></span>
+        </button>
+
+        <!-- En escritorio, en la misma línea; en móvil, un panel que sube desde abajo -->
+        <div class="panel" id="panel-filtros" aria-label={f.titulo}>
+          <div class="panel-cab">
+            <p>{f.filtros}</p>
+            <button type="button" class="cerrar-panel" aria-label={f.cerrar}>
+              <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+                <path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path>
+              </svg>
+            </button>
+          </div>
+
           <div class="temps" role="group" aria-label={f.temperatura}>
+            <p class="panel-rot">{f.temperatura}</p>
             {temperaturas.map((x) => (
               <button type="button" class="temp" data-v={x} aria-pressed="false">
                 <IconoTemp t={x} />
@@ -97,506 +179,167 @@ const capacidad = (m: Modelo) =>
               </button>
             ))}
           </div>
-        </div>
 
-        <div class="bloque cats" role="group" aria-label={f.aplicacion}>
-          <p class="rotulo">{f.aplicacion}</p>
-          <button type="button" class="cat todo" data-c="" aria-pressed="true">
-            <span class="nom">{f.todo}</span> <span class="n"></span>
-          </button>
-          {grupos.map((g) => (
-            <div class="grupo">
-              <p class="g-nombre">{g.nombre}</p>
-              {g.cats.map((c) => (
-                <button type="button" class="cat" data-c={c} data-nombre={nombreCat(c)} aria-pressed="false">
-                  <span class="nom">{nombreCorto(c)}</span> <span class="n" />
-                </button>
+          <div class="aplic">
+            <p class="panel-rot">{f.aplicacion}</p>
+            <button type="button" class="aplic-btn" aria-expanded="false" aria-controls="menu-aplic">
+              <span class="aplic-txt">{f.todas}</span>
+              <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+                <path d="m6 9 6 6 6-6" fill="none" stroke="currentColor" stroke-width="1.6"></path>
+              </svg>
+            </button>
+            <div class="menu" id="menu-aplic" role="group" aria-label={f.aplicacion}>
+              <button type="button" class="cat todo" data-c="" data-nombre={f.todas} aria-pressed="true">
+                <span class="nom">{f.todas}</span>
+                <span class="n"></span>
+              </button>
+              {grupos.map((g) => (
+                <div class="menu-grupo">
+                  <p class="menu-tit">{g.nombre}</p>
+                  {g.cats.map((c) => (
+                    <button type="button" class="cat" data-c={c} data-nombre={nombreCorto(c)} aria-pressed="false">
+                      <span class="nom">{nombreCat(c)}</span>
+                      <span class="n" />
+                    </button>
+                  ))}
+                </div>
               ))}
             </div>
-          ))}
+          </div>
+
+          <div class="panel-pie">
+            <button type="button" class="limpiar quitar-panel">
+              {f.limpiar}
+            </button>
+            <button type="button" class="ver-res" data-ver={f.ver(999)} data-uno={f.ver(1)}></button>
+          </div>
         </div>
 
-        <button type="button" class="borrar limpiar" hidden>
-          <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
-            <path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
-          </svg>
+        <p class="total" aria-live="polite" data-uno={f.resultados(1)} data-varios={f.resultados(999)}>
+          {f.resultados(total)}
+        </p>
+        <button type="button" class="limpiar quitar" hidden>
           {f.limpiar}
         </button>
       </form>
+    </div>
+    <div class="velo" hidden></div>
 
-      <div class="lista">
-        <!-- Lo que se está viendo: la aplicación elegida (o todo) en grande y cuántos productos hay -->
-        <header class="cabeza" id="cabeza" data-todo={f.todoTitulo}>
-          <h2 aria-live="polite">{f.todoTitulo}</h2>
-          <p class="total"></p>
-        </header>
+    <!-- Capítulos por familia -->
+    <div class="wrap capitulos" id="capitulos" data-modelos={f.modelos(999)} data-modelo={f.modelos(1)}>
+      {capitulos.map((c, i) => (
+        <section class="capitulo" data-cap={c.clave} aria-labelledby={`cap-${c.clave}`}>
+          <header class="cap-cab">
+            <span class="cap-n" aria-hidden="true">
+              {String(i + 1).padStart(2, '0')}
+            </span>
+            <h2 id={`cap-${c.clave}`}>{c.nombre}</h2>
+            <span class="cap-cuenta">{f.modelos(c.items.length)}</span>
+          </header>
+          <ul class="maquinas">
+            {c.items.map((x) =>
+              x.tipo === 'modelo' ? (
+                <li
+                  class="ficha"
+                  id={x.m.principal ? x.m.serie : x.m.slug}
+                  data-cat={x.cat}
+                  data-t={x.m.temperatura}
+                  data-texto={plano(
+                    x.m.nombre,
+                    c.nombre,
+                    nombreCat(x.cat),
+                    textoSerie(lang, x.m.serie).frase,
+                    capacidad(x.m),
+                    x.m.pantalla,
+                    t.temperatura[x.m.temperatura],
+                  )}
+                >
+                  <Maquina slug={x.m.slug} nombre={x.m.nombre} datos={datosDe(x.m)} imagen={x.m.imagen} comparable />
+                </li>
+              ) : (
+                <li
+                  class="ficha"
+                  id={x.p.slug}
+                  data-cat={x.cat}
+                  data-texto={plano(
+                    t.laboratorio.items[x.p.slug].nombre,
+                    x.p.modelo,
+                    nombreCat(x.cat),
+                    t.laboratorio.items[x.p.slug].frase,
+                    t.laboratorio.items[x.p.slug].datos,
+                  )}
+                >
+                  <Maquina
+                    slug={x.p.slug}
+                    nombre={t.laboratorio.items[x.p.slug].nombre}
+                    datos={x.p.modelo}
+                    imagen={x.p.imagen}
+                  />
+                </li>
+              ),
+            )}
+          </ul>
+        </section>
+      ))}
 
-        <ul class="rejilla" id="rejilla">
-          {fichas.map((x) =>
-            x.tipo === 'modelo' ? (
-              <li
-                class="ficha"
-                id={x.m.principal ? x.m.serie : x.m.slug}
-                data-cat={x.cat}
-                data-t={x.m.temperatura}
-                data-texto={plano(
-                  x.m.nombre,
-                  nombreCat(x.cat),
-                  grupoDe(x.cat),
-                  textoSerie(lang, x.m.serie).frase,
-                  capacidad(x.m),
-                  x.m.pantalla,
-                  t.temperatura[x.m.temperatura],
-                )}
-              >
-                <Tarjeta cat={nombreCat(x.cat)} modelo={x.m} capacidad={capacidad(x.m)} />
-              </li>
-            ) : (
-              <li
-                class="ficha"
-                id={x.p.slug}
-                data-cat={x.cat}
-                data-texto={plano(
-                  t.laboratorio.items[x.p.slug].nombre,
-                  x.p.modelo,
-                  nombreCat(x.cat),
-                  t.laboratorio.items[x.p.slug].frase,
-                  t.laboratorio.items[x.p.slug].datos,
-                )}
-              >
-                <Tarjeta cat={nombreCat(x.cat)} lab={x.p} />
-              </li>
-            ),
-          )}
-          <li class="vacio" hidden>
-            <p>{f.vacio}</p>
-            <button type="button" class="btn red limpiar">
-              {f.limpiar}
-            </button>
-          </li>
-        </ul>
+      <div class="vacio" hidden>
+        <p class="vacio-tit">{f.vacio}</p>
+        <p>{f.vacioPista}</p>
+        <button type="button" class="limpiar boton">
+          {f.limpiar}
+        </button>
       </div>
     </div>
   </section>
+
+  <!-- Comparador: barra abajo con las elegidas y, al abrirla, las máquinas lado a lado -->
+  <div class="barra-comparar" id="barra-comparar" role="region" aria-label={tc.titulo} hidden>
+    <ul class="elegidas"></ul>
+    <p class="pista-otra">{tc.otra}</p>
+    <div class="barra-acciones">
+      <button type="button" class="vaciar">
+        {tc.vaciar}
+      </button>
+      <button type="button" class="abrir-comparar" data-txt={tc.abrir(999)}></button>
+    </div>
+  </div>
+
+  <dialog class="comparador" id="comparador" aria-labelledby="comparador-tit">
+    <div class="comp-cab">
+      <h2 id="comparador-tit">{tc.titulo}</h2>
+      <button type="button" class="cerrar-comp" aria-label={tc.cerrar}>
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+          <path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path>
+        </svg>
+      </button>
+    </div>
+    <div class="comp-tabla"></div>
+  </dialog>
+
+  <script
+    type="application/json"
+    id="datos-comparar"
+    set:html={JSON.stringify({
+      maquinas: comparables,
+      filas: filasComparar,
+      textos: {
+        quitar: tc.quitar('{n}'),
+        maximo: tc.maximo,
+        verFicha: tf.verFicha,
+        mejor: tc.mejor,
+      },
+    })}
+  />
 </Base>
 
 <script>
-  // Filtros sencillos: una aplicación, la temperatura (se pueden sumar) y el buscador sin tildes.
-  // Cada aplicación dice cuántos productos quedarían al pulsarla y el título de la lista cambia con ella.
-  const form = document.getElementById('filtros') as HTMLFormElement | null;
-  const rejilla = document.getElementById('rejilla');
-  const cabeza = document.getElementById('cabeza');
-  if (form && rejilla && cabeza) {
-    form.hidden = false;
-    const total = (n: number) => (n === 1 ? form.dataset.uno! : form.dataset.varios!.replace('999', String(n)));
-    const fichas = [...rejilla.querySelectorAll<HTMLElement>('.ficha')];
-    const vacio = rejilla.querySelector<HTMLElement>('.vacio')!;
-    const cats = [...form.querySelectorAll<HTMLButtonElement>('.cat')];
-    const temps = [...form.querySelectorAll<HTMLButtonElement>('.temp')];
-    const q = form.querySelector<HTMLInputElement>('input[name=q]')!;
-    const borrar = [...document.querySelectorAll<HTMLButtonElement>('.limpiar')];
-    const titulo = cabeza.querySelector('h2')!;
-    const totalEl = cabeza.querySelector<HTMLElement>('.total')!;
-
-    let cat = '';
-    const elegidas = new Set<string>();
-    const plano = (s: string) => s.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().trim();
-    const cumple = (el: HTMLElement, c = cat) => {
-      if (c && el.dataset.cat !== c) return false;
-      if (elegidas.size && !elegidas.has(el.dataset.t ?? '')) return false;
-      const texto = plano(q.value);
-      return !texto || texto.split(/\s+/).every((p) => (el.dataset.texto ?? '').includes(p));
-    };
-
-    let primera = true;
-    const aplicar = () => {
-      const visibles = new Set(fichas.filter((el) => cumple(el)));
-      let i = 0;
-      for (const el of fichas) {
-        const ver = visibles.has(el);
-        if (ver && !primera) {
-          el.style.setProperty('--i', String(Math.min(i, 8)));
-          el.classList.remove('entra');
-          void el.offsetWidth;
-          el.classList.add('entra');
-        }
-        if (ver) i++;
-        el.hidden = !ver;
-      }
-      for (const b of cats) {
-        const c = b.dataset.c ?? '';
-        const n = fichas.filter((el) => cumple(el, c)).length;
-        b.setAttribute('aria-pressed', String(c === cat));
-        b.disabled = c !== cat && n === 0;
-        b.querySelector('.n')!.textContent = String(n);
-      }
-      for (const b of temps) b.setAttribute('aria-pressed', String(elegidas.has(b.dataset.v!)));
-      const hay = !!cat || elegidas.size > 0 || !!q.value.trim();
-      for (const b of borrar) if (!b.closest('.vacio')) b.hidden = !hay;
-      titulo.textContent = cats.find((b) => b.dataset.c === cat)?.dataset.nombre ?? cabeza.dataset.todo!;
-      totalEl.textContent = total(visibles.size);
-      vacio.hidden = visibles.size > 0;
-      // La búsqueda queda en la dirección para poder compartirla
-      const url = new URL(location.href);
-      const poner = (k: string, v: string) => (v ? url.searchParams.set(k, v) : url.searchParams.delete(k));
-      poner('c', cat);
-      poner('t', [...elegidas].join(','));
-      poner('q', q.value.trim());
-      history.replaceState(null, '', url);
-      primera = false;
-    };
-
-    // Estado inicial desde la dirección; si se llega a una ficha concreta (lupa, Tecnología), se ve todo
-    const url = new URL(location.href);
-    const aFicha = location.hash && document.getElementById(location.hash.slice(1))?.classList.contains('ficha');
-    if (!aFicha) {
-      cat = url.searchParams.get('c') ?? '';
-      for (const v of url.searchParams.get('t')?.split(',') ?? []) if (v) elegidas.add(v);
-      q.value = url.searchParams.get('q') ?? '';
-    }
-
-    // Al cambiar de aplicación, la lista sube para verla desde arriba
-    const subir = () => {
-      const y = cabeza.getBoundingClientRect().top + window.scrollY - 120;
-      if (window.scrollY > y) window.scrollTo({ top: y, behavior: 'smooth' });
-    };
-    for (const b of cats) {
-      b.addEventListener('click', () => {
-        cat = b.dataset.c ?? '';
-        aplicar();
-        subir();
-      });
-    }
-    for (const b of temps) {
-      b.addEventListener('click', () => {
-        const v = b.dataset.v!;
-        if (elegidas.has(v)) elegidas.delete(v);
-        else elegidas.add(v);
-        aplicar();
-      });
-    }
-    let espera = 0;
-    q.addEventListener('input', () => {
-      clearTimeout(espera);
-      espera = window.setTimeout(aplicar, 120);
-    });
-    form.addEventListener('submit', (e) => e.preventDefault());
-    for (const b of borrar) {
-      b.addEventListener('click', () => {
-        cat = '';
-        elegidas.clear();
-        q.value = '';
-        aplicar();
-      });
-    }
-    aplicar();
-
-    // Al bajar, las tarjetas entran de abajo arriba, escalonadas por fila
-    if (!matchMedia('(prefers-reduced-motion: reduce)').matches && 'IntersectionObserver' in window) {
-      rejilla.classList.add('revela');
-      const io = new IntersectionObserver(
-        (entradas) => {
-          entradas
-            .filter((e) => e.isIntersecting)
-            .forEach((e, i) => {
-              const el = e.target as HTMLElement;
-              el.style.setProperty('--d', `${i * 70}ms`);
-              el.classList.add('visto');
-              io.unobserve(el);
-            });
-        },
-        { rootMargin: '0px 0px -8% 0px' },
-      );
-      for (const el of fichas) io.observe(el);
-    }
-  }
+  import { iniciarCatalogo } from '../../scripts/catalogo';
+  iniciarCatalogo();
 </script>
 
 <style>
-  /* Lo que el filtro oculta, oculto aunque tenga su propio display */
   [hidden] {
     display: none !important;
-  }
-
-  /* ——— Catálogo: índice fijo a la izquierda y la lista a la derecha ——— */
-  .catalogo {
-    --arriba: 28px;
-    padding-block: clamp(40px, 5vw, 64px) clamp(72px, 9vw, 120px);
-  }
-  /* Con la cabecera de la web a la vista, el índice baja para no quedar debajo */
-  :global(html:has(#top:not(.oculta))) .catalogo {
-    --arriba: 104px;
-  }
-  .catalogo-in {
-    display: grid;
-    grid-template-columns: 248px minmax(0, 1fr);
-    gap: clamp(32px, 4vw, 56px);
-    align-items: start;
-  }
-  .catalogo-in:has(.indice[hidden]) {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .indice {
-    position: sticky;
-    top: var(--arriba);
-    max-height: calc(100vh - var(--arriba) - 16px);
-    overflow-y: auto;
-    scrollbar-width: thin;
-    display: grid;
-    gap: 28px;
-    padding-bottom: 8px;
-    transition: top 0.35s var(--ease);
-  }
-  .rotulo,
-  .g-nombre {
-    margin: 0 0 10px;
-    font-size: 13px;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--ink);
-  }
-  /* Grupos del índice, en negrita y con su raya roja corta */
-  .g-nombre {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin: 22px 0 6px;
-    letter-spacing: 0.1em;
-  }
-  .g-nombre::before {
-    content: '';
-    width: 14px;
-    height: 2px;
-    background: var(--red);
-  }
-  .buscar {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    height: 48px;
-    padding: 0 14px;
-    background: #fff;
-    border: 1px solid var(--line);
-    border-bottom: 2px solid var(--ink);
-    color: var(--red);
-    transition:
-      border-color 0.2s var(--ease),
-      background 0.2s var(--ease);
-  }
-  .buscar:focus-within {
-    border-color: var(--red);
-    box-shadow: 0 0 0 3px rgba(221, 4, 10, 0.12);
-  }
-  .buscar input::placeholder {
-    color: var(--body);
-  }
-  .buscar input {
-    flex: 1;
-    min-width: 0;
-    border: 0;
-    outline: 0;
-    background: none;
-    font: 400 17px var(--f);
-    color: var(--ink);
-  }
-
-  /* Temperatura: tres casillas con su punto de color; se pueden sumar */
-  .temps {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-  }
-  .temp {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    height: 34px;
-    padding: 0 11px;
-    border: 1px solid var(--line);
-    background: #fff;
-    font: 400 15px var(--f);
-    color: var(--ink);
-    cursor: pointer;
-    transition:
-      background 0.2s var(--ease),
-      color 0.2s var(--ease),
-      border-color 0.2s var(--ease);
-  }
-  /* Cada temperatura con su icono y su color; elegida, la casilla entera se pinta de ese color */
-  .temp {
-    --c: var(--t-ventilada);
-  }
-  .temp[data-v='refrigerada'] {
-    --c: var(--t-refrigerada);
-  }
-  .temp[data-v='calefactada'] {
-    --c: var(--t-calefactada);
-  }
-  .temp :global(.icono-temp) {
-    color: var(--c);
-  }
-  .temp[aria-pressed='true'] :global(.icono-temp) {
-    color: #fff;
-  }
-  .temp[aria-pressed='true'] {
-    background: var(--c);
-    border-color: var(--c);
-    color: #fff;
-    font-weight: 700;
-  }
-
-  /* Aplicaciones: una lista como el índice de un catálogo; la elegida, con su raya roja */
-  .cats {
-    display: block;
-  }
-  .cat {
-    position: relative;
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 10px;
-    width: 100%;
-    padding: 7px 0 7px 14px;
-    border: 0;
-    border-left: 2px solid var(--panel);
-    background: none;
-    font: 400 17px/1.2 var(--f);
-    color: var(--body);
-    text-align: left;
-    cursor: pointer;
-    transition:
-      color 0.2s var(--ease),
-      border-color 0.2s var(--ease),
-      padding 0.3s var(--ease);
-  }
-  .cat.todo {
-    font-weight: 700;
-    color: var(--ink);
-  }
-  .n {
-    font-size: 14px;
-    font-weight: 400;
-    color: var(--body);
-    font-variant-numeric: tabular-nums;
-  }
-  .cat[aria-pressed='true'] {
-    border-left-color: var(--red);
-    padding-left: 18px;
-    color: var(--red);
-    font-weight: 700;
-  }
-  .cat[aria-pressed='true'] .n {
-    color: var(--red);
-  }
-  .cat:disabled {
-    opacity: 0.35;
-    cursor: default;
-  }
-  .borrar {
-    justify-self: start;
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    height: 40px;
-    padding: 0 14px;
-    border: 1px solid var(--red);
-    background: var(--red);
-    font: 700 15px var(--f);
-    color: #fff;
-    cursor: pointer;
-    animation: aparece 0.25s var(--ease);
-  }
-  @media (hover: hover) {
-    .cat:not(:disabled, [aria-pressed='true']):hover {
-      border-left-color: var(--ink);
-      color: var(--ink);
-    }
-    .temp:not([aria-pressed='true']):hover {
-      border-color: var(--ink);
-    }
-    .borrar:hover {
-      background: var(--red-d);
-    }
-  }
-  .cat:focus-visible,
-  .temp:focus-visible,
-  .borrar:focus-visible {
-    outline: 2px solid var(--red);
-    outline-offset: 2px;
-  }
-
-  /* Cabecera de la lista: lo elegido en grande y fino, y el total a la derecha */
-  .cabeza {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 16px;
-    margin-bottom: 28px;
-    padding-bottom: 16px;
-    border-bottom: 2px solid var(--ink);
-  }
-  .cabeza h2 {
-    font-size: clamp(32px, 3.6vw, 52px);
-    font-weight: 300;
-    line-height: 1;
-    letter-spacing: -0.01em;
-  }
-  .total {
-    flex: none;
-    margin: 0;
-    font-size: 16px;
-    color: var(--body);
-    font-variant-numeric: tabular-nums;
-  }
-
-  /* ——— Rejilla continua, sin huecos ——— */
-  .rejilla {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 24px;
-  }
-
-  /* Cada tarjeta deja sitio a la cabecera al llegar con un enlace a ella */
-  .ficha {
-    scroll-margin-top: 120px;
-  }
-  .revela .ficha:not(.visto) {
-    opacity: 0;
-    transform: translateY(28px);
-  }
-  .revela .ficha.visto {
-    transition:
-      opacity 0.6s var(--ease) var(--d, 0ms),
-      transform 0.7s var(--ease) var(--d, 0ms);
-  }
-
-  @media (prefers-reduced-motion: no-preference) {
-    .ficha.entra {
-      animation: aparece 0.45s var(--ease) both;
-      animation-delay: calc(var(--i, 0) * 35ms);
-    }
-  }
-  @keyframes aparece {
-    from {
-      opacity: 0;
-      transform: translateY(12px);
-    }
-  }
-
-  .vacio {
-    grid-column: 1 / -1;
-    padding: 56px 24px;
-    text-align: center;
-    border: 1px dashed var(--line);
-  }
-  .vacio p {
-    margin: 0 0 20px;
-    font-size: 20px;
   }
   .sr {
     position: absolute;
@@ -607,122 +350,908 @@ const capacidad = (m: Modelo) =>
     white-space: nowrap;
   }
 
-  @media (max-width: 1439px) {
-    :global(html:has(#top:not(.oculta))) .catalogo {
-      --arriba: 88px;
-    }
+  /* ——— El catálogo: la exposición con la luz encendida ——— */
+  .catalogo {
+    /* Altura de la cabecera de la web cuando está a la vista: la barra de filtros se queda justo debajo */
+    --arriba: 0px;
+    position: relative;
+    padding-bottom: clamp(96px, 12vw, 160px);
+    background: #fff;
   }
-  @media (max-width: 1180px) {
-    .rejilla {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
+  :global(html:has(#top:not(.oculta))) .catalogo {
+    --arriba: 77px;
   }
-  /* Tablet y móvil: el índice pasa a ser una barra blanca fija arriba, con las aplicaciones de lado */
-  @media (max-width: 900px) {
-    .catalogo {
-      --arriba: 0px;
-      padding-top: 0;
-    }
-    :global(html:has(#top:not(.oculta))) .catalogo {
-      --arriba: 60px;
-    }
-    .catalogo-in {
-      grid-template-columns: minmax(0, 1fr);
-      gap: 24px;
-    }
-    .indice {
-      z-index: 15;
-      max-height: none;
-      overflow: visible;
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 10px 12px;
-      margin-inline: calc(-1 * var(--gut));
-      padding: 14px var(--gut) 12px;
-      background: rgba(255, 255, 255, 0.92);
-      -webkit-backdrop-filter: blur(16px) saturate(160%);
-      backdrop-filter: blur(16px) saturate(160%);
-      border-bottom: 1px solid var(--line);
-      box-shadow: 0 12px 30px -26px rgba(17, 19, 21, 0.5);
-    }
-    .rotulo,
-    .g-nombre {
-      display: none;
-    }
-    .buscar {
-      flex: 1 1 260px;
-      height: 42px;
-    }
-    .temp-bloque {
-      flex: none;
-    }
-    .temps {
-      flex-wrap: nowrap;
-    }
-    .cats {
-      order: 3;
-      flex: 1 1 100%;
-      display: flex;
-      gap: 6px;
-      overflow-x: auto;
-      scrollbar-width: none;
-      margin-inline: calc(-1 * var(--gut));
-      padding-inline: var(--gut);
-    }
-    .cats::-webkit-scrollbar {
-      display: none;
-    }
-    .grupo {
-      display: contents;
-    }
-    .cat,
-    .cat.todo {
-      flex: none;
-      width: auto;
-      height: 34px;
-      align-items: center;
-      padding: 0 12px;
-      border: 1px solid transparent;
-      background: var(--panel);
-      font-size: 15px;
-      white-space: nowrap;
+
+  /* ——— Barra de filtros: fina, fija arriba al bajar ——— */
+  .filtros {
+    position: sticky;
+    top: var(--arriba);
+    z-index: 15;
+    margin-top: 2px;
+    background: rgba(255, 255, 255, 0.94);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--line);
+    transition:
+      top 0.35s var(--ease),
+      border-color 0.3s var(--ease),
+      box-shadow 0.3s var(--ease);
+  }
+  .filtros:global(.pegada) {
+    border-bottom-color: var(--line);
+    box-shadow: 0 10px 30px -18px rgba(0, 0, 0, 0.25);
+  }
+  .filtros-in {
+    display: flex;
+    align-items: center;
+    gap: clamp(16px, 2.4vw, 36px);
+    min-height: 76px;
+  }
+  .buscar {
+    flex: 0 1 340px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    height: 44px;
+    border-bottom: 1px solid var(--ink);
+    color: var(--ink);
+    transition: border-color 0.25s var(--ease);
+  }
+  .buscar:focus-within {
+    border-color: var(--ink);
+    color: var(--ink);
+  }
+  .buscar input {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    border: 0;
+    background: none;
+    font: 400 17px var(--f);
+    color: var(--ink);
+    outline: none;
+  }
+  .buscar input::placeholder {
+    color: var(--muted);
+  }
+  .buscar input::-webkit-search-cancel-button {
+    cursor: pointer;
+  }
+
+  button {
+    border: 0;
+    background: none;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+  }
+  /* Los botones que se pintan desde JS (comparador) no llevan el ámbito del componente */
+  .elegidas :global(button),
+  .comp-tabla :global(button) {
+    border: 0;
+    background: none;
+    font: inherit;
+    cursor: pointer;
+  }
+  button:focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 2px;
+  }
+
+  /* Panel: en escritorio sus piezas van en la barra */
+  .panel {
+    display: contents;
+  }
+  .panel-cab,
+  .panel-rot,
+  .panel-pie,
+  .abrir-panel {
+    display: none;
+  }
+  .temps {
+    display: flex;
+    gap: 4px;
+  }
+  .temp {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    height: 38px;
+    padding: 0 14px;
+    font-size: 16px;
+    font-weight: 400;
+    color: var(--ink);
+    border: 1px solid var(--line);
+    transition:
+      color 0.2s var(--ease),
+      border-color 0.2s var(--ease),
+      background 0.2s var(--ease);
+  }
+  .temp :global(.icono-temp) {
+    color: var(--body);
+    transition: color 0.2s var(--ease);
+  }
+  .temp[aria-pressed='true'] {
+    color: #fff;
+    font-weight: 700;
+    background: var(--ink);
+    border-color: var(--ink);
+  }
+  .temp[aria-pressed='true'] :global(.icono-temp) {
+    color: #fff;
+  }
+  .temp[aria-pressed='true'] :global(.icono-temp) {
+    color: var(--red);
+  }
+  .temp:disabled {
+    opacity: 0.35;
+    cursor: default;
+  }
+
+  /* Aplicación: un botón con la elegida y su lista desplegable */
+  .aplic {
+    position: relative;
+  }
+  .aplic-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    height: 38px;
+    padding: 0 14px;
+    font-size: 16px;
+    font-weight: 400;
+    color: var(--ink);
+    border: 1px solid var(--line);
+  }
+  .aplic-btn[aria-expanded='true'] svg {
+    rotate: 180deg;
+  }
+  .aplic-btn svg {
+    transition: rotate 0.25s var(--ease);
+  }
+  .aplic:global(.elegida) .aplic-btn {
+    font-weight: 700;
+    color: #fff;
+    background: var(--ink);
+    border-color: var(--ink);
+  }
+  .menu {
+    position: absolute;
+    top: calc(100% + 10px);
+    left: -12px;
+    z-index: 2;
+    display: none;
+    width: 300px;
+    max-height: min(70vh, 560px);
+    overflow-y: auto;
+    padding: 10px 0;
+    background: #fff;
+    border: 1px solid var(--line);
+    box-shadow: 0 24px 48px -20px rgba(0, 0, 0, 0.3);
+  }
+  .aplic:global(.abierta) .menu {
+    display: block;
+    animation: despliega 0.22s var(--ease);
+  }
+  .menu-grupo {
+    padding-top: 8px;
+    margin-top: 8px;
+    border-top: 1px solid #ececec;
+  }
+  .menu-tit {
+    padding: 4px 20px 6px;
+    font-size: 14px;
+    font-weight: 300;
+    color: #8a8a8a;
+  }
+  .cat {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+    padding: 8px 20px;
+    font-size: 16px;
+    font-weight: 300;
+    text-align: left;
+    color: var(--ink);
+    transition: background 0.15s var(--ease);
+  }
+  .cat .n {
+    font-size: 14px;
+    color: #8a8a8a;
+    font-variant-numeric: tabular-nums;
+  }
+  .cat[aria-pressed='true'] {
+    font-weight: 700;
+    box-shadow: inset 2px 0 0 var(--red);
+  }
+  .cat:disabled {
+    color: #b4b4b4;
+    cursor: default;
+  }
+  .cat:focus-visible {
+    outline-offset: -2px;
+  }
+
+  .total {
+    margin-left: auto;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .quitar {
+    font-size: 16px;
+    font-weight: 400;
+    color: var(--red);
+    white-space: nowrap;
+  }
+
+  /* ——— Capítulos ——— */
+  /* Altura mínima: al filtrar con pocos resultados la página no encoge de golpe bajo la barra */
+  .capitulos {
+    min-height: 80vh;
+  }
+  .capitulo {
+    padding-top: clamp(72px, 8vw, 120px);
+  }
+  .capitulo:first-of-type {
+    padding-top: clamp(32px, 4vw, 48px);
+  }
+  .cap-cab {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: end;
+    gap: 0 clamp(16px, 2vw, 28px);
+    padding-bottom: 22px;
+    border-bottom: 2px solid var(--ink);
+  }
+  .cap-n {
+    align-self: start;
+    padding-top: 0.5em;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--red);
+    font-variant-numeric: tabular-nums;
+  }
+  .cap-cab h2 {
+    font-size: clamp(42px, 5.4vw, 80px);
+    font-weight: 700;
+    line-height: 0.95;
+    letter-spacing: -0.02em;
+  }
+  .cap-cuenta {
+    padding-bottom: 0.5em;
+    font-size: 16px;
+    font-weight: 400;
+    color: var(--body);
+    font-variant-numeric: tabular-nums;
+  }
+  .maquinas {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: clamp(48px, 5vw, 72px) clamp(20px, 2.4vw, 32px);
+    margin: clamp(32px, 4vw, 48px) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  /* Entrada al bajar: suben un poco y aparecen, escalonadas por fila */
+  .capitulos:global(.revela) .ficha:not(:global(.visto)) {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  .capitulos:global(.revela) .ficha:global(.visto) {
+    transition:
+      opacity 0.7s var(--ease) var(--d, 0ms),
+      transform 0.8s var(--ease) var(--d, 0ms);
+  }
+
+  .vacio {
+    max-width: 520px;
+    margin: clamp(64px, 8vw, 120px) auto 0;
+    text-align: center;
+  }
+  .vacio-tit {
+    font-size: clamp(26px, 2.6vw, 34px);
+    font-weight: 300;
+    line-height: 1.15;
+    color: var(--ink);
+  }
+  .vacio p:not(.vacio-tit) {
+    margin-top: 10px;
+    color: var(--muted);
+  }
+  .vacio .boton {
+    margin-top: 28px;
+    height: 50px;
+    padding: 0 26px;
+    font-size: 17px;
+    font-weight: 700;
+    color: #fff;
+    background: var(--red);
+    transition: background 0.25s var(--ease);
+  }
+
+  /* ——— Comparador ——— */
+  .barra-comparar {
+    position: fixed;
+    left: 50%;
+    bottom: 20px;
+    z-index: 30;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    width: max-content;
+    max-width: calc(100% - 2 * var(--gut));
+    padding: 10px 10px 10px 16px;
+    background: rgba(21, 23, 25, 0.96);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    color: #fff;
+    box-shadow: 0 24px 60px -20px rgba(0, 0, 0, 0.55);
+    translate: -50% 0;
+    animation: sube-barra 0.45s var(--ease);
+  }
+  .barra-comparar::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto;
+    height: 2px;
+    background: var(--red);
+  }
+  .elegidas {
+    display: flex;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .elegidas :global(li) {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 48px;
+    padding: 0 6px 0 4px;
+    background: rgba(255, 255, 255, 0.07);
+    animation: aparece 0.3s var(--ease);
+  }
+  .elegidas :global(img) {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+    background: #fff;
+  }
+  .elegidas :global(span) {
+    font-size: 15px;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .elegidas :global(button) {
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    color: var(--on-dark);
+  }
+  .pista-otra {
+    font-size: 15px;
+    color: var(--on-dark);
+    white-space: nowrap;
+  }
+  .barra-acciones {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .vaciar {
+    height: 44px;
+    padding: 0 14px;
+    font-size: 15px;
+    color: var(--on-dark);
+  }
+  .abrir-comparar {
+    height: 44px;
+    padding: 0 20px;
+    font-size: 16px;
+    font-weight: 700;
+    color: #fff;
+    background: var(--red);
+    transition: background 0.25s var(--ease);
+  }
+  .abrir-comparar::after {
+    content: ' »';
+    font-weight: 300;
+  }
+  .abrir-comparar:disabled {
+    background: #4a4f53;
+    color: #a9afb3;
+    cursor: default;
+  }
+  .barra-comparar button:focus-visible {
+    outline-color: #fff;
+  }
+
+  .comparador {
+    width: min(1080px, calc(100% - 2 * var(--gut)));
+    max-height: calc(100% - 48px);
+    padding: 0;
+    border: 0;
+    background: #fff;
+    color: var(--ink);
+    box-shadow: 0 40px 100px -30px rgba(0, 0, 0, 0.5);
+  }
+  .comparador[open] {
+    animation: abre 0.4s var(--ease);
+  }
+  .comparador::backdrop {
+    background: rgba(21, 23, 25, 0.55);
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+  }
+  .comp-cab {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 22px clamp(20px, 3vw, 36px);
+    background: #fff;
+    border-top: 3px solid var(--red);
+    border-bottom: 1px solid var(--line);
+  }
+  .comp-cab h2 {
+    font-size: clamp(26px, 2.6vw, 34px);
+    font-weight: 300;
+  }
+  .cerrar-comp {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+  }
+  .comp-tabla {
+    overflow-x: auto;
+    padding: 0 clamp(20px, 3vw, 36px) 32px;
+  }
+  .comp-tabla :global(table) {
+    width: 100%;
+    min-width: 560px;
+    border-collapse: collapse;
+    table-layout: fixed;
+  }
+  .comp-tabla :global(th),
+  .comp-tabla :global(td) {
+    padding: 14px 16px;
+    text-align: left;
+    vertical-align: top;
+    border-bottom: 1px solid #ececec;
+    font-variant-numeric: tabular-nums;
+  }
+  .comp-tabla :global(tbody th) {
+    width: 190px;
+    font-size: 15px;
+    font-weight: 300;
+    color: var(--muted);
+  }
+  .comp-tabla :global(td) {
+    font-size: 17px;
+    font-weight: 400;
+  }
+  .comp-tabla :global(td.mejor) {
+    font-weight: 700;
+  }
+  .comp-tabla :global(td.mejor::after) {
+    content: '';
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    margin-left: 8px;
+    vertical-align: middle;
+    border-radius: 50%;
+    background: var(--red);
+  }
+  .comp-tabla :global(thead th) {
+    padding-top: 28px;
+    border-bottom: 0;
+    text-align: center;
+  }
+  .comp-tabla :global(.comp-maq) {
+    position: relative;
+    display: block;
+  }
+  .comp-tabla :global(.comp-foto) {
+    position: relative;
+    z-index: 0;
+    display: block;
+    aspect-ratio: 10 / 8;
+  }
+  .comp-tabla :global(.comp-foto img) {
+    position: absolute;
+    left: 50%;
+    bottom: 10%;
+    height: 84%;
+    width: auto;
+    max-width: 90%;
+    object-fit: contain;
+    translate: -50% 0;
+  }
+  .comp-tabla :global(.comp-foto::after) {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: 10%;
+    z-index: -1;
+    width: 72%;
+    aspect-ratio: 5.2;
+    border: 1.5px solid var(--red);
+    border-radius: 50%;
+    translate: -50% 50%;
+  }
+  .comp-tabla :global(.comp-nombre) {
+    display: block;
+    margin-top: 18px;
+    font-size: 24px;
+    font-weight: 700;
+  }
+  .comp-tabla :global(.comp-quitar) {
+    position: absolute;
+    top: 0;
+    right: 0;
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    color: var(--muted);
+  }
+  .comp-tabla :global(.comp-ver) {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--red);
+    text-decoration: none;
+  }
+  .comp-tabla :global(.comp-ver::after) {
+    content: ' »';
+    font-weight: 300;
+  }
+  .comp-tabla :global(tfoot td) {
+    border-bottom: 0;
+    padding-top: 22px;
+  }
+
+  @media (hover: hover) {
+    .temp:hover:not(:disabled) {
       color: var(--ink);
     }
-    .cat[aria-pressed='true'] {
-      padding: 0 12px;
-      background: var(--red);
+    .aplic-btn:hover {
+      color: var(--ink);
+    }
+    .cat:hover:not(:disabled) {
+      background: #f5f5f5;
+    }
+    .quitar:hover {
+      text-decoration: underline;
+      text-underline-offset: 4px;
+    }
+    .vacio .boton:hover,
+    .abrir-comparar:hover:not(:disabled) {
+      background: var(--red-d);
+    }
+    .vaciar:hover,
+    .elegidas :global(button:hover) {
       color: #fff;
     }
-    .cat[aria-pressed='true'] .n {
-      color: rgba(255, 255, 255, 0.8);
+    .comp-tabla :global(.comp-ver:hover) {
+      text-decoration: underline;
+      text-underline-offset: 4px;
     }
-    .borrar {
-      order: 2;
-      height: 34px;
-    }
-    .cabeza {
-      margin-bottom: 20px;
+    .comp-tabla :global(.comp-quitar:hover),
+    .cerrar-comp:hover {
+      color: var(--red);
     }
   }
-  @media (max-width: 640px) {
-    .temp-bloque,
+
+  @keyframes despliega {
+    from {
+      opacity: 0;
+      transform: translateY(-6px);
+    }
+  }
+  @keyframes aparece {
+    from {
+      opacity: 0;
+    }
+  }
+  @keyframes sube-barra {
+    from {
+      opacity: 0;
+      transform: translateY(24px);
+    }
+  }
+  @keyframes abre {
+    from {
+      opacity: 0;
+      transform: translateY(18px) scale(0.985);
+    }
+  }
+
+  /* ——— Tablet: dos columnas ——— */
+  @media (max-width: 1180px) {
+    .maquinas {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .temp {
+      padding: 0 10px;
+    }
+  }
+
+  /* ——— Móvil: una columna grande y los filtros en un panel que sube desde abajo ——— */
+  @media (max-width: 900px) {
+    :global(html:has(#top:not(.oculta))) .catalogo {
+      --arriba: 61px;
+    }
+    /* Sin desenfoque en móvil: el panel fijo tiene que ir respecto a la pantalla, no a la barra */
+    .filtros {
+      background: #fff;
+      -webkit-backdrop-filter: none;
+      backdrop-filter: none;
+    }
+    .filtros:has(.panel:global(.abierto)) {
+      z-index: 45;
+    }
+    :global(html.panel-abierto) .barra-comparar {
+      visibility: hidden;
+    }
+    .filtros-in {
+      gap: 12px;
+      min-height: 64px;
+    }
+    .buscar {
+      flex: 1;
+    }
+    .total,
+    .quitar {
+      display: none;
+    }
+    .abrir-panel {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      height: 42px;
+      padding: 0 14px;
+      font-size: 16px;
+      border: 1px solid var(--ink);
+    }
+    .abrir-panel .cuenta {
+      display: grid;
+      place-items: center;
+      min-width: 20px;
+      height: 20px;
+      padding: 0 5px;
+      font-size: 12px;
+      font-weight: 700;
+      color: #fff;
+      background: var(--red);
+    }
+    .panel {
+      position: fixed;
+      inset: auto 0 0;
+      z-index: 41;
+      display: flex;
+      flex-direction: column;
+      max-height: 86svh;
+      background: #fff;
+      box-shadow: 0 -20px 50px -10px rgba(0, 0, 0, 0.3);
+      transform: translateY(105%);
+      visibility: hidden;
+      transition:
+        transform 0.42s var(--ease),
+        visibility 0s linear 0.42s;
+    }
+    .panel:global(.abierto) {
+      transform: none;
+      visibility: visible;
+      transition: transform 0.42s var(--ease);
+    }
+    .panel-cab {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 12px 10px var(--gut);
+      border-top: 3px solid var(--red);
+    }
+    .panel-cab p {
+      font-size: 22px;
+      font-weight: 700;
+    }
+    .cerrar-panel {
+      display: grid;
+      place-items: center;
+      width: 44px;
+      height: 44px;
+    }
+    .panel-rot {
+      display: block;
+      width: 100%;
+      padding: 12px 0 8px;
+      font-size: 15px;
+      font-weight: 300;
+      color: var(--muted);
+    }
     .temps {
-      flex: 1 1 100%;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 0 var(--gut);
     }
     .temp {
       flex: 1;
       justify-content: center;
-      padding: 0 6px;
+      height: 44px;
+      border-color: var(--line);
     }
-    .rejilla {
-      grid-template-columns: 1fr;
+    .aplic {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      padding: 8px var(--gut) 0;
+    }
+    .aplic-btn {
+      display: none;
+    }
+    .menu,
+    .aplic:global(.abierta) .menu {
+      position: static;
+      display: block;
+      width: auto;
+      max-height: none;
+      overflow: visible;
+      padding: 0;
+      border: 0;
+      box-shadow: none;
+      animation: none;
+    }
+    .cat {
+      padding: 12px 4px;
+      font-size: 17px;
+    }
+    .menu-tit {
+      padding-inline: 4px;
+    }
+    .panel-pie {
+      display: flex;
+      gap: 10px;
+      padding: 12px var(--gut) calc(12px + env(safe-area-inset-bottom));
+      border-top: 1px solid var(--line);
+    }
+    .panel-pie button {
+      height: 50px;
+      font-size: 16px;
+    }
+    .quitar-panel {
+      padding: 0 14px;
+      color: var(--red);
+    }
+    .ver-res {
+      flex: 1;
+      font-weight: 700;
+      color: #fff;
+      background: var(--red);
+    }
+    .velo {
+      position: fixed;
+      inset: 0;
+      z-index: 40;
+      background: rgba(21, 23, 25, 0.45);
+      animation: aparece 0.3s var(--ease);
+    }
+
+    .cap-cab {
+      grid-template-columns: auto 1fr;
+    }
+    .cap-cuenta {
+      grid-column: 2;
+      padding: 8px 0 0;
+    }
+    .maquinas {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 56px;
+    }
+    /* En una línea: las fotos con su aspa en la esquina, Vaciar y Comparar */
+    .barra-comparar {
+      left: 12px;
+      right: 12px;
+      bottom: 12px;
+      gap: 8px;
+      width: auto;
+      max-width: none;
+      padding: 10px;
+      translate: none;
+    }
+    .elegidas {
+      flex: 1;
+      gap: 10px;
+    }
+    .elegidas :global(li) {
+      position: relative;
+      height: auto;
+      padding: 0;
+      background: none;
+    }
+    .elegidas :global(img) {
+      width: 44px;
+      height: 44px;
+    }
+    .elegidas :global(button) {
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: #3a3f43;
+      color: #fff;
+    }
+    .elegidas :global(button svg) {
+      width: 12px;
+      height: 12px;
+    }
+    .vaciar {
+      padding: 0 8px;
+    }
+    .abrir-comparar {
+      padding: 0 14px;
+    }
+    .elegidas :global(span),
+    .pista-otra {
+      display: none;
+    }
+    .comparador {
+      width: 100%;
+      max-width: none;
+      height: 100%;
+      max-height: none;
+      margin: 0;
+    }
+    .comp-tabla :global(tbody th) {
+      position: sticky;
+      left: 0;
+      z-index: 1;
+      width: 120px;
+      background: #fff;
+    }
+    .comp-tabla :global(table) {
+      min-width: 0;
+    }
+    .comp-tabla :global(th),
+    .comp-tabla :global(td) {
+      padding: 12px 10px;
+    }
+    .comp-tabla :global(td) {
+      min-width: 150px;
+      font-size: 16px;
+    }
+    .comp-tabla :global(.comp-nombre) {
+      font-size: 20px;
     }
   }
+
   @media (prefers-reduced-motion: reduce) {
-    .indice,
-    .cat {
+    .filtros,
+    .panel,
+    .panel:global(.abierto),
+    .aplic-btn svg {
       transition: none;
+    }
+    .menu,
+    .aplic:global(.abierta) .menu,
+    .barra-comparar,
+    .comparador[open],
+    .elegidas :global(li),
+    .velo {
+      animation: none;
     }
   }
 </style>
