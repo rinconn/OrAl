@@ -360,7 +360,6 @@ export const en: Textos = {
       },
       accesorios: 'Accessories for this model',
       mas: 'More',
-      fuente: 'Data from the product page on ortoalresa.com',
     },
   },
 

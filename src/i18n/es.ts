@@ -368,7 +368,6 @@ export const es = {
       },
       accesorios: 'Accesorios para este modelo',
       mas: 'Más de',
-      fuente: 'Datos de la ficha de producto de ortoalresa.com',
     },
   },
 

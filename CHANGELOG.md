@@ -7,7 +7,7 @@ Hasta que se publique la web, todo va en "Sin publicar"; al publicar se cierra l
 
 ### Añadido
 
-- Ficha de producto: la descripción como una página de revista, alineada con las placas de "De un vistazo": la entradilla grande a la izquierda y el resto del texto a la derecha bajo una raya roja, empezando a la misma altura (antes la entradilla y las dos columnas de debajo no coincidían con nada).
+- Ficha de producto: la descripción en una columna a la izquierda (entradilla y párrafos) y "De un vistazo" a la derecha en 2 × 2, fijo al bajar; en móvil, las placas arriba. Fuera la línea "Datos de la ficha de producto de ortoalresa.com".
 - Productos: el hero entra con la Digicen 22 ya montada y la cámara asentándose en tres cuartos (antes llegaba en despiece y medio transparente). Se prueba un catálogo nuevo como exposición (capítulos por familia, filtros fijos y comparador) y se vuelve al anterior, que gustaba más; queda en el historial (9dc360e).
 - Productos: placa bajo la máquina 3D con su nombre y su aplicación (Modelo 3D · Universal · Digicen 22) y "Ver ficha", que lleva a la ficha de la Digicen 22. Se oculta durante el recorrido.
 - Productos, hero nuevo (`HeroProductos.astro`, `src/scripts/escena-productos.ts`): la Digicen 22 en 3D en un estudio oscuro con un remolino de luz detrás que se acelera al girarla, haz de luz con polvo y aro rojo con destello. Acabado real o rayos X, vistas 3/4, frente, lado y arriba, zoom (botones, Ctrl + rueda, doble clic en una pieza), despiece con las etiquetas en columna y un punto sobre cada pieza, y **recorrido por dentro** pieza a pieza con su descripción de la ficha de ortoalresa.com. Cifras con los iconos de la marca y la raya roja con destello. Modelo 3D aligerado de 1,45 MB a 594 KB.
