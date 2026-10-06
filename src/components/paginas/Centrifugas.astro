@@ -1,9 +1,11 @@
 ---
-// Catálogo de productos: un hero grande con una foto de la empresa y badges de cristal, y debajo la página en blanco
-// con filtros sencillos (buscador, temperatura y aplicaciones) y una tarjeta por modelo: los 23 de centrífuga (fotos y
-// aplicaciones de la página de productos de la web actual), los accesorios y los otros productos de laboratorio.
-// Los filtros se guardan en la dirección para poder compartir una búsqueda.
+// Catálogo de productos: un hero con una foto de la empresa y badges de cristal, y debajo el catálogo en blanco con
+// un índice fijo a la izquierda (buscador, aplicaciones y temperatura) y una rejilla continua de tarjetas: los 23
+// modelos de centrífuga (fotos y aplicaciones de la página de productos de la web actual), los accesorios y los otros
+// productos de laboratorio. Los filtros se guardan en la dirección para poder compartir una búsqueda.
 import Base from '../../layouts/Base.astro';
+import Tarjeta from '../Tarjeta.astro';
+import Visor3D from '../Visor3D.astro';
 import {
   categorias,
   modelos,
@@ -14,7 +16,7 @@ import {
   type Temperatura,
 } from '../../data/productos';
 import { accesorios, equipos, type ProductoLab } from '../../data/laboratorio';
-import { idioma, numero, textoSerie, textos } from '../../i18n';
+import { idioma, textoSerie, textos } from '../../i18n';
 
 const lang = idioma(Astro.currentLocale);
 const t = textos(lang);
@@ -27,7 +29,12 @@ const plano = (...partes: (string | undefined)[]) =>
 
 type Otro = 'accesorios' | 'laboratorio';
 type Cat = Categoria | Otro;
-const todas: Cat[] = [...categorias.generales, ...categorias.especiales, 'accesorios', 'laboratorio'];
+const grupos: { nombre: string; cats: Cat[] }[] = [
+  { nombre: t.catalogo.grupos.generales, cats: [...categorias.generales] },
+  { nombre: t.catalogo.grupos.especiales, cats: [...categorias.especiales] },
+  { nombre: t.catalogo.grupos.otros, cats: ['accesorios', 'laboratorio'] },
+];
+const todas = grupos.flatMap((g) => g.cats);
 const nombreCat = (c: Cat) =>
   c === 'accesorios'
     ? t.laboratorio.accesorios
@@ -35,12 +42,7 @@ const nombreCat = (c: Cat) =>
       ? t.laboratorio.equipos
       : t.catalogo.categorias[c];
 const nombreCorto = (c: Cat) => (c === 'accesorios' || c === 'laboratorio' ? f.cortos[c] : nombreCat(c));
-const grupoDe = (c: Cat) =>
-  (categorias.generales as readonly string[]).includes(c)
-    ? t.catalogo.grupos.generales
-    : (categorias.especiales as readonly string[]).includes(c)
-      ? t.catalogo.grupos.especiales
-      : t.catalogo.grupos.otros;
+const grupoDe = (c: Cat) => grupos.find((g) => g.cats.includes(c))!.nombre;
 
 const temperaturas: Temperatura[] = ['ventilada', 'refrigerada', 'calefactada'];
 
@@ -61,58 +63,50 @@ const capacidad = (m: Modelo) =>
 ---
 
 <Base title={t.catalogo.title} description={t.catalogo.description(productos.length, totalModelos)}>
-  <!-- Hero: una centrífuga en uso, a todo el ancho, con el título y los badges de cristal encima -->
+  <!-- Hero: el título y los badges a la izquierda y la Digicen 22 en 3D a la derecha, que se abre en despiece -->
   <section class="hero">
-    <img
-      class="hero-foto"
-      src="/img/fotos/productos-hero.webp"
-      srcset="/img/fotos/productos-hero-960.webp 960w, /img/fotos/productos-hero.webp 1800w"
-      sizes="100vw"
-      alt=""
-      width="1800"
-      height="1199"
-      fetchpriority="high"
-      decoding="async"
-    />
     <div class="wrap hero-in">
-      <h1>
-        {t.catalogo.titulo[0]}
-        <b>{t.catalogo.titulo[1]}</b>
-      </h1>
-      <p class="lead">{t.catalogo.lead(productos.length, totalModelos)}</p>
-      <ul class="badges">
-        <li>
-          <b>{modelos.length}</b>
-          <span>{t.catalogo.cifras.centrifugas}</span>
-        </li>
-        <li>
-          <b>{categorias.generales.length + categorias.especiales.length}</b>
-          <span>{t.catalogo.cifras.aplicaciones}</span>
-        </li>
-        <li>
-          <b>1949</b>
-          <span>{t.catalogo.cifras.desde}</span>
-        </li>
-        <li class="stock">
-          <i aria-hidden="true"></i>
-          <span>{t.catalogo.cifras.stock}</span>
-        </li>
-      </ul>
+      <div class="hero-texto">
+        <h1>
+          {t.catalogo.titulo[0]}
+          <b>{t.catalogo.titulo[1]}</b>
+        </h1>
+        <p class="lead">{t.catalogo.lead(productos.length, totalModelos)}</p>
+        <ul class="badges">
+          <li>
+            <b>{modelos.length}</b>
+            <span>{t.catalogo.cifras.centrifugas}</span>
+          </li>
+          <li>
+            <b>{categorias.generales.length + categorias.especiales.length}</b>
+            <span>{t.catalogo.cifras.aplicaciones}</span>
+          </li>
+          <li>
+            <b>1949</b>
+            <span>{t.catalogo.cifras.desde}</span>
+          </li>
+          <li class="stock">
+            <i aria-hidden="true"></i>
+            <span>{t.catalogo.cifras.stock}</span>
+          </li>
+        </ul>
+      </div>
+      <Visor3D />
     </div>
   </section>
 
-  <!-- Filtros sencillos en una barra blanca fija. Sin JS no aparece y se ve todo el catálogo -->
-  <form
-    class="filtros"
-    id="filtros"
-    role="search"
-    aria-label={f.titulo}
-    data-uno={f.resultados(1)}
-    data-varios={f.resultados(999)}
-    hidden
-  >
-    <div class="wrap filtros-in">
-      <div class="arriba">
+  <section class="catalogo">
+    <div class="wrap catalogo-in">
+      <!-- Índice fijo a la izquierda; en móvil, barra fija arriba. Sin JS no aparece y se ve todo el catálogo -->
+      <form
+        class="indice"
+        id="filtros"
+        role="search"
+        aria-label={f.titulo}
+        data-uno={f.resultados(1)}
+        data-varios={f.resultados(999)}
+        hidden
+      >
         <label class="buscar">
           <span class="sr">{f.buscar}</span>
           <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
@@ -121,186 +115,117 @@ const capacidad = (m: Modelo) =>
           </svg>
           <input type="search" name="q" placeholder={f.buscar} autocomplete="off" />
         </label>
-        <div class="temps" role="group" aria-label={f.temperatura}>
-          {temperaturas.map((x) => (
-            <button type="button" class="temp" data-v={x} aria-pressed="false">
-              {may(t.temperatura[x])}
-            </button>
+
+        <div class="bloque temp-bloque">
+          <p class="rotulo">{f.temperatura}</p>
+          <div class="temps" role="group" aria-label={f.temperatura}>
+            {temperaturas.map((x) => (
+              <button type="button" class="temp" data-v={x} aria-pressed="false">
+                <i data-t={x} aria-hidden="true" />
+                {may(t.temperatura[x])}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div class="bloque cats" role="group" aria-label={f.aplicacion}>
+          <p class="rotulo">{f.aplicacion}</p>
+          <button type="button" class="cat todo" data-c="" aria-pressed="true">
+            <span class="nom">{f.todo}</span> <span class="n"></span>
+          </button>
+          {grupos.map((g) => (
+            <div class="grupo">
+              <p class="g-nombre">{g.nombre}</p>
+              {g.cats.map((c) => (
+                <button type="button" class="cat" data-c={c} data-nombre={nombreCat(c)} aria-pressed="false">
+                  <span class="nom">{nombreCorto(c)}</span> <span class="n" />
+                </button>
+              ))}
+            </div>
           ))}
         </div>
-        <p class="total" aria-live="polite"></p>
+
         <button type="button" class="borrar limpiar" hidden>
           <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
             <path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
           </svg>
           {f.limpiar}
         </button>
-      </div>
-      <div class="cats" role="group" aria-label={f.titulo}>
-        <button type="button" class="cat" data-c="" aria-pressed="true">
-          {f.todo} <span class="n"></span>
-        </button>
-        {todas.map((c) => (
-          <button type="button" class="cat" data-c={c} aria-pressed="false" title={grupoDe(c)}>
-            {nombreCorto(c)} <span class="n" />
-          </button>
-        ))}
-      </div>
-    </div>
-  </form>
+      </form>
 
-  <section class="catalogo">
-    <div class="wrap">
-      <ul class="rejilla" id="rejilla">
-        {todas.map((c, i) => (
-          <>
-            <li class="titulo" data-cat={c}>
-              <span class="num">{String(i + 1).padStart(2, '0')}</span>
-              <h2>{nombreCat(c)}</h2>
-              <span class="grupo-n">{grupoDe(c)}</span>
-            </li>
-            {fichas
-              .filter((x) => x.cat === c)
-              .map((x) =>
-                x.tipo === 'modelo' ? (
-                  <li
-                    class="ficha"
-                    id={x.m.principal ? x.m.serie : x.m.slug}
-                    data-cat={c}
-                    data-t={x.m.temperatura}
-                    data-texto={plano(
-                      x.m.nombre,
-                      nombreCat(c),
-                      grupoDe(c),
-                      textoSerie(lang, x.m.serie).frase,
-                      capacidad(x.m),
-                      x.m.pantalla,
-                      t.temperatura[x.m.temperatura],
-                    )}
-                  >
-                    <article>
-                      <div class="foto">
-                        <img
-                          src={x.m.imagen.src}
-                          alt={x.m.nombre}
-                          width={x.m.imagen.ancho}
-                          height={x.m.imagen.alto}
-                          loading="lazy"
-                          decoding="async"
-                        />
-                        <span class="temp-tag" data-t={x.m.temperatura}>
-                          {may(t.temperatura[x.m.temperatura])}
-                        </span>
-                      </div>
-                      <div class="cuerpo">
-                        <p class="cat-n">{nombreCat(c)}</p>
-                        <h3>{x.m.nombre}</h3>
-                        <p class="frase">{textoSerie(lang, x.m.serie).frase}</p>
-                        {/* Los datos de la web actual, cada uno con su icono */}
-                        <ul class="datos">
-                          <li>
-                            <i style="--ico: url(/img/iconos/ficha-capacidad.svg)" aria-hidden="true" />
-                            <span>{t.catalogo.iconos.capacidad}</span>
-                            <b>{capacidad(x.m)}</b>
-                          </li>
-                          <li>
-                            <i style="--ico: url(/img/iconos/ficha-velocidad.svg)" aria-hidden="true" />
-                            <span>{t.catalogo.iconos.velocidad}</span>
-                            <b>
-                              {numero(lang, x.m.rpm)} rpm
-                              {x.m.xg && <small> · {numero(lang, x.m.xg)} xg</small>}
-                            </b>
-                          </li>
-                          <li>
-                            <i style="--ico: url(/img/iconos/ficha-pantalla.svg)" aria-hidden="true" />
-                            <span>{t.catalogo.iconos.pantalla}</span>
-                            <b>{x.m.pantalla}</b>
-                          </li>
-                        </ul>
-                      </div>
-                    </article>
-                  </li>
-                ) : (
-                  <li
-                    class="ficha lab"
-                    id={x.p.slug}
-                    data-cat={c}
-                    data-texto={plano(
-                      t.laboratorio.items[x.p.slug].nombre,
-                      x.p.modelo,
-                      nombreCat(c),
-                      t.laboratorio.items[x.p.slug].frase,
-                      t.laboratorio.items[x.p.slug].datos,
-                    )}
-                  >
-                    <article>
-                      <div class:list={['foto', { doble: x.p.imagen2 }]}>
-                        <img
-                          src={x.p.imagen.src}
-                          alt={t.laboratorio.items[x.p.slug].nombre}
-                          width={x.p.imagen.ancho}
-                          height={x.p.imagen.alto}
-                          loading="lazy"
-                          decoding="async"
-                        />
-                        {x.p.imagen2 && (
-                          <img
-                            class="segunda"
-                            src={x.p.imagen2.src}
-                            alt=""
-                            width={x.p.imagen2.ancho}
-                            height={x.p.imagen2.alto}
-                            loading="lazy"
-                            decoding="async"
-                          />
-                        )}
-                      </div>
-                      <div class="cuerpo">
-                        <p class="cat-n">{nombreCat(c)}</p>
-                        <h3>
-                          {t.laboratorio.items[x.p.slug].nombre} <span>{x.p.modelo}</span>
-                        </h3>
-                        <p class="frase">{t.laboratorio.items[x.p.slug].frase}</p>
-                        <p class="linea">{t.laboratorio.items[x.p.slug].datos}</p>
-                        {x.p.pdf && (
-                          <a class="arrow pdf" href={x.p.pdf} target="_blank" rel="noopener">
-                            {t.laboratorio.pdf}
-                          </a>
-                        )}
-                      </div>
-                    </article>
-                  </li>
-                ),
-              )}
-          </>
-        ))}
-        <li class="vacio" hidden>
-          <p>{f.vacio}</p>
-          <button type="button" class="btn red limpiar">
-            {f.limpiar}
-          </button>
-        </li>
-      </ul>
+      <div class="lista">
+        <!-- Lo que se está viendo: la aplicación elegida (o todo) en grande y cuántos productos hay -->
+        <header class="cabeza" id="cabeza" data-todo={f.todoTitulo}>
+          <h2 aria-live="polite">{f.todoTitulo}</h2>
+          <p class="total"></p>
+        </header>
+
+        <ul class="rejilla" id="rejilla">
+          {fichas.map((x) =>
+            x.tipo === 'modelo' ? (
+              <li
+                class="ficha"
+                id={x.m.principal ? x.m.serie : x.m.slug}
+                data-cat={x.cat}
+                data-t={x.m.temperatura}
+                data-texto={plano(
+                  x.m.nombre,
+                  nombreCat(x.cat),
+                  grupoDe(x.cat),
+                  textoSerie(lang, x.m.serie).frase,
+                  capacidad(x.m),
+                  x.m.pantalla,
+                  t.temperatura[x.m.temperatura],
+                )}
+              >
+                <Tarjeta cat={nombreCat(x.cat)} modelo={x.m} capacidad={capacidad(x.m)} />
+              </li>
+            ) : (
+              <li
+                class="ficha"
+                id={x.p.slug}
+                data-cat={x.cat}
+                data-texto={plano(
+                  t.laboratorio.items[x.p.slug].nombre,
+                  x.p.modelo,
+                  nombreCat(x.cat),
+                  t.laboratorio.items[x.p.slug].frase,
+                  t.laboratorio.items[x.p.slug].datos,
+                )}
+              >
+                <Tarjeta cat={nombreCat(x.cat)} lab={x.p} />
+              </li>
+            ),
+          )}
+          <li class="vacio" hidden>
+            <p>{f.vacio}</p>
+            <button type="button" class="btn red limpiar">
+              {f.limpiar}
+            </button>
+          </li>
+        </ul>
+      </div>
     </div>
   </section>
 </Base>
 
 <script>
   // Filtros sencillos: una aplicación, la temperatura (se pueden sumar) y el buscador sin tildes.
-  // Cada aplicación dice cuántos productos quedarían al pulsarla.
+  // Cada aplicación dice cuántos productos quedarían al pulsarla y el título de la lista cambia con ella.
   const form = document.getElementById('filtros') as HTMLFormElement | null;
   const rejilla = document.getElementById('rejilla');
-  if (form && rejilla) {
+  const cabeza = document.getElementById('cabeza');
+  if (form && rejilla && cabeza) {
     form.hidden = false;
     const total = (n: number) => (n === 1 ? form.dataset.uno! : form.dataset.varios!.replace('999', String(n)));
     const fichas = [...rejilla.querySelectorAll<HTMLElement>('.ficha')];
-    const titulos = [...rejilla.querySelectorAll<HTMLElement>('.titulo')];
     const vacio = rejilla.querySelector<HTMLElement>('.vacio')!;
     const cats = [...form.querySelectorAll<HTMLButtonElement>('.cat')];
     const temps = [...form.querySelectorAll<HTMLButtonElement>('.temp')];
     const q = form.querySelector<HTMLInputElement>('input[name=q]')!;
     const borrar = [...document.querySelectorAll<HTMLButtonElement>('.limpiar')];
-    const totalEl = form.querySelector<HTMLElement>('.total')!;
+    const titulo = cabeza.querySelector('h2')!;
+    const totalEl = cabeza.querySelector<HTMLElement>('.total')!;
 
     let cat = '';
     const elegidas = new Set<string>();
@@ -318,7 +243,7 @@ const capacidad = (m: Modelo) =>
       let i = 0;
       for (const el of fichas) {
         const ver = visibles.has(el);
-        if (ver && el.hidden && !primera) {
+        if (ver && !primera) {
           el.style.setProperty('--i', String(Math.min(i, 8)));
           el.classList.remove('entra');
           void el.offsetWidth;
@@ -326,9 +251,6 @@ const capacidad = (m: Modelo) =>
         }
         if (ver) i++;
         el.hidden = !ver;
-      }
-      for (const ti of titulos) {
-        ti.hidden = !fichas.some((el) => visibles.has(el) && el.dataset.cat === ti.dataset.cat);
       }
       for (const b of cats) {
         const c = b.dataset.c ?? '';
@@ -340,6 +262,7 @@ const capacidad = (m: Modelo) =>
       for (const b of temps) b.setAttribute('aria-pressed', String(elegidas.has(b.dataset.v!)));
       const hay = !!cat || elegidas.size > 0 || !!q.value.trim();
       for (const b of borrar) if (!b.closest('.vacio')) b.hidden = !hay;
+      titulo.textContent = cats.find((b) => b.dataset.c === cat)?.dataset.nombre ?? cabeza.dataset.todo!;
       totalEl.textContent = total(visibles.size);
       vacio.hidden = visibles.size > 0;
       // La búsqueda queda en la dirección para poder compartirla
@@ -361,9 +284,9 @@ const capacidad = (m: Modelo) =>
       q.value = url.searchParams.get('q') ?? '';
     }
 
-    // Al cambiar de aplicación, el catálogo sube bajo la barra para verlo desde arriba
+    // Al cambiar de aplicación, la lista sube para verla desde arriba
     const subir = () => {
-      const y = rejilla.getBoundingClientRect().top + window.scrollY - form.offsetHeight - 100;
+      const y = cabeza.getBoundingClientRect().top + window.scrollY - 120;
       if (window.scrollY > y) window.scrollTo({ top: y, behavior: 'smooth' });
     };
     for (const b of cats) {
@@ -396,6 +319,25 @@ const capacidad = (m: Modelo) =>
       });
     }
     aplicar();
+
+    // Al bajar, las tarjetas entran de abajo arriba, escalonadas por fila
+    if (!matchMedia('(prefers-reduced-motion: reduce)').matches && 'IntersectionObserver' in window) {
+      rejilla.classList.add('revela');
+      const io = new IntersectionObserver(
+        (entradas) => {
+          entradas
+            .filter((e) => e.isIntersecting)
+            .forEach((e, i) => {
+              const el = e.target as HTMLElement;
+              el.style.setProperty('--d', `${i * 70}ms`);
+              el.classList.add('visto');
+              io.unobserve(el);
+            });
+        },
+        { rootMargin: '0px 0px -8% 0px' },
+      );
+      for (const el of fichas) io.observe(el);
+    }
   }
 </script>
 
@@ -405,39 +347,37 @@ const capacidad = (m: Modelo) =>
     display: none !important;
   }
 
-  /* ——— Hero: foto a todo el ancho, oscurecida a la izquierda para el texto ——— */
+  /* ——— Hero: carbón de la marca, el texto a la izquierda y el modelo 3D a la derecha ——— */
   .hero {
     position: relative;
     overflow: hidden;
     isolation: isolate;
-    background: #111315;
+    background: var(--carbon);
     color: #fff;
   }
-  .hero-foto {
-    position: absolute;
-    inset: 0;
-    z-index: -2;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: 70% 40%;
-  }
+  /* La luz del estudio donde está la máquina: un foco suave detrás del modelo */
   .hero::before {
     content: '';
     position: absolute;
-    inset: 0;
     z-index: -1;
-    background:
-      linear-gradient(90deg, rgba(10, 11, 12, 0.9) 0%, rgba(10, 11, 12, 0.72) 40%, rgba(10, 11, 12, 0.1) 75%),
-      linear-gradient(0deg, rgba(10, 11, 12, 0.55) 0%, rgba(10, 11, 12, 0) 40%);
+    top: 6%;
+    right: -4%;
+    width: min(62vw, 900px);
+    aspect-ratio: 1;
+    background: radial-gradient(closest-side, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0));
   }
   .hero-in {
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-    min-height: min(68vh, 640px);
-    padding-block: clamp(64px, 9vw, 120px) clamp(36px, 4.5vw, 56px);
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    align-items: end;
+    gap: clamp(24px, 3vw, 48px);
+    min-height: min(calc(100vh - 76px), 720px);
+    padding-block: clamp(48px, 5vw, 72px) clamp(36px, 4.5vw, 56px);
   }
+  .hero-texto {
+    padding-bottom: 8px;
+  }
+
   h1 {
     font-size: var(--t-titulo);
     font-weight: 300;
@@ -512,51 +452,79 @@ const capacidad = (m: Modelo) =>
     color: #fff;
   }
 
-  /* ——— Filtros sencillos: barra blanca fija ——— */
-  .filtros {
+  /* ——— Catálogo: índice fijo a la izquierda y la lista a la derecha ——— */
+  .catalogo {
+    --arriba: 28px;
+    padding-block: clamp(40px, 5vw, 64px) clamp(72px, 9vw, 120px);
+  }
+  /* Con la cabecera de la web a la vista, el índice baja para no quedar debajo */
+  :global(html:has(#top:not(.oculta))) .catalogo {
+    --arriba: 104px;
+  }
+  .catalogo-in {
+    display: grid;
+    grid-template-columns: 248px minmax(0, 1fr);
+    gap: clamp(32px, 4vw, 56px);
+    align-items: start;
+  }
+  .catalogo-in:has(.indice[hidden]) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .indice {
     position: sticky;
-    top: 0;
-    z-index: 15;
-    background: rgba(255, 255, 255, 0.9);
-    -webkit-backdrop-filter: blur(16px) saturate(160%);
-    backdrop-filter: blur(16px) saturate(160%);
-    border-bottom: 1px solid var(--line);
-    box-shadow: 0 12px 30px -26px rgba(17, 19, 21, 0.5);
+    top: var(--arriba);
+    max-height: calc(100vh - var(--arriba) - 16px);
+    overflow-y: auto;
+    scrollbar-width: thin;
+    display: grid;
+    gap: 28px;
+    padding-bottom: 8px;
     transition: top 0.35s var(--ease);
   }
-  /* Con la cabecera de la web a la vista, la barra va justo debajo */
-  :global(html:has(#top:not(.oculta))) .filtros {
-    top: 76px;
+  .rotulo,
+  .g-nombre {
+    margin: 0 0 10px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink);
   }
-  .filtros-in {
-    display: grid;
-    gap: 12px;
-    padding-block: 16px 14px;
-  }
-  .arriba {
+  /* Grupos del índice, en negrita y con su raya roja corta */
+  .g-nombre {
     display: flex;
-    flex-wrap: wrap;
     align-items: center;
-    gap: 12px 16px;
+    gap: 8px;
+    margin: 22px 0 6px;
+    letter-spacing: 0.1em;
+  }
+  .g-nombre::before {
+    content: '';
+    width: 14px;
+    height: 2px;
+    background: var(--red);
   }
   .buscar {
-    flex: 1 1 280px;
-    max-width: 420px;
     display: flex;
     align-items: center;
     gap: 10px;
-    height: 44px;
+    height: 48px;
     padding: 0 14px;
-    background: var(--panel);
-    border: 1px solid transparent;
-    color: var(--muted);
+    background: #fff;
+    border: 1px solid var(--line);
+    border-bottom: 2px solid var(--ink);
+    color: var(--red);
     transition:
       border-color 0.2s var(--ease),
       background 0.2s var(--ease);
   }
   .buscar:focus-within {
-    background: #fff;
-    border-color: var(--ink);
+    border-color: var(--red);
+    box-shadow: 0 0 0 3px rgba(221, 4, 10, 0.12);
+  }
+  .buscar input::placeholder {
+    color: var(--body);
   }
   .buscar input {
     flex: 1;
@@ -567,43 +535,101 @@ const capacidad = (m: Modelo) =>
     font: 400 17px var(--f);
     color: var(--ink);
   }
-  /* Temperatura: tres botones pegados, como un interruptor */
+
+  /* Temperatura: tres casillas con su punto de color; se pueden sumar */
   .temps {
     display: flex;
-    border: 1px solid var(--line);
+    flex-wrap: wrap;
+    gap: 6px;
   }
   .temp {
-    height: 42px;
-    padding: 0 14px;
-    border: 0;
-    border-left: 1px solid var(--line);
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    height: 34px;
+    padding: 0 11px;
+    border: 1px solid var(--line);
     background: #fff;
     font: 400 15px var(--f);
     color: var(--ink);
     cursor: pointer;
     transition:
       background 0.2s var(--ease),
-      color 0.2s var(--ease);
+      color 0.2s var(--ease),
+      border-color 0.2s var(--ease);
   }
-  .temp:first-child {
-    border-left: 0;
+  .temp i {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--t-ventilada);
+  }
+  .temp i[data-t='refrigerada'] {
+    background: var(--t-refrigerada);
+  }
+  .temp i[data-t='calefactada'] {
+    background: var(--t-calefactada);
   }
   .temp[aria-pressed='true'] {
     background: var(--ink);
+    border-color: var(--ink);
     color: #fff;
     font-weight: 700;
   }
-  .total {
-    margin: 0 0 0 auto;
-    font-size: 16px;
-    color: var(--muted);
+
+  /* Aplicaciones: una lista como el índice de un catálogo; la elegida, con su raya roja */
+  .cats {
+    display: block;
+  }
+  .cat {
+    position: relative;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+    width: 100%;
+    padding: 7px 0 7px 14px;
+    border: 0;
+    border-left: 2px solid var(--panel);
+    background: none;
+    font: 400 17px/1.2 var(--f);
+    color: var(--body);
+    text-align: left;
+    cursor: pointer;
+    transition:
+      color 0.2s var(--ease),
+      border-color 0.2s var(--ease),
+      padding 0.3s var(--ease);
+  }
+  .cat.todo {
+    font-weight: 700;
+    color: var(--ink);
+  }
+  .n {
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--body);
     font-variant-numeric: tabular-nums;
   }
+  .cat[aria-pressed='true'] {
+    border-left-color: var(--red);
+    padding-left: 18px;
+    color: var(--red);
+    font-weight: 700;
+  }
+  .cat[aria-pressed='true'] .n {
+    color: var(--red);
+  }
+  .cat:disabled {
+    opacity: 0.35;
+    cursor: default;
+  }
   .borrar {
+    justify-self: start;
     display: inline-flex;
     align-items: center;
     gap: 7px;
-    height: 42px;
+    height: 40px;
     padding: 0 14px;
     border: 1px solid var(--red);
     background: var(--red);
@@ -612,56 +638,16 @@ const capacidad = (m: Modelo) =>
     cursor: pointer;
     animation: aparece 0.25s var(--ease);
   }
-  /* Aplicaciones: texto con su número; la elegida, en rojo */
-  .cats {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-  }
-  .cat {
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    height: 36px;
-    padding: 0 12px;
-    border: 1px solid transparent;
-    background: var(--panel);
-    font: 400 15px var(--f);
-    color: var(--ink);
-    white-space: nowrap;
-    cursor: pointer;
-    transition:
-      background 0.2s var(--ease),
-      color 0.2s var(--ease),
-      border-color 0.2s var(--ease);
-  }
-  .n {
-    font-size: 12px;
-    font-weight: 700;
-    color: var(--muted);
-    font-variant-numeric: tabular-nums;
-  }
-  .cat[aria-pressed='true'] {
-    background: var(--red);
-    color: #fff;
-    font-weight: 700;
-  }
-  .cat[aria-pressed='true'] .n {
-    color: rgba(255, 255, 255, 0.8);
-  }
-  .cat:disabled {
-    opacity: 0.35;
-    cursor: default;
-  }
   @media (hover: hover) {
     .cat:not(:disabled, [aria-pressed='true']):hover {
-      border-color: var(--red);
-      color: var(--red);
-      background: #fff;
+      border-left-color: var(--ink);
+      color: var(--ink);
     }
     .temp:not([aria-pressed='true']):hover {
-      color: var(--red);
+      border-color: var(--ink);
+    }
+    .borrar:hover {
+      background: var(--red-d);
     }
   }
   .cat:focus-visible,
@@ -671,245 +657,57 @@ const capacidad = (m: Modelo) =>
     outline-offset: 2px;
   }
 
-  /* ——— Catálogo en blanco ——— */
-  .catalogo {
-    padding-block: 8px clamp(72px, 9vw, 120px);
+  /* Cabecera de la lista: lo elegido en grande y fino, y el total a la derecha */
+  .cabeza {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 28px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid var(--ink);
   }
+  .cabeza h2 {
+    font-size: clamp(32px, 3.6vw, 52px);
+    font-weight: 300;
+    line-height: 1;
+    letter-spacing: -0.01em;
+  }
+  .total {
+    flex: none;
+    margin: 0;
+    font-size: 16px;
+    color: var(--body);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ——— Rejilla continua, sin huecos ——— */
   .rejilla {
     margin: 0;
     padding: 0;
     list-style: none;
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 28px 24px;
-  }
-  /* Título de cada aplicación: número rojo, nombre grande y fino y su grupo a la derecha */
-  .titulo {
-    grid-column: 1 / -1;
-    display: flex;
-    align-items: baseline;
-    gap: 14px;
-    margin-top: 48px;
-    padding-bottom: 14px;
-    border-bottom: 2px solid var(--ink);
-    scroll-margin-top: 220px;
-  }
-  .num {
-    font-size: 15px;
-    font-weight: 700;
-    color: var(--red);
-    font-variant-numeric: tabular-nums;
-  }
-  .titulo h2 {
-    font-size: clamp(32px, 3.4vw, 46px);
-    font-weight: 300;
-    line-height: 1;
-  }
-  .grupo-n {
-    margin-left: auto;
-    font-size: 14px;
-    color: var(--muted);
+    gap: 24px;
   }
 
-  /* Tarjeta: escenario gris claro con la máquina recortada y su sombra; ficha blanca debajo */
+  /* Cada tarjeta deja sitio a la cabecera al llegar con un enlace a ella */
   .ficha {
-    scroll-margin-top: 220px;
+    scroll-margin-top: 120px;
   }
-  .ficha article {
-    position: relative;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    background: #fff;
-    border: 1px solid var(--line);
-    transition:
-      transform 0.4s var(--ease),
-      box-shadow 0.4s var(--ease),
-      border-color 0.4s var(--ease);
-  }
-  .ficha article::before {
-    content: '';
-    position: absolute;
-    z-index: 2;
-    top: -1px;
-    left: -1px;
-    width: 36px;
-    height: 3px;
-    background: var(--red);
-    transition: width 0.5s var(--ease);
-  }
-  .foto {
-    position: relative;
-    aspect-ratio: 1 / 0.8;
-    overflow: hidden;
-    background: linear-gradient(180deg, #f5f6f7 0%, #eceef0 100%);
-  }
-  /* Sombra de la máquina en el suelo del escenario */
-  .foto::after {
-    content: '';
-    position: absolute;
-    left: 25%;
-    right: 25%;
-    bottom: 9%;
-    height: 8%;
-    background: radial-gradient(closest-side, rgba(17, 19, 21, 0.28), transparent);
-    transition: transform 0.6s var(--ease);
-  }
-  .foto img {
-    position: absolute;
-    z-index: 1;
-    left: 50%;
-    top: 49%;
-    width: 84%;
-    height: auto;
-    translate: -50% -50%;
-    transition:
-      transform 0.7s var(--ease),
-      opacity 0.45s var(--ease);
-  }
-  .foto .segunda {
+  .revela .ficha:not(.visto) {
     opacity: 0;
-    width: 100%;
-    top: 50%;
+    transform: translateY(28px);
   }
-  /* Temperatura en una etiqueta sobre el escenario: refrigerada en azul hielo, calefactada en ámbar */
-  .temp-tag {
-    position: absolute;
-    z-index: 2;
-    top: 14px;
-    right: 14px;
-    padding: 5px 10px;
-    background: rgba(255, 255, 255, 0.85);
-    -webkit-backdrop-filter: blur(8px);
-    backdrop-filter: blur(8px);
-    border: 1px solid rgba(26, 26, 26, 0.08);
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--ink);
+  .revela .ficha.visto {
+    transition:
+      opacity 0.6s var(--ease) var(--d, 0ms),
+      transform 0.7s var(--ease) var(--d, 0ms);
   }
-  .temp-tag::before {
-    content: '';
-    display: inline-block;
-    width: 7px;
-    height: 7px;
-    margin-right: 7px;
-    border-radius: 50%;
-    background: var(--steel);
-    vertical-align: 1px;
-  }
-  .temp-tag[data-t='refrigerada']::before {
-    background: #4a90c8;
-  }
-  .temp-tag[data-t='calefactada']::before {
-    background: #d9822b;
-  }
-  .cuerpo {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    padding: 18px 20px 20px;
-  }
-  .cat-n {
-    margin: 0;
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--red);
-  }
-  h3 {
-    margin-top: 6px;
-    font-size: 28px;
-    font-weight: 700;
-    line-height: 1.02;
-  }
-  h3 span {
-    display: block;
-    margin-top: 4px;
-    font-size: 16px;
-    font-weight: 300;
-    color: var(--muted);
-  }
-  .frase {
-    margin-top: 8px;
-    font-size: 15px;
-    line-height: 1.35;
-    color: var(--body);
-  }
-  /* Datos: icono de la web actual en su cuadrado rojo, qué es y el valor, en filas finas */
-  .datos {
-    margin: auto 0 0;
-    padding: 18px 0 0;
-    list-style: none;
-    display: grid;
-  }
-  .datos li {
-    display: grid;
-    grid-template-columns: 26px auto minmax(0, 1fr);
-    align-items: center;
-    gap: 12px;
-    padding: 8px 0;
-    border-top: 1px solid var(--panel);
-  }
-  .datos i {
-    width: 26px;
-    height: 26px;
-    background: var(--red) var(--ico) center / 58% 58% no-repeat;
-  }
-  .datos span {
-    font-size: 13px;
-    color: var(--muted);
-  }
-  .datos b {
-    justify-self: end;
-    text-align: right;
-    font-size: 16px;
-    color: var(--ink);
-    font-variant-numeric: tabular-nums;
-  }
-  .datos small {
-    font-size: 13px;
-    font-weight: 400;
-    color: var(--muted);
-  }
-  .linea {
-    margin-top: auto;
-    padding-top: 14px;
-    border-top: 1px solid var(--panel);
-    font-size: 14px;
-    color: var(--muted);
-  }
-  .pdf {
-    margin-top: 12px;
-    font-size: 16px;
-    color: var(--ink);
-  }
-  .ficha:target article {
+  .ficha:target :global(.tarjeta) {
     border-color: var(--red);
   }
 
-  @media (hover: hover) {
-    .ficha article:hover {
-      transform: translateY(-6px);
-      border-color: rgba(26, 26, 26, 0.2);
-      box-shadow: 0 30px 50px -30px rgba(17, 19, 21, 0.4);
-    }
-    .ficha article:hover::before {
-      width: calc(100% + 2px);
-    }
-    .ficha article:hover .foto img {
-      transform: scale(1.05);
-    }
-    .ficha article:hover .foto::after {
-      transform: scaleX(1.12);
-    }
-    .ficha article:hover .foto.doble img:first-child {
-      opacity: 0;
-    }
-    .ficha article:hover .foto.doble .segunda {
-      opacity: 1;
-    }
-  }
   @media (prefers-reduced-motion: no-preference) {
     .stock i {
       animation: late 2s ease-out infinite;
@@ -951,16 +749,108 @@ const capacidad = (m: Modelo) =>
   }
 
   @media (max-width: 1439px) {
-    :global(html:has(#top:not(.oculta))) .filtros {
-      top: 60px;
+    :global(html:has(#top:not(.oculta))) .catalogo {
+      --arriba: 88px;
     }
   }
-  @media (max-width: 1000px) {
+  @media (max-width: 1180px) {
     .rejilla {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
   }
-  /* Móvil: las aplicaciones se deslizan de lado y la temperatura ocupa el ancho */
+  /* Tablet y móvil: el índice pasa a ser una barra blanca fija arriba, con las aplicaciones de lado */
+  @media (max-width: 900px) {
+    .hero-in {
+      grid-template-columns: minmax(0, 1fr);
+      min-height: 0;
+      padding-top: 40px;
+    }
+    .catalogo {
+      --arriba: 0px;
+      padding-top: 0;
+    }
+    :global(html:has(#top:not(.oculta))) .catalogo {
+      --arriba: 60px;
+    }
+    .catalogo-in {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 24px;
+    }
+    .indice {
+      z-index: 15;
+      max-height: none;
+      overflow: visible;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px 12px;
+      margin-inline: calc(-1 * var(--gut));
+      padding: 14px var(--gut) 12px;
+      background: rgba(255, 255, 255, 0.92);
+      -webkit-backdrop-filter: blur(16px) saturate(160%);
+      backdrop-filter: blur(16px) saturate(160%);
+      border-bottom: 1px solid var(--line);
+      box-shadow: 0 12px 30px -26px rgba(17, 19, 21, 0.5);
+    }
+    .rotulo,
+    .g-nombre {
+      display: none;
+    }
+    .buscar {
+      flex: 1 1 260px;
+      height: 42px;
+    }
+    .temp-bloque {
+      flex: none;
+    }
+    .temps {
+      flex-wrap: nowrap;
+    }
+    .cats {
+      order: 3;
+      flex: 1 1 100%;
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      margin-inline: calc(-1 * var(--gut));
+      padding-inline: var(--gut);
+    }
+    .cats::-webkit-scrollbar {
+      display: none;
+    }
+    .grupo {
+      display: contents;
+    }
+    .cat,
+    .cat.todo {
+      flex: none;
+      width: auto;
+      height: 34px;
+      align-items: center;
+      padding: 0 12px;
+      border: 1px solid transparent;
+      background: var(--panel);
+      font-size: 15px;
+      white-space: nowrap;
+      color: var(--ink);
+    }
+    .cat[aria-pressed='true'] {
+      padding: 0 12px;
+      background: var(--red);
+      color: #fff;
+    }
+    .cat[aria-pressed='true'] .n {
+      color: rgba(255, 255, 255, 0.8);
+    }
+    .borrar {
+      order: 2;
+      height: 34px;
+    }
+    .cabeza {
+      margin-bottom: 20px;
+    }
+  }
   @media (max-width: 640px) {
     .hero-in {
       min-height: 0;
@@ -972,40 +862,22 @@ const capacidad = (m: Modelo) =>
     .badges b {
       font-size: 26px;
     }
-    .buscar {
-      max-width: none;
-    }
+    .temp-bloque,
     .temps {
-      flex: 1;
+      flex: 1 1 100%;
     }
     .temp {
       flex: 1;
-      padding: 0 8px;
-    }
-    .total {
-      margin-left: 0;
-    }
-    .cats {
-      flex-wrap: nowrap;
-      overflow-x: auto;
-      scrollbar-width: none;
-      margin-inline: calc(-1 * var(--gut));
-      padding-inline: var(--gut);
-    }
-    .cats::-webkit-scrollbar {
-      display: none;
+      justify-content: center;
+      padding: 0 6px;
     }
     .rejilla {
       grid-template-columns: 1fr;
     }
-    .grupo-n {
-      display: none;
-    }
   }
   @media (prefers-reduced-motion: reduce) {
-    .ficha article,
-    .foto img,
-    .filtros {
+    .indice,
+    .cat {
       transition: none;
     }
   }
