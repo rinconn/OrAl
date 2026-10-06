@@ -4,9 +4,10 @@
 // recorrido por dentro pieza a pieza; zoom arriba a la derecha. La escena está en src/scripts/escena-productos.ts.
 // Sin WebGL se ve la foto de la Digicen 22 y no salen los mandos.
 import { categorias, modelos, productos, totalModelos } from '../data/productos';
-import { idioma, textos } from '../i18n';
+import { idioma, ruta, textos } from '../i18n';
 
-const t = textos(idioma(Astro.currentLocale));
+const lang = idioma(Astro.currentLocale);
+const t = textos(lang);
 const v = t.catalogo.visor;
 const s = t.catalogo.escena;
 const cifras = [
@@ -23,6 +24,8 @@ const cifras = [
     txt: t.catalogo.cifras.stock.split(' ').slice(1).join(' '),
   },
 ];
+// La máquina del 3D, con su aplicación y el enlace a su ficha
+const digicen = modelos.find((m) => m.slug === 'digicen-22')!;
 const recorrido = ['PP 367', 'PC 497', 'PI 448', 'PE 494', 'PP 821', 'PC 279'];
 ---
 
@@ -93,6 +96,13 @@ const recorrido = ['PP 367', 'PC 497', 'PI 448', 'PE 494', 'PP 821', 'PC 279'];
         </p>
 
         <div class="pie">
+          <a class="placa" href={ruta(lang, `/centrifugas/${digicen.slug}/`)}>
+            <span class="sub">
+              {v.etiqueta} · {t.catalogo.categorias[digicen.categoria]}
+            </span>
+            <b>{v.nombre}</b>
+            <span class="ver">{t.catalogo.ficha.verFicha}</span>
+          </a>
           <div class="ruta" hidden>
             <div class="info">
               <span class="n"></span>
@@ -549,6 +559,48 @@ const recorrido = ['PP 367', 'PC 497', 'PI 448', 'PE 494', 'PP 821', 'PC 279'];
   .listo:hover .pista {
     opacity: 1;
   }
+  /* Placa con el nombre de la máquina, bajo ella, como la cartela de una pieza de museo; lleva a su ficha */
+  .placa {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding: 6px 16px 7px;
+    border-left: 2px solid var(--red);
+    background: rgba(18, 20, 22, 0.6);
+    backdrop-filter: blur(8px);
+    text-decoration: none;
+    color: #fff;
+    transition: opacity 0.4s var(--ease);
+  }
+  .placa .sub {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--steel);
+  }
+  .placa b {
+    font-size: 24px;
+    line-height: 1.1;
+  }
+  .placa .ver {
+    font-size: 15px;
+    font-weight: 700;
+    color: #ff4a4f;
+  }
+  .placa .ver::after {
+    content: ' »';
+    font-weight: 300;
+  }
+  .placa:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 3px;
+  }
+  .en-ruta .placa {
+    opacity: 0;
+    pointer-events: none;
+  }
   .pie {
     display: flex;
     flex-direction: column;
@@ -762,6 +814,10 @@ const recorrido = ['PP 367', 'PC 497', 'PI 448', 'PE 494', 'PP 821', 'PC 279'];
     }
     .accion:hover {
       border-color: var(--red);
+    }
+    .placa:hover .ver {
+      text-decoration: underline;
+      text-underline-offset: 3px;
     }
     .accion.roja:hover {
       background: var(--red);
