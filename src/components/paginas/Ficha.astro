@@ -1,0 +1,1506 @@
+---
+// Ficha de un producto (/centrifugas/<slug>/): todo lo que cuenta su página en la web actual, ordenado para leerse
+// de un vistazo. Arriba la foto (la Digicen 22, en 3D) con el nombre, la versión, las cuatro cifras clave y los dos
+// botones; debajo, una barra fija para saltar a descripción, características, rotores (cada uno abre sus tubos),
+// versiones con medidas y consumo, accesorios y los demás modelos de la misma aplicación.
+import Base from '../../layouts/Base.astro';
+import Tarjeta from '../Tarjeta.astro';
+import Visor3D from '../Visor3D.astro';
+import IconoTemp from '../ui/IconoTemp.astro';
+import { contacto } from '../../data/navegacion';
+import { modelos, productos, type Modelo } from '../../data/productos';
+import { accesorios, equipos, type ProductoLab } from '../../data/laboratorio';
+import {
+  cifra,
+  fichaCentrifuga,
+  fichaLab,
+  medida,
+  rotor,
+  tipoRotor,
+  tipoTubo,
+  type TextosFicha,
+} from '../../data/fichas';
+import { idioma, numero, ruta, textoSerie, textos } from '../../i18n';
+
+interface Props {
+  slug: string;
+}
+
+const { slug } = Astro.props;
+const lang = idioma(Astro.currentLocale);
+const t = textos(lang);
+const tf = t.catalogo.ficha;
+const may = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+
+const m: Modelo | undefined = modelos.find((x) => x.slug === slug);
+const esAccesorio = accesorios.some((x) => x.slug === slug);
+const p: ProductoLab | undefined = [...accesorios, ...equipos].find((x) => x.slug === slug);
+
+// Lo común a centrífugas y equipos
+const web = m ? fichaCentrifuga(m.slug) : undefined;
+const txt: TextosFicha | undefined = web?.textos[lang] ?? (p ? fichaLab(p.slug)?.[lang] : undefined);
+const nombre = m ? m.nombre : t.laboratorio.items[p!.slug].nombre;
+const cat = m ? t.catalogo.categorias[m.categoria] : esAccesorio ? t.laboratorio.accesorios : t.laboratorio.equipos;
+const catClave = m ? m.categoria : esAccesorio ? 'accesorios' : 'laboratorio';
+const frase = m ? textoSerie(lang, m.serie).frase : t.laboratorio.items[p!.slug].frase;
+const imagen = (m ?? p)!.imagen;
+const pdf = web?.pdf?.[lang] ?? p?.pdf;
+
+// Centrífugas: capacidad como en el catálogo y versiones de la misma serie (22 / 22 R, C / C-U / C-8)
+const capacidad = m
+  ? m.capacidad === productos.find((s) => s.slug === m.serie)?.capacidad
+    ? (textoSerie(lang, m.serie).capacidad ?? m.capacidad)
+    : m.capacidad
+  : undefined;
+const hermanos = m ? modelos.filter((x) => x.serie === m.serie) : [];
+const etiquetaVersion = (x: Modelo) =>
+  x.serie === 'digtor-22-c' ? x.nombre.replace('Digtor 22 ', '') : may(t.temperatura[x.temperatura]);
+// La fuerza, del catálogo; si el catálogo no la da para esa versión (Digtor 22 C-8), la de la web actual
+const xg = m?.xg ? numero(lang, m.xg) : cifra(lang, web?.xg);
+const rotores = (web?.rotores ?? []).map(rotor);
+const versiones = web?.versiones ?? [];
+const deAccesorios = [...accesorios].filter((a) => web?.accesorios.includes(a.slug));
+const mismos = m
+  ? modelos.filter((x) => x.categoria === m.categoria && x.slug !== m.slug)
+  : (esAccesorio ? accesorios : equipos).filter((x) => x.slug !== p!.slug);
+const tres = mismos.slice(0, 3);
+
+// Columnas de la tabla de versiones: solo las que tienen algún dato
+const columnas = (['medidas', 'peso', 'voltaje', 'frecuencia', 'consumo', 'zMax', 'calefaccion'] as const).filter((k) =>
+  versiones.some((v) => v[k]),
+);
+const unidades: Record<(typeof columnas)[number], string> = {
+  medidas: ' mm',
+  peso: ' kg',
+  voltaje: ' V',
+  frecuencia: ' Hz',
+  consumo: ' W',
+  zMax: '',
+  calefaccion: '',
+};
+const valor = (k: (typeof columnas)[number], v?: string) =>
+  v ? (k === 'medidas' ? v.replace(/x/g, ' × ') : v) + unidades[k] : '—';
+
+const secciones = [
+  txt?.descripcion.length && { id: 'descripcion', nombre: tf.secciones.descripcion },
+  txt?.bloques.length && { id: 'caracteristicas', nombre: tf.secciones.caracteristicas },
+  rotores.length && { id: 'rotores', nombre: tf.secciones.rotores, n: rotores.length },
+  versiones.length && { id: 'versiones', nombre: tf.secciones.versiones },
+  deAccesorios.length && { id: 'accesorios', nombre: tf.secciones.accesorios },
+].filter(Boolean) as { id: string; nombre: string; n?: number }[];
+
+// "De un vistazo": lo que el distribuidor busca primero, sacado de la tabla de versiones
+const v0 = versiones[0];
+const voltajes = [...new Set(versiones.map((v) => v.voltaje).filter(Boolean))].join(' / ');
+const vistazo = [
+  v0?.medidas && { k: tf.versiones.medidas, v: valor('medidas', v0.medidas) },
+  v0?.peso && { k: tf.versiones.peso, v: valor('peso', v0.peso) },
+  v0?.consumo && { k: tf.versiones.consumo, v: valor('consumo', v0.consumo) },
+  rotores.length && { k: tf.secciones.rotores, v: String(rotores.length) },
+].filter(Boolean) as { k: string; v: string }[];
+
+// Placa de características: como la placa CE que lleva cada máquina
+const frecuencias = [...new Set(versiones.map((v) => v.frecuencia).filter(Boolean))].join(' / ');
+const codigos = versiones.map((v) => v.codigo).join(' · ');
+
+// Rotores: tipos de tubo que admite alguno de ellos, para buscar por tubo
+const tiposTubo = [...new Set(rotores.flatMap((r) => r.tubos.map((x) => x.tipo).filter(Boolean)))] as string[];
+
+const conVisor = m?.slug === 'digicen-22';
+const titulo = `${nombre} · ${cat} · Orto Alresa`;
+const descripcion = m
+  ? `${nombre}: ${frase} ${capacidad}, ${numero(lang, m.rpm)} rpm, ${tf.pantalla.toLowerCase()} ${m.pantalla}.`
+  : `${nombre} (${p!.modelo}): ${frase}`;
+---
+
+<Base title={titulo} description={descripcion}>
+  <section class="cabecera" data-t={m?.temperatura ?? 'lab'}>
+    <div class="wrap cabecera-in">
+      <nav class="migas" aria-label="Breadcrumb">
+        <a href={ruta(lang, '/')}>{tf.inicio}</a>
+        <span aria-hidden="true">/</span>
+        <a href={ruta(lang, '/centrifugas/')}>{tf.productos}</a>
+        <span aria-hidden="true">/</span>
+        <a href={ruta(lang, `/centrifugas/?c=${catClave}`)}>{cat}</a>
+        <span aria-hidden="true">/</span>
+        <span aria-current="page">{nombre}</span>
+      </nav>
+
+      <div class:list={['escaparate', { oscuro: conVisor }]}>
+        {conVisor ? (
+          <Visor3D />
+        ) : (
+          <>
+            <img src={imagen.src} alt={nombre} width={imagen.ancho} height={imagen.alto} fetchpriority="high" />
+            {m && (
+              <span class="temp">
+                <IconoTemp t={m.temperatura} size={18} />
+                {may(t.temperatura[m.temperatura])}
+              </span>
+            )}
+          </>
+        )}
+      </div>
+
+      <div class="datos">
+        <p class="cat">{cat}</p>
+        <h1>
+          {nombre}
+          {p && <span>{p.modelo}</span>}
+        </h1>
+        <p class="frase">{frase}</p>
+
+        {hermanos.length > 1 && (
+          <div class="version">
+            <p>{tf.version}</p>
+            <ul>
+              {hermanos.map((x) => (
+                <li>
+                  <a
+                    href={ruta(lang, `/centrifugas/${x.slug}/`)}
+                    aria-current={x.slug === m!.slug ? 'page' : undefined}
+                    data-t={x.temperatura}
+                  >
+                    {etiquetaVersion(x)}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {m ? (
+          <div class="placa">
+            <p class="placa-cabeza">
+              <span>{tf.placa}</span>
+              <b>{nombre}</b>
+            </p>
+            <dl>
+              <div>
+                <dt>{tf.capacidad}</dt>
+                <dd>{capacidad}</dd>
+              </div>
+              <div>
+                <dt>{tf.velocidad}</dt>
+                <dd>
+                  {numero(lang, m.rpm)} <small>rpm</small>
+                </dd>
+              </div>
+              {xg && (
+                <div>
+                  <dt>{tf.fuerza}</dt>
+                  <dd>
+                    {xg} <small>xg</small>
+                  </dd>
+                </div>
+              )}
+              <div>
+                <dt>{tf.pantalla}</dt>
+                <dd>{m.pantalla}</dd>
+              </div>
+              <div>
+                <dt>{t.catalogo.iconos.temperatura}</dt>
+                <dd class="placa-temp">
+                  <IconoTemp t={m.temperatura} />
+                  {may(t.temperatura[m.temperatura])}
+                </dd>
+              </div>
+              {voltajes && (
+                <div>
+                  <dt>{tf.versiones.voltaje}</dt>
+                  <dd>
+                    {voltajes} V{frecuencias && <small> · {frecuencias} Hz</small>}
+                  </dd>
+                </div>
+              )}
+              {codigos && (
+                <div>
+                  <dt>{tf.versiones.codigo}</dt>
+                  <dd>{codigos}</dd>
+                </div>
+              )}
+            </dl>
+            <p class="placa-pie">
+              <span>{contacto.empresa}</span>
+              <b>CE</b>
+            </p>
+          </div>
+        ) : (
+          <p class="linea">{t.laboratorio.items[p!.slug].datos}</p>
+        )}
+
+        <div class="botones">
+          {pdf && (
+            <a class="btn red" href={pdf} target="_blank" rel="noopener">
+              {tf.pdf}
+            </a>
+          )}
+          <a class:list={['btn', pdf ? 'ghost' : 'red']} href={ruta(lang, '/#distribuidores')}>
+            {tf.distribuidor}
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {secciones.length > 0 && (
+    <section class="detalle" id="detalle">
+      <div class="pestanas-barra">
+        <div class="wrap pestanas" role="tablist" aria-label={nombre}>
+          {secciones.map((x, i) => (
+            <a
+              role="tab"
+              href={`#${x.id}`}
+              id={`tab-${x.id}`}
+              aria-controls={x.id}
+              aria-selected={i === 0 ? 'true' : 'false'}
+            >
+              {x.nombre}
+              {x.n && <span class="n">{x.n}</span>}
+            </a>
+          ))}
+        </div>
+      </div>
+
+      <div class="wrap paneles">
+        {txt?.descripcion.length ? (
+          <div class="panel" id="descripcion" role="tabpanel" aria-labelledby="tab-descripcion">
+            <div class="desc">
+              <div class="texto">
+                {txt.descripcion.map((d) => (
+                  <p>{d}</p>
+                ))}
+              </div>
+              {vistazo.length > 0 && (
+                <aside class="vistazo">
+                  <h2>{tf.vistazo}</h2>
+                  <dl>
+                    {vistazo.map((x) => (
+                      <div>
+                        <dt>{x.k}</dt>
+                        <dd>{x.v}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                  {pdf && (
+                    <a class="arrow" href={pdf} target="_blank" rel="noopener">
+                      {tf.pdf}
+                    </a>
+                  )}
+                </aside>
+              )}
+            </div>
+          </div>
+        ) : null}
+
+        {txt?.bloques.length ? (
+          <div class="panel" id="caracteristicas" role="tabpanel" aria-labelledby="tab-caracteristicas">
+            <div class="tarjetas-texto">
+              {txt.bloques.map((b) => (
+                <article>
+                  <h3>{b.titulo}</h3>
+                  <ul>
+                    {b.puntos.map((pt) =>
+                      pt.punto || pt.sub ? (
+                        <li>
+                          {pt.t}
+                          {pt.sub && (
+                            <ul>
+                              {pt.sub.map((s) => (
+                                <li>{s}</li>
+                              ))}
+                            </ul>
+                          )}
+                        </li>
+                      ) : (
+                        <li class="sub-titulo">{pt.t}</li>
+                      ),
+                    )}
+                  </ul>
+                </article>
+              ))}
+            </div>
+          </div>
+        ) : null}
+
+        {rotores.length > 0 && (
+          <div class="panel" id="rotores" role="tabpanel" aria-labelledby="tab-rotores">
+            <p class="intro">{tf.rotores.intro(rotores.length)}</p>
+            {tiposTubo.length > 1 && (
+              <div class="por-tubo" role="group" aria-label={tf.rotores.porTubo}>
+                <p>{tf.rotores.porTubo}</p>
+                <button type="button" data-tubo="" aria-pressed="true">
+                  {tf.rotores.todos}
+                </button>
+                {tiposTubo.map((x) => (
+                  <button type="button" data-tubo={x} aria-pressed="false">
+                    {may(tipoTubo(lang, x)!)}
+                  </button>
+                ))}
+              </div>
+            )}
+            <div class="selector">
+              <ul class="lista-rotores">
+                {rotores.map((r, i) => (
+                  <li data-tubos={r.tubos.map((x) => x.tipo).join('|')}>
+                    <button
+                      type="button"
+                      class="r-item"
+                      data-rotor={`rotor-${i}`}
+                      aria-pressed={i === 0 ? 'true' : 'false'}
+                    >
+                      <span class="r-mini">
+                        {r.imagen && (
+                          <img src={r.imagen} alt="" width="480" height="480" loading="lazy" decoding="async" />
+                        )}
+                      </span>
+                      <span class="r-texto">
+                        <span class="r-nombre">{r.nombre}</span>
+                        <span class="r-tipo">{tipoRotor(lang, r.tipo)}</span>
+                        <span class="r-cap">{medida(lang, r.capacidad)}</span>
+                      </span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+              <div class="r-detalles" aria-live="polite">
+                {rotores.map((r, i) => (
+                  <article class="r-detalle" id={`rotor-${i}`}>
+                    <div class="r-top">
+                      <span class="r-foto">
+                        {r.imagen && <img src={r.imagen} alt={r.nombre} width="480" height="480" loading="lazy" />}
+                      </span>
+                      <div>
+                        <p class="r-tipo">{tipoRotor(lang, r.tipo)}</p>
+                        <h3>{r.nombre}</h3>
+                        <dl class="r-cifras">
+                          <div>
+                            <dt>{tf.capacidad}</dt>
+                            <dd>{medida(lang, r.capacidad)}</dd>
+                          </div>
+                          <div>
+                            <dt>{tf.velocidad}</dt>
+                            <dd>{cifra(lang, r.rpm)} rpm</dd>
+                          </div>
+                          <div>
+                            <dt>{tf.fuerza}</dt>
+                            <dd>{cifra(lang, r.xg)} xg</dd>
+                          </div>
+                          {r.radio && (
+                            <div>
+                              <dt>{tf.rotores.radio}</dt>
+                              <dd>{r.radio} mm</dd>
+                            </div>
+                          )}
+                          {r.angulo && (
+                            <div>
+                              <dt>{tf.rotores.angulo}</dt>
+                              <dd>{r.angulo}°</dd>
+                            </div>
+                          )}
+                          {r.tempMin && (
+                            <div>
+                              <dt>{tf.rotores.tempMin}</dt>
+                              <dd>{r.tempMin} °C</dd>
+                            </div>
+                          )}
+                        </dl>
+                      </div>
+                    </div>
+                    {r.tubos.length > 0 && (
+                      <>
+                        <h4>{tf.rotores.tubos}</h4>
+                        <div class="tabla-scroll">
+                          <table>
+                            <thead>
+                              <tr>
+                                <th scope="col">{tf.rotores.posiciones}</th>
+                                <th scope="col">{tf.rotores.tubo}</th>
+                                <th scope="col">{tf.rotores.capacidadTubo}</th>
+                                <th scope="col">{tf.rotores.medidas}</th>
+                                <th scope="col">{tf.rotores.reductor}</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {r.tubos.map((tb) => (
+                                <tr data-tubo={tb.tipo}>
+                                  <td class="num">{tb.posiciones}</td>
+                                  <td>{tipoTubo(lang, tb.tipo)}</td>
+                                  <td>{medida(lang, tb.capacidad) ?? '—'}</td>
+                                  <td>{medida(lang, tb.medidas) ?? '—'}</td>
+                                  <td>{tb.reductor ?? tf.rotores.directo}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </>
+                    )}
+                  </article>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {versiones.length > 0 && (
+          <div class="panel" id="versiones" role="tabpanel" aria-labelledby="tab-versiones">
+            <p class="intro">{tf.versiones.titulo}</p>
+            <div class="tabla-scroll">
+              <table class="versiones">
+                <thead>
+                  <tr>
+                    <th scope="col">{tf.versiones.codigo}</th>
+                    {columnas.map((k) => (
+                      <th scope="col">{tf.versiones[k]}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {versiones.map((v) => (
+                    <tr>
+                      <th scope="row">{v.codigo}</th>
+                      {columnas.map((k) => (
+                        <td>{valor(k, v[k])}</td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {deAccesorios.length > 0 && (
+          <div class="panel" id="accesorios" role="tabpanel" aria-labelledby="tab-accesorios">
+            <p class="intro">{tf.accesorios}</p>
+            <ul class="rejilla">
+              {deAccesorios.map((a) => (
+                <li>
+                  <Tarjeta cat={t.laboratorio.accesorios} lab={a} />
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
+    </section>
+  )}
+
+  {tres.length > 0 && (
+    <section class="bloque mas">
+      <div class="wrap">
+        <div class="cabeza">
+          <h2>
+            {tf.mas} <b>{cat}</b>
+          </h2>
+          <a class="arrow" href={ruta(lang, `/centrifugas/?c=${catClave}`)}>
+            {tf.volver}
+          </a>
+        </div>
+        <ul class="rejilla">
+          {tres.map((x) => (
+            <li>
+              {'rpm' in x ? (
+                <Tarjeta
+                  cat={cat}
+                  modelo={x}
+                  capacidad={
+                    x.capacidad === productos.find((s) => s.slug === x.serie)?.capacidad
+                      ? (textoSerie(lang, x.serie).capacidad ?? x.capacidad)
+                      : x.capacidad
+                  }
+                />
+              ) : (
+                <Tarjeta cat={cat} lab={x} />
+              )}
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  )}
+
+  <p class="wrap fuente">{tf.fuente}</p>
+</Base>
+
+<script>
+  // Rotores: la lista a la izquierda y el elegido a la derecha. "¿Qué tubo usas?" deja solo los rotores que lo
+  // admiten y resalta sus filas en la tabla. Sin JS se ven todos, uno debajo de otro.
+  const selector = document.querySelector<HTMLElement>('.selector');
+  if (selector) {
+    selector.classList.add('activo');
+    const items = [...selector.querySelectorAll<HTMLButtonElement>('.r-item')];
+    const detalles = [...selector.querySelectorAll<HTMLElement>('.r-detalle')];
+    const filtros = [...document.querySelectorAll<HTMLButtonElement>('.por-tubo button')];
+    let tubo = '';
+    const elegir = (id: string) => {
+      for (const b of items) b.setAttribute('aria-pressed', String(b.dataset.rotor === id));
+      for (const d of detalles) {
+        d.hidden = d.id !== id;
+        for (const tr of d.querySelectorAll<HTMLElement>('tr[data-tubo]')) {
+          tr.classList.toggle('marcada', !!tubo && tr.dataset.tubo === tubo);
+        }
+      }
+    };
+    for (const b of items) b.addEventListener('click', () => elegir(b.dataset.rotor!));
+    for (const f of filtros) {
+      f.addEventListener('click', () => {
+        tubo = f.dataset.tubo ?? '';
+        for (const g of filtros) g.setAttribute('aria-pressed', String(g === f));
+        let primero = '';
+        for (const b of items) {
+          const li = b.parentElement!;
+          li.hidden = !!tubo && !(li.dataset.tubos ?? '').split('|').includes(tubo);
+          if (!li.hidden && !primero) primero = b.dataset.rotor!;
+        }
+        const actual = items.find((b) => b.getAttribute('aria-pressed') === 'true');
+        elegir(actual && !actual.parentElement!.hidden ? actual.dataset.rotor! : primero);
+      });
+    }
+    elegir(items[0].dataset.rotor!);
+  }
+
+  // Pestañas: se ve un panel cada vez. Sin JS se ven todos, uno debajo de otro.
+  const detalle = document.getElementById('detalle');
+  const pestanas = [...document.querySelectorAll<HTMLAnchorElement>('.pestanas [role=tab]')];
+  if (detalle && pestanas.length) {
+    detalle.classList.add('con-pestanas');
+    const elegir = (id: string, subir = false) => {
+      for (const a of pestanas) {
+        const si = a.hash === `#${id}`;
+        a.setAttribute('aria-selected', String(si));
+        a.tabIndex = si ? 0 : -1;
+        document.getElementById(a.hash.slice(1))!.hidden = !si;
+      }
+      if (subir) {
+        history.replaceState(null, '', `#${id}`);
+        const y = detalle.getBoundingClientRect().top + window.scrollY - 80;
+        if (window.scrollY > y) window.scrollTo({ top: y, behavior: 'smooth' });
+      }
+    };
+    for (const a of pestanas) {
+      a.addEventListener('click', (e) => {
+        e.preventDefault();
+        elegir(a.hash.slice(1), true);
+      });
+      // Flechas para pasar de pestaña con el teclado
+      a.addEventListener('keydown', (e) => {
+        const i = pestanas.indexOf(a);
+        const j = e.key === 'ArrowRight' ? i + 1 : e.key === 'ArrowLeft' ? i - 1 : null;
+        if (j === null) return;
+        const b = pestanas[(j + pestanas.length) % pestanas.length];
+        elegir(b.hash.slice(1));
+        b.focus();
+      });
+    }
+    elegir((pestanas.find((a) => a.hash === location.hash) ?? pestanas[0]).hash.slice(1));
+  }
+</script>
+
+<style>
+  /* ——— Cabecera clara: la foto de estudio a la izquierda y los datos con su placa a la derecha ——— */
+  .cabecera {
+    --c: var(--t-ventilada);
+    background: var(--band);
+    border-bottom: 1px solid var(--line);
+  }
+  .cabecera[data-t='refrigerada'] {
+    --c: var(--t-refrigerada);
+  }
+  .cabecera[data-t='calefactada'] {
+    --c: var(--t-calefactada);
+  }
+  .cabecera[data-t='lab'] {
+    --c: var(--red);
+  }
+  .cabecera-in {
+    display: grid;
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+    grid-template-areas:
+      'migas migas'
+      'foto datos';
+    gap: 16px clamp(32px, 5vw, 72px);
+    padding-block: 24px clamp(40px, 5vw, 64px);
+  }
+  .migas {
+    grid-area: migas;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 10px;
+    font-size: 15px;
+    color: var(--body);
+  }
+  .migas a {
+    color: var(--body);
+    text-decoration: none;
+  }
+  .migas a:hover {
+    color: var(--red);
+  }
+  .migas [aria-current] {
+    font-weight: 700;
+    color: var(--ink);
+  }
+  /* Foto de estudio, como en las tarjetas: blanco, suelo gris y contorno negro */
+  .escaparate {
+    grid-area: foto;
+    position: relative;
+    align-self: start;
+    display: grid;
+    place-items: center;
+    aspect-ratio: 1 / 0.86;
+    overflow: hidden;
+    background: linear-gradient(#fff 0 68%, #eceef0 68% 100%);
+    border: 1px solid var(--ink);
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .escaparate > img {
+      animation: sube 1s 0.1s var(--ease) both;
+    }
+  }
+  @keyframes sube {
+    from {
+      opacity: 0;
+      transform: translateY(24px);
+    }
+  }
+  .escaparate::after {
+    content: '';
+    position: absolute;
+    left: 22%;
+    right: 22%;
+    bottom: 10%;
+    height: 7%;
+    background: radial-gradient(closest-side, rgba(17, 19, 21, 0.3), transparent);
+  }
+  .escaparate img {
+    position: relative;
+    z-index: 1;
+    width: 76%;
+    height: auto;
+  }
+  .escaparate.oscuro {
+    display: flex;
+    aspect-ratio: auto;
+    min-height: 560px;
+    padding: 18px 22px;
+    color: #fff;
+    background: var(--carbon);
+  }
+  .escaparate.oscuro::after {
+    content: none;
+  }
+  .escaparate.oscuro > :global(.visor) {
+    flex: 1;
+  }
+  .temp {
+    position: absolute;
+    z-index: 2;
+    left: 0;
+    top: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px 8px 12px;
+    font-size: 17px;
+    font-weight: 700;
+    line-height: 1;
+    color: #fff;
+    background: var(--c);
+  }
+
+  .datos {
+    grid-area: datos;
+    align-self: center;
+  }
+  .cat {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--red);
+  }
+  h1 {
+    margin-top: 8px;
+    font-size: clamp(48px, 5.6vw, 84px);
+    font-weight: 700;
+    line-height: 0.95;
+    letter-spacing: -0.015em;
+  }
+  h1 span {
+    display: block;
+    margin-top: 8px;
+    font-size: 0.36em;
+    font-weight: 300;
+    letter-spacing: 0;
+    color: var(--body);
+  }
+  .frase {
+    margin-top: 12px;
+    max-width: 40ch;
+    font-size: var(--t-sub);
+    line-height: 1.35;
+    color: var(--body);
+  }
+
+  /* Versión: botones pegados; la elegida, en el color de su temperatura */
+  .version {
+    margin-top: 22px;
+  }
+  .version p {
+    margin: 0 0 8px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  .version ul {
+    display: inline-flex;
+    flex-wrap: wrap;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border: 1px solid var(--ink);
+    background: #fff;
+  }
+  .version li + li {
+    border-left: 1px solid var(--ink);
+  }
+  .version a {
+    display: block;
+    padding: 10px 22px;
+    font-size: 17px;
+    color: var(--ink);
+    text-decoration: none;
+    transition: background 0.2s var(--ease);
+  }
+  .version a:hover {
+    background: var(--panel);
+  }
+  .version a[aria-current] {
+    font-weight: 700;
+    color: #fff;
+    background: var(--t-ventilada);
+  }
+  .version a[aria-current][data-t='refrigerada'] {
+    background: var(--t-refrigerada);
+  }
+  .version a[aria-current][data-t='calefactada'] {
+    background: var(--t-calefactada);
+  }
+
+  /* Placa de características, como la placa CE de la máquina: marco negro, cabecera negra, una fila por dato
+     y el fabricante al pie */
+  .placa {
+    margin-top: 24px;
+    max-width: 520px;
+    background: #fff;
+    border: 2px solid var(--ink);
+    box-shadow: 6px 6px 0 rgba(26, 26, 26, 0.08);
+  }
+  .placa-cabeza,
+  .placa-pie {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 0;
+    padding: 9px 16px;
+  }
+  .placa-cabeza {
+    color: #fff;
+    background: var(--ink);
+  }
+  .placa-cabeza span {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--on-dark);
+  }
+  .placa-cabeza b {
+    font-size: 17px;
+  }
+  .placa dl {
+    margin: 0;
+    padding: 4px 16px;
+  }
+  .placa dl div {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 9px 0;
+    border-bottom: 1px dashed #c9cdd1;
+  }
+  .placa dl div:last-child {
+    border-bottom: 0;
+  }
+  /* Qué es, en negrita; el dato, en normal */
+  .placa dt {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--ink);
+  }
+  .placa dd {
+    margin: 0;
+    font-size: 19px;
+    font-weight: 400;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+  .placa dd small {
+    font-size: 0.7em;
+    font-weight: 400;
+    color: var(--body);
+  }
+  .placa-temp {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--c);
+  }
+  .placa-pie {
+    border-top: 2px solid var(--ink);
+    font-size: 13px;
+    color: var(--body);
+  }
+  .placa-pie b {
+    font-size: 18px;
+    letter-spacing: 0.04em;
+    color: var(--ink);
+  }
+  .linea {
+    margin-top: 24px;
+    padding: 16px 18px;
+    background: #fff;
+    border: 2px solid var(--ink);
+    font-size: 18px;
+    font-weight: 700;
+  }
+  .botones {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 24px;
+  }
+  .btn.ghost {
+    color: var(--ink);
+    background: #fff;
+  }
+
+  /* ——— Pestañas: una barra fija bajo la cabecera, con la elegida subrayada en rojo ——— */
+  .detalle {
+    scroll-margin-top: 80px;
+  }
+  .pestanas-barra {
+    position: sticky;
+    top: 0;
+    z-index: 15;
+    background: var(--carbon);
+    transition: top 0.35s var(--ease);
+  }
+  :global(html:has(#top:not(.oculta))) .pestanas-barra {
+    top: 76px;
+  }
+  .pestanas {
+    display: flex;
+    gap: 4px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .pestanas::-webkit-scrollbar {
+    display: none;
+  }
+  .pestanas a {
+    position: relative;
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 20px 22px 18px;
+    font-size: 18px;
+    color: var(--on-dark);
+    text-decoration: none;
+    transition:
+      color 0.2s var(--ease),
+      background 0.2s var(--ease);
+  }
+  .pestanas a::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 4px;
+    background: var(--red);
+    transform: scaleX(0);
+    transition: transform 0.35s var(--ease);
+  }
+  .pestanas a:hover {
+    color: #fff;
+  }
+  .pestanas a[aria-selected='true'] {
+    font-weight: 700;
+    color: #fff;
+    background: rgba(255, 255, 255, 0.06);
+  }
+  .pestanas a[aria-selected='true']::after {
+    transform: scaleX(1);
+  }
+  .pestanas a:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: -4px;
+  }
+  .pestanas .n {
+    min-width: 24px;
+    padding: 2px 7px;
+    font-size: 13px;
+    font-weight: 700;
+    text-align: center;
+    color: #fff;
+    background: var(--red);
+  }
+  .paneles {
+    padding-block: clamp(36px, 4vw, 56px) clamp(56px, 6vw, 88px);
+  }
+  /* Sin JS se ven todos los paneles, uno debajo de otro */
+  .detalle:not(.con-pestanas) .panel + .panel {
+    margin-top: 56px;
+  }
+  .con-pestanas .panel {
+    animation: aparece 0.45s var(--ease);
+  }
+  .intro {
+    margin: 0 0 24px;
+    font-size: 20px;
+    color: var(--body);
+  }
+
+  /* ——— Secciones ——— */
+  .bloque {
+    padding-block: clamp(56px, 7vw, 96px);
+    scroll-margin-top: 130px;
+  }
+  .bloque.gris {
+    background: var(--band);
+  }
+  .bloque h2 {
+    margin-bottom: 32px;
+    font-size: clamp(34px, 3.6vw, 52px);
+    font-weight: 300;
+    line-height: 1;
+  }
+  .bloque h2 b {
+    color: var(--red);
+  }
+  .cabeza {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px 24px;
+    margin-bottom: 32px;
+  }
+  .cabeza h2 {
+    margin: 0;
+  }
+  .cabeza p {
+    margin: 0;
+    font-size: 17px;
+    color: var(--body);
+  }
+  /* Descripción: "De un vistazo" en una fila de placas arriba y el texto debajo, en dos columnas si es largo */
+  .desc {
+    display: grid;
+    gap: 36px;
+  }
+  .vistazo {
+    order: -1;
+  }
+  .vistazo h2 {
+    margin-bottom: 14px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--body);
+  }
+  .vistazo dl {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
+    margin: 0;
+  }
+  .vistazo div {
+    position: relative;
+    display: flex;
+    flex-direction: column-reverse;
+    justify-content: flex-end;
+    gap: 4px;
+    padding: 16px 16px 14px;
+    background: var(--band);
+    border: 1px solid var(--line);
+  }
+  .vistazo div::before {
+    content: '';
+    position: absolute;
+    top: -1px;
+    left: -1px;
+    width: 24px;
+    height: 3px;
+    background: var(--red);
+  }
+  .vistazo dt {
+    font-size: 14px;
+    color: var(--body);
+  }
+  .vistazo dd {
+    margin: 0;
+    font-size: 19px;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+  .vistazo .arrow {
+    display: inline-flex;
+    margin-top: 14px;
+    font-size: 17px;
+    color: var(--ink);
+  }
+  .texto {
+    columns: 2 380px;
+    column-gap: clamp(32px, 4vw, 64px);
+  }
+  .texto p {
+    margin: 0 0 1em;
+    font-size: 18px;
+    line-height: 1.65;
+    color: var(--ink);
+    break-inside: avoid;
+  }
+  /* La primera frase, como entradilla, a todo el ancho */
+  .texto p:first-child {
+    column-span: all;
+    max-width: 62ch;
+    margin-bottom: 1.2em;
+    font-size: clamp(21px, 1.8vw, 25px);
+    line-height: 1.4;
+  }
+
+  /* Ficha técnica como una hoja de especificaciones: una fila por bloque, título a la izquierda y los puntos en
+     dos columnas a la derecha */
+  .tarjetas-texto article {
+    display: grid;
+    grid-template-columns: minmax(180px, 0.28fr) minmax(0, 1fr);
+    gap: 16px clamp(24px, 4vw, 56px);
+    padding: 28px 0;
+    border-top: 1px solid var(--line);
+  }
+  .tarjetas-texto article:first-child {
+    padding-top: 0;
+    border-top: 0;
+  }
+  .tarjetas-texto h3 {
+    position: sticky;
+    top: 160px;
+    align-self: start;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 24px;
+    font-weight: 700;
+    line-height: 1.1;
+  }
+  .tarjetas-texto h3::before {
+    content: '';
+    flex: none;
+    width: 4px;
+    height: 1.1em;
+    background: var(--red);
+  }
+  .tarjetas-texto ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .tarjetas-texto article > ul {
+    columns: 2 300px;
+    column-gap: 40px;
+  }
+  .tarjetas-texto li {
+    position: relative;
+    break-inside: avoid;
+    padding: 8px 0 8px 18px;
+    border-bottom: 1px solid var(--panel);
+    font-size: 17px;
+    line-height: 1.4;
+    color: var(--ink);
+  }
+  .tarjetas-texto li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 17px;
+    width: 7px;
+    height: 2px;
+    background: var(--red);
+  }
+  .tarjetas-texto li.sub-titulo {
+    padding-left: 0;
+    font-weight: 700;
+  }
+  .tarjetas-texto li.sub-titulo::before {
+    content: none;
+  }
+  .tarjetas-texto li ul {
+    margin-top: 6px;
+  }
+  .tarjetas-texto li li {
+    padding-block: 4px;
+    border: 0;
+    font-size: 16px;
+    color: var(--body);
+  }
+  .tarjetas-texto li li::before {
+    top: 13px;
+    width: 4px;
+    background: var(--steel);
+  }
+
+  /* Rotores: "¿Qué tubo usas?" arriba; la lista a la izquierda y el elegido, grande, a la derecha */
+  .por-tubo {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 24px;
+  }
+  .por-tubo p {
+    margin: 0 8px 0 0;
+    font-size: 17px;
+    font-weight: 700;
+  }
+  .por-tubo button {
+    height: 36px;
+    padding: 0 14px;
+    border: 1px solid var(--ink);
+    background: #fff;
+    font: 400 15px var(--f);
+    color: var(--ink);
+    cursor: pointer;
+    transition:
+      background 0.2s var(--ease),
+      color 0.2s var(--ease);
+  }
+  .por-tubo button:hover {
+    background: var(--panel);
+  }
+  .por-tubo button[aria-pressed='true'] {
+    font-weight: 700;
+    color: #fff;
+    background: var(--ink);
+  }
+  .selector.activo {
+    display: grid;
+    grid-template-columns: minmax(260px, 0.36fr) minmax(0, 1fr);
+    gap: 24px;
+    align-items: start;
+  }
+  .lista-rotores {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border: 1px solid var(--ink);
+  }
+  .selector:not(.activo) .lista-rotores {
+    display: none;
+  }
+  .selector.activo .lista-rotores {
+    position: sticky;
+    top: 160px;
+    max-height: calc(100vh - 190px);
+    overflow-y: auto;
+  }
+  .lista-rotores li + li {
+    border-top: 1px solid var(--line);
+  }
+  .r-item {
+    position: relative;
+    display: grid;
+    grid-template-columns: 64px minmax(0, 1fr);
+    gap: 14px;
+    align-items: center;
+    width: 100%;
+    padding: 10px 14px 10px 10px;
+    border: 0;
+    background: #fff;
+    font: inherit;
+    text-align: left;
+    color: var(--ink);
+    cursor: pointer;
+    transition: background 0.2s var(--ease);
+  }
+  .r-item::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: var(--red);
+    transform: scaleY(0);
+    transition: transform 0.3s var(--ease);
+  }
+  .r-item:hover {
+    background: var(--band);
+  }
+  .r-item[aria-pressed='true'] {
+    background: var(--band);
+  }
+  .r-item[aria-pressed='true']::before {
+    transform: scaleY(1);
+  }
+  .r-item:focus-visible {
+    outline: 2px solid var(--red);
+    outline-offset: -2px;
+  }
+  .r-mini {
+    display: grid;
+    place-items: center;
+    width: 64px;
+    height: 56px;
+  }
+  .r-mini img {
+    width: 100%;
+    height: auto;
+  }
+  .r-texto {
+    display: grid;
+    gap: 1px;
+  }
+  .r-nombre {
+    font-size: 19px;
+    font-weight: 700;
+    line-height: 1.1;
+  }
+  .r-tipo {
+    margin: 0;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--red);
+  }
+  .r-cap {
+    font-size: 15px;
+    color: var(--body);
+  }
+
+  /* El rotor elegido: foto de estudio, cifras y tabla de tubos */
+  .r-detalle {
+    padding: clamp(20px, 2.5vw, 32px);
+    border: 1px solid var(--ink);
+  }
+  .selector:not(.activo) .r-detalle + .r-detalle {
+    margin-top: 24px;
+  }
+  .selector.activo .r-detalle {
+    animation: aparece 0.35s var(--ease);
+  }
+  .r-top {
+    display: grid;
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+    gap: 28px;
+    align-items: center;
+  }
+  .r-foto {
+    display: grid;
+    place-items: center;
+    aspect-ratio: 1 / 0.85;
+    /* Las fotos de los rotores vienen con fondo blanco: sin suelo gris, para que no se vea el recuadro */
+    background: #fff;
+    border-bottom: 3px solid var(--red);
+  }
+  .r-foto img {
+    width: 80%;
+    height: auto;
+  }
+  .r-detalle h3 {
+    margin: 2px 0 14px;
+    font-size: 44px;
+    font-weight: 700;
+    line-height: 1;
+  }
+  .r-cifras {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin: 0;
+    border-top: 2px solid var(--ink);
+  }
+  .r-cifras div {
+    display: flex;
+    flex-direction: column-reverse;
+    justify-content: flex-end;
+    padding: 10px 12px 10px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .r-cifras dt {
+    font-size: 14px;
+    color: var(--body);
+  }
+  .r-cifras dd {
+    margin: 0 0 2px;
+    font-size: 20px;
+    font-weight: 700;
+  }
+  .r-detalle h4 {
+    margin: 28px 0 12px;
+    font-size: 22px;
+    font-weight: 700;
+  }
+  /* Filas del tubo buscado, marcadas */
+  tr.marcada {
+    background: rgba(221, 4, 10, 0.07);
+    box-shadow: inset 4px 0 0 var(--red);
+  }
+
+  /* Tablas: cabecera oscura, filas finas y números alineados */
+  .tabla-scroll {
+    overflow-x: auto;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 16px;
+    font-variant-numeric: tabular-nums;
+    background: #fff;
+  }
+  th,
+  td {
+    padding: 11px 14px;
+    text-align: left;
+    white-space: nowrap;
+    border-bottom: 1px solid var(--line);
+  }
+  thead th {
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff;
+    background: var(--ink);
+  }
+  tbody th {
+    font-weight: 700;
+    color: var(--red);
+  }
+  tbody tr:hover {
+    background: var(--band);
+  }
+  td.num {
+    font-weight: 700;
+  }
+  .versiones {
+    border: 1px solid var(--line);
+  }
+
+  .rejilla {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 24px;
+  }
+  .mas {
+    border-top: 1px solid var(--line);
+  }
+  .fuente {
+    margin: 0 auto;
+    padding-bottom: 40px;
+    font-size: 14px;
+    color: var(--body);
+  }
+
+  @keyframes aparece {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+  }
+
+  @media (max-width: 1439px) {
+    :global(html:has(#top:not(.oculta))) .pestanas-barra {
+      top: 60px;
+    }
+  }
+  @media (max-width: 1000px) {
+    .cabecera-in {
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-areas: 'migas' 'foto' 'datos';
+    }
+    .escaparate {
+      aspect-ratio: 1 / 0.75;
+    }
+    .escaparate img {
+      width: 58%;
+    }
+    .desc {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .rejilla {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    /* El selector de rotores, en una columna: la lista se desliza de lado */
+    .selector.activo {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .selector.activo .lista-rotores {
+      position: static;
+      display: flex;
+      max-height: none;
+      overflow-x: auto;
+    }
+    .lista-rotores li {
+      flex: 0 0 220px;
+    }
+    .lista-rotores li + li {
+      border-top: 0;
+      border-left: 1px solid var(--line);
+    }
+  }
+  @media (max-width: 640px) {
+    .escaparate.oscuro {
+      min-height: 0;
+    }
+    .botones .btn {
+      flex: 1 1 100%;
+      justify-content: center;
+    }
+    .r-top {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 16px;
+    }
+    .r-detalle h3 {
+      font-size: 36px;
+    }
+    .tarjetas-texto article {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .tarjetas-texto h3 {
+      position: static;
+    }
+    .rejilla {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .r-item,
+    .r-item::before,
+    .r-detalle,
+    .escaparate > img {
+      transition: none;
+      animation: none;
+    }
+  }
+</style>

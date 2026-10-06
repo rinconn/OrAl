@@ -7,7 +7,8 @@ import jsxA11y from 'eslint-plugin-jsx-a11y';
 import globals from 'globals';
 
 export default defineConfig(
-  { ignores: ['dist/', '.astro/', 'node_modules/'] },
+  // El decodificador Draco del visor 3D es de three.js, ya compilado
+  { ignores: ['dist/', '.astro/', 'node_modules/', 'public/3d/'] },
   js.configs.recommended,
   tseslint.configs.recommended,
   astro.configs.recommended,
@@ -19,5 +20,10 @@ export default defineConfig(
   },
   {
     languageOptions: { globals: { ...globals.browser } },
+  },
+  {
+    // Scripts de mantenimiento, que se ejecutan con Node
+    files: ['scripts/**'],
+    languageOptions: { globals: { ...globals.node } },
   },
 );

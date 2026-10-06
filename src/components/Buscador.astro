@@ -22,7 +22,7 @@ const indice: Entrada[] = [
     return {
       titulo: p.variantes ? `${p.nombre} · ${p.variantes}` : p.nombre,
       detalle: `${t.buscador.centrifuga} · ${s.uso ?? familia}`,
-      href: ruta(lang, `/centrifugas/#${p.slug}`),
+      href: ruta(lang, `/centrifugas/${p.slug}/`),
       texto: [
         p.nombre,
         p.variantes,

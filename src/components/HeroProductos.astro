@@ -1,0 +1,888 @@
+---
+// Hero de Productos: el texto y las cifras a la izquierda y la Digicen 22 en 3D a la derecha, en un estudio oscuro con
+// un remolino de luz detrás. Mandos debajo de la máquina: acabado real o rayos X, vistas, despiece con etiquetas y un
+// recorrido por dentro pieza a pieza; zoom arriba a la derecha. La escena está en src/scripts/escena-productos.ts.
+// Sin WebGL se ve la foto de la Digicen 22 y no salen los mandos.
+import { categorias, modelos, productos, totalModelos } from '../data/productos';
+import { idioma, textos } from '../i18n';
+
+const t = textos(idioma(Astro.currentLocale));
+const v = t.catalogo.visor;
+const s = t.catalogo.escena;
+const cifras = [
+  { icono: 'ico-velocidad', n: String(modelos.length), txt: t.catalogo.cifras.centrifugas },
+  {
+    icono: 'ico-tubos',
+    n: String(categorias.generales.length + categorias.especiales.length),
+    txt: t.catalogo.cifras.aplicaciones,
+  },
+  { icono: 'ico-seguridad', n: '1949', txt: t.catalogo.cifras.desde },
+  {
+    icono: 'ico-tabla',
+    n: t.catalogo.cifras.stock.split(' ')[0],
+    txt: t.catalogo.cifras.stock.split(' ').slice(1).join(' '),
+  },
+];
+const recorrido = ['PP 367', 'PC 497', 'PI 448', 'PE 494', 'PP 821', 'PC 279'];
+---
+
+<section class="hero" id="hero-productos" data-src="/3d/digicen22.glb" data-draco="/3d/draco/">
+  <div class="escena" role="img" aria-label={v.alt}>
+    <img
+      class="poster"
+      src="/img/catalogo/digicen-22.webp"
+      alt=""
+      width="640"
+      height="640"
+      fetchpriority="high"
+      decoding="async"
+    />
+  </div>
+  <i class="carga" aria-hidden="true">
+    <i></i>
+  </i>
+
+  <div class="wrap">
+    <div class="rejilla">
+      <div class="texto">
+        <h1>
+          <span>
+            <i>{t.catalogo.titulo[0]}</i>
+          </span>
+          <span>
+            <i>
+              <b>{t.catalogo.titulo[1]}</b>
+            </i>
+          </span>
+        </h1>
+        <p class="lead">{t.catalogo.lead(productos.length, totalModelos)}</p>
+        <a class="btn-todas" href="#catalogo">
+          {s.verTodas(modelos.length)}
+        </a>
+        <i class="raya" aria-hidden="true"></i>
+        <ul class="cifras">
+          {cifras.map((c) => (
+            <li>
+              <span class="ico" style={`--i: url(/img/iconos/${c.icono}.svg)`} aria-hidden="true" />
+              <span>
+                <b>{c.n}</b>
+                <small>{c.txt}</small>
+              </span>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div class="columna">
+        <p class="ang" aria-hidden="true"></p>
+        <div class="zoom" role="group" aria-label={s.zoom} hidden>
+          <button type="button" data-zoom="1.5" aria-label={s.acercar}>
+            +
+          </button>
+          <span class="zoom-n" aria-live="polite">
+            1×
+          </span>
+          <button type="button" data-zoom="0.6667" aria-label={s.alejar} disabled>
+            −
+          </button>
+        </div>
+        <p class="pista" aria-hidden="true">
+          {s.pista[0]}
+          <br />
+          {s.pista[1]}
+        </p>
+
+        <div class="pie">
+          <div class="ruta" hidden>
+            <div class="info">
+              <span class="n"></span>
+              <span class="nom">
+                <span></span>
+                <small></small>
+              </span>
+              <p class="desc"></p>
+              <span class="puntos">
+                {recorrido.map(() => (
+                  <i />
+                ))}
+              </span>
+            </div>
+            <button type="button" class="ant" aria-label={s.anterior}>
+              ‹
+            </button>
+            <button type="button" class="sig" aria-label={s.siguiente}>
+              ›
+            </button>
+            <button type="button" class="salir">
+              {s.salir}
+            </button>
+          </div>
+          <div class="mandos" hidden>
+            <div class="grupo" role="group" aria-label={s.acabado}>
+              <button type="button" data-modo="real" aria-pressed="true">
+                {s.real}
+              </button>
+              <button type="button" data-modo="rayos" aria-pressed="false">
+                {s.rayos}
+              </button>
+            </div>
+            <div class="grupo" role="group" aria-label={s.vista}>
+              {(['tres', 'frente', 'lado', 'arriba'] as const).map((k) => (
+                <button type="button" data-vista={k} aria-pressed={k === 'tres' ? 'true' : 'false'}>
+                  {s.vistas[k]}
+                </button>
+              ))}
+            </div>
+            <button
+              type="button"
+              class="accion despiece"
+              aria-pressed="false"
+              data-abrir={s.despiece}
+              data-cerrar={s.cerrarDespiece}
+            >
+              {s.despiece}
+            </button>
+            <button type="button" class="accion roja viaje">
+              {s.recorrido}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <svg class="lineas" aria-hidden="true"></svg>
+  {Object.entries(v.piezas).map(([codigo, nombre]) => (
+    <span
+      class="pieza"
+      data-codigo={codigo}
+      data-nombre={nombre}
+      data-desc={s.descripciones[codigo] ?? ''}
+      aria-hidden="true"
+    >
+      <b>{codigo}</b>
+      {nombre}
+    </span>
+  ))}
+</section>
+
+<script>
+  // three.js se descarga aparte y solo con WebGL; si algo falla queda la foto y no salen los mandos
+  const hero = document.getElementById('hero-productos');
+  const webgl = (() => {
+    try {
+      return !!document.createElement('canvas').getContext('webgl2');
+    } catch {
+      return false;
+    }
+  })();
+  if (hero && webgl) {
+    const $ = <T extends Element = HTMLElement>(sel: string) => hero.querySelector<T>(sel)!;
+    const $$ = <T extends Element = HTMLButtonElement>(sel: string) => [...hero.querySelectorAll<T>(sel)];
+    const etiquetas = $$<HTMLElement>('.pieza');
+    const mandos = $('.mandos');
+    const ruta = $('.ruta');
+    const zoom = $('.zoom');
+    const ang = $('.ang');
+    const barra = $('.carga > i');
+    const vistas = $$('[data-vista]');
+    const marcar = (k: string) => vistas.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.vista === k)));
+    hero.classList.add('cargando');
+
+    import('../scripts/escena-productos')
+      .then(({ crearEscena, recorrido }) =>
+        crearEscena({
+          src: hero.dataset.src!,
+          draco: hero.dataset.draco!,
+          lienzo: $('.escena'),
+          columna: $('.columna'),
+          etiquetas,
+          lineas: $<SVGSVGElement>('.lineas'),
+          quieto: matchMedia('(prefers-reduced-motion: reduce)').matches,
+          alProgreso: (p) => (barra.style.transform = `scaleX(${p})`),
+          alAngulo: (az, el) => {
+            const txt = `AZ ${String(Math.round((az + 360) % 360)).padStart(3, '0')}° · EL ${String(Math.round(el)).padStart(2, '0')}°`;
+            if (ang.textContent !== txt) ang.textContent = txt;
+          },
+          alZoom: (z) => {
+            $('.zoom-n').textContent = `${Math.round(z * 10) / 10}×`;
+            $<HTMLButtonElement>('[data-zoom="1.5"]').disabled = z >= 4;
+            $<HTMLButtonElement>('[data-zoom="0.6667"]').disabled = z <= 1;
+          },
+          alSoltarVista: () => marcar(''),
+        }).then((escena) => ({ escena, recorrido })),
+      )
+      .then(({ escena, recorrido }) => {
+        hero.classList.remove('cargando');
+        hero.classList.add('listo');
+        mandos.hidden = false;
+        zoom.hidden = false;
+
+        for (const b of $$('[data-modo]')) {
+          b.addEventListener('click', () => {
+            $$('[data-modo]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+            escena.modo(b.dataset.modo === 'rayos');
+          });
+        }
+        for (const b of vistas) {
+          b.addEventListener('click', () => {
+            escena.vista(b.dataset.vista as 'tres');
+            marcar(b.dataset.vista!);
+          });
+        }
+        for (const b of $$('[data-zoom]')) b.addEventListener('click', () => escena.zoom(Number(b.dataset.zoom)));
+        const despiece = $<HTMLButtonElement>('.despiece');
+        despiece.addEventListener('click', () => {
+          const si = despiece.getAttribute('aria-pressed') !== 'true';
+          despiece.setAttribute('aria-pressed', String(si));
+          despiece.textContent = si ? despiece.dataset.cerrar! : despiece.dataset.abrir!;
+          escena.despiece(si);
+        });
+
+        // Recorrido por dentro: tarjeta con la pieza, su descripción y el avance
+        let paso = -1;
+        const porCodigo = new Map(etiquetas.map((el) => [el.dataset.codigo!, el]));
+        const ir = (i: number) => {
+          paso = i;
+          const el = porCodigo.get(recorrido[i].codigo)!;
+          $('.ruta .n').textContent =
+            `${String(i + 1).padStart(2, '0')} / ${String(recorrido.length).padStart(2, '0')}`;
+          $('.ruta .nom > span').textContent = el.dataset.nombre!;
+          $('.ruta .nom small').textContent = el.dataset.codigo!;
+          $('.ruta .desc').textContent = el.dataset.desc!;
+          $$<HTMLElement>('.ruta .puntos i').forEach((x, k) => x.classList.toggle('on', k <= i));
+          $<HTMLButtonElement>('.ruta .ant').disabled = i === 0;
+          $<HTMLButtonElement>('.ruta .sig').disabled = i === recorrido.length - 1;
+          escena.paso(i);
+        };
+        const salir = () => {
+          paso = -1;
+          hero.classList.remove('en-ruta');
+          ruta.hidden = true;
+          mandos.hidden = false;
+          escena.paso(-1);
+          marcar('tres');
+          $<HTMLButtonElement>('.viaje').focus();
+        };
+        $('.viaje').addEventListener('click', () => {
+          hero.classList.add('en-ruta');
+          mandos.hidden = true;
+          ruta.hidden = false;
+          ir(0);
+          $<HTMLButtonElement>('.ruta .sig').focus();
+        });
+        $('.ruta .sig').addEventListener('click', () => paso < recorrido.length - 1 && ir(paso + 1));
+        $('.ruta .ant').addEventListener('click', () => paso > 0 && ir(paso - 1));
+        $('.ruta .salir').addEventListener('click', salir);
+        addEventListener('keydown', (ev) => {
+          if (paso < 0) return;
+          if (ev.key === 'ArrowRight' && paso < recorrido.length - 1) ir(paso + 1);
+          if (ev.key === 'ArrowLeft' && paso > 0) ir(paso - 1);
+          if (ev.key === 'Escape') salir();
+        });
+      })
+      .catch(() => hero.classList.remove('cargando'));
+  }
+</script>
+
+<style>
+  [hidden] {
+    display: none !important;
+  }
+  .hero {
+    position: relative;
+    height: clamp(660px, calc(100svh - 77px), 980px);
+    overflow: hidden;
+    isolation: isolate;
+    background: #121416;
+    color: #fff;
+  }
+
+  /* Escena: ocupa todo el hero; la cámara centra la máquina en su columna */
+  .escena {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+  }
+  .escena :global(canvas) {
+    display: block;
+    width: 100% !important;
+    height: 100% !important;
+    cursor: grab;
+    opacity: 0;
+    transition: opacity 1s var(--ease);
+  }
+  .escena :global(canvas:active) {
+    cursor: grabbing;
+  }
+  .listo .escena :global(canvas) {
+    opacity: 1;
+  }
+  .poster {
+    position: absolute;
+    left: 66%;
+    top: 50%;
+    width: min(34%, 460px);
+    height: auto;
+    translate: -50% -50%;
+    transition: opacity 0.6s var(--ease);
+  }
+  .listo .poster {
+    opacity: 0;
+  }
+  .carga {
+    position: absolute;
+    z-index: 2;
+    left: 66%;
+    bottom: 22%;
+    width: 180px;
+    height: 2px;
+    translate: -50% 0;
+    background: rgba(255, 255, 255, 0.1);
+    opacity: 0;
+    transition: opacity 0.4s var(--ease);
+  }
+  .carga i {
+    display: block;
+    height: 100%;
+    background: var(--red);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.2s linear;
+  }
+  .cargando .carga {
+    opacity: 1;
+  }
+
+  .wrap {
+    height: 100%;
+  }
+  .rejilla {
+    position: relative;
+    z-index: 2;
+    height: 100%;
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: 32px;
+    pointer-events: none;
+  }
+  .rejilla a,
+  .rejilla button {
+    pointer-events: auto;
+  }
+
+  /* Texto: título, entrada, botón al catálogo, raya roja y cifras con los iconos de la marca */
+  .texto {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-block: 56px 48px;
+    transition: opacity 0.6s var(--ease);
+  }
+  /* Durante el recorrido el texto se apaga para que mande la máquina */
+  .en-ruta .texto {
+    opacity: 0.18;
+  }
+  h1 {
+    font-size: clamp(60px, 7.4vw, 124px);
+    font-weight: 300;
+    line-height: 0.88;
+    letter-spacing: -0.02em;
+  }
+  h1 > span {
+    display: block;
+    overflow: hidden;
+    padding-bottom: 0.05em;
+  }
+  h1 i {
+    display: block;
+    font-style: normal;
+  }
+  h1 b {
+    font-weight: 700;
+    color: var(--red);
+    text-shadow: 0 0 28px rgba(221, 4, 10, 0.28);
+  }
+  .lead {
+    margin-top: 22px;
+    max-width: 40ch;
+    font-size: clamp(18px, 1.35vw, 21px);
+    color: rgba(255, 255, 255, 0.8);
+  }
+  .btn-todas {
+    align-self: flex-start;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    height: 52px;
+    margin-top: 30px;
+    padding: 0 26px;
+    font-size: 18px;
+    font-weight: 700;
+    text-decoration: none;
+    color: #fff;
+    background: var(--red);
+    transition: background 0.25s var(--ease);
+  }
+  .btn-todas::after {
+    content: '»';
+    font-weight: 300;
+    transition: transform 0.25s var(--ease);
+  }
+  .btn-todas:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 3px;
+  }
+  /* Raya roja con destello blanco, la de los pasos entre secciones de la portada */
+  .raya {
+    position: relative;
+    display: block;
+    height: 2px;
+    margin-top: 46px;
+    overflow: hidden;
+    background: linear-gradient(90deg, var(--red) 70%, transparent);
+    box-shadow: 0 0 18px rgba(221, 4, 10, 0.55);
+    transform-origin: left;
+  }
+  .raya::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    width: 22%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.9), transparent);
+    translate: -120% 0;
+  }
+  .cifras {
+    display: grid;
+    grid-template-columns: repeat(2, max-content);
+    gap: 22px 40px;
+    margin: 0;
+    padding: 26px 0 0;
+    list-style: none;
+  }
+  .cifras li {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .ico {
+    flex: none;
+    width: 34px;
+    height: 30px;
+    background: var(--red);
+    -webkit-mask: var(--i) center / contain no-repeat;
+    mask: var(--i) center / contain no-repeat;
+  }
+  .cifras b {
+    display: block;
+    font-size: 28px;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+  .cifras small {
+    display: block;
+    margin-top: 4px;
+    font-size: 14px;
+    line-height: 1.1;
+    color: var(--on-dark);
+  }
+
+  /* Columna de la máquina: grados y zoom arriba, mandos o recorrido abajo */
+  .columna {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding-block: 40px 36px;
+  }
+  .ang {
+    align-self: flex-end;
+    margin: 0;
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    font-variant-numeric: tabular-nums;
+    color: var(--steel);
+  }
+  .zoom {
+    position: absolute;
+    right: 0;
+    top: 72px;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    padding: 3px;
+    background: rgba(18, 20, 22, 0.72);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    backdrop-filter: blur(8px);
+  }
+  .zoom button {
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    font-size: 24px;
+    font-weight: 300;
+    line-height: 1;
+  }
+  .zoom-n {
+    min-width: 30px;
+    font-size: 11px;
+    text-align: center;
+    letter-spacing: 0.06em;
+    font-variant-numeric: tabular-nums;
+    color: var(--steel);
+  }
+  .pista {
+    position: absolute;
+    right: 0;
+    top: 124px;
+    margin: 0;
+    font-size: 12px;
+    line-height: 1.5;
+    letter-spacing: 0.06em;
+    text-align: right;
+    color: var(--steel);
+    opacity: 0;
+    transition: opacity 0.4s var(--ease);
+    pointer-events: none;
+  }
+  .listo:hover .pista {
+    opacity: 1;
+  }
+  .pie {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .mandos {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .grupo {
+    display: flex;
+    gap: 2px;
+    padding: 3px;
+    background: rgba(18, 20, 22, 0.72);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    backdrop-filter: blur(8px);
+  }
+  button {
+    border: 0;
+    background: none;
+    font: inherit;
+    color: var(--on-dark);
+    cursor: pointer;
+    transition:
+      color 0.2s var(--ease),
+      background 0.2s var(--ease);
+  }
+  button:disabled {
+    opacity: 0.3;
+    cursor: default;
+  }
+  button:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: -2px;
+  }
+  .grupo button {
+    height: 38px;
+    padding: 0 14px;
+    font-size: 15px;
+    font-weight: 400;
+  }
+  .grupo button[aria-pressed='true'] {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.12);
+    box-shadow: inset 0 -2px 0 var(--red);
+  }
+  .accion {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    height: 46px;
+    padding: 0 20px;
+    font-size: 16px;
+    font-weight: 700;
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    background: rgba(18, 20, 22, 0.72);
+  }
+  .accion::after {
+    content: '»';
+    font-weight: 300;
+    transition: transform 0.3s var(--ease);
+  }
+  .accion[aria-pressed='true']::after {
+    transform: rotate(90deg);
+  }
+  .accion.roja {
+    border-color: var(--red);
+    background: rgba(221, 4, 10, 0.14);
+  }
+
+  /* Recorrido: la pieza en la que está la cámara, con su descripción */
+  .ruta {
+    pointer-events: auto;
+    display: flex;
+    align-items: stretch;
+    width: min(560px, 100%);
+    background: rgba(14, 15, 17, 0.86);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    backdrop-filter: blur(10px);
+  }
+  .info {
+    flex: 1;
+    padding: 12px 18px;
+    border-left: 2px solid var(--red);
+  }
+  .n {
+    font-size: 12px;
+    letter-spacing: 0.16em;
+    font-variant-numeric: tabular-nums;
+    color: var(--steel);
+  }
+  .nom {
+    display: block;
+    font-size: 24px;
+    font-weight: 700;
+    line-height: 1.1;
+  }
+  .nom small {
+    margin-left: 8px;
+    font-size: 13px;
+    letter-spacing: 0.06em;
+    color: #ff4a4f;
+  }
+  .desc {
+    margin-top: 6px;
+    max-width: 46ch;
+    font-size: 15px;
+    line-height: 1.35;
+    color: rgba(255, 255, 255, 0.78);
+  }
+  .desc:empty {
+    display: none;
+  }
+  .puntos {
+    display: flex;
+    gap: 5px;
+    margin-top: 8px;
+  }
+  .puntos i {
+    width: 18px;
+    height: 2px;
+    background: rgba(255, 255, 255, 0.2);
+    transition: background 0.3s var(--ease);
+  }
+  .puntos i.on {
+    background: var(--red);
+  }
+  .ruta button {
+    display: grid;
+    place-items: center;
+    width: 54px;
+    border-left: 1px solid rgba(255, 255, 255, 0.12);
+    font-size: 26px;
+    font-weight: 300;
+    color: #fff;
+  }
+  .ruta .salir {
+    width: auto;
+    padding: 0 16px;
+    font-size: 15px;
+    color: var(--on-dark);
+  }
+
+  /* Etiquetas del despiece y sus líneas. El punto es blanco con borde negro: se ve sobre la carcasa blanca y sobre
+     las piezas oscuras o rojas */
+  .lineas {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    pointer-events: none;
+  }
+  .lineas :global(path) {
+    fill: none;
+    stroke: rgba(255, 255, 255, 0.5);
+    stroke-width: 1;
+  }
+  .lineas :global(.punto) {
+    fill: #fff;
+    stroke: #0b0c0d;
+    stroke-width: 2;
+  }
+  .lineas :global(.halo) {
+    fill: none;
+    stroke: #fff;
+    stroke-width: 1.5;
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+  .pieza {
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: 3;
+    display: flex;
+    gap: 6px;
+    padding: 3px 9px 4px;
+    background: rgba(14, 15, 17, 0.86);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-left: 2px solid var(--red);
+    font-size: 14px;
+    line-height: 1.2;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+  }
+  .pieza b {
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    color: #ff4a4f;
+  }
+
+  @media (hover: hover) {
+    .btn-todas:hover {
+      background: var(--red-d);
+    }
+    .btn-todas:hover::after {
+      transform: translateX(4px);
+    }
+    .grupo button:hover,
+    .zoom button:hover:not(:disabled),
+    .ruta button:hover:not(:disabled) {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.08);
+    }
+    .accion:hover {
+      border-color: var(--red);
+    }
+    .accion.roja:hover {
+      background: var(--red);
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    h1 i {
+      animation: sube 1s var(--ease) both;
+    }
+    h1 > span + span i {
+      animation-delay: 0.1s;
+    }
+    .lead {
+      animation: aparece 0.9s 0.3s var(--ease) both;
+    }
+    .btn-todas {
+      animation: aparece 0.9s 0.4s var(--ease) both;
+    }
+    .raya {
+      animation: dibuja 1.2s 0.6s var(--ease) both;
+    }
+    .raya::after {
+      animation: recorre 5s var(--ease) 1.8s infinite;
+    }
+    .cifras {
+      animation: aparece 0.9s 0.5s var(--ease) both;
+    }
+    .mandos,
+    .zoom {
+      animation: aparece 0.6s var(--ease) both;
+    }
+    .ruta {
+      animation: aparece 0.5s var(--ease) both;
+    }
+    .lineas :global(.halo) {
+      animation: halo 2s ease-out infinite;
+    }
+  }
+  @keyframes sube {
+    from {
+      transform: translateY(105%);
+    }
+  }
+  @keyframes aparece {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+  }
+  @keyframes dibuja {
+    from {
+      transform: scaleX(0);
+    }
+  }
+  @keyframes recorre {
+    0% {
+      translate: -120% 0;
+    }
+    45%,
+    100% {
+      translate: 560% 0;
+    }
+  }
+  @keyframes halo {
+    from {
+      transform: scale(1);
+      opacity: 0.9;
+    }
+    to {
+      transform: scale(3.2);
+      opacity: 0;
+    }
+  }
+
+  /* Móvil: el texto arriba, la máquina en medio y los mandos debajo */
+  @media (max-width: 900px) {
+    .hero {
+      height: auto;
+      display: flex;
+      flex-direction: column;
+    }
+    .wrap,
+    .rejilla {
+      display: contents;
+    }
+    .texto {
+      order: 1;
+      padding: 44px var(--gut) 0;
+    }
+    .raya {
+      margin-top: 36px;
+    }
+    .escena {
+      position: relative;
+      order: 2;
+      height: 100vw;
+      margin-top: 16px;
+    }
+    .poster {
+      left: 50%;
+      width: 70%;
+    }
+    .carga {
+      left: 50%;
+    }
+    .columna {
+      order: 3;
+      padding: 12px var(--gut) 32px;
+    }
+    .ang,
+    .pista {
+      display: none;
+    }
+    .zoom {
+      top: auto;
+      bottom: calc(100% + 12px);
+      right: var(--gut);
+    }
+    .ruta {
+      width: 100%;
+    }
+  }
+</style>

@@ -33,6 +33,10 @@
   --carbon-line: #33383c;
   --steel: #9aa1a6;
   --on-dark: #bfc5c9;
+  /* Temperatura de cada centrífuga, en etiquetas de color lleno con texto blanco (contraste AA) */
+  --t-ventilada: #1e7f5c;
+  --t-refrigerada: #1d6aad;
+  --t-calefactada: #b0530e;
 
   --f: 'Helvetica Neue Cond', 'Roboto Condensed', 'Arial Narrow', Arial, sans-serif;
   --wrap: 1280px;
