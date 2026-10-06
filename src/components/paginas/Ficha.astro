@@ -59,7 +59,7 @@ const rotores = (web?.rotores ?? []).map(rotor);
 const versiones = web?.versiones ?? [];
 const deAccesorios = [...accesorios].filter((a) => web?.accesorios.includes(a.slug));
 const mismos = m
-  ? modelos.filter((x) => x.categoria === m.categoria && x.serie !== m.serie)
+  ? modelos.filter((x) => x.categoria === m.categoria && x.slug !== m.slug)
   : (esAccesorio ? accesorios : equipos).filter((x) => x.slug !== p!.slug);
 const tres = mismos.slice(0, 3);
 
@@ -107,7 +107,7 @@ const descripcion = m
 ---
 
 <Base title={titulo} description={descripcion}>
-  <section class="cabecera">
+  <section class="cabecera" data-t={m?.temperatura ?? 'lab'}>
     <div class="wrap cabecera-in">
       <nav class="migas" aria-label="Breadcrumb">
         <a href={ruta(lang, '/')}>{tf.inicio}</a>
@@ -119,7 +119,7 @@ const descripcion = m
         <span aria-current="page">{nombre}</span>
       </nav>
 
-      <div class:list={['escaparate', { oscuro: conVisor }]} data-t={m?.temperatura ?? 'lab'}>
+      <div class:list={['escaparate', { oscuro: conVisor }]}>
         {conVisor ? (
           <Visor3D />
         ) : (
@@ -527,10 +527,38 @@ const descripcion = m
 </script>
 
 <style>
-  /* ——— Cabecera: foto o modelo 3D a la izquierda, datos a la derecha ——— */
+  /* ——— Cabecera oscura: el escenario con la máquina a la izquierda y los datos en placas de cristal ——— */
   .cabecera {
-    background: var(--band);
-    border-bottom: 1px solid var(--line);
+    --c: var(--t-ventilada);
+    --halo: rgba(154, 161, 166, 0.5);
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+    color: #fff;
+    background: var(--carbon);
+  }
+  .cabecera[data-t='refrigerada'] {
+    --c: var(--t-refrigerada);
+    --halo: rgba(58, 140, 214, 0.55);
+  }
+  .cabecera[data-t='calefactada'] {
+    --c: var(--t-calefactada);
+    --halo: rgba(222, 120, 40, 0.5);
+  }
+  .cabecera[data-t='lab'] {
+    --c: var(--red);
+    --halo: rgba(221, 4, 10, 0.35);
+  }
+  /* La luz del estudio: un halo del color de la temperatura detrás de la máquina */
+  .cabecera::before {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    top: -10%;
+    left: -10%;
+    width: 75%;
+    height: 120%;
+    background: radial-gradient(closest-side, var(--halo), rgba(21, 23, 25, 0));
   }
   .cabecera-in {
     display: grid;
@@ -538,8 +566,8 @@ const descripcion = m
     grid-template-areas:
       'migas migas'
       'foto datos';
-    gap: 20px clamp(32px, 5vw, 80px);
-    padding-block: 28px clamp(48px, 6vw, 80px);
+    gap: 16px clamp(32px, 5vw, 80px);
+    padding-block: 24px clamp(40px, 5vw, 64px);
   }
   .migas {
     grid-area: migas;
@@ -547,54 +575,38 @@ const descripcion = m
     flex-wrap: wrap;
     gap: 6px 10px;
     font-size: 15px;
-    color: var(--body);
+    color: var(--on-dark);
   }
   .migas a {
-    color: var(--body);
+    color: var(--on-dark);
     text-decoration: none;
   }
   .migas a:hover {
-    color: var(--red);
+    color: #fff;
   }
   .migas [aria-current] {
     font-weight: 700;
-    color: var(--ink);
+    color: #fff;
   }
   .escaparate {
-    --c: var(--t-ventilada);
-    --tono: #eceef0;
     grid-area: foto;
     position: relative;
     display: grid;
     place-items: center;
-    aspect-ratio: 1 / 0.9;
-    overflow: hidden;
+    aspect-ratio: 1 / 0.86;
     isolation: isolate;
-    background: var(--tono);
   }
-  .escaparate[data-t='refrigerada'] {
-    --c: var(--t-refrigerada);
-    --tono: #e3edf7;
-  }
-  .escaparate[data-t='calefactada'] {
-    --c: var(--t-calefactada);
-    --tono: #f6ebdf;
-  }
-  .escaparate[data-t='lab'] {
-    --c: var(--red);
-    --tono: #f1efed;
-  }
-  /* El nombre de la serie, enorme y en blanco, detrás de la máquina */
+  /* El nombre de la serie, enorme y apenas visible, detrás de la máquina */
   .fondo {
     position: absolute;
     z-index: -1;
-    left: 5%;
-    top: 4%;
+    left: 0;
+    top: 2%;
     font-size: clamp(96px, 13vw, 200px);
     font-weight: 700;
     line-height: 0.85;
     letter-spacing: -0.03em;
-    color: #fff;
+    color: rgba(255, 255, 255, 0.06);
     white-space: nowrap;
   }
   @media (prefers-reduced-motion: no-preference) {
@@ -620,26 +632,22 @@ const descripcion = m
   .escaparate::after {
     content: '';
     position: absolute;
-    left: 24%;
-    right: 24%;
-    bottom: 9%;
+    left: 22%;
+    right: 22%;
+    bottom: 7%;
     height: 7%;
-    background: radial-gradient(closest-side, rgba(17, 19, 21, 0.22), transparent);
+    background: radial-gradient(closest-side, rgba(0, 0, 0, 0.75), transparent);
   }
   .escaparate img {
     position: relative;
     z-index: 1;
-    width: 78%;
+    width: 80%;
     height: auto;
   }
   .escaparate.oscuro {
     display: flex;
-    padding: 20px 24px 20px;
     aspect-ratio: auto;
     min-height: 560px;
-    background: var(--carbon);
-    border-color: var(--carbon);
-    color: #fff;
   }
   .escaparate.oscuro::after {
     content: none;
@@ -651,7 +659,7 @@ const descripcion = m
     position: absolute;
     z-index: 2;
     left: 0;
-    bottom: 0;
+    top: 0;
     padding: 9px 18px 10px;
     font-size: 17px;
   }
@@ -662,13 +670,7 @@ const descripcion = m
     font-weight: 700;
     line-height: 1;
     color: #fff;
-    background: var(--t-ventilada);
-  }
-  .temp[data-t='refrigerada'] {
-    background: var(--t-refrigerada);
-  }
-  .temp[data-t='calefactada'] {
-    background: var(--t-calefactada);
+    background: var(--c);
   }
 
   .datos {
@@ -683,6 +685,10 @@ const descripcion = m
     text-transform: uppercase;
     color: var(--red);
   }
+  /* Sobre el carbón, el rojo de marca un punto más claro para que el texto pequeño se lea (contraste AA) */
+  .datos .cat {
+    color: #ff4c51;
+  }
   h1 {
     margin-top: 10px;
     font-size: clamp(48px, 5.6vw, 84px);
@@ -696,26 +702,27 @@ const descripcion = m
     font-size: 0.36em;
     font-weight: 300;
     letter-spacing: 0;
-    color: var(--body);
+    color: var(--on-dark);
   }
   .frase {
-    margin-top: 16px;
+    margin-top: 14px;
     max-width: 40ch;
     font-size: var(--t-sub);
     line-height: 1.35;
-    color: var(--body);
+    color: var(--on-dark);
   }
 
-  /* Versión: botones pegados; la de cada temperatura con su color al elegirla */
+  /* Versión: botones de cristal pegados; la elegida, en el color de su temperatura */
   .version {
-    margin-top: 28px;
+    margin-top: 26px;
   }
   .version p {
     margin: 0 0 8px;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 700;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
+    color: var(--on-dark);
   }
   .version ul {
     display: inline-flex;
@@ -723,28 +730,25 @@ const descripcion = m
     margin: 0;
     padding: 0;
     list-style: none;
-    border: 1px solid var(--ink);
+    border: 1px solid rgba(255, 255, 255, 0.24);
+    background: rgba(255, 255, 255, 0.06);
   }
   .version li + li {
-    border-left: 1px solid var(--ink);
+    border-left: 1px solid rgba(255, 255, 255, 0.24);
   }
   .version a {
     display: block;
-    padding: 11px 20px;
+    padding: 11px 22px;
     font-size: 17px;
-    color: var(--ink);
+    color: #fff;
     text-decoration: none;
-    background: #fff;
-    transition:
-      background 0.2s var(--ease),
-      color 0.2s var(--ease);
+    transition: background 0.2s var(--ease);
   }
   .version a:hover {
-    background: var(--panel);
+    background: rgba(255, 255, 255, 0.12);
   }
   .version a[aria-current] {
     font-weight: 700;
-    color: #fff;
     background: var(--t-ventilada);
   }
   .version a[aria-current][data-t='refrigerada'] {
@@ -754,28 +758,38 @@ const descripcion = m
     background: var(--t-calefactada);
   }
 
-  /* Cuatro cifras grandes en una rejilla de 2 × 2, con raya fina */
+  /* Cuatro cifras en placas de cristal, con la raya roja de marca arriba */
   .cifras {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    margin: 32px 0 0;
-    border-top: 2px solid var(--ink);
+    gap: 10px;
+    margin: 28px 0 0;
   }
   .cifras div {
+    position: relative;
     display: flex;
     flex-direction: column-reverse;
     justify-content: flex-end;
     gap: 4px;
-    padding: 16px 16px 16px 0;
-    border-bottom: 1px solid var(--line);
+    padding: 16px 18px 15px;
+    background: rgba(255, 255, 255, 0.07);
+    -webkit-backdrop-filter: blur(14px) saturate(150%);
+    backdrop-filter: blur(14px) saturate(150%);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
   }
-  .cifras div:nth-child(even) {
-    padding-left: 20px;
-    border-left: 1px solid var(--line);
+  .cifras div::before {
+    content: '';
+    position: absolute;
+    top: -1px;
+    left: -1px;
+    width: 24px;
+    height: 3px;
+    background: var(--red);
   }
   .cifras dt {
     font-size: 15px;
-    color: var(--body);
+    color: var(--on-dark);
   }
   .cifras dd {
     margin: 0;
@@ -787,12 +801,13 @@ const descripcion = m
   .cifras small {
     font-size: 0.55em;
     font-weight: 400;
-    color: var(--body);
+    color: var(--on-dark);
   }
   .linea {
-    margin-top: 28px;
-    padding-block: 16px;
-    border-block: 1px solid var(--line);
+    margin-top: 26px;
+    padding: 16px 18px;
+    background: rgba(255, 255, 255, 0.07);
+    border: 1px solid rgba(255, 255, 255, 0.16);
     font-size: 18px;
     font-weight: 700;
   }
@@ -800,9 +815,14 @@ const descripcion = m
     display: flex;
     flex-wrap: wrap;
     gap: 12px;
-    margin-top: 32px;
+    margin-top: 28px;
   }
   .btn.ghost {
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.6);
+    background: transparent;
+  }
+  .btn.ghost:hover {
     color: var(--ink);
     background: #fff;
   }
@@ -928,90 +948,128 @@ const descripcion = m
     font-size: 17px;
     color: var(--body);
   }
-  /* Descripción a la izquierda y "De un vistazo" a la derecha */
+  /* Descripción: "De un vistazo" en una fila de placas arriba y el texto debajo, en dos columnas si es largo */
   .desc {
     display: grid;
-    grid-template-columns: minmax(0, 1.7fr) minmax(280px, 1fr);
-    gap: 32px clamp(32px, 5vw, 72px);
-    align-items: start;
-  }
-  .texto p {
-    margin: 0 0 1em;
-    max-width: 70ch;
-    font-size: 18px;
-    line-height: 1.65;
-    color: var(--ink);
-  }
-  /* La primera frase, como entradilla */
-  .texto p:first-child {
-    font-size: clamp(21px, 1.8vw, 26px);
-    line-height: 1.4;
+    gap: 36px;
   }
   .vistazo {
-    position: sticky;
-    top: 160px;
-    padding: 24px 26px 26px;
-    color: #fff;
-    background: var(--carbon);
-    border-top: 4px solid var(--red);
+    order: -1;
   }
   .vistazo h2 {
-    margin-bottom: 12px;
-    font-size: 24px;
+    margin-bottom: 14px;
+    font-size: 13px;
     font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--body);
   }
   .vistazo dl {
-    margin: 0 0 18px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
+    margin: 0;
   }
   .vistazo div {
+    position: relative;
     display: flex;
-    justify-content: space-between;
-    gap: 16px;
-    padding: 10px 0;
-    border-bottom: 1px solid var(--carbon-line);
+    flex-direction: column-reverse;
+    justify-content: flex-end;
+    gap: 4px;
+    padding: 16px 16px 14px;
+    background: var(--band);
+    border: 1px solid var(--line);
+  }
+  .vistazo div::before {
+    content: '';
+    position: absolute;
+    top: -1px;
+    left: -1px;
+    width: 24px;
+    height: 3px;
+    background: var(--red);
   }
   .vistazo dt {
-    font-size: 15px;
-    color: var(--on-dark);
+    font-size: 14px;
+    color: var(--body);
   }
   .vistazo dd {
     margin: 0;
-    font-size: 16px;
+    font-size: 19px;
     font-weight: 700;
-    text-align: right;
+    line-height: 1.2;
   }
   .vistazo .arrow {
+    display: inline-flex;
+    margin-top: 14px;
     font-size: 17px;
-    color: #fff;
+    color: var(--ink);
+  }
+  .texto {
+    columns: 2 380px;
+    column-gap: clamp(32px, 4vw, 64px);
+  }
+  .texto p {
+    margin: 0 0 1em;
+    font-size: 18px;
+    line-height: 1.65;
+    color: var(--ink);
+    break-inside: avoid;
+  }
+  /* La primera frase, como entradilla, a todo el ancho */
+  .texto p:first-child {
+    column-span: all;
+    max-width: 62ch;
+    margin-bottom: 1.2em;
+    font-size: clamp(21px, 1.8vw, 25px);
+    line-height: 1.4;
   }
 
-  /* Ficha técnica: tarjetas en dos columnas que encajan sin huecos */
-  .tarjetas-texto {
-    columns: 2 340px;
-    column-gap: 20px;
-  }
+  /* Ficha técnica como una hoja de especificaciones: una fila por bloque, título a la izquierda y los puntos en
+     dos columnas a la derecha */
   .tarjetas-texto article {
-    position: relative;
-    break-inside: avoid;
-    margin-bottom: 20px;
-    padding: 26px 28px 22px;
-    background: var(--band);
-    border-left: 4px solid var(--red);
+    display: grid;
+    grid-template-columns: minmax(180px, 0.28fr) minmax(0, 1fr);
+    gap: 16px clamp(24px, 4vw, 56px);
+    padding: 28px 0;
+    border-top: 1px solid var(--line);
+  }
+  .tarjetas-texto article:first-child {
+    padding-top: 0;
+    border-top: 0;
   }
   .tarjetas-texto h3 {
-    margin-bottom: 12px;
+    position: sticky;
+    top: 160px;
+    align-self: start;
+    display: flex;
+    align-items: center;
+    gap: 12px;
     font-size: 24px;
     font-weight: 700;
+    line-height: 1.1;
+  }
+  .tarjetas-texto h3::before {
+    content: '';
+    flex: none;
+    width: 4px;
+    height: 1.1em;
+    background: var(--red);
   }
   .tarjetas-texto ul {
     margin: 0;
     padding: 0;
     list-style: none;
   }
+  .tarjetas-texto article > ul {
+    columns: 2 300px;
+    column-gap: 40px;
+  }
   .tarjetas-texto li {
     position: relative;
-    padding: 7px 0 7px 18px;
-    border-top: 1px solid var(--line);
+    break-inside: avoid;
+    padding: 8px 0 8px 18px;
+    border-bottom: 1px solid var(--panel);
     font-size: 17px;
     line-height: 1.4;
     color: var(--ink);
@@ -1020,7 +1078,7 @@ const descripcion = m
     content: '';
     position: absolute;
     left: 0;
-    top: 15px;
+    top: 17px;
     width: 7px;
     height: 2px;
     background: var(--red);
@@ -1312,9 +1370,6 @@ const descripcion = m
     .desc {
       grid-template-columns: minmax(0, 1fr);
     }
-    .vistazo {
-      position: static;
-    }
     .rejilla {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
@@ -1322,7 +1377,6 @@ const descripcion = m
   @media (max-width: 640px) {
     .escaparate.oscuro {
       min-height: 0;
-      padding: 12px 14px;
     }
     .cifras dd {
       font-size: 24px;
@@ -1352,7 +1406,10 @@ const descripcion = m
       font-size: 36px;
     }
     .tarjetas-texto article {
-      padding: 22px 18px 16px;
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .tarjetas-texto h3 {
+      position: static;
     }
     .rejilla {
       grid-template-columns: minmax(0, 1fr);
