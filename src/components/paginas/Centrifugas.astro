@@ -554,10 +554,10 @@ const td = t.distribuidores;
     margin-top: clamp(72px, 7vw, 112px);
   }
 
-  /* ——— Portada de cada familia: banda a todo lo ancho sobre el rotor con tubos, teñido con su color, sus textos
-     a la izquierda y su número enorme a la derecha ——— */
+  /* ——— Portada de cada familia: banda a todo lo ancho sobre el rotor con tubos, en gris oscuro igual para todas, y
+     el color de la familia solo en la raya de arriba; sus textos a la izquierda y su número enorme a la derecha ——— */
   .sala-cab {
-    --tinte: color-mix(in srgb, var(--fam) 78%, #16181a);
+    --tinte: #1b1d20;
     position: relative;
     display: grid;
     grid-template-columns: 1fr;
@@ -581,7 +581,9 @@ const td = t.distribuidores;
       ),
       #16181a url(/img/fondos/rotor.webp) 70% var(--foto-y, 42%) / cover no-repeat;
     text-shadow: 0 1px 12px rgba(0, 0, 0, 0.35);
-    border-top: 4px solid var(--red);
+    border-top: 8px solid var(--fam);
+    /* Sobre el gris oscuro, el color de la familia más vivo (más croma y algo más de luz) */
+    border-top-color: oklch(from var(--fam) calc(l + 0.06) calc(c * 2) h);
     color: #fff;
   }
   /* El número, enorme y translúcido, a la derecha */

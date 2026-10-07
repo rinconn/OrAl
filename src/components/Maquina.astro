@@ -113,6 +113,8 @@ const cifras = (v: Version) => [
     display: none !important;
   }
   .pieza {
+    /* El color de la familia, más vivo (como en la raya de su portada) */
+    --fam-vivo: oklch(from var(--fam) calc(l + 0.06) calc(c * 2) h);
     --sube: cubic-bezier(0.23, 1, 0.32, 1);
     --borde: #b4b9bd;
     --marco: #5f656b;
@@ -138,7 +140,7 @@ const cifras = (v: Version) => [
     aspect-ratio: 5 / 4;
     overflow: hidden;
     background: #2b2e31 url(/img/fondos/mesa-tarjeta.webp) center / cover no-repeat;
-    border-bottom: 3px solid var(--fam);
+    border-bottom: 5px solid var(--fam-vivo);
   }
   /* Sombra de apoyo bajo la máquina */
   .estudio::after {
@@ -235,7 +237,7 @@ const cifras = (v: Version) => [
     content: '';
     width: 10px;
     height: 10px;
-    background: var(--fam);
+    background: var(--fam-vivo);
   }
   .nombre {
     margin: 10px 0 0;
