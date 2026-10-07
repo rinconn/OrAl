@@ -7,6 +7,8 @@ Hasta que se publique la web, todo va en "Sin publicar"; al publicar se cierra l
 
 ### Añadido
 
+- Productos: **filtro por tubo** ("Tu tubo") en la barra: un panel con los 70 tubos de los rotores de la web actual, un título por tipo y sus medidas como botones (apagados los que no darían resultados). Deja solo las máquinas que lo admiten y cada tarjeta dice en qué rotor va y cuántos caben a la vez; si su versión a la vista no lo admite y otra sí, enseña esa. La barra de filtros pasa a dos filas.
+- Productos: en pantallas de 1600 px o más el catálogo se ensancha (1560 px) y pasa a cuatro columnas, con tarjetas de unos 345 px.
 - Productos: las portadas de familia pasan a gris oscuro sobre la foto del rotor, iguales para todas; el color de la familia queda solo en la raya de arriba (8 px, más vivo), y las tarjetas usan ese mismo color vivo en la raya bajo la foto (5 px) y en el cuadradito de la aplicación.
 - Productos: el contador del presupuesto, más tranquilo: gris claro sin marco rojo; con 1 unidad el "−" es una papelera (también en "Mi presupuesto", donde sobra el aspa) y al añadir aparece un momento "Añadido al presupuesto: <modelo>" encima del botón de abajo.
 - Productos: el presupuesto de cada tarjeta pasa a ser un contador de unidades. "+ Presupuesto" se convierte al pulsarlo en "− 1 ud. +" con marco rojo; con 1, el "−" quita la máquina. Fuera "Añadido" y "Quitar". La tarjeta y el panel del presupuesto van sincronizados.
