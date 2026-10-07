@@ -7,6 +7,7 @@ Hasta que se publique la web, todo va en "Sin publicar"; al publicar se cierra l
 
 ### Añadido
 
+- Productos: el contador del presupuesto, más tranquilo: gris claro sin marco rojo; con 1 unidad el "−" es una papelera (también en "Mi presupuesto", donde sobra el aspa) y al añadir aparece un momento "Añadido al presupuesto: <modelo>" encima del botón de abajo.
 - Productos: el presupuesto de cada tarjeta pasa a ser un contador de unidades. "+ Presupuesto" se convierte al pulsarlo en "− 1 ud. +" con marco rojo; con 1, el "−" quita la máquina. Fuera "Añadido" y "Quitar". La tarjeta y el panel del presupuesto van sincronizados.
 - Productos: las tarjetas del catálogo usan la foto de laboratorio retocada (`mesa-tarjeta.webp`): sin guante, pipeta ni microscopio, el fondo más desenfocado y solo una gradilla de tubos y un matraz rojos en los bordes, para que la máquina sea lo primero que se ve.
 - Productos: **barra de filtros** nueva (`Filtros.astro`), en su sitio bajo el hero (no baja al hacer scroll): gris con raya roja arriba, buscador con sugerencias (foto, nombre con lo escrito en rojo y aplicación; flechas y Enter), temperatura con iconos (ventilador, copo, llama), aplicación en un desplegable con el número de productos de cada una y títulos de grupo con línea roja, el total y "Borrar filtros". En móvil, buscador y botón que abre los filtros desde abajo.

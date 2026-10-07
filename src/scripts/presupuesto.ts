@@ -1,5 +1,6 @@
 // Lista de presupuesto del catálogo: "+ Presupuesto" en cada centrífuga, que al pulsarlo se vuelve un contador
-// "− 1 ud. +" (con 1, el "−" la quita), un botón fijo abajo a la derecha con cuántas hay y, al abrirlo, la lista con su foto y "Pedir presupuesto", que abre el correo de ventas con los modelos
+// "− 1 ud. +" (con 1, el "−" es una papelera y la quita); al añadir, un aviso breve junto al botón fijo de abajo a la
+// derecha, que dice cuántas hay y, al abrirlo, la lista con su foto y "Pedir presupuesto", que abre el correo de ventas con los modelos
 // ya escritos y cuántas unidades de cada uno. La lista se guarda en el navegador, así sigue al volver otro día.
 
 interface DatosPresupuesto {
@@ -16,6 +17,7 @@ interface DatosPresupuesto {
     ud: string;
     menos: string;
     mas: string;
+    aviso: string;
   };
 }
 
@@ -24,8 +26,11 @@ const escapar = (s: string) =>
   s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
 const linea = (d: string) =>
   `<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="${d}" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>`;
-const cruz =
-  '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
+// Papelera: con 1 unidad, el "−" la quita del presupuesto, y así se ve
+const papelera =
+  '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const menosIco = linea('M5 12h14');
+const masIco = linea('M12 5v14M5 12h14');
 
 export function iniciarPresupuesto() {
   const fuente = document.getElementById('datos-presupuesto');
@@ -42,7 +47,7 @@ export function iniciarPresupuesto() {
       const paso = document.createElement('span');
       paso.className = 'paso';
       paso.hidden = true;
-      paso.innerHTML = `<button type="button" data-paso="-1">${linea('M5 12h14')}</button><output></output><button type="button" data-paso="1">${linea('M12 5v14M5 12h14')}</button>`;
+      paso.innerHTML = `<button type="button" data-paso="-1">${menosIco}</button><output></output><button type="button" data-paso="1">${linea('M12 5v14M5 12h14')}</button>`;
       b.after(paso);
       return [b, paso];
     }),
@@ -85,6 +90,8 @@ export function iniciarPresupuesto() {
       b.setAttribute('aria-label', `${datos.textos.anadir}: ${nombre}`);
       paso.querySelector('output')!.innerHTML = `<b>${n}</b> ${escapar(datos.textos.ud)}`;
       const [menos, mas] = paso.querySelectorAll('button');
+      menos.innerHTML = n > 1 ? menosIco : papelera;
+      menos.classList.toggle('borrar', n === 1);
       menos.setAttribute('aria-label', `${n > 1 ? datos.textos.menos : datos.textos.quitarDeLista}: ${nombre}`);
       mas.setAttribute('aria-label', `${datos.textos.mas}: ${nombre}`);
     }
@@ -96,7 +103,12 @@ export function iniciarPresupuesto() {
         const m = datos.maquinas[s];
         const quitar = escapar(datos.textos.quitar.replace('{n}', m.nombre));
         const n = unidades.get(s) ?? 1;
-        return `<li><img src="${m.img}" alt="" width="44" height="44"><span>${escapar(m.nombre)}</span><span class="pres-cant"><button type="button" data-menos="${s}" aria-label="${escapar(datos.textos.menos)}: ${escapar(m.nombre)}">−</button><output>${n}</output><button type="button" data-mas="${s}" aria-label="${escapar(datos.textos.mas)}: ${escapar(m.nombre)}">+</button></span><button type="button" data-quitar="${s}" aria-label="${quitar}" title="${quitar}">${cruz}</button></li>`;
+        // Con 1 unidad, el "−" es la papelera que la quita (como en la tarjeta)
+        const menos =
+          n > 1
+            ? `<button type="button" data-menos="${s}" aria-label="${escapar(datos.textos.menos)}: ${escapar(m.nombre)}">${menosIco}</button>`
+            : `<button type="button" class="borrar" data-quitar="${s}" aria-label="${quitar}" title="${quitar}">${papelera}</button>`;
+        return `<li><img src="${m.img}" alt="" width="44" height="44"><span>${escapar(m.nombre)}</span><span class="pres-cant">${menos}<output>${n}</output><button type="button" data-mas="${s}" aria-label="${escapar(datos.textos.mas)}: ${escapar(m.nombre)}">${masIco}</button></span></li>`;
       })
       .join('');
     const cuerpo = `${datos.textos.cuerpo}\n\n${elegidas.map((s) => `- ${unidades.get(s) ?? 1} × ${datos.maquinas[s].nombre}`).join('\n')}\n`;
@@ -111,6 +123,19 @@ export function iniciarPresupuesto() {
     pintar();
   };
 
+  // Al añadir, un aviso breve encima del botón de abajo: "Añadido al presupuesto: Minicen"
+  const aviso = document.createElement('p');
+  aviso.className = 'pres-aviso';
+  aviso.setAttribute('role', 'status');
+  caja.prepend(aviso);
+  let quitarAviso = 0;
+  const avisar = (nombre: string) => {
+    aviso.textContent = `${datos.textos.aviso}: ${nombre}`;
+    aviso.classList.add('visto');
+    clearTimeout(quitarAviso);
+    quitarAviso = window.setTimeout(() => aviso.classList.remove('visto'), 1800);
+  };
+
   // Al añadir o sumar, el botón de abajo da un pequeño salto para que se vea dónde ha ido
   const saltar = () => {
     if (!matchMedia('(prefers-reduced-motion: reduce)').matches)
@@ -123,6 +148,7 @@ export function iniciarPresupuesto() {
     b.addEventListener('click', () => {
       cambiar(b.dataset.slug!, true);
       saltar();
+      if (!abierto()) avisar(datos.maquinas[b.dataset.slug!]?.nombre ?? '');
       paso.querySelector<HTMLElement>('[data-paso="1"]')!.focus();
     });
     paso.addEventListener('click', (ev) => {
@@ -146,7 +172,7 @@ export function iniciarPresupuesto() {
     const el = ev.target as HTMLElement;
     const b = el.closest<HTMLElement>('[data-quitar]');
     if (b) return cambiar(b.dataset.quitar!, false);
-    // Unidades: de 1 en 1; con 1, el "−" no baja de ahí (para quitar está el aspa)
+    // Unidades: de 1 en 1 (con 1, en su sitio está la papelera, que va por data-quitar)
     const mas = el.closest<HTMLElement>('[data-mas]');
     const menos = el.closest<HTMLElement>('[data-menos]');
     const s = mas?.dataset.mas ?? menos?.dataset.menos;

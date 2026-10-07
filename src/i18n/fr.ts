@@ -292,6 +292,7 @@ export const fr: Textos = {
       anadir: 'Ajouter au devis',
       corto: 'Devis',
       ud: 'u.',
+      aviso: 'Ajouté au devis',
       menos: 'Une unité de moins',
       mas: 'Une unité de plus',
       quitarDeLista: 'Retirer du devis',
