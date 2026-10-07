@@ -262,6 +262,9 @@ export const en: Textos = {
       todas: 'All applications',
       ver: (n: number) => (n === 1 ? 'Show 1 product' : `Show ${n} products`),
       cerrar: 'Close',
+      tubo: 'Your tube',
+      cualquierTubo: 'Any tube',
+      conTubo: (rotor: string, tipo: string, n: string) => `With your tube: ${tipo} rotor ${rotor} · ${n} at a time`,
       ordenar: 'Sort',
       orden: {
         catalogo: 'Catalogue order',

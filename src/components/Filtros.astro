@@ -10,9 +10,11 @@ import { idioma, textos } from '../i18n';
 interface Props {
   /** Aplicaciones por grupo: generales, especiales y otros productos */
   grupos: { nombre: string; cats: { v: string; nombre: string }[] }[];
+  /** Tubos que admite alguna máquina, agrupados por tipo ("tipo|medidas") */
+  tubos: { nombre: string; items: { v: string; nombre: string; medidas: string }[] }[];
 }
 
-const { grupos } = Astro.props;
+const { grupos, tubos } = Astro.props;
 const t = textos(idioma(Astro.currentLocale));
 const f = t.catalogo.filtros;
 const temperaturas: Temperatura[] = ['ventilada', 'refrigerada', 'calefactada'];
@@ -129,6 +131,54 @@ const iconos: Record<Temperatura, string> = {
           </div>
         </div>
 
+        <!-- Tu tubo: deja solo las máquinas que lo admiten; cada tarjeta dice en qué rotor y cuántos caben. Un panel
+             como el de aplicación: un título por tipo de tubo y debajo sus medidas -->
+        <div class="tubo">
+          <span class="etq-movil">{f.tubo}</span>
+          <input type="hidden" name="tubo" value="" />
+          <button
+            type="button"
+            class="tubo-btn"
+            aria-expanded="false"
+            aria-controls="tubo-menu"
+            data-todos={f.cualquierTubo}
+          >
+            <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+              <path d="M9 3h6M10 3v14a2 2 0 0 0 4 0V3" fill="none" stroke="currentColor" stroke-width="1.7"></path>
+            </svg>
+            <span class="tubo-txt">{f.cualquierTubo}</span>
+            <svg class="flechita" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+              <path d="m6 9 6 6 6-6" fill="none" stroke="currentColor" stroke-width="1.8"></path>
+            </svg>
+          </button>
+          <div class="tubo-menu" id="tubo-menu" aria-label={f.tubo}>
+            <button type="button" class="t-op t-todos" data-tubo="" aria-pressed="true">
+              {f.cualquierTubo}
+            </button>
+            <div class="t-grupos">
+              {tubos.map((g) => (
+                <div class="t-grupo" role="group" aria-label={g.nombre}>
+                  <p class="grupo">{g.nombre}</p>
+                  <div class="t-medidas">
+                    {g.items.map((x) => (
+                      <button
+                        type="button"
+                        class="t-op"
+                        data-tubo={x.v}
+                        data-nombre={x.nombre}
+                        aria-label={x.nombre}
+                        aria-pressed="false"
+                      >
+                        {x.medidas}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
         <!-- Ordenar: dentro de cada familia, por la cifra que se elija (de mayor a menor) -->
         <label class="orden">
           <span class="etq-movil">{f.ordenar}</span>
@@ -189,9 +239,23 @@ const iconos: Record<Temperatura, string> = {
       const texto = plano(q.value);
       return !texto || texto.split(/\s+/).every((p) => (el.dataset.texto ?? '').includes(p));
     };
+    // Tubo elegido: la tarjeta vale si alguna de sus versiones lo admite (datos que pone la página)
+    const selTubo = form.querySelector<HTMLInputElement>('input[name=tubo]')!;
+    const tuboBtn = form.querySelector<HTMLButtonElement>('.tubo-btn')!;
+    const tuboTxt = form.querySelector<HTMLElement>('.tubo-txt')!;
+    const opsTubo = [...form.querySelectorAll<HTMLButtonElement>('.t-op')];
+    const tubosModelo =
+      (
+        JSON.parse(document.getElementById('datos-tubos')?.textContent ?? '{}') as {
+          modelos?: Record<string, Record<string, unknown>>;
+        }
+      ).modelos ?? {};
+    const admite = (el: HTMLElement) =>
+      !selTubo.value || (el.dataset.slugs ?? '').split(' ').some((x) => tubosModelo[x]?.[selTubo.value]);
     const cumple = (el: HTMLElement, c = aplic, ts: Set<string> = elegidas) =>
       (!c || el.dataset.cat === c) &&
       (!ts.size || (el.dataset.t ?? '').split(' ').some((x) => ts.has(x))) &&
+      admite(el) &&
       casaTexto(el);
 
     // ——— Sugerencias del buscador: foto, nombre y aplicación de cada máquina que coincide ———
@@ -326,11 +390,27 @@ const iconos: Record<Temperatura, string> = {
         b.querySelector('.n')!.textContent = String(n);
         b.disabled = n === 0 && !on;
       }
+      // Tubos: el elegido, marcado; los que no dejarían ninguna máquina con los demás filtros, apagados
+      for (const b of opsTubo) {
+        const v = b.dataset.tubo!;
+        const on = selTubo.value === v;
+        b.setAttribute('aria-pressed', String(on));
+        if (v) {
+          const antes = selTubo.value;
+          selTubo.value = v;
+          b.disabled = !on && !fichas.some((el) => cumple(el));
+          selTubo.value = antes;
+        }
+      }
+      const tuboElegido = opsTubo.find((b) => b.dataset.tubo && b.dataset.tubo === selTubo.value);
+      tuboTxt.textContent = tuboElegido ? tuboElegido.dataset.nombre! : tuboBtn.dataset.todos!;
+      tuboBtn.classList.toggle('on', !!tuboElegido);
+
       const elegida = aplic ? opciones.find((b) => b.dataset.aplic === aplic) : undefined;
       aplicTxt.textContent = elegida ? elegida.dataset.nombre! : aplicBtn.dataset.todas!;
       aplicBtn.classList.toggle('on', !!elegida);
 
-      const nActivos = (aplic ? 1 : 0) + elegidas.size;
+      const nActivos = (aplic ? 1 : 0) + elegidas.size + (selTubo.value ? 1 : 0);
       activos.hidden = nActivos === 0;
       activos.textContent = String(nActivos);
       borrar.hidden = nActivos === 0 && !q.value.trim();
@@ -352,7 +432,9 @@ const iconos: Record<Temperatura, string> = {
         a.querySelector('.n')!.textContent = String(visibles.filter(de(s)).length);
       }
       // Cada tarjeta con versiones enseña la que cumple la temperatura elegida
-      document.dispatchEvent(new CustomEvent('catalogo:filtrado', { detail: { temps: [...elegidas] } }));
+      document.dispatchEvent(
+        new CustomEvent('catalogo:filtrado', { detail: { temps: [...elegidas], tubo: selTubo.value } }),
+      );
 
       if (animar) {
         const alto = window.innerHeight;
@@ -388,6 +470,7 @@ const iconos: Record<Temperatura, string> = {
       poner('t', [...elegidas].join(','));
       poner('q', q.value.trim());
       poner('o', orden.value);
+      poner('tubo', selTubo.value);
       history.replaceState(null, '', url);
     };
 
@@ -402,15 +485,36 @@ const iconos: Record<Temperatura, string> = {
       q.value = url.searchParams.get('q') ?? '';
       const o = url.searchParams.get('o') ?? '';
       if ([...orden.options].some((x) => x.value === o)) orden.value = o;
+      const tu = url.searchParams.get('tubo') ?? '';
+      if (tu && opsTubo.some((x) => x.dataset.tubo === tu)) selTubo.value = tu;
     }
 
     // ——— Desplegable de aplicación ———
     const menuAbierto = () => aplicBtn.getAttribute('aria-expanded') === 'true';
     const cerrarMenu = () => aplicBtn.setAttribute('aria-expanded', 'false');
-    aplicBtn.addEventListener('click', () => aplicBtn.setAttribute('aria-expanded', String(!menuAbierto())));
+    aplicBtn.addEventListener('click', () => {
+      cerrarTubos();
+      aplicBtn.setAttribute('aria-expanded', String(!menuAbierto()));
+    });
+    // ——— Panel de tubos ———
+    const tubosAbierto = () => tuboBtn.getAttribute('aria-expanded') === 'true';
+    const cerrarTubos = () => tuboBtn.setAttribute('aria-expanded', 'false');
+    tuboBtn.addEventListener('click', () => {
+      cerrarMenu();
+      tuboBtn.setAttribute('aria-expanded', String(!tubosAbierto()));
+    });
+    for (const b of opsTubo) {
+      b.addEventListener('click', () => {
+        selTubo.value = b.dataset.tubo!;
+        cerrarTubos();
+        aplicar();
+        if (!movil.matches) tuboBtn.focus();
+      });
+    }
     document.addEventListener('click', (e) => {
       const el = e.target as Element;
       if (menuAbierto() && !el.closest('.aplic')) cerrarMenu();
+      if (tubosAbierto() && !el.closest('.tubo')) cerrarTubos();
       if (!el.closest('.buscar')) cerrarSug();
     });
     for (const b of opciones) {
@@ -447,6 +551,7 @@ const iconos: Record<Temperatura, string> = {
         elegidas.clear();
         q.value = '';
         orden.value = '';
+        selTubo.value = '';
         aplicar();
       });
     }
@@ -480,6 +585,9 @@ const iconos: Record<Temperatura, string> = {
       if (menuAbierto()) {
         cerrarMenu();
         aplicBtn.focus();
+      } else if (tubosAbierto()) {
+        cerrarTubos();
+        tuboBtn.focus();
       } else cerrar();
     });
     panel.addEventListener('keydown', (e) => {
@@ -514,10 +622,12 @@ const iconos: Record<Temperatura, string> = {
   /* ——— La barra: oscura sobre la sección blanca, con la raya roja arriba; los controles, con borde fino claro ——— */
   .barra {
     --osc: #787e85;
+    position: relative;
     display: flex;
     align-items: center;
     gap: 10px;
     padding: 14px;
+    flex-wrap: wrap;
     background: #5a5f65;
     border-top: 3px solid var(--red);
     box-shadow: 0 30px 60px -40px rgba(17, 19, 21, 0.6);
@@ -656,7 +766,10 @@ const iconos: Record<Temperatura, string> = {
   }
 
   /* Temperatura y aplicación */
+  /* Dos filas: arriba el buscador con el total y Borrar filtros; debajo, todos los filtros */
   .panel {
+    order: 3;
+    flex-basis: 100%;
     display: flex;
     align-items: center;
     gap: 10px;
@@ -781,6 +894,137 @@ const iconos: Record<Temperatura, string> = {
     cursor: pointer;
     transition: border-color 0.2s ease;
   }
+  /* ——— Tu tubo: botón como el de aplicación y, al abrirlo, un panel con un título por tipo y sus medidas ——— */
+  /* El panel de tubos se coloca respecto a la barra entera, para que no se salga por la derecha */
+  .tubo {
+    position: static;
+  }
+  .tubo-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    max-width: 280px;
+    height: var(--alto);
+    padding: 0 16px;
+    border: 1px solid var(--osc);
+    background: none;
+    font: 400 17px var(--f);
+    color: #fff;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: border-color 0.2s ease;
+  }
+  .tubo-txt {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .tubo-btn svg {
+    flex: none;
+  }
+  .tubo-btn .flechita {
+    transition: rotate 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+  }
+  .tubo-btn[aria-expanded='true'] {
+    border-color: #fff;
+  }
+  .tubo-btn[aria-expanded='true'] .flechita {
+    rotate: 180deg;
+  }
+  .tubo-btn.on {
+    background: #fff;
+    border-color: #fff;
+    color: var(--ink);
+    font-weight: 700;
+    box-shadow: inset 0 -3px 0 var(--red);
+  }
+  .tubo-menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 14px;
+    right: 14px;
+    z-index: 5;
+    max-height: min(70vh, 620px);
+    overflow-y: auto;
+    padding: 14px;
+    background: #fff;
+    border: 1px solid var(--ink);
+    box-shadow: 0 24px 50px -20px rgba(17, 19, 21, 0.35);
+    opacity: 0;
+    translate: 0 -6px;
+    visibility: hidden;
+    transition:
+      opacity 0.18s ease,
+      translate 0.25s cubic-bezier(0.23, 1, 0.32, 1),
+      visibility 0s 0.25s;
+  }
+  .tubo-btn[aria-expanded='true'] + .tubo-menu {
+    opacity: 1;
+    translate: 0 0;
+    visibility: visible;
+    transition:
+      opacity 0.18s ease,
+      translate 0.25s cubic-bezier(0.23, 1, 0.32, 1);
+  }
+  /* Los tipos en columnas; cada tipo entero en su columna */
+  .t-grupos {
+    columns: 3 230px;
+    column-gap: 22px;
+  }
+  .t-grupo {
+    break-inside: avoid;
+    margin-bottom: 14px;
+  }
+  .t-grupo .grupo {
+    margin: 0 0 8px;
+  }
+  .t-medidas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .t-op {
+    height: 34px;
+    padding: 0 10px;
+    border: 1px solid #c9cdd1;
+    background: #fff;
+    font: 400 15px var(--f);
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+    cursor: pointer;
+    transition:
+      background-color 0.15s ease,
+      border-color 0.15s ease;
+  }
+  .t-todos {
+    width: 100%;
+    margin-bottom: 14px;
+    text-align: left;
+    font-weight: 700;
+  }
+  .t-op[aria-pressed='true'] {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: #fff;
+    box-shadow: inset 0 -3px 0 var(--red);
+  }
+  .t-op:disabled {
+    opacity: 0.35;
+    cursor: default;
+  }
+  .t-op:focus-visible,
+  .tubo-btn:focus-visible {
+    outline: 2px solid var(--red);
+    outline-offset: 2px;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .tubo-btn:not(.on):hover {
+      border-color: #fff;
+    }
+    .t-op:not(:disabled):not([aria-pressed='true']):hover {
+      border-color: var(--ink);
+      background: #f4f4f4;
+    }
+  }
   .orden select option {
     color: var(--ink);
   }
@@ -876,6 +1120,7 @@ const iconos: Record<Temperatura, string> = {
 
   /* Total y borrar */
   .fin {
+    order: 2;
     display: flex;
     align-items: center;
     gap: 8px;
@@ -1151,6 +1396,23 @@ const iconos: Record<Temperatura, string> = {
       background-color: #fff;
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='16' height='16'%3E%3Cpath d='M7 4v16M4 17l3 3 3-3M17 20V4M14 7l3-3 3 3' fill='none' stroke='%231a1a1a' stroke-width='1.6'/%3E%3C/svg%3E");
       color: var(--ink);
+    }
+    .tubo-btn {
+      display: none;
+    }
+    .tubo-menu {
+      position: static;
+      width: auto;
+      max-height: none;
+      padding: 0;
+      border: 0;
+      box-shadow: none;
+      opacity: 1;
+      translate: none;
+      visibility: visible;
+    }
+    .t-grupos {
+      columns: auto;
     }
     .aplic-menu {
       position: static;

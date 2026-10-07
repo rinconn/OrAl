@@ -79,6 +79,9 @@ const cifras = (v: Version) => [
     {frase && <span class="frase">{frase}</span>}
   </span>
 
+  <!-- Con un tubo elegido en los filtros: en qué rotor va y cuántos caben (lo rellena la página) -->
+  {vs && <span class="con-tubo" hidden />}
+
   <!-- Placa de datos: cada cifra con su nombre arriba y la unidad pequeña al lado -->
   {vs ? (
     vs.map((v, i) => (
@@ -113,6 +116,8 @@ const cifras = (v: Version) => [
     display: none !important;
   }
   .pieza {
+    /* El color de la familia, más vivo (como en la raya de su portada) */
+    --fam-vivo: oklch(from var(--fam) calc(l + 0.06) calc(c * 2) h);
     --sube: cubic-bezier(0.23, 1, 0.32, 1);
     --borde: #b4b9bd;
     --marco: #5f656b;
@@ -138,7 +143,7 @@ const cifras = (v: Version) => [
     aspect-ratio: 5 / 4;
     overflow: hidden;
     background: #2b2e31 url(/img/fondos/mesa-tarjeta.webp) center / cover no-repeat;
-    border-bottom: 3px solid var(--fam);
+    border-bottom: 5px solid var(--fam-vivo);
   }
   /* Sombra de apoyo bajo la máquina */
   .estudio::after {
@@ -235,7 +240,7 @@ const cifras = (v: Version) => [
     content: '';
     width: 10px;
     height: 10px;
-    background: var(--fam);
+    background: var(--fam-vivo);
   }
   .nombre {
     margin: 10px 0 0;
@@ -251,6 +256,28 @@ const cifras = (v: Version) => [
     line-height: 1.35;
     color: var(--body);
   }
+  /* "Con tu tubo": franja oscura de borde a borde, con el tubo en rojo delante */
+  .con-tubo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 24px;
+    background: var(--ink);
+    color: #fff;
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.25;
+  }
+  .con-tubo::before {
+    content: '';
+    flex: none;
+    width: 8px;
+    height: 18px;
+    border: 1.5px solid #fff;
+    border-top: 4px solid var(--red);
+    border-radius: 0 0 4px 4px;
+  }
+
   /* Placa de datos: banda gris de borde a borde con tres casillas */
   .placa {
     display: grid;
