@@ -291,6 +291,7 @@ export const en: Textos = {
       anadir: 'Add to quote',
       corto: 'Quote',
       ud: 'pcs',
+      aviso: 'Added to the quote',
       menos: 'One fewer',
       mas: 'One more',
       quitarDeLista: 'Remove from quote',

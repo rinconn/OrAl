@@ -298,6 +298,7 @@ export const es = {
       anadir: 'Añadir al presupuesto',
       corto: 'Presupuesto',
       ud: 'ud.',
+      aviso: 'Añadido al presupuesto',
       menos: 'Una unidad menos',
       mas: 'Una unidad más',
       quitarDeLista: 'Quitar del presupuesto',
