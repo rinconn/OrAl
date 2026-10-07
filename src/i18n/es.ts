@@ -268,6 +268,9 @@ export const es = {
       todas: 'Todas las aplicaciones',
       ver: (n: number) => (n === 1 ? 'Ver 1 producto' : `Ver ${n} productos`),
       cerrar: 'Cerrar',
+      tubo: 'Tu tubo',
+      cualquierTubo: 'Cualquier tubo',
+      conTubo: (rotor: string, tipo: string, n: string) => `Con tu tubo: rotor ${rotor} ${tipo} · ${n} a la vez`,
       ordenar: 'Ordenar',
       orden: {
         catalogo: 'Orden del catálogo',
