@@ -1,6 +1,6 @@
 ---
 // Una tarjeta del catálogo (una por serie: si tiene versiones, la página pone el selector encima): caja con borde, y arriba la máquina sobre una mesa de laboratorio oscura (la misma foto
-// en todas), para que la máquina blanca destaque; debajo, la raya del color de su familia. La máquina, grande, con su
+// en todas, retocada: solo una gradilla de tubos y un matraz rojos en los bordes), para que la máquina blanca destaque; debajo, la raya del color de su familia. La máquina, grande, con su
 // sombra de apoyo; la temperatura en una etiqueta con su icono. Debajo, aplicación, nombre, frase, placa con tres cifras y
 // "Ver producto »". Al pasar el ratón: el borde se oscurece, la tarjeta sube un poco y la máquina crece ligeramente.
 import type { Modelo } from '../data/productos';
@@ -137,7 +137,7 @@ const cifras = (v: Version) => [
     display: block;
     aspect-ratio: 5 / 4;
     overflow: hidden;
-    background: #2b2e31 url(/img/fondos/mesa-laboratorio.webp) center / cover no-repeat;
+    background: #2b2e31 url(/img/fondos/mesa-tarjeta.webp) center / cover no-repeat;
     border-bottom: 3px solid var(--fam);
   }
   /* Sombra de apoyo bajo la máquina */
