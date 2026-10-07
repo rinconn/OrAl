@@ -297,10 +297,9 @@ export const es = {
     presupuesto: {
       anadir: 'Añadir al presupuesto',
       corto: 'Presupuesto',
-      anadido: 'Añadido',
+      ud: 'ud.',
       menos: 'Una unidad menos',
       mas: 'Una unidad más',
-      quitarCorto: 'Quitar',
       quitarDeLista: 'Quitar del presupuesto',
       titulo: 'Mi presupuesto',
       boton: (n: number) => `Presupuesto (${n})`,
