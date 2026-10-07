@@ -1,0 +1,460 @@
+---
+// Una tarjeta del catálogo con carácter propio: arriba un escenario gris con el nombre de la máquina en gigante,
+// recortado detrás de ella, y la etiqueta de temperatura con su color; abajo la aplicación con el color de la familia,
+// el nombre en negrita, su frase y las tres cifras grandes. Al pasar el ratón la tarjeta se inclina hacia el cursor,
+// el escenario se apaga a negro, el nombre gigante se desliza en el color de la familia, la máquina sube sobre su
+// elipse roja encendida y la franja de abajo se llena de rojo con "Ver ficha »".
+import type { Modelo } from '../data/productos';
+import type { ProductoLab } from '../data/laboratorio';
+import { idioma, numero, ruta, textos } from '../i18n';
+
+interface Props {
+  modelo?: Modelo;
+  lab?: ProductoLab;
+  capacidad?: string;
+  /** Fuerza máxima ya formateada, sin "xg" */
+  fuerza?: string;
+  /** Aplicación (Microcentrífuga, Universal…) */
+  uso: string;
+  frase?: string;
+  /** Color de la familia (src/data/productos.ts) */
+  color: string;
+}
+
+const { modelo: m, lab: p, capacidad, fuerza, uso, frase, color } = Astro.props;
+const lang = idioma(Astro.currentLocale);
+const t = textos(lang);
+const tf = t.catalogo.ficha;
+const slug = m?.slug ?? p!.slug;
+const href = ruta(lang, `/centrifugas/${slug}/`);
+const nombre = m ? m.nombre : t.laboratorio.items[p!.slug].nombre;
+const imagen = (m ?? p)!.imagen;
+// El nombre gigante del fondo: la palabra sin el número de serie, para que se lea como textura
+const fondo = nombre.split(/\s+/)[0];
+const cifras = m
+  ? [
+      { v: capacidad, k: tf.capacidad },
+      { v: numero(lang, m.rpm), k: 'rpm' },
+      ...(fuerza ? [{ v: fuerza, k: '× g' }] : []),
+    ]
+  : [];
+---
+
+<a class:list={['pieza', { lab: p }]} href={href} style={`--fam: ${color}`}>
+  <span class="escena">
+    <span class="fondo" aria-hidden="true">
+      <span>{fondo}</span>
+      <span>{fondo}</span>
+    </span>
+    {m && <span class:list={['temp', m.temperatura]}>{t.temperatura[m.temperatura]}</span>}
+    <span class="foto">
+      <img src={imagen.src} alt="" width={imagen.ancho} height={imagen.alto} loading="lazy" decoding="async" />
+    </span>
+  </span>
+
+  <span class="cuerpo">
+    <span class="uso">{uso}</span>
+    <h3 class="nombre">{nombre}</h3>
+    {frase && <span class="frase">{frase}</span>}
+    {m ? (
+      <span class="cifras">
+        {cifras.map((c) => (
+          <span class="cifra">
+            <b>{c.v}</b>
+            <small>{c.k}</small>
+          </span>
+        ))}
+        <span class="pantalla">
+          {tf.pantalla} {m.pantalla}
+        </span>
+      </span>
+    ) : (
+      <span class="cifras modelo">{p!.modelo}</span>
+    )}
+  </span>
+
+  <span class="ver">
+    <span>{tf.verFicha}</span>
+    <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+      <path d="M4 12h15M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.8"></path>
+    </svg>
+  </span>
+</a>
+
+<script>
+  // La tarjeta se inclina un poco hacia el cursor, como si se cogiera con la mano
+  const fino = matchMedia('(hover: hover) and (pointer: fine)');
+  const quieto = matchMedia('(prefers-reduced-motion: reduce)');
+  if (fino.matches && !quieto.matches) {
+    for (const el of document.querySelectorAll<HTMLElement>('.pieza')) {
+      let marco = 0;
+      el.addEventListener('pointermove', (e) => {
+        cancelAnimationFrame(marco);
+        marco = requestAnimationFrame(() => {
+          const r = el.getBoundingClientRect();
+          const x = (e.clientX - r.left) / r.width - 0.5;
+          const y = (e.clientY - r.top) / r.height - 0.5;
+          el.style.setProperty('--rx', `${(-y * 6).toFixed(2)}deg`);
+          el.style.setProperty('--ry', `${(x * 8).toFixed(2)}deg`);
+          el.style.setProperty('--px', `${(x * 100).toFixed(1)}%`);
+        });
+      });
+      el.addEventListener('pointerleave', () => {
+        cancelAnimationFrame(marco);
+        el.style.removeProperty('--rx');
+        el.style.removeProperty('--ry');
+        el.style.removeProperty('--px');
+      });
+    }
+  }
+</script>
+
+<style>
+  .pieza {
+    --sube: cubic-bezier(0.23, 1, 0.32, 1);
+    --rx: 0deg;
+    --ry: 0deg;
+    --px: 0%;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background: #fff;
+    border: 1px solid #e3e3e3;
+    color: var(--ink);
+    text-decoration: none;
+    outline: 0;
+    transform: perspective(1100px) rotateX(var(--rx)) rotateY(var(--ry));
+    transform-style: preserve-3d;
+    transition:
+      transform 0.5s var(--sube),
+      border-color 0.3s ease,
+      box-shadow 0.5s var(--sube);
+  }
+  /* Raya de la familia arriba: su color, de borde a borde */
+  .pieza::before {
+    content: '';
+    position: absolute;
+    inset: -1px -1px auto;
+    z-index: 2;
+    height: 4px;
+    background: var(--fam);
+    transform-origin: left;
+    transition: height 0.35s var(--sube);
+  }
+
+  /* ——— Escenario: gris, con el nombre gigante detrás de la máquina ——— */
+  .escena {
+    position: relative;
+    display: block;
+    aspect-ratio: 6 / 5;
+    overflow: hidden;
+    background: #f1f1f1;
+    transition: background-color 0.45s var(--sube);
+  }
+  .fondo {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    display: flex;
+    gap: 0.25em;
+    font-size: clamp(110px, 11vw, 170px);
+    font-weight: 700;
+    line-height: 0.8;
+    letter-spacing: -0.03em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    color: #e8e8e8;
+    translate: -4% -58%;
+    transition:
+      color 0.45s ease,
+      translate 1.2s var(--sube);
+    user-select: none;
+  }
+
+  /* Temperatura: etiqueta cuadrada con su color, arriba a la izquierda */
+  .temp {
+    position: absolute;
+    top: 18px;
+    left: 18px;
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 28px;
+    padding: 0 10px;
+    background: #fff;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink);
+  }
+  .temp::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    background: var(--tc);
+  }
+  .temp.ventilada {
+    --tc: #8c959b;
+  }
+  .temp.refrigerada {
+    --tc: #2a7fc4;
+  }
+  .temp.calefactada {
+    --tc: var(--red);
+  }
+
+  /* La máquina de pie sobre su elipse roja */
+  .foto {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+  }
+  .foto::before,
+  .foto::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: 11%;
+    z-index: -1;
+    border-radius: 50%;
+    translate: -50% 50%;
+  }
+  .foto::before {
+    width: 62%;
+    aspect-ratio: 5.2;
+    border: 1.5px solid rgba(221, 4, 10, 0.5);
+    transition:
+      border-color 0.35s ease,
+      box-shadow 0.45s ease,
+      scale 0.5s var(--sube);
+  }
+  .foto::after {
+    width: 48%;
+    aspect-ratio: 6;
+    background: radial-gradient(closest-side, rgba(17, 19, 21, 0.28), transparent);
+    transition:
+      opacity 0.45s var(--sube),
+      scale 0.5s var(--sube);
+  }
+  .foto img {
+    position: absolute;
+    left: 50%;
+    bottom: 8%;
+    width: auto;
+    height: 80%;
+    max-width: 86%;
+    object-fit: contain;
+    object-position: bottom;
+    translate: -50% 0;
+    transition: transform 0.6s var(--sube);
+  }
+  .lab .foto img {
+    height: 72%;
+  }
+
+  /* ——— Cuerpo: aplicación, nombre, frase y cifras ——— */
+  .cuerpo {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 24px 26px 26px;
+  }
+  .uso {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .uso::before {
+    content: '';
+    width: 18px;
+    height: 3px;
+    background: var(--fam);
+    transition: width 0.45s var(--sube);
+  }
+  .nombre {
+    margin: 10px 0 0;
+    font-size: clamp(34px, 3vw, 44px);
+    font-weight: 700;
+    line-height: 0.95;
+    letter-spacing: -0.015em;
+  }
+  .frase {
+    margin-top: 10px;
+    font-size: 17px;
+    font-weight: 300;
+    line-height: 1.35;
+    color: var(--body);
+  }
+  .cifras {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px 0;
+    margin-top: auto;
+    padding-top: 24px;
+  }
+  .cifra {
+    display: grid;
+    padding-top: 12px;
+    border-top: 2px solid var(--ink);
+    flex: 1 1 auto;
+    padding-right: 14px;
+    font-variant-numeric: tabular-nums;
+  }
+  .cifra + .cifra {
+    padding-left: 14px;
+    border-left: 1px solid #e3e3e3;
+  }
+  .cifra b {
+    font-size: clamp(22px, 1.9vw, 27px);
+    font-weight: 700;
+    line-height: 1;
+    white-space: nowrap;
+  }
+  .cifra small {
+    margin-top: 5px;
+    font-size: 14px;
+    color: var(--muted);
+  }
+  .pantalla {
+    flex-basis: 100%;
+    font-size: 15px;
+    color: var(--muted);
+  }
+  .cifras.modelo {
+    padding-top: 18px;
+    border-top: 2px solid var(--ink);
+    margin-top: auto;
+    font-size: 18px;
+    font-weight: 700;
+  }
+
+  /* ——— Franja de abajo: se llena de rojo de izquierda a derecha ——— */
+  .ver {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 58px;
+    padding: 0 26px;
+    border-top: 1px solid #e3e3e3;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--red);
+    overflow: hidden;
+    isolation: isolate;
+    transition: color 0.3s ease;
+  }
+  .ver::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: var(--red);
+    scale: 0 1;
+    transform-origin: left;
+    transition: scale 0.5s var(--sube);
+  }
+  .ver svg {
+    transition: translate 0.5s var(--sube);
+  }
+
+  /* ——— Al pasar: se inclina, se apaga el escenario y la máquina sube ——— */
+  @media (hover: hover) and (pointer: fine) {
+    .pieza:hover {
+      border-color: var(--ink);
+      box-shadow: 0 30px 60px -28px rgba(17, 19, 21, 0.45);
+      transition:
+        transform 0.15s linear,
+        border-color 0.3s ease,
+        box-shadow 0.5s var(--sube);
+    }
+    .pieza:hover::before {
+      height: 6px;
+    }
+    .pieza:hover .escena {
+      background: #151719;
+    }
+    .pieza:hover .fondo {
+      color: color-mix(in srgb, var(--fam) 55%, #151719);
+      translate: calc(-30% - var(--px) * 0.15) -58%;
+    }
+    .pieza:hover .temp {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+    }
+    .pieza:hover .foto img {
+      transform: translateY(-14px) scale(1.05);
+    }
+    .pieza:hover .foto::before {
+      border-color: var(--red);
+      box-shadow:
+        0 0 22px rgba(221, 4, 10, 0.75),
+        inset 0 0 14px rgba(221, 4, 10, 0.4);
+      scale: 1.08;
+    }
+    .pieza:hover .foto::after {
+      opacity: 0.35;
+      scale: 0.8;
+    }
+    .pieza:hover .uso::before {
+      width: 34px;
+    }
+    .pieza:hover .ver {
+      color: #fff;
+    }
+    .pieza:hover .ver::before {
+      scale: 1 1;
+    }
+    .pieza:hover .ver svg {
+      translate: 6px 0;
+    }
+  }
+  .pieza:focus-visible {
+    outline: 3px solid var(--red);
+    outline-offset: 3px;
+  }
+  .pieza:focus-visible .ver {
+    color: #fff;
+  }
+  .pieza:focus-visible .ver::before {
+    scale: 1 1;
+  }
+  .pieza:active {
+    transform: perspective(1100px) rotateX(var(--rx)) rotateY(var(--ry)) scale(0.985);
+    transition-duration: 0.12s;
+  }
+
+  @media (max-width: 640px) {
+    .cuerpo {
+      padding: 20px 20px 22px;
+    }
+    .ver {
+      padding: 0 20px;
+    }
+    .temp {
+      top: 14px;
+      left: 14px;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .pieza,
+    .fondo,
+    .foto img,
+    .foto::before,
+    .ver::before,
+    .ver svg {
+      transition-property: color, background-color, border-color, box-shadow, opacity;
+    }
+    .pieza:hover .foto img {
+      transform: none;
+    }
+  }
+</style>

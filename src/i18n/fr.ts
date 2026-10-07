@@ -259,6 +259,11 @@ export const fr: Textos = {
       resultados: (n: number) => (n === 1 ? '1 produit' : `${n} produits`),
       limpiar: 'Effacer les filtres',
       vacio: 'Aucun produit ne répond à tous ces filtres.',
+      boton: 'Filtres',
+      todas: 'Toutes les applications',
+      ver: (n: number) => (n === 1 ? 'Voir 1 produit' : `Voir ${n} produits`),
+      cerrar: 'Fermer',
+      quitar: (x: string) => `Retirer le filtre ${x}`,
     },
     comparar: {
       comparar: 'Comparer',

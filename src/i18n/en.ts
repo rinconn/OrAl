@@ -258,6 +258,11 @@ export const en: Textos = {
       resultados: (n: number) => (n === 1 ? '1 product' : `${n} products`),
       limpiar: 'Clear filters',
       vacio: 'No product matches all these filters.',
+      boton: 'Filters',
+      todas: 'All applications',
+      ver: (n: number) => (n === 1 ? 'Show 1 product' : `Show ${n} products`),
+      cerrar: 'Close',
+      quitar: (x: string) => `Remove the ${x} filter`,
     },
     comparar: {
       comparar: 'Compare',
