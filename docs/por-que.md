@@ -1077,3 +1077,17 @@ entera delante, si se ensancha el contenido de 1280 a 1440 px.
   Los datos salen de la tabla de la serie y de la ficha de cada modelo en la web actual.
 - **Descartado:** un rediseño completo del catálogo como exposición (capítulos por familia y máquinas sobre peana): no
   gustó tanto como el catálogo de siempre; de él se queda el comparador.
+
+## 22. Tarjetas del catálogo: la misma foto de laboratorio, con menos cosas
+
+- **Problema:** las tarjetas usan todas la misma foto de una mesa de laboratorio oscura, que es lo normal en un
+  catálogo, pero la foto traía mucho detrás de la máquina: un guante con pipeta, una gradilla, botellas rojas, un
+  microscopio y un matraz. Con veinte tarjetas seguidas, ese detalle competía con la máquina y con el rojo de la marca.
+- **Ahora:** la misma foto retocada (`public/img/fondos/mesa-tarjeta.webp`): fuera el guante, la pipeta y el
+  microscopio, el fondo más desenfocado, y solo quedan una gradilla de tubos rojos a la izquierda y un matraz rojo a la
+  derecha, en los bordes, donde la máquina no los tapa.
+- **Por qué:** sigue pareciendo un laboratorio de verdad y conserva el toque rojo, pero lo que se ve primero en cada
+  tarjeta es la máquina. La foto original sigue en el bloque de equipo a medida, oscurecida, donde no hay máquina
+  delante.
+- **Descartado:** un estudio gris claro liso (la máquina blanca sobre gris claro queda plana), la foto sin ningún
+  detalle (queda apagada) y un estudio gris oscuro liso (sin ambiente de laboratorio).
