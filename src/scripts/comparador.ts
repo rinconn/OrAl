@@ -132,5 +132,8 @@ export function iniciarComparador() {
   });
   dialogo.addEventListener('close', () => abrir.focus());
 
+  // Si una tarjeta cambia de versión, su casilla pasa a ser la de esa versión
+  document.addEventListener('catalogo:version', pintarBarra);
+
   pintarBarra();
 }

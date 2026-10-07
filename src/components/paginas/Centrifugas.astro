@@ -7,6 +7,7 @@ import Base from '../../layouts/Base.astro';
 import Maquina from '../Maquina.astro';
 import Paso from '../Paso.astro';
 import Filtros from '../Filtros.astro';
+import IconoTemp from '../ui/IconoTemp.astro';
 import HeroProductos from '../HeroProductos.astro';
 import {
   categorias,
@@ -20,6 +21,7 @@ import {
 } from '../../data/productos';
 import { accesorios, equipos, type ProductoLab } from '../../data/laboratorio';
 import { cifra, fichaCentrifuga } from '../../data/fichas';
+import { contacto } from '../../data/navegacion';
 import { idioma, numero, ruta, textoSerie, textos } from '../../i18n';
 
 const lang = idioma(Astro.currentLocale);
@@ -48,7 +50,13 @@ const nombreCat = (c: Cat) =>
 const nombreCorto = (c: Cat) => (c === 'accesorios' || c === 'laboratorio' ? f.cortos[c] : nombreCat(c));
 
 // La exposición, por familias (Compactas, Universales…) y al final accesorios y otros productos de laboratorio
-type Ficha = { tipo: 'modelo'; cat: Cat; m: Modelo } | { tipo: 'lab'; cat: Cat; p: ProductoLab };
+// Una ficha por serie: sus versiones (22 y 22 R; C, C-U y C-8) van juntas en la misma tarjeta, con un selector
+type Ficha = { tipo: 'modelo'; cat: Cat; m: Modelo; ms: Modelo[] } | { tipo: 'lab'; cat: Cat; p: ProductoLab };
+const porSerie = (ms: Modelo[]): Ficha[] =>
+  [...new Set(ms.map((m) => m.serie))].map((serie) => {
+    const vs = ms.filter((m) => m.serie === serie);
+    return { tipo: 'modelo', cat: vs[0].categoria, m: vs[0], ms: vs };
+  });
 const familiaDe = (m: Modelo) => productos.find((p) => p.slug === m.serie)!.familia;
 const lab = (c: Otro, items: ProductoLab[]): Ficha[] => items.map((p) => ({ tipo: 'lab', cat: c, p }));
 const salas: { id: string; nombre: string; color: string; fichas: Ficha[] }[] = [
@@ -56,7 +64,7 @@ const salas: { id: string; nombre: string; color: string; fichas: Ficha[] }[] = 
     id: fam,
     nombre: t.familias[fam],
     color: familias[fam].color as string,
-    fichas: modelos.filter((m) => familiaDe(m) === fam).map((m): Ficha => ({ tipo: 'modelo', cat: m.categoria, m })),
+    fichas: porSerie(modelos.filter((m) => familiaDe(m) === fam)),
   })),
   { id: 'accesorios', nombre: t.laboratorio.accesorios, color: '#8c959b', fichas: lab('accesorios', accesorios) },
   { id: 'laboratorio', nombre: t.laboratorio.equipos, color: '#8c959b', fichas: lab('laboratorio', equipos) },
@@ -69,6 +77,18 @@ const capacidad = (m: Modelo) =>
 const fuerza = (m: Modelo) => {
   const xg = m.xg ?? fichaCentrifuga(m.slug)?.xg;
   return xg ? (m.xg ? numero(lang, m.xg) : cifra(lang, xg)) : undefined;
+};
+// Para ordenar: capacidad total en ml (si se puede leer de "n × v ml"), velocidad y fuerza como números
+const num = (s?: string) => (s ? Number(s.replace(/\D/g, '')) || 0 : 0);
+const capacidadMl = (m: Modelo) => {
+  const c = /(\d+)\s*×\s*([\d.,]+)\s*ml/.exec(m.capacidad);
+  return c ? Number(c[1]) * Number(c[2].replace(',', '.')) : 0;
+};
+// Nombre de cada versión en el selector: la temperatura si las distingue; si no, lo que añade al nombre de la serie
+const etiquetas = (vs: Modelo[]) => {
+  const temps = vs.map((v) => v.temperatura);
+  if (new Set(temps).size === vs.length) return temps.map((x) => may(t.temperatura[x]));
+  return vs.map((v) => v.nombre.split(' ').slice(1).join(' '));
 };
 
 // Comparador: los datos que el distribuidor mira para elegir, de la tabla de la serie y de la ficha de cada modelo
@@ -117,6 +137,19 @@ const filasComparar = [
   { k: 'rotores', nombre: tc.rotores },
 ];
 const cruz = 'M6 6l12 12M18 6 6 18';
+
+// Lista de presupuesto: todo lo del catálogo, con su nombre y su foto
+const tp = t.catalogo.presupuesto;
+const presupuestables = Object.fromEntries(
+  salas.flatMap((s) =>
+    s.fichas.flatMap((x) =>
+      x.tipo === 'modelo'
+        ? x.ms.map((v) => [v.slug, { nombre: v.nombre, img: v.imagen.src }] as const)
+        : [[x.p.slug, { nombre: t.laboratorio.items[x.p.slug].nombre, img: x.p.imagen.src }] as const],
+    ),
+  ),
+);
+const td = t.distribuidores;
 ---
 
 <Base title={t.catalogo.title} description={t.catalogo.description(productos.length, totalModelos)}>
@@ -131,6 +164,16 @@ const cruz = 'M6 6l12 12M18 6 6 18';
       grupos={grupos.map((g) => ({ nombre: g.nombre, cats: g.cats.map((c) => ({ v: c, nombre: nombreCorto(c) })) }))}
     />
 
+    <!-- Atajos: una entrada por familia, con su color, que lleva a su sección -->
+    <nav class="wrap atajos" aria-label={t.catalogo.atajos}>
+      {salas.map((s) => (
+        <a href={`#sala-${s.id}`} data-ir={s.id} style={`--fam: ${s.color}`}>
+          {s.nombre}
+          <span class="n">{s.fichas.length}</span>
+        </a>
+      ))}
+    </nav>
+
     <div class="wrap salas" id="salas">
       {salas.map((s, i) => (
         <section class="sala" data-sala={s.id} aria-labelledby={`sala-${s.id}`} style={`--fam: ${s.color}`}>
@@ -140,43 +183,98 @@ const cruz = 'M6 6l12 12M18 6 6 18';
             </span>
             <h2 id={`sala-${s.id}`}>{s.nombre}</h2>
             <p class="sala-n">{f.resultados(s.fichas.length)}</p>
+            <ul class="sala-usos">
+              {[...new Set(s.fichas.map((x) => nombreCorto(x.cat)))].map((u) => (
+                <li>{u}</li>
+              ))}
+            </ul>
           </header>
           <ul class="piezas">
             {s.fichas.map((x) =>
               x.tipo === 'modelo' ? (
                 <li
                   class="ficha"
+                  data-sala={s.id}
                   id={x.m.principal ? x.m.serie : x.m.slug}
                   data-cat={x.cat}
-                  data-t={x.m.temperatura}
+                  data-t={[...new Set(x.ms.map((v) => v.temperatura))].join(' ')}
+                  data-cap={capacidadMl(x.m)}
+                  data-rpm={num(x.m.rpm)}
+                  data-xg={num(x.m.xg ?? fichaCentrifuga(x.m.slug)?.xg)}
                   data-texto={plano(
-                    x.m.nombre,
+                    ...x.ms.map((v) => v.nombre),
                     s.nombre,
                     nombreCat(x.cat),
                     textoSerie(lang, x.m.serie).frase,
                     capacidad(x.m),
                     x.m.pantalla,
-                    t.temperatura[x.m.temperatura],
+                    ...x.ms.map((v) => t.temperatura[v.temperatura]),
                   )}
                 >
                   <Maquina
-                    modelo={x.m}
-                    capacidad={capacidad(x.m)}
-                    fuerza={fuerza(x.m)}
+                    versiones={x.ms.map((v) => ({ m: v, capacidad: capacidad(v), fuerza: fuerza(v) }))}
                     uso={nombreCat(x.cat)}
                     frase={textoSerie(lang, x.m.serie).frase}
                     color={s.color}
                   />
+                  {x.ms.length > 1 && (
+                    <div class="versiones" role="group" aria-label={tc.version}>
+                      <span class="v-etq" aria-hidden="true">
+                        {tc.version}
+                      </span>
+                      {etiquetas(x.ms).map((e, i) => (
+                        <button
+                          type="button"
+                          data-i={i}
+                          data-slug={x.ms[i].slug}
+                          data-t={x.ms[i].temperatura}
+                          data-href={ruta(lang, `/centrifugas/${x.ms[i].slug}/`)}
+                          aria-pressed={i === 0 ? 'true' : 'false'}
+                        >
+                          <IconoTemp t={x.ms[i].temperatura} size={15} />
+                          {e}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                   <label class="comparar">
                     <input type="checkbox" value={x.m.slug} />
                     <span class="caja" aria-hidden="true" />
                     {tc.comparar}
                     <span class="sr">{x.m.nombre}</span>
                   </label>
+                  <button type="button" class="anadir" data-slug={x.m.slug} aria-pressed="false">
+                    <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                      <path
+                        class="mas"
+                        d="M12 5v14M5 12h14"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                      />
+                      <path
+                        class="ok"
+                        d="m5 12.5 4.5 4.5L19 7.5"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2.2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                    </svg>
+                    <span class="txt">{tp.corto}</span>
+                    <span class="quitar-pres">
+                      <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                        <path d={cruz} stroke="currentColor" stroke-width="2.2" stroke-linecap="round" />
+                      </svg>
+                      {tp.quitarCorto}
+                    </span>
+                  </button>
                 </li>
               ) : (
                 <li
                   class="ficha"
+                  data-sala={s.id}
                   id={x.p.slug}
                   data-cat={x.cat}
                   data-texto={plano(
@@ -193,12 +291,54 @@ const cruz = 'M6 6l12 12M18 6 6 18';
                     frase={t.laboratorio.items[x.p.slug].frase}
                     color={s.color}
                   />
+                  <button type="button" class="anadir" data-slug={x.p.slug} aria-pressed="false">
+                    <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                      <path
+                        class="mas"
+                        d="M12 5v14M5 12h14"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                      />
+                      <path
+                        class="ok"
+                        d="m5 12.5 4.5 4.5L19 7.5"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2.2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                    </svg>
+                    <span class="txt">{tp.corto}</span>
+                    <span class="quitar-pres">
+                      <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                        <path d={cruz} stroke="currentColor" stroke-width="2.2" stroke-linecap="round" />
+                      </svg>
+                      {tp.quitarCorto}
+                    </span>
+                  </button>
                 </li>
               ),
             )}
           </ul>
         </section>
       ))}
+
+      {/* Al final del catálogo, una sola vez: equipo a medida */}
+      <aside class="oem">
+        <div>
+          <p class="oem-tit">
+            {td.oemTitulo[0]}
+            <b>{td.oemTitulo[1]}</b>
+            {td.oemTitulo[2]}
+          </p>
+          <p class="oem-txt">{td.oem}</p>
+        </div>
+        <a class="btn red" href={ruta(lang, contacto.href)}>
+          {t.cabecera.contacto}
+        </a>
+      </aside>
 
       <div class="vacio" hidden>
         <p>{f.vacio}</p>
@@ -219,6 +359,40 @@ const cruz = 'M6 6l12 12M18 6 6 18';
       </button>
       <button type="button" class="abrir-comparar" data-txt={tc.abrir(999)}></button>
     </div>
+  </div>
+
+  <!-- Presupuesto: botón fijo abajo a la derecha y, al abrirlo, la lista para pedirla por correo -->
+  <div class="presupuesto" id="presupuesto" hidden>
+    <div class="pres-panel" id="pres-panel" role="dialog" aria-labelledby="pres-tit">
+      <div class="pres-cab">
+        <p id="pres-tit">{tp.titulo}</p>
+        <button type="button" class="pres-cerrar" aria-label={tp.cerrar}>
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+            <path d={cruz} stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path>
+          </svg>
+        </button>
+      </div>
+      <ul class="pres-lista"></ul>
+      <a class="pres-pedir" href={`mailto:${contacto.comercial}`}>
+        {tp.pedir}
+      </a>
+      <p class="pres-nota">{tp.nota}</p>
+      <button type="button" class="pres-vaciar">
+        {tp.vaciar}
+      </button>
+    </div>
+    <button type="button" class="pres-abrir" aria-expanded="false" aria-controls="pres-panel">
+      <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+        <path
+          d="M7 3h7l5 5v13H7zM14 3v5h5M10 13h6M10 17h6"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.7"
+          stroke-linejoin="round"
+        ></path>
+      </svg>
+      <span class="n"></span>
+    </button>
   </div>
 
   <dialog class="comparador" id="comparador" aria-labelledby="comparador-tit">
@@ -242,15 +416,115 @@ const cruz = 'M6 6l12 12M18 6 6 18';
       textos: { quitar: tc.quitar('{n}'), maximo: tc.maximo, verFicha: tf.verFicha, mejor: tc.mejor },
     })}
   />
+  <script
+    type="application/json"
+    id="datos-presupuesto"
+    set:html={JSON.stringify({
+      maquinas: presupuestables,
+      correo: contacto.comercial,
+      textos: {
+        quitar: tp.quitar('{n}'),
+        asunto: tp.asunto,
+        cuerpo: tp.cuerpo,
+        boton: tp.boton(999),
+        anadir: tp.anadir,
+        quitarDeLista: tp.quitarDeLista,
+        corto: tp.corto,
+        anadido: tp.anadido,
+        menos: tp.menos,
+        mas: tp.mas,
+      },
+    })}
+  />
 </Base>
 
 <script>
   import { iniciarComparador } from '../../scripts/comparador';
   iniciarComparador();
+  import { iniciarPresupuesto } from '../../scripts/presupuesto';
+  iniciarPresupuesto();
 
-  // Al bajar, las máquinas entran de abajo arriba, escalonadas por fila
   const salasEl = document.getElementById('salas');
-  if (salasEl && !matchMedia('(prefers-reduced-motion: reduce)').matches && 'IntersectionObserver' in window) {
+  const quieto = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // ——— Versiones de una serie: el selector cambia foto, nombre, temperatura, cifras y enlace, y lo que guardan
+  // Comparar y Presupuesto. Al pasar a refrigerada, un velo frío barre la foto; a calefactada, uno cálido. ———
+  const velos: Record<string, string> = {
+    refrigerada: 'rgba(120, 190, 255, 0.38)',
+    calefactada: 'rgba(255, 140, 60, 0.3)',
+  };
+  const verVersion = (li: HTMLElement, i: string, animar = true) => {
+    const b = li.querySelector<HTMLButtonElement>(`.versiones [data-i="${i}"]`);
+    if (!b || b.getAttribute('aria-pressed') === 'true') return;
+    for (const x of li.querySelectorAll<HTMLButtonElement>('.versiones button'))
+      x.setAttribute('aria-pressed', String(x === b));
+    for (const el of li.querySelectorAll<HTMLElement>('[data-v]')) el.hidden = el.dataset.v !== i;
+    li.querySelector<HTMLAnchorElement>('a.pieza')!.href = b.dataset.href!;
+    const comparar = li.querySelector<HTMLInputElement>('.comparar input');
+    if (comparar) comparar.value = b.dataset.slug!;
+    const anadir = li.querySelector<HTMLElement>('.anadir');
+    if (anadir) anadir.dataset.slug = b.dataset.slug!;
+    document.dispatchEvent(new Event('catalogo:version'));
+    const velo = li.querySelector<HTMLElement>('.velo');
+    const tinte = velos[b.dataset.t ?? ''];
+    if (animar && !quieto && velo && tinte) {
+      velo.style.background = tinte;
+      velo.animate(
+        [
+          { opacity: 1, clipPath: 'inset(0 100% 0 0)' },
+          { opacity: 1, clipPath: 'inset(0 0 0 0)', offset: 0.45 },
+          { opacity: 0, clipPath: 'inset(0 0 0 0)' },
+        ],
+        { duration: 900, easing: 'cubic-bezier(0.65, 0, 0.35, 1)' },
+      );
+    }
+  };
+  salasEl?.addEventListener('click', (e) => {
+    const b = (e.target as HTMLElement).closest<HTMLButtonElement>('.versiones button');
+    if (b) verVersion(b.closest<HTMLElement>('.ficha')!, b.dataset.i!);
+  });
+  // Al filtrar por temperatura, cada tarjeta enseña la versión que cumple (la 22 R si se pide refrigerada)
+  document.addEventListener('catalogo:filtrado', (e) => {
+    const temps = (e as CustomEvent<{ temps: string[] }>).detail?.temps ?? [];
+    if (!temps.length) return;
+    for (const g of document.querySelectorAll<HTMLElement>('.versiones')) {
+      const actual = g.querySelector<HTMLButtonElement>('[aria-pressed="true"]');
+      if (actual && temps.includes(actual.dataset.t!)) continue;
+      const otra = [...g.querySelectorAll<HTMLButtonElement>('button')].find((x) => temps.includes(x.dataset.t!));
+      if (otra) verVersion(g.closest<HTMLElement>('.ficha')!, otra.dataset.i!, false);
+    }
+  });
+  // Si se llega con el enlace de una versión concreta (#digicen-22-r), se enseña esa
+  const pedida =
+    location.hash &&
+    document.querySelector<HTMLButtonElement>(`.versiones [data-slug="${CSS.escape(location.hash.slice(1))}"]`);
+  if (pedida) {
+    const li = pedida.closest<HTMLElement>('.ficha')!;
+    verVersion(li, pedida.dataset.i!, false);
+    li.scrollIntoView();
+  }
+
+  // ——— Las rpm aceleran como la máquina: la primera vez que se ve la tarjeta, de 0 a su velocidad con una rampa
+  // de arranque y frenada ———
+  const acelerar = (ficha: HTMLElement) => {
+    const el = ficha.querySelector<HTMLElement>('.placa:not([hidden]) .rpm .valor');
+    if (!el) return;
+    const texto = el.textContent ?? '';
+    const fin = Number(texto.replace(/\D/g, ''));
+    const sep = /\d(\D)\d/.exec(texto)?.[1] ?? '';
+    const t0 = performance.now();
+    const paso = (t: number) => {
+      const p = Math.min((t - t0) / 1300, 1);
+      const r = p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2;
+      el.textContent = String(Math.round((fin * r) / 100) * 100).replace(/\B(?=(\d{3})+(?!\d))/g, sep);
+      if (p < 1) requestAnimationFrame(paso);
+      else el.textContent = texto;
+    };
+    requestAnimationFrame(paso);
+  };
+
+  // Al bajar, las máquinas entran de abajo arriba, escalonadas por fila, y las portadas se descubren
+  if (salasEl && !quieto && 'IntersectionObserver' in window) {
     salasEl.classList.add('revela');
     const io = new IntersectionObserver(
       (entradas) => {
@@ -260,12 +534,35 @@ const cruz = 'M6 6l12 12M18 6 6 18';
             const el = e.target as HTMLElement;
             el.style.setProperty('--d', `${i * 70}ms`);
             el.classList.add('visto');
+            if (el.classList.contains('ficha')) setTimeout(() => acelerar(el), 200 + i * 70);
             io.unobserve(el);
           });
       },
       { rootMargin: '0px 0px -8% 0px' },
     );
-    for (const el of salasEl.querySelectorAll('.ficha')) io.observe(el);
+    for (const el of salasEl.querySelectorAll('.ficha, .sala-cab')) io.observe(el);
+
+    // La foto del rotor de cada portada se desplaza un poco al bajar, como si la máquina se moviera
+    const portadas = [...salasEl.querySelectorAll<HTMLElement>('.sala-cab')];
+    let marco = 0;
+    const mover = () => {
+      const alto = innerHeight;
+      for (const el of portadas) {
+        const r = el.getBoundingClientRect();
+        if (r.bottom < 0 || r.top > alto) continue;
+        const p = 1 - (r.top + r.height) / (alto + r.height);
+        el.style.setProperty('--foto-y', `${(28 + p * 30).toFixed(1)}%`);
+      }
+    };
+    addEventListener(
+      'scroll',
+      () => {
+        cancelAnimationFrame(marco);
+        marco = requestAnimationFrame(mover);
+      },
+      { passive: true },
+    );
+    mover();
   }
 </script>
 
@@ -290,56 +587,118 @@ const cruz = 'M6 6l12 12M18 6 6 18';
     z-index: 19;
   }
 
-  /* ——— Familias: número rojo, título en negrita enorme y la raya de su color ——— */
   .salas {
-    padding-top: clamp(64px, 7vw, 104px);
+    padding-top: clamp(40px, 5vw, 72px);
   }
+
   .sala + .sala {
-    margin-top: clamp(96px, 10vw, 160px);
+    margin-top: clamp(72px, 7vw, 112px);
   }
+
+  /* ——— Portada de cada familia: banda a todo lo ancho sobre el rotor con tubos, teñido con su color, sus textos
+     a la izquierda y su número enorme a la derecha ——— */
   .sala-cab {
+    --tinte: color-mix(in srgb, var(--fam) 78%, #16181a);
     position: relative;
     display: grid;
-    grid-template-columns: auto 1fr auto;
-    align-items: end;
-    gap: 0 clamp(16px, 2vw, 28px);
-    padding-bottom: clamp(20px, 2.4vw, 32px);
-    margin-bottom: clamp(28px, 3.2vw, 44px);
-    border-bottom: 2px solid var(--ink);
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      'nombre'
+      'n'
+      'usos';
+    align-content: end;
+    gap: 10px;
+    min-height: clamp(220px, 19vw, 280px);
+    margin-bottom: clamp(24px, 2.6vw, 36px);
+    padding: clamp(26px, 3vw, 40px) clamp(26px, 3vw, 44px);
+    overflow: hidden;
+    background:
+      linear-gradient(
+        to right,
+        color-mix(in srgb, var(--tinte) 90%, transparent) 0%,
+        color-mix(in srgb, var(--tinte) 72%, transparent) 32%,
+        color-mix(in srgb, var(--tinte) 18%, transparent) 70%,
+        transparent 100%
+      ),
+      #16181a url(/img/fondos/rotor.webp) 70% var(--foto-y, 42%) / cover no-repeat;
+    text-shadow: 0 1px 12px rgba(0, 0, 0, 0.35);
+    border-top: 4px solid var(--red);
+    color: #fff;
   }
-  .sala-cab::after {
-    content: '';
-    position: absolute;
-    left: 0;
-    bottom: -2px;
-    width: clamp(80px, 12vw, 180px);
-    height: 6px;
-    background: var(--fam);
-    translate: 0 50%;
-  }
+  /* El número, enorme y translúcido, a la derecha */
   .sala-i {
-    font-size: clamp(22px, 2.2vw, 30px);
+    position: absolute;
+    right: clamp(20px, 3vw, 44px);
+    top: 50%;
+    font-size: clamp(130px, 14vw, 220px);
     font-weight: 700;
-    line-height: 1;
-    color: var(--red);
+    line-height: 0.8;
+    letter-spacing: -0.04em;
+    color: rgba(255, 255, 255, 0.22);
     font-variant-numeric: tabular-nums;
-    padding-bottom: 0.35em;
+    translate: 0 -50%;
+    pointer-events: none;
   }
   .sala-cab h2 {
-    font-size: clamp(52px, 7.4vw, 112px);
+    grid-area: nombre;
+    position: relative;
+    font-size: clamp(38px, 3.8vw, 56px);
     font-weight: 700;
-    line-height: 0.86;
-    letter-spacing: -0.03em;
-    text-transform: uppercase;
+    line-height: 1;
+    letter-spacing: -0.02em;
   }
   .sala-n {
-    flex: none;
+    grid-area: n;
+    position: relative;
     margin: 0;
-    padding-bottom: 0.3em;
     font-size: 18px;
     font-weight: 700;
-    color: var(--ink);
     font-variant-numeric: tabular-nums;
+  }
+  .sala-usos {
+    grid-area: usos;
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 22px;
+    margin: 4px 0 0;
+    padding: 14px 0 0;
+    list-style: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.4);
+    font-size: 17px;
+    color: rgba(255, 255, 255, 0.92);
+  }
+  .sala-usos li::before {
+    content: '»';
+    margin-right: 7px;
+    font-weight: 300;
+  }
+
+  /* Al llegar a cada familia: el color sube desde abajo y el nombre y sus datos aparecen detrás */
+  .revela .sala-cab:not(.visto) {
+    clip-path: inset(100% 0 0 0);
+  }
+  .revela .sala-cab:not(.visto) > * {
+    opacity: 0;
+    translate: 0 16px;
+  }
+  .revela .sala-cab:not(.visto) > .sala-i {
+    translate: 0 -40%;
+  }
+  .revela .sala-cab.visto {
+    transition: clip-path 0.8s cubic-bezier(0.65, 0, 0.35, 1);
+  }
+  .revela .sala-cab.visto > * {
+    transition:
+      opacity 0.5s ease 0.35s,
+      translate 0.7s cubic-bezier(0.23, 1, 0.32, 1) 0.35s;
+  }
+  .revela .sala-cab.visto > .sala-n,
+  .revela .sala-cab.visto > .sala-usos {
+    transition-delay: 0.5s;
+  }
+  .sala {
+    scroll-margin-top: 140px;
   }
 
   .piezas {
@@ -350,8 +709,10 @@ const cruz = 'M6 6l12 12M18 6 6 18';
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: clamp(20px, 2vw, 28px);
   }
-  /* Cada máquina deja sitio a la barra al llegar con un enlace a ella */
+  /* Cada máquina deja sitio a la barra al llegar con un enlace a ella. Mide su ancho para colocar el selector de
+     versión justo al pie de la foto (que es 5:4) */
   .ficha {
+    container-type: inline-size;
     position: relative;
     scroll-margin-top: 200px;
   }
@@ -465,6 +826,26 @@ const cruz = 'M6 6l12 12M18 6 6 18';
       opacity 0.6s var(--ease) var(--d, 0ms),
       transform 0.7s cubic-bezier(0.23, 1, 0.32, 1) var(--d, 0ms);
   }
+  /* Dentro de cada tarjeta, la máquina sube y se asienta sobre su sombra un poco después */
+  .revela .ficha:not(.visto) :global(.estudio img) {
+    opacity: 0;
+    translate: -50% 24px;
+  }
+  .revela .ficha:not(.visto) :global(.estudio::after) {
+    scale: 0.5;
+    opacity: 0;
+  }
+  .revela .ficha.visto :global(.estudio img) {
+    transition:
+      opacity 0.6s ease calc(var(--d, 0ms) + 0.15s),
+      translate 0.9s cubic-bezier(0.23, 1, 0.32, 1) calc(var(--d, 0ms) + 0.15s),
+      transform 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+  }
+  .revela .ficha.visto :global(.estudio::after) {
+    transition:
+      opacity 0.7s ease calc(var(--d, 0ms) + 0.3s),
+      scale 0.9s cubic-bezier(0.23, 1, 0.32, 1) calc(var(--d, 0ms) + 0.3s);
+  }
 
   @media (max-width: 1439px) {
     :global(html:has(#top:not(.oculta))) .catalogo {
@@ -483,36 +864,448 @@ const cruz = 'M6 6l12 12M18 6 6 18';
   }
 
   /* ——— Móvil ——— */
-  @media (max-width: 1024px) {
-    .salas {
-      padding-top: 56px;
-    }
-    .sala + .sala {
-      margin-top: 104px;
-    }
-    .sala-n {
-      font-size: 16px;
-    }
-  }
   @media (max-width: 640px) {
     .piezas {
       grid-template-columns: minmax(0, 1fr);
       gap: 20px;
     }
+    /* En móvil la portada es más baja, para ver antes el primer producto */
     .sala-cab {
-      grid-template-columns: auto 1fr;
+      grid-template-columns: 1fr;
+      grid-template-areas:
+        'nombre'
+        'n'
+        'usos';
+      gap: 6px;
+      min-height: 0;
+      padding: 22px 20px 20px;
+    }
+    .sala-usos {
+      font-size: 15px;
+      gap: 4px 16px;
+    }
+    .sala-i {
+      top: 14px;
+      right: 16px;
+      font-size: 72px;
+      translate: none;
     }
     .sala-cab h2 {
-      font-size: clamp(38px, 11vw, 52px);
+      font-size: 36px;
     }
     .sala-n {
-      grid-column: 1 / -1;
-      padding: 12px 0 0;
+      padding: 0;
       font-size: 16px;
     }
   }
+  /* ——— Atajos a las familias: una fila de pastillas con el color de cada una ——— */
+  .atajos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 20px;
+  }
+  .atajos a {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    height: 40px;
+    padding: 0 12px 0 14px;
+    border: 1px solid #c4c8cc;
+    border-left: 4px solid var(--fam);
+    background: #fff;
+    font-size: 16px;
+    color: var(--ink);
+    text-decoration: none;
+    transition:
+      border-color 0.2s ease,
+      background-color 0.2s ease;
+  }
+  .atajos .n {
+    min-width: 22px;
+    padding: 2px 6px;
+    background: #f0f1f2;
+    font-size: 13px;
+    font-weight: 700;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+  }
+  .atajos a:focus-visible {
+    outline: 2px solid var(--red);
+    outline-offset: 2px;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .atajos a:hover {
+      border-color: var(--ink);
+      border-left-color: var(--fam);
+      background: #f7f7f7;
+    }
+  }
+
+  /* ——— Selector de versión: al pie de la foto, blanco; la elegida, en negro ——— */
+  .versiones {
+    position: absolute;
+    left: 16px;
+    top: calc(80cqw - 50px);
+    z-index: 3;
+    display: flex;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(17, 19, 21, 0.2);
+  }
+  .versiones {
+    align-items: stretch;
+  }
+  /* "VERSIÓN" delante, para que se lea como una elección y no como dos temperaturas a la vez */
+  .v-etq {
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+    border-right: 1px solid #d3d6d9;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .versiones button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 34px;
+    padding: 0 12px;
+    border: 0;
+    background: #fff;
+    font: 700 14px var(--f);
+    color: var(--ink);
+    cursor: pointer;
+    transition:
+      background-color 0.2s ease,
+      color 0.2s ease;
+  }
+  .versiones button + button {
+    border-left: 1px solid #d3d6d9;
+  }
+  .versiones button[aria-pressed='true'] {
+    background: var(--ink);
+    color: #fff;
+  }
+  .versiones button :global(svg) {
+    flex: none;
+  }
+  .versiones button[data-t='ventilada'] :global(svg) {
+    color: #6f7a81;
+  }
+  .versiones button[data-t='refrigerada'] :global(svg) {
+    color: #2a7fc4;
+  }
+  .versiones button[data-t='calefactada'] :global(svg) {
+    color: var(--red);
+  }
+  .versiones button[aria-pressed='true'] :global(svg) {
+    color: #fff;
+  }
+  .versiones button:focus-visible {
+    outline: 2px solid var(--red);
+    outline-offset: 2px;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .versiones button:not([aria-pressed='true']):hover {
+      background: #eef0f1;
+    }
+  }
+
+  /* ——— Presupuesto en cada tarjeta: abajo a la izquierda, junto a "Ver producto" ——— */
+  .anadir {
+    position: absolute;
+    left: 2px;
+    bottom: 2px;
+    width: calc(50% - 2px);
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 56px;
+    padding: 0 16px 0 20px;
+    border: 0;
+    border-right: 1px solid #b4b9bd;
+    background: #fff;
+    font: 700 16px var(--f);
+    color: var(--ink);
+    cursor: pointer;
+    transition:
+      background-color 0.2s ease,
+      color 0.2s ease;
+  }
+  .anadir svg {
+    color: var(--red);
+  }
+  .anadir .ok,
+  .anadir[aria-pressed='true'] .mas {
+    display: none;
+  }
+  .anadir[aria-pressed='true'] .ok {
+    display: inline;
+  }
+  /* Añadido: "✓ Añadido" y, a la vista, "× Quitar" en rojo */
+  .anadir .quitar-pres {
+    display: none;
+    align-items: center;
+    gap: 5px;
+    margin-left: auto;
+    font-weight: 700;
+    font-size: 16px;
+    color: var(--red);
+  }
+  .anadir[aria-pressed='true'] {
+    background: #f3f4f5;
+  }
+  .anadir[aria-pressed='true'] .quitar-pres {
+    display: inline-flex;
+  }
+  .anadir:focus-visible {
+    outline: 2px solid var(--red);
+    outline-offset: -2px;
+  }
+  .anadir:active {
+    scale: 0.97;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .anadir:hover {
+      background: #f3f4f5;
+    }
+  }
+
+  /* ——— Equipo a medida: una sola vez, al final del catálogo, sobre la mesa de laboratorio en oscuro ——— */
+  .oem {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px 48px;
+    margin-top: clamp(80px, 9vw, 140px);
+    padding: clamp(32px, 4vw, 56px);
+    background:
+      linear-gradient(rgba(24, 26, 29, 0.82), rgba(24, 26, 29, 0.82)),
+      #2b2e31 url(/img/fondos/mesa-laboratorio.webp) center / cover no-repeat;
+    border-top: 3px solid var(--red);
+    color: #fff;
+  }
+  .oem-tit {
+    margin: 0;
+    font-size: clamp(28px, 2.8vw, 40px);
+    font-weight: 300;
+    line-height: 1.1;
+  }
+  .oem-tit b {
+    font-weight: 700;
+  }
+  .oem-txt {
+    max-width: 52ch;
+    margin: 12px 0 0;
+    font-size: 17px;
+    line-height: 1.45;
+    color: #d0d4d8;
+  }
+  .oem .btn {
+    flex: none;
+  }
+  @media (max-width: 760px) {
+    .oem {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+
+  /* ——— Presupuesto: botón fijo abajo a la derecha y su lista ——— */
+  .presupuesto {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    z-index: 31;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 10px;
+    transition: bottom 0.35s var(--ease);
+  }
+  /* Con la barra del comparador abajo, el presupuesto sube para no taparla */
+  :global(body:has(#barra-comparar:not([hidden]))) .presupuesto {
+    bottom: 96px;
+  }
+  .pres-abrir {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    height: 52px;
+    padding: 0 20px 0 16px;
+    background: var(--red);
+    color: #fff;
+    font: 700 17px var(--f);
+    box-shadow: 0 18px 40px -16px rgba(17, 19, 21, 0.55);
+    animation: sube-barra 0.45s var(--ease);
+  }
+  .pres-panel {
+    width: min(360px, calc(100vw - 40px));
+    max-height: min(70vh, 560px);
+    overflow-y: auto;
+    padding: 0 16px 16px;
+    background: #fff;
+    border: 1px solid #c4c8cc;
+    border-top: 3px solid var(--red);
+    box-shadow: 0 30px 60px -24px rgba(17, 19, 21, 0.5);
+    opacity: 0;
+    translate: 0 8px;
+    visibility: hidden;
+    transition:
+      opacity 0.2s ease,
+      translate 0.3s cubic-bezier(0.23, 1, 0.32, 1),
+      visibility 0s 0.3s;
+  }
+  .presupuesto:has(.pres-abrir[aria-expanded='true']) .pres-panel {
+    opacity: 1;
+    translate: 0 0;
+    visibility: visible;
+    transition:
+      opacity 0.2s ease,
+      translate 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+  }
+  .pres-cab {
+    position: sticky;
+    top: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0 10px;
+    background: #fff;
+    border-bottom: 1px solid #e3e5e7;
+  }
+  .pres-cab p {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 700;
+  }
+  .pres-cerrar {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    margin-right: -8px;
+  }
+  .pres-lista {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .pres-lista :global(li) {
+    display: grid;
+    grid-template-columns: 44px 1fr auto 32px;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 0;
+    border-bottom: 1px solid #eceef0;
+  }
+  .pres-lista :global(img) {
+    width: 44px;
+    height: 44px;
+    object-fit: contain;
+    background: #f1f2f3;
+  }
+  .pres-lista :global(span) {
+    font-size: 17px;
+    font-weight: 700;
+  }
+  /* Unidades: − n + */
+  .pres-lista :global(.pres-cant) {
+    display: flex;
+    align-items: center;
+    border: 1px solid #c4c8cc;
+  }
+  .pres-lista :global(.pres-cant button) {
+    width: 30px;
+    height: 30px;
+    font-size: 18px;
+    line-height: 1;
+  }
+  .pres-lista :global(.pres-cant output) {
+    min-width: 26px;
+    font-size: 16px;
+    font-weight: 700;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+  }
+  .pres-lista :global(button) {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    color: var(--muted);
+  }
+  .pres-pedir {
+    display: block;
+    margin-top: 14px;
+    padding: 14px 16px;
+    background: var(--red);
+    color: #fff;
+    font-size: 17px;
+    font-weight: 700;
+    text-align: center;
+    text-decoration: none;
+  }
+  .pres-pedir::after {
+    content: ' »';
+    font-weight: 300;
+  }
+  .pres-nota {
+    margin: 8px 0 0;
+    font-size: 14px;
+    color: var(--muted);
+    text-align: center;
+  }
+  .pres-vaciar {
+    display: block;
+    margin: 8px auto 0;
+    padding: 6px 10px;
+    font-size: 15px;
+    color: var(--muted);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .presupuesto button:focus-visible,
+  .pres-pedir:focus-visible {
+    outline: 2px solid var(--red);
+    outline-offset: 2px;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .pres-abrir:hover,
+    .pres-pedir:hover {
+      background: var(--red-d);
+    }
+    .pres-lista :global(button:hover),
+    .pres-cerrar:hover,
+    .pres-vaciar:hover {
+      color: var(--red);
+    }
+  }
+  @media (max-width: 900px) {
+    .presupuesto {
+      right: 12px;
+      bottom: 12px;
+    }
+    :global(body:has(#barra-comparar:not([hidden]))) .presupuesto {
+      bottom: 88px;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .pres-panel,
+    .presupuesto:has(.pres-abrir[aria-expanded='true']) .pres-panel {
+      transition: visibility 0s;
+    }
+    .pres-abrir {
+      animation: none;
+    }
+  }
+
   /* Los botones que se pintan desde JS no llevan el ámbito del componente */
-  :global(:where(.barra-comparar, .comparador) button) {
+  :global(:where(.barra-comparar, .comparador, .presupuesto) button) {
     border: 0;
     background: none;
     font: inherit;

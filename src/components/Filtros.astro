@@ -129,6 +129,17 @@ const iconos: Record<Temperatura, string> = {
           </div>
         </div>
 
+        <!-- Ordenar: dentro de cada familia, por la cifra que se elija (de mayor a menor) -->
+        <label class="orden">
+          <span class="etq-movil">{f.ordenar}</span>
+          <select name="o" aria-label={f.ordenar}>
+            <option value="">{f.orden.catalogo}</option>
+            <option value="cap">{f.orden.capacidad}</option>
+            <option value="rpm">{f.orden.velocidad}</option>
+            <option value="xg">{f.orden.fuerza}</option>
+          </select>
+        </label>
+
         <button type="button" class="ver-res"></button>
       </div>
 
@@ -155,6 +166,7 @@ const iconos: Record<Temperatura, string> = {
     const cuenta = (n: number, uno: string, varios: string) => (n === 1 ? uno : varios.replace('999', String(n)));
     const fichas = [...salasEl.querySelectorAll<HTMLElement>('.ficha')];
     const salas = [...salasEl.querySelectorAll<HTMLElement>('.sala')];
+    const de = (s: HTMLElement) => (el: HTMLElement) => s.contains(el);
     const vacio = salasEl.querySelector<HTMLElement>('.vacio');
     const temps = [...form.querySelectorAll<HTMLButtonElement>('.temp')];
     const opciones = [...form.querySelectorAll<HTMLButtonElement>('.opcion')];
@@ -178,7 +190,9 @@ const iconos: Record<Temperatura, string> = {
       return !texto || texto.split(/\s+/).every((p) => (el.dataset.texto ?? '').includes(p));
     };
     const cumple = (el: HTMLElement, c = aplic, ts: Set<string> = elegidas) =>
-      (!c || el.dataset.cat === c) && (!ts.size || ts.has(el.dataset.t ?? '')) && casaTexto(el);
+      (!c || el.dataset.cat === c) &&
+      (!ts.size || (el.dataset.t ?? '').split(' ').some((x) => ts.has(x))) &&
+      casaTexto(el);
 
     // ——— Sugerencias del buscador: foto, nombre y aplicación de cada máquina que coincide ———
     const datos = fichas.map((el) => ({
@@ -270,15 +284,30 @@ const iconos: Record<Temperatura, string> = {
 
     // ——— Aplicar los filtros ———
     const moviles = () => [...fichas, ...salas.map((s) => s.querySelector<HTMLElement>('.sala-cab')!)];
+    // Orden: el del catálogo (guardado al cargar) o de mayor a menor por capacidad, velocidad o fuerza
+    const orden = form.querySelector<HTMLSelectElement>('select[name=o]')!;
+    fichas.forEach((el, i) => (el.dataset.orden = String(i)));
+    const reordenar = () => {
+      const k = orden.value;
+      for (const ul of salasEl.querySelectorAll<HTMLElement>('.piezas')) {
+        const lis = [...ul.querySelectorAll<HTMLElement>(':scope > .ficha')];
+        lis.sort((a, b) =>
+          k ? Number(b.dataset[k] ?? 0) - Number(a.dataset[k] ?? 0) : Number(a.dataset.orden) - Number(b.dataset.orden),
+        );
+        ul.append(...lis);
+      }
+    };
+
     const aplicar = (animar = true) => {
       animar &&= !quieto.matches;
       const antes = new Map<HTMLElement, DOMRect>();
       if (animar) for (const el of moviles()) if (el.offsetParent) antes.set(el, el.getBoundingClientRect());
+      reordenar();
 
       const visibles = fichas.filter((el) => cumple(el));
       for (const el of fichas) el.hidden = !visibles.includes(el);
       for (const s of salas) {
-        const n = visibles.filter((el) => s.contains(el)).length;
+        const n = visibles.filter(de(s)).length;
         s.hidden = n === 0;
         s.querySelector('.sala-n')!.textContent = cuenta(n, d.uno!, d.varios!);
       }
@@ -315,6 +344,15 @@ const iconos: Record<Temperatura, string> = {
       );
       verRes.textContent = cuenta(visibles.length, d.verUno!, d.verVarios!);
       if (vacio) vacio.hidden = visibles.length > 0;
+      // Los atajos a cada familia, con lo que queda en ella
+      for (const s of salas) {
+        const a = document.querySelector<HTMLElement>(`.atajos [data-ir="${s.dataset.sala}"]`);
+        if (!a) continue;
+        a.hidden = s.hidden;
+        a.querySelector('.n')!.textContent = String(visibles.filter(de(s)).length);
+      }
+      // Cada tarjeta con versiones enseña la que cumple la temperatura elegida
+      document.dispatchEvent(new CustomEvent('catalogo:filtrado', { detail: { temps: [...elegidas] } }));
 
       if (animar) {
         const alto = window.innerHeight;
@@ -349,6 +387,7 @@ const iconos: Record<Temperatura, string> = {
       poner('c', aplic);
       poner('t', [...elegidas].join(','));
       poner('q', q.value.trim());
+      poner('o', orden.value);
       history.replaceState(null, '', url);
     };
 
@@ -361,6 +400,8 @@ const iconos: Record<Temperatura, string> = {
       for (const v of url.searchParams.get('t')?.split(',') ?? [])
         if (temps.some((b) => b.dataset.temp === v)) elegidas.add(v);
       q.value = url.searchParams.get('q') ?? '';
+      const o = url.searchParams.get('o') ?? '';
+      if ([...orden.options].some((x) => x.value === o)) orden.value = o;
     }
 
     // ——— Desplegable de aplicación ———
@@ -394,6 +435,7 @@ const iconos: Record<Temperatura, string> = {
       clearTimeout(espera);
       espera = window.setTimeout(aplicar, 140);
     });
+    orden.addEventListener('change', () => aplicar());
     form.addEventListener('submit', (e) => {
       e.preventDefault();
       cerrarSug();
@@ -404,6 +446,7 @@ const iconos: Record<Temperatura, string> = {
         aplic = '';
         elegidas.clear();
         q.value = '';
+        orden.value = '';
         aplicar();
       });
     }
@@ -722,6 +765,33 @@ const iconos: Record<Temperatura, string> = {
     color: var(--ink);
     font-weight: 700;
     box-shadow: inset 0 -3px 0 var(--red);
+  }
+  .orden select {
+    height: var(--alto);
+    padding: 0 40px 0 16px;
+    border: 1px solid var(--osc);
+    border-radius: 0;
+    background: transparent
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='16' height='16'%3E%3Cpath d='M7 4v16M4 17l3 3 3-3M17 20V4M14 7l3-3 3 3' fill='none' stroke='%23fff' stroke-width='1.6'/%3E%3C/svg%3E")
+      no-repeat right 14px center;
+    -webkit-appearance: none;
+    appearance: none;
+    font: 400 17px var(--f);
+    color: #fff;
+    cursor: pointer;
+    transition: border-color 0.2s ease;
+  }
+  .orden select option {
+    color: var(--ink);
+  }
+  .orden select:focus-visible {
+    outline: 2px solid var(--red);
+    outline-offset: 2px;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .orden select:hover {
+      border-color: #fff;
+    }
   }
   .aplic-menu {
     position: absolute;
@@ -1073,6 +1143,14 @@ const iconos: Record<Temperatura, string> = {
     }
     .aplic-btn {
       display: none;
+    }
+    .orden select {
+      width: 100%;
+      height: 48px;
+      border-color: var(--borde);
+      background-color: #fff;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='16' height='16'%3E%3Cpath d='M7 4v16M4 17l3 3 3-3M17 20V4M14 7l3-3 3 3' fill='none' stroke='%231a1a1a' stroke-width='1.6'/%3E%3C/svg%3E");
+      color: var(--ink);
     }
     .aplic-menu {
       position: static;
