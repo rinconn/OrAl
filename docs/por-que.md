@@ -1062,3 +1062,46 @@ entera delante, si se ensancha el contenido de 1280 a 1440 px.
 - **Pendiente de confirmar con la empresa:** que el amortiguador presurizado es lo que da la "protección ante caída
   de la tapa" y que el "Depósito" (PI 448) es la cámara de centrifugación; la base no lleva descripción porque la
   ficha no dice nada de ella.
+
+## 21. Comparador de centrífugas en el catálogo
+
+- **Problema:** para elegir entre dos o tres modelos, el distribuidor tenía que abrir cada ficha y apuntar las cifras.
+- **Ahora:** cada centrífuga del catálogo lleva "Comparar" en una etiqueta blanca arriba a la derecha de la foto, a
+  juego con la de temperatura (en rojo al marcarla). Al marcar una aparece abajo una barra oscura con las elegidas
+  (hasta 3); con dos o más, "Comparar" abre una ventana con las máquinas lado a lado: aplicación, temperatura,
+  capacidad, velocidad, fuerza, pantalla, medidas, peso, consumo y rotores compatibles, con un punto rojo en la cifra
+  más alta de velocidad, fuerza y rotores. Se quitan desde la barra, desde la ventana o desmarcando la tarjeta. La
+  elección se guarda en la sesión: sigue al ir a una ficha y volver. En móvil, la barra va en una línea con las fotos y
+  la ventana ocupa toda la pantalla, con la columna de nombres fija al deslizar.
+- **Por qué:** es la pregunta con la que llega un distribuidor ("¿esta o esta?") y se responde sin salir del catálogo.
+  Los datos salen de la tabla de la serie y de la ficha de cada modelo en la web actual.
+- **Descartado:** un rediseño completo del catálogo como exposición (capítulos por familia y máquinas sobre peana): no
+  gustó tanto como el catálogo de siempre; de él se queda el comparador.
+
+## 22. Tarjetas del catálogo: la misma foto de laboratorio, con menos cosas
+
+- **Problema:** las tarjetas usan todas la misma foto de una mesa de laboratorio oscura, que es lo normal en un
+  catálogo, pero la foto traía mucho detrás de la máquina: un guante con pipeta, una gradilla, botellas rojas, un
+  microscopio y un matraz. Con veinte tarjetas seguidas, ese detalle competía con la máquina y con el rojo de la marca.
+- **Ahora:** la misma foto retocada (`public/img/fondos/mesa-tarjeta.webp`): fuera el guante, la pipeta y el
+  microscopio, el fondo más desenfocado, y solo quedan una gradilla de tubos rojos a la izquierda y un matraz rojo a la
+  derecha, en los bordes, donde la máquina no los tapa.
+- **Por qué:** sigue pareciendo un laboratorio de verdad y conserva el toque rojo, pero lo que se ve primero en cada
+  tarjeta es la máquina. La foto original sigue en el bloque de equipo a medida, oscurecida, donde no hay máquina
+  delante.
+- **Descartado:** un estudio gris claro liso (la máquina blanca sobre gris claro queda plana), la foto sin ningún
+  detalle (queda apagada) y un estudio gris oscuro liso (sin ambiente de laboratorio).
+
+## 23. Presupuesto en la tarjeta: un contador de unidades
+
+- **Problema:** al añadir una máquina, la mitad del pie de la tarjeta enseñaba a la vez "✓ Añadido" y "✕ Quitar",
+  apretados y con poco contraste con el estado sin añadir; las unidades solo se cambiaban dentro del panel del
+  presupuesto.
+- **Ahora:** sin añadir, "+ Presupuesto" como antes. Al pulsarlo, ese hueco pasa a ser un contador "− 1 ud. +" con
+  marco rojo: el "+" suma unidades, el "−" las resta y, con 1, quita la máquina del presupuesto y vuelve
+  "+ Presupuesto". La tarjeta y el panel van a la par: lo que se cambia en uno se ve en el otro.
+- **Por qué:** es como funciona cualquier tienda online, se deshace un error en un toque (también en móvil, donde no
+  hay ratón) y el distribuidor, que no pide una máquina sino varias, pone la cantidad sin salir del catálogo; el correo
+  sale con esas cantidades.
+- **Descartado:** solo un icono "+" (no dice que es para el presupuesto), "✓ Añadido" en rojo con "Quitar" al pasar
+  el ratón (en móvil no se podría quitar) y dejarlo como estaba.
