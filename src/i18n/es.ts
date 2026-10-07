@@ -264,6 +264,11 @@ export const es = {
       resultados: (n: number) => (n === 1 ? '1 producto' : `${n} productos`),
       limpiar: 'Borrar filtros',
       vacio: 'Ningún producto cumple todos estos filtros.',
+      boton: 'Filtros',
+      todas: 'Todas las aplicaciones',
+      ver: (n: number) => (n === 1 ? 'Ver 1 producto' : `Ver ${n} productos`),
+      cerrar: 'Cerrar',
+      quitar: (x: string) => `Quitar el filtro ${x}`,
     },
     // Comparador del catálogo: 2 o 3 centrífugas lado a lado
     comparar: {

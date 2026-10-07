@@ -1,20 +1,22 @@
 ---
-// Catálogo de productos: el hero con la Digicen 22 en 3D (HeroProductos.astro), y debajo el catálogo en blanco con
-// un índice fijo a la izquierda (buscador, aplicaciones y temperatura) y una rejilla continua de tarjetas: los 23
-// modelos de centrífuga (fotos y aplicaciones de la página de productos de la web actual), los accesorios y los otros
-// productos de laboratorio. Los filtros se guardan en la dirección para poder compartir una búsqueda.
+// Catálogo de productos: el hero con la Digicen 22 en 3D (HeroProductos.astro), y debajo la misma exposición con la
+// luz encendida: blanco, cada máquina grande sobre su elipse roja, agrupadas por familia con un título grande. Arriba,
+// una barra fina y fija para buscar y filtrar (en móvil, los filtros suben en un panel desde abajo), y en cada
+// máquina "Comparar" para verlas lado a lado. Los filtros se guardan en la dirección para poder compartir una búsqueda.
 import Base from '../../layouts/Base.astro';
-import Tarjeta from '../Tarjeta.astro';
+import Maquina from '../Maquina.astro';
+import Paso from '../Paso.astro';
+import Filtros from '../Filtros.astro';
 import HeroProductos from '../HeroProductos.astro';
-import IconoTemp from '../ui/IconoTemp.astro';
 import {
   categorias,
+  familias,
   modelos,
   productos,
   totalModelos,
   type Categoria,
+  type Familia,
   type Modelo,
-  type Temperatura,
 } from '../../data/productos';
 import { accesorios, equipos, type ProductoLab } from '../../data/laboratorio';
 import { cifra, fichaCentrifuga } from '../../data/fichas';
@@ -31,12 +33,12 @@ const plano = (...partes: (string | undefined)[]) =>
 
 type Otro = 'accesorios' | 'laboratorio';
 type Cat = Categoria | Otro;
+// Aplicaciones del filtro, como en la web actual: generales, especiales y otros productos
 const grupos: { nombre: string; cats: Cat[] }[] = [
   { nombre: t.catalogo.grupos.generales, cats: [...categorias.generales] },
   { nombre: t.catalogo.grupos.especiales, cats: [...categorias.especiales] },
   { nombre: t.catalogo.grupos.otros, cats: ['accesorios', 'laboratorio'] },
 ];
-const todas = grupos.flatMap((g) => g.cats);
 const nombreCat = (c: Cat) =>
   c === 'accesorios'
     ? t.laboratorio.accesorios
@@ -44,24 +46,30 @@ const nombreCat = (c: Cat) =>
       ? t.laboratorio.equipos
       : t.catalogo.categorias[c];
 const nombreCorto = (c: Cat) => (c === 'accesorios' || c === 'laboratorio' ? f.cortos[c] : nombreCat(c));
-const grupoDe = (c: Cat) => grupos.find((g) => g.cats.includes(c))!.nombre;
 
-const temperaturas: Temperatura[] = ['ventilada', 'refrigerada', 'calefactada'];
-
-// Tarjetas en el orden del catálogo: por aplicación, y dentro de cada una como en la web actual
+// La exposición, por familias (Compactas, Universales…) y al final accesorios y otros productos de laboratorio
 type Ficha = { tipo: 'modelo'; cat: Cat; m: Modelo } | { tipo: 'lab'; cat: Cat; p: ProductoLab };
+const familiaDe = (m: Modelo) => productos.find((p) => p.slug === m.serie)!.familia;
 const lab = (c: Otro, items: ProductoLab[]): Ficha[] => items.map((p) => ({ tipo: 'lab', cat: c, p }));
-const fichas = todas.flatMap((c): Ficha[] =>
-  c === 'accesorios'
-    ? lab(c, accesorios)
-    : c === 'laboratorio'
-      ? lab(c, equipos)
-      : modelos.filter((m) => m.categoria === c).map((m): Ficha => ({ tipo: 'modelo', cat: c, m })),
-);
+const salas: { id: string; nombre: string; color: string; fichas: Ficha[] }[] = [
+  ...(Object.keys(familias) as Familia[]).map((fam) => ({
+    id: fam,
+    nombre: t.familias[fam],
+    color: familias[fam].color as string,
+    fichas: modelos.filter((m) => familiaDe(m) === fam).map((m): Ficha => ({ tipo: 'modelo', cat: m.categoria, m })),
+  })),
+  { id: 'accesorios', nombre: t.laboratorio.accesorios, color: '#8c959b', fichas: lab('accesorios', accesorios) },
+  { id: 'laboratorio', nombre: t.laboratorio.equipos, color: '#8c959b', fichas: lab('laboratorio', equipos) },
+].filter((s) => s.fichas.length);
 const capacidad = (m: Modelo) =>
   m.capacidad === productos.find((p) => p.slug === m.serie)?.capacidad
     ? (textoSerie(lang, m.serie).capacidad ?? m.capacidad)
     : m.capacidad;
+// Fuerza máxima: la del modelo o, si no la tiene, la de su ficha de la web
+const fuerza = (m: Modelo) => {
+  const xg = m.xg ?? fichaCentrifuga(m.slug)?.xg;
+  return xg ? (m.xg ? numero(lang, m.xg) : cifra(lang, xg)) : undefined;
+};
 
 // Comparador: los datos que el distribuidor mira para elegir, de la tabla de la serie y de la ficha de cada modelo
 const tc = t.catalogo.comparar;
@@ -108,126 +116,95 @@ const filasComparar = [
   { k: 'consumo', nombre: tf.versiones.consumo },
   { k: 'rotores', nombre: tc.rotores },
 ];
+const cruz = 'M6 6l12 12M18 6 6 18';
 ---
 
 <Base title={t.catalogo.title} description={t.catalogo.description(productos.length, totalModelos)}>
   <HeroProductos />
 
-  <section class="catalogo" id="catalogo">
-    <div class="wrap catalogo-in">
-      <!-- Índice fijo a la izquierda; en móvil, barra fija arriba. Sin JS no aparece y se ve todo el catálogo -->
-      <form
-        class="indice"
-        id="filtros"
-        role="search"
-        aria-label={f.titulo}
-        data-uno={f.resultados(1)}
-        data-varios={f.resultados(999)}
-        hidden
-      >
-        <label class="buscar">
-          <span class="sr">{f.buscar}</span>
-          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
-            <circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="1.6"></circle>
-            <path d="M15.5 15.5 21 21" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path>
-          </svg>
-          <input type="search" name="q" placeholder={f.buscar} autocomplete="off" />
-        </label>
+  <section class="catalogo" id="catalogo" aria-label={f.todoTitulo}>
+    <!-- Corte limpio con el hero: la raya roja se dibuja desde el centro, sin fundido -->
+    <Paso desde="transparent" />
 
-        <div class="bloque temp-bloque">
-          <p class="rotulo">{f.temperatura}</p>
-          <div class="temps" role="group" aria-label={f.temperatura}>
-            {temperaturas.map((x) => (
-              <button type="button" class="temp" data-v={x} aria-pressed="false">
-                <IconoTemp t={x} />
-                {may(t.temperatura[x])}
-              </button>
-            ))}
-          </div>
-        </div>
+    <!-- Filtros: panel a la vista y, al bajar, barra fina fija con lo puesto -->
+    <Filtros
+      grupos={grupos.map((g) => ({ nombre: g.nombre, cats: g.cats.map((c) => ({ v: c, nombre: nombreCorto(c) })) }))}
+    />
 
-        <div class="bloque cats" role="group" aria-label={f.aplicacion}>
-          <p class="rotulo">{f.aplicacion}</p>
-          <button type="button" class="cat todo" data-c="" aria-pressed="true">
-            <span class="nom">{f.todo}</span> <span class="n"></span>
-          </button>
-          {grupos.map((g) => (
-            <div class="grupo">
-              <p class="g-nombre">{g.nombre}</p>
-              {g.cats.map((c) => (
-                <button type="button" class="cat" data-c={c} data-nombre={nombreCat(c)} aria-pressed="false">
-                  <span class="nom">{nombreCorto(c)}</span> <span class="n" />
-                </button>
-              ))}
-            </div>
-          ))}
-        </div>
+    <div class="wrap salas" id="salas">
+      {salas.map((s, i) => (
+        <section class="sala" data-sala={s.id} aria-labelledby={`sala-${s.id}`} style={`--fam: ${s.color}`}>
+          <header class="sala-cab">
+            <span class="sala-i" aria-hidden="true">
+              {String(i + 1).padStart(2, '0')}
+            </span>
+            <h2 id={`sala-${s.id}`}>{s.nombre}</h2>
+            <p class="sala-n">{f.resultados(s.fichas.length)}</p>
+          </header>
+          <ul class="piezas">
+            {s.fichas.map((x) =>
+              x.tipo === 'modelo' ? (
+                <li
+                  class="ficha"
+                  id={x.m.principal ? x.m.serie : x.m.slug}
+                  data-cat={x.cat}
+                  data-t={x.m.temperatura}
+                  data-texto={plano(
+                    x.m.nombre,
+                    s.nombre,
+                    nombreCat(x.cat),
+                    textoSerie(lang, x.m.serie).frase,
+                    capacidad(x.m),
+                    x.m.pantalla,
+                    t.temperatura[x.m.temperatura],
+                  )}
+                >
+                  <Maquina
+                    modelo={x.m}
+                    capacidad={capacidad(x.m)}
+                    fuerza={fuerza(x.m)}
+                    uso={nombreCat(x.cat)}
+                    frase={textoSerie(lang, x.m.serie).frase}
+                    color={s.color}
+                  />
+                  <label class="comparar">
+                    <input type="checkbox" value={x.m.slug} />
+                    <span class="caja" aria-hidden="true" />
+                    {tc.comparar}
+                    <span class="sr">{x.m.nombre}</span>
+                  </label>
+                </li>
+              ) : (
+                <li
+                  class="ficha"
+                  id={x.p.slug}
+                  data-cat={x.cat}
+                  data-texto={plano(
+                    t.laboratorio.items[x.p.slug].nombre,
+                    x.p.modelo,
+                    nombreCat(x.cat),
+                    t.laboratorio.items[x.p.slug].frase,
+                    t.laboratorio.items[x.p.slug].datos,
+                  )}
+                >
+                  <Maquina
+                    lab={x.p}
+                    uso={nombreCat(x.cat)}
+                    frase={t.laboratorio.items[x.p.slug].frase}
+                    color={s.color}
+                  />
+                </li>
+              ),
+            )}
+          </ul>
+        </section>
+      ))}
 
-        <button type="button" class="borrar limpiar" hidden>
-          <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
-            <path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
-          </svg>
+      <div class="vacio" hidden>
+        <p>{f.vacio}</p>
+        <button type="button" class="btn red limpiar">
           {f.limpiar}
         </button>
-      </form>
-
-      <div class="lista">
-        <!-- Lo que se está viendo: la aplicación elegida (o todo) en grande y cuántos productos hay -->
-        <header class="cabeza" id="cabeza" data-todo={f.todoTitulo}>
-          <h2 aria-live="polite">{f.todoTitulo}</h2>
-          <p class="total"></p>
-        </header>
-
-        <ul class="rejilla" id="rejilla">
-          {fichas.map((x) =>
-            x.tipo === 'modelo' ? (
-              <li
-                class="ficha"
-                id={x.m.principal ? x.m.serie : x.m.slug}
-                data-cat={x.cat}
-                data-t={x.m.temperatura}
-                data-texto={plano(
-                  x.m.nombre,
-                  nombreCat(x.cat),
-                  grupoDe(x.cat),
-                  textoSerie(lang, x.m.serie).frase,
-                  capacidad(x.m),
-                  x.m.pantalla,
-                  t.temperatura[x.m.temperatura],
-                )}
-              >
-                <Tarjeta cat={nombreCat(x.cat)} modelo={x.m} capacidad={capacidad(x.m)} />
-                <label class="comparar">
-                  <input type="checkbox" value={x.m.slug} />
-                  <span class="caja" aria-hidden="true" />
-                  {tc.comparar}
-                  <span class="sr">{x.m.nombre}</span>
-                </label>
-              </li>
-            ) : (
-              <li
-                class="ficha"
-                id={x.p.slug}
-                data-cat={x.cat}
-                data-texto={plano(
-                  t.laboratorio.items[x.p.slug].nombre,
-                  x.p.modelo,
-                  nombreCat(x.cat),
-                  t.laboratorio.items[x.p.slug].frase,
-                  t.laboratorio.items[x.p.slug].datos,
-                )}
-              >
-                <Tarjeta cat={nombreCat(x.cat)} lab={x.p} />
-              </li>
-            ),
-          )}
-          <li class="vacio" hidden>
-            <p>{f.vacio}</p>
-            <button type="button" class="btn red limpiar">
-              {f.limpiar}
-            </button>
-          </li>
-        </ul>
       </div>
     </div>
   </section>
@@ -249,7 +226,7 @@ const filasComparar = [
       <h2 id="comparador-tit">{tc.titulo}</h2>
       <button type="button" class="cerrar-comp" aria-label={tc.cerrar}>
         <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
-          <path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path>
+          <path d={cruz} stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path>
         </svg>
       </button>
     </div>
@@ -271,134 +248,24 @@ const filasComparar = [
   import { iniciarComparador } from '../../scripts/comparador';
   iniciarComparador();
 
-  // Filtros sencillos: una aplicación, la temperatura (se pueden sumar) y el buscador sin tildes.
-  // Cada aplicación dice cuántos productos quedarían al pulsarla y el título de la lista cambia con ella.
-  const form = document.getElementById('filtros') as HTMLFormElement | null;
-  const rejilla = document.getElementById('rejilla');
-  const cabeza = document.getElementById('cabeza');
-  if (form && rejilla && cabeza) {
-    form.hidden = false;
-    const total = (n: number) => (n === 1 ? form.dataset.uno! : form.dataset.varios!.replace('999', String(n)));
-    const fichas = [...rejilla.querySelectorAll<HTMLElement>('.ficha')];
-    const vacio = rejilla.querySelector<HTMLElement>('.vacio')!;
-    const cats = [...form.querySelectorAll<HTMLButtonElement>('.cat')];
-    const temps = [...form.querySelectorAll<HTMLButtonElement>('.temp')];
-    const q = form.querySelector<HTMLInputElement>('input[name=q]')!;
-    const borrar = [...document.querySelectorAll<HTMLButtonElement>('.limpiar')];
-    const titulo = cabeza.querySelector('h2')!;
-    const totalEl = cabeza.querySelector<HTMLElement>('.total')!;
-
-    let cat = '';
-    const elegidas = new Set<string>();
-    const plano = (s: string) => s.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().trim();
-    const cumple = (el: HTMLElement, c = cat) => {
-      if (c && el.dataset.cat !== c) return false;
-      if (elegidas.size && !elegidas.has(el.dataset.t ?? '')) return false;
-      const texto = plano(q.value);
-      return !texto || texto.split(/\s+/).every((p) => (el.dataset.texto ?? '').includes(p));
-    };
-
-    let primera = true;
-    const aplicar = () => {
-      const visibles = new Set(fichas.filter((el) => cumple(el)));
-      let i = 0;
-      for (const el of fichas) {
-        const ver = visibles.has(el);
-        if (ver && !primera) {
-          el.style.setProperty('--i', String(Math.min(i, 8)));
-          el.classList.remove('entra');
-          void el.offsetWidth;
-          el.classList.add('entra');
-        }
-        if (ver) i++;
-        el.hidden = !ver;
-      }
-      for (const b of cats) {
-        const c = b.dataset.c ?? '';
-        const n = fichas.filter((el) => cumple(el, c)).length;
-        b.setAttribute('aria-pressed', String(c === cat));
-        b.disabled = c !== cat && n === 0;
-        b.querySelector('.n')!.textContent = String(n);
-      }
-      for (const b of temps) b.setAttribute('aria-pressed', String(elegidas.has(b.dataset.v!)));
-      const hay = !!cat || elegidas.size > 0 || !!q.value.trim();
-      for (const b of borrar) if (!b.closest('.vacio')) b.hidden = !hay;
-      titulo.textContent = cats.find((b) => b.dataset.c === cat)?.dataset.nombre ?? cabeza.dataset.todo!;
-      totalEl.textContent = total(visibles.size);
-      vacio.hidden = visibles.size > 0;
-      // La búsqueda queda en la dirección para poder compartirla
-      const url = new URL(location.href);
-      const poner = (k: string, v: string) => (v ? url.searchParams.set(k, v) : url.searchParams.delete(k));
-      poner('c', cat);
-      poner('t', [...elegidas].join(','));
-      poner('q', q.value.trim());
-      history.replaceState(null, '', url);
-      primera = false;
-    };
-
-    // Estado inicial desde la dirección; si se llega a una ficha concreta (lupa, Tecnología), se ve todo
-    const url = new URL(location.href);
-    const aFicha = location.hash && document.getElementById(location.hash.slice(1))?.classList.contains('ficha');
-    if (!aFicha) {
-      cat = url.searchParams.get('c') ?? '';
-      for (const v of url.searchParams.get('t')?.split(',') ?? []) if (v) elegidas.add(v);
-      q.value = url.searchParams.get('q') ?? '';
-    }
-
-    // Al cambiar de aplicación, la lista sube para verla desde arriba
-    const subir = () => {
-      const y = cabeza.getBoundingClientRect().top + window.scrollY - 120;
-      if (window.scrollY > y) window.scrollTo({ top: y, behavior: 'smooth' });
-    };
-    for (const b of cats) {
-      b.addEventListener('click', () => {
-        cat = b.dataset.c ?? '';
-        aplicar();
-        subir();
-      });
-    }
-    for (const b of temps) {
-      b.addEventListener('click', () => {
-        const v = b.dataset.v!;
-        if (elegidas.has(v)) elegidas.delete(v);
-        else elegidas.add(v);
-        aplicar();
-      });
-    }
-    let espera = 0;
-    q.addEventListener('input', () => {
-      clearTimeout(espera);
-      espera = window.setTimeout(aplicar, 120);
-    });
-    form.addEventListener('submit', (e) => e.preventDefault());
-    for (const b of borrar) {
-      b.addEventListener('click', () => {
-        cat = '';
-        elegidas.clear();
-        q.value = '';
-        aplicar();
-      });
-    }
-    aplicar();
-
-    // Al bajar, las tarjetas entran de abajo arriba, escalonadas por fila
-    if (!matchMedia('(prefers-reduced-motion: reduce)').matches && 'IntersectionObserver' in window) {
-      rejilla.classList.add('revela');
-      const io = new IntersectionObserver(
-        (entradas) => {
-          entradas
-            .filter((e) => e.isIntersecting)
-            .forEach((e, i) => {
-              const el = e.target as HTMLElement;
-              el.style.setProperty('--d', `${i * 70}ms`);
-              el.classList.add('visto');
-              io.unobserve(el);
-            });
-        },
-        { rootMargin: '0px 0px -8% 0px' },
-      );
-      for (const el of fichas) io.observe(el);
-    }
+  // Al bajar, las máquinas entran de abajo arriba, escalonadas por fila
+  const salasEl = document.getElementById('salas');
+  if (salasEl && !matchMedia('(prefers-reduced-motion: reduce)').matches && 'IntersectionObserver' in window) {
+    salasEl.classList.add('revela');
+    const io = new IntersectionObserver(
+      (entradas) => {
+        entradas
+          .filter((e) => e.isIntersecting)
+          .forEach((e, i) => {
+            const el = e.target as HTMLElement;
+            el.style.setProperty('--d', `${i * 70}ms`);
+            el.classList.add('visto');
+            io.unobserve(el);
+          });
+      },
+      { rootMargin: '0px 0px -8% 0px' },
+    );
+    for (const el of salasEl.querySelectorAll('.ficha')) io.observe(el);
   }
 </script>
 
@@ -408,276 +275,109 @@ const filasComparar = [
     display: none !important;
   }
 
-  /* ——— Catálogo: índice fijo a la izquierda y la lista a la derecha ——— */
+  /* ——— La exposición con la luz encendida ——— */
   .catalogo {
-    --arriba: 28px;
-    padding-block: clamp(40px, 5vw, 64px) clamp(72px, 9vw, 120px);
+    --arriba: 0px;
+    position: relative;
+    padding-bottom: clamp(96px, 11vw, 160px);
+    background: #fff;
   }
-  /* Con la cabecera de la web a la vista, el índice baja para no quedar debajo */
+  /* Con la cabecera de la web a la vista, la barra baja para no quedar debajo */
   :global(html:has(#top:not(.oculta))) .catalogo {
     --arriba: 104px;
   }
-  .catalogo-in {
-    display: grid;
-    grid-template-columns: 248px minmax(0, 1fr);
-    gap: clamp(32px, 4vw, 56px);
-    align-items: start;
-  }
-  .catalogo-in:has(.indice[hidden]) {
-    grid-template-columns: minmax(0, 1fr);
+  .catalogo > :global(.paso) {
+    z-index: 19;
   }
 
-  .indice {
-    position: sticky;
-    top: var(--arriba);
-    max-height: calc(100vh - var(--arriba) - 16px);
-    overflow-y: auto;
-    scrollbar-width: thin;
-    display: grid;
-    gap: 28px;
-    padding-bottom: 8px;
-    transition: top 0.35s var(--ease);
+  /* ——— Familias: número rojo, título en negrita enorme y la raya de su color ——— */
+  .salas {
+    padding-top: clamp(64px, 7vw, 104px);
   }
-  .rotulo,
-  .g-nombre {
-    margin: 0 0 10px;
-    font-size: 13px;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--ink);
+  .sala + .sala {
+    margin-top: clamp(96px, 10vw, 160px);
   }
-  /* Grupos del índice, en negrita y con su raya roja corta */
-  .g-nombre {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin: 22px 0 6px;
-    letter-spacing: 0.1em;
-  }
-  .g-nombre::before {
-    content: '';
-    width: 14px;
-    height: 2px;
-    background: var(--red);
-  }
-  .buscar {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    height: 48px;
-    padding: 0 14px;
-    background: #fff;
-    border: 1px solid var(--line);
-    border-bottom: 2px solid var(--ink);
-    color: var(--red);
-    transition:
-      border-color 0.2s var(--ease),
-      background 0.2s var(--ease);
-  }
-  .buscar:focus-within {
-    border-color: var(--red);
-    box-shadow: 0 0 0 3px rgba(221, 4, 10, 0.12);
-  }
-  .buscar input::placeholder {
-    color: var(--body);
-  }
-  .buscar input {
-    flex: 1;
-    min-width: 0;
-    border: 0;
-    outline: 0;
-    background: none;
-    font: 400 17px var(--f);
-    color: var(--ink);
-  }
-
-  /* Temperatura: tres casillas con su punto de color; se pueden sumar */
-  .temps {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-  }
-  .temp {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    height: 34px;
-    padding: 0 11px;
-    border: 1px solid var(--line);
-    background: #fff;
-    font: 400 15px var(--f);
-    color: var(--ink);
-    cursor: pointer;
-    transition:
-      background 0.2s var(--ease),
-      color 0.2s var(--ease),
-      border-color 0.2s var(--ease);
-  }
-  /* Cada temperatura con su icono y su color; elegida, la casilla entera se pinta de ese color */
-  .temp {
-    --c: var(--t-ventilada);
-  }
-  .temp[data-v='refrigerada'] {
-    --c: var(--t-refrigerada);
-  }
-  .temp[data-v='calefactada'] {
-    --c: var(--t-calefactada);
-  }
-  .temp :global(.icono-temp) {
-    color: var(--c);
-  }
-  .temp[aria-pressed='true'] :global(.icono-temp) {
-    color: #fff;
-  }
-  .temp[aria-pressed='true'] {
-    background: var(--c);
-    border-color: var(--c);
-    color: #fff;
-    font-weight: 700;
-  }
-
-  /* Aplicaciones: una lista como el índice de un catálogo; la elegida, con su raya roja */
-  .cats {
-    display: block;
-  }
-  .cat {
+  .sala-cab {
     position: relative;
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 10px;
-    width: 100%;
-    padding: 7px 0 7px 14px;
-    border: 0;
-    border-left: 2px solid var(--panel);
-    background: none;
-    font: 400 17px/1.2 var(--f);
-    color: var(--body);
-    text-align: left;
-    cursor: pointer;
-    transition:
-      color 0.2s var(--ease),
-      border-color 0.2s var(--ease),
-      padding 0.3s var(--ease);
-  }
-  .cat.todo {
-    font-weight: 700;
-    color: var(--ink);
-  }
-  .n {
-    font-size: 14px;
-    font-weight: 400;
-    color: var(--body);
-    font-variant-numeric: tabular-nums;
-  }
-  .cat[aria-pressed='true'] {
-    border-left-color: var(--red);
-    padding-left: 18px;
-    color: var(--red);
-    font-weight: 700;
-  }
-  .cat[aria-pressed='true'] .n {
-    color: var(--red);
-  }
-  .cat:disabled {
-    opacity: 0.35;
-    cursor: default;
-  }
-  .borrar {
-    justify-self: start;
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    height: 40px;
-    padding: 0 14px;
-    border: 1px solid var(--red);
-    background: var(--red);
-    font: 700 15px var(--f);
-    color: #fff;
-    cursor: pointer;
-    animation: aparece 0.25s var(--ease);
-  }
-  @media (hover: hover) {
-    .cat:not(:disabled, [aria-pressed='true']):hover {
-      border-left-color: var(--ink);
-      color: var(--ink);
-    }
-    .temp:not([aria-pressed='true']):hover {
-      border-color: var(--ink);
-    }
-    .borrar:hover {
-      background: var(--red-d);
-    }
-  }
-  .cat:focus-visible,
-  .temp:focus-visible,
-  .borrar:focus-visible {
-    outline: 2px solid var(--red);
-    outline-offset: 2px;
-  }
-
-  /* Cabecera de la lista: lo elegido en grande y fino, y el total a la derecha */
-  .cabeza {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 16px;
-    margin-bottom: 28px;
-    padding-bottom: 16px;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: end;
+    gap: 0 clamp(16px, 2vw, 28px);
+    padding-bottom: clamp(20px, 2.4vw, 32px);
+    margin-bottom: clamp(28px, 3.2vw, 44px);
     border-bottom: 2px solid var(--ink);
   }
-  .cabeza h2 {
-    font-size: clamp(32px, 3.6vw, 52px);
-    font-weight: 300;
-    line-height: 1;
-    letter-spacing: -0.01em;
+  .sala-cab::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: -2px;
+    width: clamp(80px, 12vw, 180px);
+    height: 6px;
+    background: var(--fam);
+    translate: 0 50%;
   }
-  .total {
+  .sala-i {
+    font-size: clamp(22px, 2.2vw, 30px);
+    font-weight: 700;
+    line-height: 1;
+    color: var(--red);
+    font-variant-numeric: tabular-nums;
+    padding-bottom: 0.35em;
+  }
+  .sala-cab h2 {
+    font-size: clamp(52px, 7.4vw, 112px);
+    font-weight: 700;
+    line-height: 0.86;
+    letter-spacing: -0.03em;
+    text-transform: uppercase;
+  }
+  .sala-n {
     flex: none;
     margin: 0;
-    font-size: 16px;
-    color: var(--body);
+    padding-bottom: 0.3em;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--ink);
     font-variant-numeric: tabular-nums;
   }
 
-  /* ——— Rejilla continua, sin huecos ——— */
-  .rejilla {
+  .piezas {
     margin: 0;
     padding: 0;
     list-style: none;
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 24px;
+    gap: clamp(20px, 2vw, 28px);
   }
-
-  /* Cada tarjeta deja sitio a la cabecera al llegar con un enlace a ella */
+  /* Cada máquina deja sitio a la barra al llegar con un enlace a ella */
   .ficha {
     position: relative;
-    scroll-margin-top: 120px;
+    scroll-margin-top: 200px;
   }
 
-  /* "Comparar": una etiqueta blanca arriba a la derecha de la foto, a juego con la de la temperatura */
+  /* "Comparar": arriba a la derecha del escenario; marcado, en rojo */
   .comparar {
     position: absolute;
-    top: 1px;
-    right: 1px;
+    top: 18px;
+    right: 18px;
     z-index: 3;
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    padding: 5px 12px 5px 10px;
-    font-size: 15px;
+    height: 28px;
+    padding: 0 10px;
+    font-size: 14px;
     font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
     line-height: 1;
     color: var(--ink);
     background: #fff;
-    border-left: 1px solid var(--line);
-    border-bottom: 1px solid var(--line);
     cursor: pointer;
     transition:
-      color 0.2s var(--ease),
-      background 0.2s var(--ease);
+      color 0.18s ease,
+      background-color 0.18s ease;
   }
   .comparar input {
     position: absolute;
@@ -687,43 +387,130 @@ const filasComparar = [
   }
   .caja {
     position: relative;
-    width: 15px;
-    height: 15px;
-    border: 1.5px solid var(--ink);
-    background: #fff;
+    width: 14px;
+    height: 14px;
+    border: 1.5px solid currentColor;
+    transition:
+      background-color 0.18s ease,
+      border-color 0.18s ease;
   }
   .caja::after {
     content: '';
     position: absolute;
-    left: 3.5px;
+    left: 4px;
     top: 0.5px;
     width: 4px;
     height: 8px;
-    border: solid var(--red);
+    border: solid #fff;
     border-width: 0 2px 2px 0;
     rotate: 45deg;
     opacity: 0;
+    scale: 0.6;
+    transition:
+      opacity 0.16s ease,
+      scale 0.2s cubic-bezier(0.23, 1, 0.32, 1);
   }
   .comparar:has(input:checked) {
     color: #fff;
+    background: var(--ink);
+  }
+  .comparar input:checked + .caja {
     background: var(--red);
     border-color: var(--red);
   }
-  .comparar input:checked + .caja {
-    border-color: #fff;
-  }
   .comparar input:checked + .caja::after {
     opacity: 1;
+    scale: 1;
   }
   .comparar input:focus-visible + .caja {
-    outline: 2px solid var(--ink);
+    outline: 2px solid var(--red);
     outline-offset: 2px;
   }
   .comparar:has(input:disabled) {
-    opacity: 0.45;
+    opacity: 0.4;
     cursor: not-allowed;
   }
+  @media (hover: hover) and (pointer: fine) {
+    .comparar:hover:not(:has(input:disabled)) {
+      color: var(--ink);
+    }
+  }
 
+  /* Sin resultados: el mensaje claro y el botón para empezar de nuevo */
+  .vacio {
+    padding: clamp(72px, 10vw, 140px) 0;
+    text-align: center;
+  }
+  .vacio p {
+    margin: 0 0 28px;
+    font-size: clamp(26px, 2.6vw, 34px);
+    font-weight: 300;
+  }
+  .sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  /* Entrada al bajar */
+  .revela .ficha:not(.visto) {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+  .revela .ficha.visto {
+    transition:
+      opacity 0.6s var(--ease) var(--d, 0ms),
+      transform 0.7s cubic-bezier(0.23, 1, 0.32, 1) var(--d, 0ms);
+  }
+
+  @media (max-width: 1439px) {
+    :global(html:has(#top:not(.oculta))) .catalogo {
+      --arriba: 88px;
+    }
+  }
+  @media (max-width: 1180px) {
+    .piezas {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  @media (max-width: 900px) {
+    :global(html:has(#top:not(.oculta))) .catalogo {
+      --arriba: 60px;
+    }
+  }
+
+  /* ——— Móvil ——— */
+  @media (max-width: 1024px) {
+    .salas {
+      padding-top: 56px;
+    }
+    .sala + .sala {
+      margin-top: 104px;
+    }
+    .sala-n {
+      font-size: 16px;
+    }
+  }
+  @media (max-width: 640px) {
+    .piezas {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 20px;
+    }
+    .sala-cab {
+      grid-template-columns: auto 1fr;
+    }
+    .sala-cab h2 {
+      font-size: clamp(38px, 11vw, 52px);
+    }
+    .sala-n {
+      grid-column: 1 / -1;
+      padding: 12px 0 0;
+      font-size: 16px;
+    }
+  }
   /* Los botones que se pintan desde JS no llevan el ámbito del componente */
   :global(:where(.barra-comparar, .comparador) button) {
     border: 0;
@@ -1102,166 +889,6 @@ const filasComparar = [
     .comparador[open],
     .elegidas :global(li) {
       animation: none;
-    }
-  }
-  .revela .ficha:not(.visto) {
-    opacity: 0;
-    transform: translateY(28px);
-  }
-  .revela .ficha.visto {
-    transition:
-      opacity 0.6s var(--ease) var(--d, 0ms),
-      transform 0.7s var(--ease) var(--d, 0ms);
-  }
-
-  @media (prefers-reduced-motion: no-preference) {
-    .ficha.entra {
-      animation: aparece 0.45s var(--ease) both;
-      animation-delay: calc(var(--i, 0) * 35ms);
-    }
-  }
-  @keyframes aparece {
-    from {
-      opacity: 0;
-      transform: translateY(12px);
-    }
-  }
-
-  .vacio {
-    grid-column: 1 / -1;
-    padding: 56px 24px;
-    text-align: center;
-    border: 1px dashed var(--line);
-  }
-  .vacio p {
-    margin: 0 0 20px;
-    font-size: 20px;
-  }
-  .sr {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
-  }
-
-  @media (max-width: 1439px) {
-    :global(html:has(#top:not(.oculta))) .catalogo {
-      --arriba: 88px;
-    }
-  }
-  @media (max-width: 1180px) {
-    .rejilla {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-  }
-  /* Tablet y móvil: el índice pasa a ser una barra blanca fija arriba, con las aplicaciones de lado */
-  @media (max-width: 900px) {
-    .catalogo {
-      --arriba: 0px;
-      padding-top: 0;
-    }
-    :global(html:has(#top:not(.oculta))) .catalogo {
-      --arriba: 60px;
-    }
-    .catalogo-in {
-      grid-template-columns: minmax(0, 1fr);
-      gap: 24px;
-    }
-    .indice {
-      z-index: 15;
-      max-height: none;
-      overflow: visible;
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 10px 12px;
-      margin-inline: calc(-1 * var(--gut));
-      padding: 14px var(--gut) 12px;
-      background: rgba(255, 255, 255, 0.92);
-      -webkit-backdrop-filter: blur(16px) saturate(160%);
-      backdrop-filter: blur(16px) saturate(160%);
-      border-bottom: 1px solid var(--line);
-      box-shadow: 0 12px 30px -26px rgba(17, 19, 21, 0.5);
-    }
-    .rotulo,
-    .g-nombre {
-      display: none;
-    }
-    .buscar {
-      flex: 1 1 260px;
-      height: 42px;
-    }
-    .temp-bloque {
-      flex: none;
-    }
-    .temps {
-      flex-wrap: nowrap;
-    }
-    .cats {
-      order: 3;
-      flex: 1 1 100%;
-      display: flex;
-      gap: 6px;
-      overflow-x: auto;
-      scrollbar-width: none;
-      margin-inline: calc(-1 * var(--gut));
-      padding-inline: var(--gut);
-    }
-    .cats::-webkit-scrollbar {
-      display: none;
-    }
-    .grupo {
-      display: contents;
-    }
-    .cat,
-    .cat.todo {
-      flex: none;
-      width: auto;
-      height: 34px;
-      align-items: center;
-      padding: 0 12px;
-      border: 1px solid transparent;
-      background: var(--panel);
-      font-size: 15px;
-      white-space: nowrap;
-      color: var(--ink);
-    }
-    .cat[aria-pressed='true'] {
-      padding: 0 12px;
-      background: var(--red);
-      color: #fff;
-    }
-    .cat[aria-pressed='true'] .n {
-      color: rgba(255, 255, 255, 0.8);
-    }
-    .borrar {
-      order: 2;
-      height: 34px;
-    }
-    .cabeza {
-      margin-bottom: 20px;
-    }
-  }
-  @media (max-width: 640px) {
-    .temp-bloque,
-    .temps {
-      flex: 1 1 100%;
-    }
-    .temp {
-      flex: 1;
-      justify-content: center;
-      padding: 0 6px;
-    }
-    .rejilla {
-      grid-template-columns: 1fr;
-    }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .indice,
-    .cat {
-      transition: none;
     }
   }
 </style>
