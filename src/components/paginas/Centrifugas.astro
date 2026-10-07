@@ -20,7 +20,7 @@ import {
   type Modelo,
 } from '../../data/productos';
 import { accesorios, equipos, type ProductoLab } from '../../data/laboratorio';
-import { cifra, fichaCentrifuga } from '../../data/fichas';
+import { cifra, fichaCentrifuga, medida, rotor, tipoRotor, tipoTubo } from '../../data/fichas';
 import { contacto } from '../../data/navegacion';
 import { idioma, numero, ruta, textoSerie, textos } from '../../i18n';
 
@@ -150,6 +150,51 @@ const presupuestables = Object.fromEntries(
   ),
 );
 const td = t.distribuidores;
+
+// ——— Tubos: qué tubos admite cada versión (por sus rotores de la web actual), con el rotor donde caben más y cuántos
+// a la vez. La clave de un tubo es "tipo|medidas", como viene de la web actual ———
+type ConTubo = [rotor: string, tipo: string, n: number];
+const tubosDe = (slug: string) => {
+  const r: Record<string, ConTubo> = {};
+  for (const id of fichaCentrifuga(slug)?.rotores ?? []) {
+    const ro = rotor(id);
+    if (!ro) continue;
+    for (const tu of ro.tubos) {
+      const k = `${tu.tipo}|${tu.medidas}`;
+      const n = Number(tu.posiciones) || 0;
+      if (!r[k] || n > r[k][2]) r[k] = [ro.nombre, tipoRotor(lang, ro.tipo).toLowerCase(), n];
+    }
+  }
+  return r;
+};
+const tubosModelo = Object.fromEntries(modelos.map((m) => [m.slug, tubosDe(m.slug)]));
+// Para el filtro: los tubos agrupados por tipo (los tipos con más máquinas primero) y ordenados por medidas
+const cuenta: Record<string, number> = {};
+for (const ts of Object.values(tubosModelo)) for (const k of Object.keys(ts)) cuenta[k] = (cuenta[k] ?? 0) + 1;
+const porTipo: Record<string, string[]> = {};
+for (const k of Object.keys(cuenta)) (porTipo[k.split('|')[0]] ??= []).push(k);
+const grosor = (k: string) =>
+  k
+    .split('|')[1]
+    .split('x')
+    .map((x) => parseFloat(x.replace(',', '.')) || 0);
+const tubos = Object.entries(porTipo)
+  .sort((a, b) => b[1].reduce((n, k) => n + cuenta[k], 0) - a[1].reduce((n, k) => n + cuenta[k], 0))
+  .map(([tipo, ks]) => ({
+    nombre: may(tipoTubo(lang, tipo) ?? tipo),
+    items: ks
+      .sort((a, b) => grosor(a)[0] - grosor(b)[0] || grosor(a)[1] - grosor(b)[1])
+      .map((k) => ({
+        v: k,
+        nombre:
+          `${may(tipoTubo(lang, tipo) ?? tipo)} ${k.split('|')[1] !== 'undefined' ? medida(lang, k.split('|')[1]) : ''}`.trim(),
+        // Si el tubo no trae medidas en los datos (bolsas de sangre), su botón lleva el nombre del tipo
+        medidas:
+          k.split('|')[1] && k.split('|')[1] !== 'undefined'
+            ? (medida(lang, k.split('|')[1]) ?? '')
+            : may(tipoTubo(lang, tipo) ?? tipo),
+      })),
+  }));
 ---
 
 <Base title={t.catalogo.title} description={t.catalogo.description(productos.length, totalModelos)}>
@@ -161,6 +206,7 @@ const td = t.distribuidores;
 
     <!-- Filtros: panel a la vista y, al bajar, barra fina fija con lo puesto -->
     <Filtros
+      tubos={tubos}
       grupos={grupos.map((g) => ({ nombre: g.nombre, cats: g.cats.map((c) => ({ v: c, nombre: nombreCorto(c) })) }))}
     />
 
@@ -198,6 +244,7 @@ const td = t.distribuidores;
                   id={x.m.principal ? x.m.serie : x.m.slug}
                   data-cat={x.cat}
                   data-t={[...new Set(x.ms.map((v) => v.temperatura))].join(' ')}
+                  data-slugs={x.ms.map((v) => v.slug).join(' ')}
                   data-cap={capacidadMl(x.m)}
                   data-rpm={num(x.m.rpm)}
                   data-xg={num(x.m.xg ?? fichaCentrifuga(x.m.slug)?.xg)}
@@ -376,6 +423,11 @@ const td = t.distribuidores;
   />
   <script
     type="application/json"
+    id="datos-tubos"
+    set:html={JSON.stringify({ modelos: tubosModelo, texto: t.catalogo.filtros.conTubo('{r}', '{t}', '{n}') })}
+  />
+  <script
+    type="application/json"
     id="datos-presupuesto"
     set:html={JSON.stringify({
       maquinas: presupuestables,
@@ -453,6 +505,46 @@ const td = t.distribuidores;
       if (otra) verVersion(g.closest<HTMLElement>('.ficha')!, otra.dataset.i!, false);
     }
   });
+  // Tubo elegido: cada tarjeta dice en qué rotor va y cuántos caben; si su versión a la vista no lo admite y otra sí,
+  // enseña esa
+  const datosTubos = JSON.parse(document.getElementById('datos-tubos')?.textContent ?? '{}') as {
+    modelos: Record<string, Record<string, [string, string, number]>>;
+    texto: string;
+  };
+  let tuboActual = '';
+  const pintarTubos = () => {
+    for (const li of document.querySelectorAll<HTMLElement>('#salas .ficha[data-slugs]')) {
+      const franja = li.querySelector<HTMLElement>('.con-tubo');
+      if (!franja) continue;
+      const activa = li.querySelector<HTMLButtonElement>('.versiones [aria-pressed="true"]');
+      const slug = activa?.dataset.slug ?? li.dataset.slugs!.split(' ')[0];
+      const dato = tuboActual ? datosTubos.modelos?.[slug]?.[tuboActual] : undefined;
+      franja.hidden = !dato;
+      if (dato)
+        franja.textContent = datosTubos.texto
+          .replace('{r}', dato[0])
+          .replace('{t}', dato[1])
+          .replace('{n}', String(dato[2]));
+    }
+  };
+  document.addEventListener('catalogo:filtrado', (e) => {
+    tuboActual = (e as CustomEvent<{ tubo?: string }>).detail?.tubo ?? '';
+    if (tuboActual)
+      for (const g of document.querySelectorAll<HTMLElement>('.versiones')) {
+        const actual = g.querySelector<HTMLButtonElement>('[aria-pressed="true"]');
+        if (actual && datosTubos.modelos?.[actual.dataset.slug!]?.[tuboActual]) continue;
+        const otra = [...g.querySelectorAll<HTMLButtonElement>('button')].find(
+          (x) => datosTubos.modelos?.[x.dataset.slug!]?.[tuboActual],
+        );
+        if (otra) verVersion(g.closest<HTMLElement>('.ficha')!, otra.dataset.i!, false);
+      }
+    pintarTubos();
+  });
+  document.addEventListener('catalogo:version', pintarTubos);
+  // Por si los filtros ya se aplicaron antes de llegar aquí (al abrir un enlace con ?tubo=)
+  tuboActual = document.querySelector<HTMLInputElement>('input[name=tubo]')?.value ?? '';
+  pintarTubos();
+
   // Si se llega con el enlace de una versión concreta (#digicen-22-r), se enseña esa
   const pedida =
     location.hash &&
@@ -808,6 +900,16 @@ const td = t.distribuidores;
       scale 0.9s cubic-bezier(0.23, 1, 0.32, 1) calc(var(--d, 0ms) + 0.3s);
   }
 
+  /* Pantalla grande: el catálogo se ensancha y pasa a cuatro columnas (tarjetas de unos 345 px, casi como con tres a
+     1280 px), así quedan menos tarjetas sueltas al final de cada familia */
+  @media (min-width: 1600px) {
+    .catalogo {
+      --wrap: 1560px;
+    }
+    .piezas {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
   @media (max-width: 1439px) {
     :global(html:has(#top:not(.oculta))) .catalogo {
       --arriba: 88px;
@@ -1130,6 +1232,10 @@ const td = t.distribuidores;
     align-items: flex-end;
     gap: 10px;
     transition: bottom 0.35s var(--ease);
+  }
+  /* Con el panel de filtros abierto (móvil), el presupuesto se aparta para no tapar "Ver productos" */
+  :global(html:has(#filtros.abierto)) .presupuesto {
+    display: none;
   }
   /* Con la barra del comparador abajo, el presupuesto sube para no taparla */
   :global(body:has(#barra-comparar:not([hidden]))) .presupuesto {

@@ -79,6 +79,9 @@ const cifras = (v: Version) => [
     {frase && <span class="frase">{frase}</span>}
   </span>
 
+  <!-- Con un tubo elegido en los filtros: en qué rotor va y cuántos caben (lo rellena la página) -->
+  {vs && <span class="con-tubo" hidden />}
+
   <!-- Placa de datos: cada cifra con su nombre arriba y la unidad pequeña al lado -->
   {vs ? (
     vs.map((v, i) => (
@@ -253,6 +256,28 @@ const cifras = (v: Version) => [
     line-height: 1.35;
     color: var(--body);
   }
+  /* "Con tu tubo": franja oscura de borde a borde, con el tubo en rojo delante */
+  .con-tubo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 24px;
+    background: var(--ink);
+    color: #fff;
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.25;
+  }
+  .con-tubo::before {
+    content: '';
+    flex: none;
+    width: 8px;
+    height: 18px;
+    border: 1.5px solid #fff;
+    border-top: 4px solid var(--red);
+    border-radius: 0 0 4px 4px;
+  }
+
   /* Placa de datos: banda gris de borde a borde con tres casillas */
   .placa {
     display: grid;

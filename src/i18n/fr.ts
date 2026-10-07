@@ -263,6 +263,9 @@ export const fr: Textos = {
       todas: 'Toutes les applications',
       ver: (n: number) => (n === 1 ? 'Voir 1 produit' : `Voir ${n} produits`),
       cerrar: 'Fermer',
+      tubo: 'Votre tube',
+      cualquierTubo: 'Tous les tubes',
+      conTubo: (rotor: string, tipo: string, n: string) => `Avec votre tube : rotor ${tipo} ${rotor} · ${n} à la fois`,
       ordenar: 'Trier',
       orden: {
         catalogo: 'Ordre du catalogue',
