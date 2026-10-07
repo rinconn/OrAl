@@ -290,10 +290,9 @@ export const en: Textos = {
     presupuesto: {
       anadir: 'Add to quote',
       corto: 'Quote',
-      anadido: 'Added',
+      ud: 'pcs',
       menos: 'One fewer',
       mas: 'One more',
-      quitarCorto: 'Remove',
       quitarDeLista: 'Remove from quote',
       titulo: 'My quote',
       boton: (n: number) => `Quote (${n})`,

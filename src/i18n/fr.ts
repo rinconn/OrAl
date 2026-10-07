@@ -291,10 +291,9 @@ export const fr: Textos = {
     presupuesto: {
       anadir: 'Ajouter au devis',
       corto: 'Devis',
-      anadido: 'Ajouté',
+      ud: 'u.',
       menos: 'Une unité de moins',
       mas: 'Une unité de plus',
-      quitarCorto: 'Retirer',
       quitarDeLista: 'Retirer du devis',
       titulo: 'Mon devis',
       boton: (n: number) => `Devis (${n})`,

@@ -1091,3 +1091,17 @@ entera delante, si se ensancha el contenido de 1280 a 1440 px.
   delante.
 - **Descartado:** un estudio gris claro liso (la máquina blanca sobre gris claro queda plana), la foto sin ningún
   detalle (queda apagada) y un estudio gris oscuro liso (sin ambiente de laboratorio).
+
+## 23. Presupuesto en la tarjeta: un contador de unidades
+
+- **Problema:** al añadir una máquina, la mitad del pie de la tarjeta enseñaba a la vez "✓ Añadido" y "✕ Quitar",
+  apretados y con poco contraste con el estado sin añadir; las unidades solo se cambiaban dentro del panel del
+  presupuesto.
+- **Ahora:** sin añadir, "+ Presupuesto" como antes. Al pulsarlo, ese hueco pasa a ser un contador "− 1 ud. +" con
+  marco rojo: el "+" suma unidades, el "−" las resta y, con 1, quita la máquina del presupuesto y vuelve
+  "+ Presupuesto". La tarjeta y el panel van a la par: lo que se cambia en uno se ve en el otro.
+- **Por qué:** es como funciona cualquier tienda online, se deshace un error en un toque (también en móvil, donde no
+  hay ratón) y el distribuidor, que no pide una máquina sino varias, pone la cantidad sin salir del catálogo; el correo
+  sale con esas cantidades.
+- **Descartado:** solo un icono "+" (no dice que es para el presupuesto), "✓ Añadido" en rojo con "Quitar" al pasar
+  el ratón (en móvil no se podría quitar) y dejarlo como estaba.

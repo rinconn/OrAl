@@ -243,32 +243,11 @@ const td = t.distribuidores;
                     {tc.comparar}
                     <span class="sr">{x.m.nombre}</span>
                   </label>
-                  <button type="button" class="anadir" data-slug={x.m.slug} aria-pressed="false">
+                  <button type="button" class="anadir" data-slug={x.m.slug}>
                     <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
-                      <path
-                        class="mas"
-                        d="M12 5v14M5 12h14"
-                        stroke="currentColor"
-                        stroke-width="2"
-                        stroke-linecap="round"
-                      />
-                      <path
-                        class="ok"
-                        d="m5 12.5 4.5 4.5L19 7.5"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2.2"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                      />
+                      <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
                     </svg>
-                    <span class="txt">{tp.corto}</span>
-                    <span class="quitar-pres">
-                      <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
-                        <path d={cruz} stroke="currentColor" stroke-width="2.2" stroke-linecap="round" />
-                      </svg>
-                      {tp.quitarCorto}
-                    </span>
+                    {tp.corto}
                   </button>
                 </li>
               ) : (
@@ -291,32 +270,11 @@ const td = t.distribuidores;
                     frase={t.laboratorio.items[x.p.slug].frase}
                     color={s.color}
                   />
-                  <button type="button" class="anadir" data-slug={x.p.slug} aria-pressed="false">
+                  <button type="button" class="anadir" data-slug={x.p.slug}>
                     <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
-                      <path
-                        class="mas"
-                        d="M12 5v14M5 12h14"
-                        stroke="currentColor"
-                        stroke-width="2"
-                        stroke-linecap="round"
-                      />
-                      <path
-                        class="ok"
-                        d="m5 12.5 4.5 4.5L19 7.5"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2.2"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                      />
+                      <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
                     </svg>
-                    <span class="txt">{tp.corto}</span>
-                    <span class="quitar-pres">
-                      <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
-                        <path d={cruz} stroke="currentColor" stroke-width="2.2" stroke-linecap="round" />
-                      </svg>
-                      {tp.quitarCorto}
-                    </span>
+                    {tp.corto}
                   </button>
                 </li>
               ),
@@ -430,7 +388,7 @@ const td = t.distribuidores;
         anadir: tp.anadir,
         quitarDeLista: tp.quitarDeLista,
         corto: tp.corto,
-        anadido: tp.anadido,
+        ud: tp.ud,
         menos: tp.menos,
         mas: tp.mas,
       },
@@ -1014,17 +972,21 @@ const td = t.distribuidores;
     }
   }
 
-  /* ——— Presupuesto en cada tarjeta: abajo a la izquierda, junto a "Ver producto" ——— */
-  .anadir {
+  /* ——— Presupuesto en cada tarjeta: abajo a la izquierda, junto a "Ver producto". Sin añadir, "+ Presupuesto";
+     añadida, un contador "− 1 ud. +" con marco rojo (lo pone src/scripts/presupuesto.ts): con 1, el "−" la quita ——— */
+  .anadir,
+  .ficha :global(.paso) {
     position: absolute;
     left: 2px;
     bottom: 2px;
     width: calc(50% - 2px);
     z-index: 2;
+    height: 56px;
+  }
+  .anadir {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    height: 56px;
     padding: 0 16px 0 20px;
     border: 0;
     border-right: 1px solid #b4b9bd;
@@ -1032,46 +994,77 @@ const td = t.distribuidores;
     font: 700 16px var(--f);
     color: var(--ink);
     cursor: pointer;
-    transition:
-      background-color 0.2s ease,
-      color 0.2s ease;
+    transition: background-color 0.2s ease;
   }
   .anadir svg {
     color: var(--red);
   }
-  .anadir .ok,
-  .anadir[aria-pressed='true'] .mas {
+  .ficha :global(.paso) {
+    display: flex;
+    background: #fff;
+    box-shadow: inset 0 0 0 2px var(--red);
+    animation: aparece-paso 0.25s var(--ease);
+  }
+  .ficha :global(.paso[hidden]) {
     display: none;
   }
-  .anadir[aria-pressed='true'] .ok {
-    display: inline;
-  }
-  /* Añadido: "✓ Añadido" y, a la vista, "× Quitar" en rojo */
-  .anadir .quitar-pres {
-    display: none;
-    align-items: center;
-    gap: 5px;
-    margin-left: auto;
-    font-weight: 700;
-    font-size: 16px;
+  .ficha :global(.paso button) {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 52px;
+    border: 0;
+    background: none;
     color: var(--red);
+    cursor: pointer;
+    transition: background-color 0.2s ease;
   }
-  .anadir[aria-pressed='true'] {
-    background: #f3f4f5;
+  .ficha :global(.paso button:first-child) {
+    border-right: 1px solid #e3b3b5;
   }
-  .anadir[aria-pressed='true'] .quitar-pres {
-    display: inline-flex;
+  .ficha :global(.paso button:last-child) {
+    border-left: 1px solid #e3b3b5;
   }
-  .anadir:focus-visible {
+  .ficha :global(.paso output) {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    font: 400 16px var(--f);
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .ficha :global(.paso output b) {
+    font-size: 20px;
+    font-weight: 700;
+  }
+  .anadir:focus-visible,
+  .ficha :global(.paso button:focus-visible) {
     outline: 2px solid var(--red);
     outline-offset: -2px;
   }
-  .anadir:active {
+  .anadir:active,
+  .ficha :global(.paso button:active) {
     scale: 0.97;
+  }
+  @keyframes aparece-paso {
+    from {
+      opacity: 0;
+    }
   }
   @media (hover: hover) and (pointer: fine) {
     .anadir:hover {
       background: #f3f4f5;
+    }
+    .ficha :global(.paso button:hover) {
+      background: #fdf0f0;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ficha :global(.paso) {
+      animation: none;
     }
   }
 
