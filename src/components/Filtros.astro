@@ -1,0 +1,1198 @@
+---
+// Barra de filtros del catálogo, en su sitio debajo del hero (no baja al hacer scroll): una línea con bordes marcados.
+// Buscador con sugerencias (foto, nombre y aplicación de cada máquina que coincide), temperatura con su icono,
+// aplicación en un desplegable con el número de productos de cada una, el total y "Borrar filtros". En móvil,
+// buscador y botón de filtros, que abre un panel desde abajo. Sin JS no aparece y se ve todo el catálogo.
+// Los filtros se guardan en la dirección para poder compartir una búsqueda.
+import type { Temperatura } from '../data/productos';
+import { idioma, textos } from '../i18n';
+
+interface Props {
+  /** Aplicaciones por grupo: generales, especiales y otros productos */
+  grupos: { nombre: string; cats: { v: string; nombre: string }[] }[];
+}
+
+const { grupos } = Astro.props;
+const t = textos(idioma(Astro.currentLocale));
+const f = t.catalogo.filtros;
+const temperaturas: Temperatura[] = ['ventilada', 'refrigerada', 'calefactada'];
+const may = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+const cruz = 'M6 6l12 12M18 6 6 18';
+// Iconos dibujados para la temperatura: ventilador, copo de nieve y llama
+const iconos: Record<Temperatura, string> = {
+  ventilada:
+    'M12 10.2c-.6-2.9.2-6.2 2.9-6.2 2.2 0 2.8 2.8.9 4.5-1 .9-2.3 1.4-3.8 1.7ZM13.6 12.9c2.8.9 5.3 3.3 4 5.6-1.1 1.9-3.8 1-4.4-1.5-.3-1.3-.2-2.7.4-4.1ZM10.4 12.9c-2.2 2-5.5 2.9-6.8.6-1.1-1.9 1-3.8 3.5-3.1 1.3.4 2.4 1.2 3.3 2.5ZM12 13.6a1.6 1.6 0 1 0 0-3.2 1.6 1.6 0 0 0 0 3.2Z',
+  refrigerada:
+    'M12 3v18M4.2 7.5l15.6 9M4.2 16.5l15.6-9M9.6 4.6 12 7l2.4-2.4M9.6 19.4 12 17l2.4 2.4M3.9 10.8l3.3-.9-.9-3.3M20.1 13.2l-3.3.9.9 3.3M6.3 17.4l.9-3.3-3.3-.9M17.7 6.6l-.9 3.3 3.3.9',
+  calefactada:
+    'M12 21c-3.5 0-6-2.5-6-5.8 0-3.4 2.5-5 3.3-8.5.4 1.9 1.3 3 2.4 3.5.3-3 1.6-5.4 3.8-7.2-.3 3.2 4.5 5.6 4.5 11 0 4.3-3 7-8 7Zm0 0c-1.7 0-2.8-1.2-2.8-2.8 0-1.8 1.5-2.6 2.2-4.4.9 1 3.4 2.2 3.4 4.4 0 1.6-1.1 2.8-2.8 2.8Z',
+};
+---
+
+<form
+  class="filtros"
+  id="filtros"
+  role="search"
+  aria-label={f.titulo}
+  data-uno={f.resultados(1)}
+  data-varios={f.resultados(999)}
+  data-ver-uno={f.ver(1)}
+  data-ver-varios={f.ver(999)}
+  hidden
+>
+  <div class="wrap">
+    <div class="barra">
+      <!-- Buscador con sugerencias -->
+      <div class="buscar">
+        <svg class="lupa" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+          <circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="1.7"></circle>
+          <path d="M15.5 15.5 21 21" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"></path>
+        </svg>
+        <input
+          type="search"
+          name="q"
+          placeholder={f.buscar}
+          aria-label={f.buscar}
+          autocomplete="off"
+          enterkeyhint="search"
+          role="combobox"
+          aria-expanded="false"
+          aria-controls="sugerencias"
+          aria-autocomplete="list"
+        />
+        <ul class="sugerencias" id="sugerencias" role="listbox" aria-label={f.buscar}></ul>
+      </div>
+
+      <button type="button" class="abrir-panel" aria-expanded="false" aria-controls="panel-filtros">
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+          <path d="M4 7h16M7 12h10M10 17h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path>
+        </svg>
+        <span class="sr-movil">{f.boton}</span>
+        <span class="activos" hidden></span>
+      </button>
+
+      <div class="panel" id="panel-filtros" aria-label={f.titulo}>
+        <div class="panel-cab">
+          <p>{f.titulo}</p>
+          <button type="button" class="cerrar-panel" aria-label={f.cerrar}>
+            <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+              <path d={cruz} stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Temperatura: tres botones con icono -->
+        <div class="temps" role="group" aria-label={f.temperatura}>
+          <span class="etq-movil">{f.temperatura}</span>
+          {temperaturas.map((x) => (
+            <button type="button" class:list={['temp', x]} data-temp={x} aria-pressed="false">
+              <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+                <path
+                  d={iconos[x]}
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.6"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+              {may(t.temperatura[x])}
+            </button>
+          ))}
+        </div>
+
+        <!-- Aplicación: desplegable con el número de productos de cada una -->
+        <div class="aplic">
+          <span class="etq-movil">{f.aplicacion}</span>
+          <button type="button" class="aplic-btn" aria-expanded="false" aria-controls="aplic-menu" data-todas={f.todas}>
+            <span class="aplic-txt">{f.todas}</span>
+            <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+              <path d="m6 9 6 6 6-6" fill="none" stroke="currentColor" stroke-width="1.8"></path>
+            </svg>
+          </button>
+          <div class="aplic-menu" id="aplic-menu">
+            <button type="button" class="opcion" data-aplic="" aria-pressed="true">
+              <span>{f.todas}</span>
+              <span class="n"></span>
+            </button>
+            {grupos.map((g) => (
+              <div class="opciones" role="group" aria-label={g.nombre}>
+                <p class="grupo">{g.nombre}</p>
+                {g.cats.map((c) => (
+                  <button type="button" class="opcion" data-aplic={c.v} data-nombre={c.nombre} aria-pressed="false">
+                    <span>{c.nombre}</span>
+                    <span class="n" />
+                  </button>
+                ))}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <!-- Ordenar: dentro de cada familia, por la cifra que se elija (de mayor a menor) -->
+        <label class="orden">
+          <span class="etq-movil">{f.ordenar}</span>
+          <select name="o" aria-label={f.ordenar}>
+            <option value="">{f.orden.catalogo}</option>
+            <option value="cap">{f.orden.capacidad}</option>
+            <option value="rpm">{f.orden.velocidad}</option>
+            <option value="xg">{f.orden.fuerza}</option>
+          </select>
+        </label>
+
+        <button type="button" class="ver-res"></button>
+      </div>
+
+      <div class="fin">
+        <p class="cuenta" aria-live="polite"></p>
+        <button type="button" class="limpiar borrar" hidden>
+          <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+            <path d={cruz} stroke="currentColor" stroke-width="2.2" stroke-linecap="round"></path>
+          </svg>
+          <span>{f.limpiar}</span>
+        </button>
+      </div>
+    </div>
+  </div>
+  <div class="velo" aria-hidden="true"></div>
+</form>
+
+<script>
+  const form = document.getElementById('filtros') as HTMLFormElement | null;
+  const salasEl = document.getElementById('salas');
+  if (form && salasEl) {
+    form.hidden = false;
+    const d = form.dataset;
+    const cuenta = (n: number, uno: string, varios: string) => (n === 1 ? uno : varios.replace('999', String(n)));
+    const fichas = [...salasEl.querySelectorAll<HTMLElement>('.ficha')];
+    const salas = [...salasEl.querySelectorAll<HTMLElement>('.sala')];
+    const de = (s: HTMLElement) => (el: HTMLElement) => s.contains(el);
+    const vacio = salasEl.querySelector<HTMLElement>('.vacio');
+    const temps = [...form.querySelectorAll<HTMLButtonElement>('.temp')];
+    const opciones = [...form.querySelectorAll<HTMLButtonElement>('.opcion')];
+    const aplicBtn = form.querySelector<HTMLButtonElement>('.aplic-btn')!;
+    const aplicTxt = form.querySelector<HTMLElement>('.aplic-txt')!;
+    const q = form.querySelector<HTMLInputElement>('input[name=q]')!;
+    const sug = form.querySelector<HTMLUListElement>('.sugerencias')!;
+    const cuentaEl = form.querySelector<HTMLElement>('.cuenta')!;
+    const borrar = form.querySelector<HTMLElement>('.borrar')!;
+    const activos = form.querySelector<HTMLElement>('.activos')!;
+    const verRes = form.querySelector<HTMLButtonElement>('.ver-res')!;
+    const quieto = matchMedia('(prefers-reduced-motion: reduce)');
+    const movil = matchMedia('(max-width: 1024px)');
+    const curva = 'cubic-bezier(0.23, 1, 0.32, 1)';
+
+    let aplic = '';
+    const elegidas = new Set<string>();
+    const plano = (s: string) => s.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().trim();
+    const casaTexto = (el: HTMLElement) => {
+      const texto = plano(q.value);
+      return !texto || texto.split(/\s+/).every((p) => (el.dataset.texto ?? '').includes(p));
+    };
+    const cumple = (el: HTMLElement, c = aplic, ts: Set<string> = elegidas) =>
+      (!c || el.dataset.cat === c) &&
+      (!ts.size || (el.dataset.t ?? '').split(' ').some((x) => ts.has(x))) &&
+      casaTexto(el);
+
+    // ——— Sugerencias del buscador: foto, nombre y aplicación de cada máquina que coincide ———
+    const datos = fichas.map((el) => ({
+      el,
+      nombre: el.querySelector('.nombre')?.textContent?.trim() ?? '',
+      uso: el.querySelector('.uso')?.textContent?.trim() ?? '',
+      img: el.querySelector<HTMLImageElement>('.foto img')?.getAttribute('src') ?? '',
+      href: el.querySelector<HTMLAnchorElement>('a.pieza')?.getAttribute('href') ?? '#',
+    }));
+    let marcada = -1;
+    const cerrarSug = () => {
+      sug.classList.remove('abierta');
+      q.setAttribute('aria-expanded', 'false');
+      q.removeAttribute('aria-activedescendant');
+      marcada = -1;
+    };
+    const marcar = (i: number) => {
+      const items = [...sug.querySelectorAll<HTMLElement>('[role=option]')];
+      if (!items.length) return;
+      marcada = (i + items.length) % items.length;
+      items.forEach((it, j) => it.setAttribute('aria-selected', String(j === marcada)));
+      q.setAttribute('aria-activedescendant', items[marcada].id);
+      items[marcada].scrollIntoView({ block: 'nearest' });
+    };
+    const pintarSug = () => {
+      const texto = plano(q.value);
+      if (!texto) return cerrarSug();
+      const hay = datos.filter((x) => casaTexto(x.el)).slice(0, 6);
+      const partes = texto.split(/\s+/);
+      sug.replaceChildren(
+        ...hay.map((x, i) => {
+          const li = document.createElement('li');
+          li.id = `sug-${i}`;
+          li.setAttribute('role', 'option');
+          li.setAttribute('aria-selected', 'false');
+          const a = document.createElement('a');
+          a.href = x.href;
+          a.tabIndex = -1;
+          const img = document.createElement('img');
+          img.src = x.img;
+          img.alt = '';
+          const txt = document.createElement('span');
+          const b = document.createElement('b');
+          // Resalta en rojo lo escrito dentro del nombre
+          const n = plano(x.nombre);
+          const p = partes.find((s) => n.includes(s));
+          if (p) {
+            const k = n.indexOf(p);
+            const m = document.createElement('mark');
+            m.textContent = x.nombre.slice(k, k + p.length);
+            b.append(x.nombre.slice(0, k), m, x.nombre.slice(k + p.length));
+          } else b.textContent = x.nombre;
+          const small = document.createElement('small');
+          small.textContent = x.uso;
+          txt.append(b, small);
+          const flecha = document.createElement('i');
+          flecha.textContent = '»';
+          a.append(img, txt, flecha);
+          li.append(a);
+          return li;
+        }),
+      );
+      if (!hay.length) {
+        const li = document.createElement('li');
+        li.className = 'nada';
+        li.textContent = salasEl.querySelector('.vacio p')?.textContent ?? '';
+        sug.append(li);
+      }
+      sug.classList.add('abierta');
+      q.setAttribute('aria-expanded', 'true');
+      marcada = -1;
+    };
+    q.addEventListener('keydown', (e) => {
+      if (!sug.classList.contains('abierta')) return;
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        marcar(marcada + 1);
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        marcar(marcada - 1);
+      } else if (e.key === 'Escape') cerrarSug();
+      else if (e.key === 'Enter' && marcada >= 0) {
+        e.preventDefault();
+        sug.querySelectorAll('a')[marcada]?.click();
+      }
+    });
+    q.addEventListener('focus', pintarSug);
+    q.addEventListener('blur', () => setTimeout(cerrarSug, 150));
+
+    // ——— Aplicar los filtros ———
+    const moviles = () => [...fichas, ...salas.map((s) => s.querySelector<HTMLElement>('.sala-cab')!)];
+    // Orden: el del catálogo (guardado al cargar) o de mayor a menor por capacidad, velocidad o fuerza
+    const orden = form.querySelector<HTMLSelectElement>('select[name=o]')!;
+    fichas.forEach((el, i) => (el.dataset.orden = String(i)));
+    const reordenar = () => {
+      const k = orden.value;
+      for (const ul of salasEl.querySelectorAll<HTMLElement>('.piezas')) {
+        const lis = [...ul.querySelectorAll<HTMLElement>(':scope > .ficha')];
+        lis.sort((a, b) =>
+          k ? Number(b.dataset[k] ?? 0) - Number(a.dataset[k] ?? 0) : Number(a.dataset.orden) - Number(b.dataset.orden),
+        );
+        ul.append(...lis);
+      }
+    };
+
+    const aplicar = (animar = true) => {
+      animar &&= !quieto.matches;
+      const antes = new Map<HTMLElement, DOMRect>();
+      if (animar) for (const el of moviles()) if (el.offsetParent) antes.set(el, el.getBoundingClientRect());
+      reordenar();
+
+      const visibles = fichas.filter((el) => cumple(el));
+      for (const el of fichas) el.hidden = !visibles.includes(el);
+      for (const s of salas) {
+        const n = visibles.filter(de(s)).length;
+        s.hidden = n === 0;
+        s.querySelector('.sala-n')!.textContent = cuenta(n, d.uno!, d.varios!);
+      }
+
+      for (const b of temps) {
+        const v = b.dataset.temp!;
+        const on = elegidas.has(v);
+        b.setAttribute('aria-pressed', String(on));
+        b.disabled = !on && !fichas.some((el) => cumple(el, aplic, new Set([v])));
+      }
+      for (const b of opciones) {
+        const v = b.dataset.aplic!;
+        const n = fichas.filter((el) => cumple(el, v)).length;
+        const on = aplic === v;
+        b.setAttribute('aria-pressed', String(on));
+        b.querySelector('.n')!.textContent = String(n);
+        b.disabled = n === 0 && !on;
+      }
+      const elegida = aplic ? opciones.find((b) => b.dataset.aplic === aplic) : undefined;
+      aplicTxt.textContent = elegida ? elegida.dataset.nombre! : aplicBtn.dataset.todas!;
+      aplicBtn.classList.toggle('on', !!elegida);
+
+      const nActivos = (aplic ? 1 : 0) + elegidas.size;
+      activos.hidden = nActivos === 0;
+      activos.textContent = String(nActivos);
+      borrar.hidden = nActivos === 0 && !q.value.trim();
+      const txt = cuenta(visibles.length, d.uno!, d.varios!);
+      const num = String(visibles.length);
+      const i = txt.indexOf(num);
+      cuentaEl.replaceChildren(
+        txt.slice(0, i),
+        Object.assign(document.createElement('b'), { textContent: num }),
+        txt.slice(i + num.length),
+      );
+      verRes.textContent = cuenta(visibles.length, d.verUno!, d.verVarios!);
+      if (vacio) vacio.hidden = visibles.length > 0;
+      // Los atajos a cada familia, con lo que queda en ella
+      for (const s of salas) {
+        const a = document.querySelector<HTMLElement>(`.atajos [data-ir="${s.dataset.sala}"]`);
+        if (!a) continue;
+        a.hidden = s.hidden;
+        a.querySelector('.n')!.textContent = String(visibles.filter(de(s)).length);
+      }
+      // Cada tarjeta con versiones enseña la que cumple la temperatura elegida
+      document.dispatchEvent(new CustomEvent('catalogo:filtrado', { detail: { temps: [...elegidas] } }));
+
+      if (animar) {
+        const alto = window.innerHeight;
+        let nuevas = 0;
+        for (const el of moviles()) {
+          if (!el.offsetParent) continue;
+          const r = el.getBoundingClientRect();
+          const a = antes.get(el);
+          if (!a) {
+            if (r.bottom < 0 || r.top > alto) continue;
+            el.animate(
+              [
+                { opacity: 0, transform: 'translateY(12px) scale(0.97)' },
+                { opacity: 1, transform: 'none' },
+              ],
+              { duration: 360, delay: Math.min(nuevas++, 6) * 40, easing: curva, fill: 'backwards' },
+            );
+          } else {
+            const dx = a.left - r.left;
+            const dy = a.top - r.top;
+            if ((!dx && !dy) || (Math.max(a.bottom, r.bottom) < 0 && Math.min(a.top, r.top) > alto)) continue;
+            el.animate([{ transform: `translate(${dx}px, ${dy}px)` }, { transform: 'none' }], {
+              duration: 460,
+              easing: curva,
+            });
+          }
+        }
+      }
+
+      const url = new URL(location.href);
+      const poner = (k: string, v: string) => (v ? url.searchParams.set(k, v) : url.searchParams.delete(k));
+      poner('c', aplic);
+      poner('t', [...elegidas].join(','));
+      poner('q', q.value.trim());
+      poner('o', orden.value);
+      history.replaceState(null, '', url);
+    };
+
+    // Estado inicial desde la dirección; si se llega a una ficha concreta (lupa, Tecnología), se ve todo
+    const url = new URL(location.href);
+    const aFicha = location.hash && document.getElementById(location.hash.slice(1))?.classList.contains('ficha');
+    if (!aFicha) {
+      const c = url.searchParams.get('c') ?? '';
+      if (c && opciones.some((b) => b.dataset.aplic === c)) aplic = c;
+      for (const v of url.searchParams.get('t')?.split(',') ?? [])
+        if (temps.some((b) => b.dataset.temp === v)) elegidas.add(v);
+      q.value = url.searchParams.get('q') ?? '';
+      const o = url.searchParams.get('o') ?? '';
+      if ([...orden.options].some((x) => x.value === o)) orden.value = o;
+    }
+
+    // ——— Desplegable de aplicación ———
+    const menuAbierto = () => aplicBtn.getAttribute('aria-expanded') === 'true';
+    const cerrarMenu = () => aplicBtn.setAttribute('aria-expanded', 'false');
+    aplicBtn.addEventListener('click', () => aplicBtn.setAttribute('aria-expanded', String(!menuAbierto())));
+    document.addEventListener('click', (e) => {
+      const el = e.target as Element;
+      if (menuAbierto() && !el.closest('.aplic')) cerrarMenu();
+      if (!el.closest('.buscar')) cerrarSug();
+    });
+    for (const b of opciones) {
+      b.addEventListener('click', () => {
+        aplic = b.dataset.aplic!;
+        cerrarMenu();
+        aplicar();
+        if (!movil.matches) aplicBtn.focus();
+      });
+    }
+    for (const b of temps) {
+      b.addEventListener('click', () => {
+        const v = b.dataset.temp!;
+        if (elegidas.has(v)) elegidas.delete(v);
+        else elegidas.add(v);
+        aplicar();
+      });
+    }
+    let espera = 0;
+    q.addEventListener('input', () => {
+      pintarSug();
+      clearTimeout(espera);
+      espera = window.setTimeout(aplicar, 140);
+    });
+    orden.addEventListener('change', () => aplicar());
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      cerrarSug();
+      q.blur();
+    });
+    for (const b of document.querySelectorAll<HTMLButtonElement>('.limpiar')) {
+      b.addEventListener('click', () => {
+        aplic = '';
+        elegidas.clear();
+        q.value = '';
+        orden.value = '';
+        aplicar();
+      });
+    }
+
+    // ——— Móvil: los filtros suben en un panel desde abajo ———
+    const abrirPanel = form.querySelector<HTMLButtonElement>('.abrir-panel')!;
+    const panel = form.querySelector<HTMLElement>('.panel')!;
+    const panelAbierto = () => form.classList.contains('abierto');
+    const cerrar = () => {
+      if (!panelAbierto()) return;
+      form.classList.remove('abierto');
+      panel.removeAttribute('role');
+      panel.removeAttribute('aria-modal');
+      abrirPanel.setAttribute('aria-expanded', 'false');
+      document.documentElement.style.overflow = '';
+      abrirPanel.focus();
+    };
+    abrirPanel.addEventListener('click', () => {
+      form.classList.add('abierto');
+      panel.setAttribute('role', 'dialog');
+      panel.setAttribute('aria-modal', 'true');
+      abrirPanel.setAttribute('aria-expanded', 'true');
+      document.documentElement.style.overflow = 'hidden';
+      temps[0].focus();
+    });
+    form.querySelector('.cerrar-panel')!.addEventListener('click', cerrar);
+    form.querySelector('.velo')!.addEventListener('click', cerrar);
+    verRes.addEventListener('click', cerrar);
+    document.addEventListener('keydown', (e) => {
+      if (e.key !== 'Escape') return;
+      if (menuAbierto()) {
+        cerrarMenu();
+        aplicBtn.focus();
+      } else cerrar();
+    });
+    panel.addEventListener('keydown', (e) => {
+      if (e.key !== 'Tab' || !panelAbierto()) return;
+      const focos = [...panel.querySelectorAll<HTMLButtonElement>('button')].filter(
+        (el) => el.offsetParent && !el.disabled,
+      );
+      const [primero, ultimo] = [focos[0], focos[focos.length - 1]];
+      if (e.shiftKey && document.activeElement === primero) {
+        e.preventDefault();
+        ultimo.focus();
+      } else if (!e.shiftKey && document.activeElement === ultimo) {
+        e.preventDefault();
+        primero.focus();
+      }
+    });
+    movil.addEventListener('change', (e) => !e.matches && cerrar());
+
+    aplicar(false);
+  }
+</script>
+
+<style>
+  .filtros {
+    --alto: 56px;
+    --borde: #c9c9c9;
+    position: relative;
+    z-index: 20;
+    margin-top: clamp(48px, 6vw, 88px);
+  }
+
+  /* ——— La barra: oscura sobre la sección blanca, con la raya roja arriba; los controles, con borde fino claro ——— */
+  .barra {
+    --osc: #787e85;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px;
+    background: #5a5f65;
+    border-top: 3px solid var(--red);
+    box-shadow: 0 30px 60px -40px rgba(17, 19, 21, 0.6);
+  }
+
+  /* Buscador */
+  .buscar {
+    position: relative;
+    flex: 1 1 320px;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    height: var(--alto);
+    padding: 0 16px;
+    background: #4d5258;
+    border: 1px solid var(--osc);
+    color: #e3e6e8;
+    transition:
+      border-color 0.2s ease,
+      box-shadow 0.2s ease;
+  }
+  .buscar:focus-within {
+    border-color: #fff;
+    box-shadow: inset 0 0 0 1px #fff;
+    color: #fff;
+  }
+  .lupa {
+    flex: none;
+    margin-right: 12px;
+  }
+  .buscar input {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    border: 0;
+    outline: 0;
+    background: none;
+    font: 400 19px var(--f);
+    color: #fff;
+  }
+  .buscar input::placeholder {
+    color: #fff;
+  }
+
+  /* Sugerencias: debajo del buscador, con foto y aplicación */
+  .sugerencias {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: -1px;
+    right: -1px;
+    z-index: 5;
+    max-height: 430px;
+    overflow-y: auto;
+    margin: 0;
+    padding: 6px;
+    list-style: none;
+    background: #fff;
+    border: 1px solid var(--ink);
+    box-shadow: 0 24px 50px -20px rgba(17, 19, 21, 0.35);
+    opacity: 0;
+    translate: 0 -6px;
+    visibility: hidden;
+    transition:
+      opacity 0.18s ease,
+      translate 0.25s cubic-bezier(0.23, 1, 0.32, 1),
+      visibility 0s 0.25s;
+  }
+  .sugerencias.abierta {
+    opacity: 1;
+    translate: 0 0;
+    visibility: visible;
+    transition:
+      opacity 0.18s ease,
+      translate 0.25s cubic-bezier(0.23, 1, 0.32, 1);
+  }
+  .sugerencias :global(li + li) {
+    border-top: 1px solid #efefef;
+  }
+  .sugerencias :global(a) {
+    display: grid;
+    grid-template-columns: 52px 1fr auto;
+    align-items: center;
+    gap: 14px;
+    padding: 6px 12px 6px 6px;
+    color: var(--ink);
+    text-decoration: none;
+  }
+  .sugerencias :global(img) {
+    width: 52px;
+    height: 52px;
+    object-fit: contain;
+    background: #f1f1f1;
+  }
+  .sugerencias :global(span) {
+    display: grid;
+    gap: 2px;
+  }
+  .sugerencias :global(b) {
+    font-size: 19px;
+    font-weight: 700;
+    line-height: 1.1;
+  }
+  .sugerencias :global(mark) {
+    background: none;
+    color: var(--red);
+  }
+  .sugerencias :global(small) {
+    font-size: 13px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .sugerencias :global(i) {
+    font-style: normal;
+    font-size: 20px;
+    color: var(--red);
+    opacity: 0;
+    translate: -6px 0;
+    transition:
+      opacity 0.2s ease,
+      translate 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+  }
+  .sugerencias :global([aria-selected='true'] a),
+  .sugerencias :global(a:hover) {
+    background: #f4f4f4;
+  }
+  .sugerencias :global([aria-selected='true'] i),
+  .sugerencias :global(a:hover i) {
+    opacity: 1;
+    translate: 0 0;
+  }
+  .sugerencias :global(.nada) {
+    padding: 14px 12px;
+    font-size: 16px;
+    color: var(--muted);
+  }
+
+  /* Temperatura y aplicación */
+  .panel {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .panel-cab,
+  .ver-res,
+  .abrir-panel,
+  .velo,
+  .etq-movil {
+    display: none;
+  }
+  .temps {
+    display: flex;
+    height: var(--alto);
+  }
+  .temp {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 16px;
+    border: 1px solid var(--osc);
+    background: none;
+    font: 400 17px var(--f);
+    color: #d5d9dc;
+    cursor: pointer;
+    transition:
+      background-color 0.2s ease,
+      color 0.2s ease,
+      border-color 0.2s ease,
+      opacity 0.2s ease;
+  }
+  .temp + .temp {
+    margin-left: -1px;
+  }
+  .temp svg {
+    color: var(--tc);
+    transition:
+      color 0.2s ease,
+      transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+  }
+  .ventilada {
+    --tc: #aab3b9;
+  }
+  .refrigerada {
+    --tc: #4ea6ec;
+  }
+  .calefactada {
+    --tc: #ff3b3f;
+  }
+  /* Elegida: en blanco, con la raya de su color debajo */
+  .temp[aria-pressed='true'] {
+    position: relative;
+    z-index: 1;
+    background: #fff;
+    border-color: #fff;
+    color: var(--ink);
+    font-weight: 700;
+    box-shadow: inset 0 -3px 0 var(--tc);
+  }
+  .temp.ventilada[aria-pressed='true'] {
+    --tc: #6f7a81;
+  }
+  .temp.refrigerada[aria-pressed='true'] {
+    --tc: #2a7fc4;
+  }
+  .temp.calefactada[aria-pressed='true'] {
+    --tc: var(--red);
+  }
+  .temp:disabled {
+    color: #9ba1a7;
+    cursor: default;
+  }
+  .temp:disabled svg {
+    opacity: 0.4;
+  }
+
+  .aplic {
+    position: relative;
+  }
+  .aplic-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    height: var(--alto);
+    padding: 0 16px;
+    border: 1px solid var(--osc);
+    background: none;
+    font: 400 17px var(--f);
+    color: #fff;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: border-color 0.2s ease;
+  }
+  .aplic-btn svg {
+    transition: rotate 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+  }
+  .aplic-btn[aria-expanded='true'] {
+    border-color: #fff;
+  }
+  .aplic-btn[aria-expanded='true'] svg {
+    rotate: 180deg;
+  }
+  .aplic-btn.on {
+    background: #fff;
+    border-color: #fff;
+    color: var(--ink);
+    font-weight: 700;
+    box-shadow: inset 0 -3px 0 var(--red);
+  }
+  .orden select {
+    height: var(--alto);
+    padding: 0 40px 0 16px;
+    border: 1px solid var(--osc);
+    border-radius: 0;
+    background: transparent
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='16' height='16'%3E%3Cpath d='M7 4v16M4 17l3 3 3-3M17 20V4M14 7l3-3 3 3' fill='none' stroke='%23fff' stroke-width='1.6'/%3E%3C/svg%3E")
+      no-repeat right 14px center;
+    -webkit-appearance: none;
+    appearance: none;
+    font: 400 17px var(--f);
+    color: #fff;
+    cursor: pointer;
+    transition: border-color 0.2s ease;
+  }
+  .orden select option {
+    color: var(--ink);
+  }
+  .orden select:focus-visible {
+    outline: 2px solid var(--red);
+    outline-offset: 2px;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .orden select:hover {
+      border-color: #fff;
+    }
+  }
+  .aplic-menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    z-index: 5;
+    display: grid;
+    grid-template-columns: repeat(3, 210px);
+    gap: 4px 14px;
+    padding: 12px;
+    background: #fff;
+    border: 1px solid var(--ink);
+    box-shadow: 0 24px 50px -20px rgba(17, 19, 21, 0.35);
+    opacity: 0;
+    translate: 0 -6px;
+    visibility: hidden;
+    transition:
+      opacity 0.18s ease,
+      translate 0.25s cubic-bezier(0.23, 1, 0.32, 1),
+      visibility 0s 0.25s;
+  }
+  .aplic-btn[aria-expanded='true'] + .aplic-menu {
+    opacity: 1;
+    translate: 0 0;
+    visibility: visible;
+    transition:
+      opacity 0.18s ease,
+      translate 0.25s cubic-bezier(0.23, 1, 0.32, 1);
+  }
+  .aplic-menu > .opcion {
+    grid-column: 1 / -1;
+    margin-bottom: 6px;
+    border-bottom: 1px solid #e6e6e6;
+  }
+  .opciones {
+    display: grid;
+    align-content: start;
+  }
+  .grupo {
+    margin: 8px 12px 6px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--red);
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink);
+  }
+  .opcion {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    height: 42px;
+    padding: 0 12px;
+    border: 0;
+    background: none;
+    font: 400 17px var(--f);
+    color: var(--ink);
+    text-align: left;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+  }
+  .opcion .n {
+    font-size: 16px;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+  }
+  .opcion[aria-pressed='true'] {
+    font-weight: 700;
+    box-shadow: inset 3px 0 0 var(--red);
+    background: #f4f4f4;
+  }
+  .opcion[aria-pressed='true'] .n {
+    color: var(--red);
+    font-weight: 700;
+  }
+  .opcion:disabled {
+    opacity: 0.35;
+    cursor: default;
+  }
+
+  /* Total y borrar */
+  .fin {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+    padding-left: 8px;
+    white-space: nowrap;
+  }
+  .cuenta {
+    margin: 0;
+    font-size: 16px;
+    color: #e3e6e8;
+    font-variant-numeric: tabular-nums;
+  }
+  .cuenta :global(b) {
+    margin-right: 1px;
+    font-size: 28px;
+    font-weight: 700;
+    color: #fff;
+    vertical-align: -2px;
+  }
+  .borrar {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    height: var(--alto);
+    padding: 0 16px;
+    border: 0;
+    background: var(--red);
+    font: 700 16px var(--f);
+    color: #fff;
+    cursor: pointer;
+    animation: entra 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+    transition:
+      background-color 0.2s ease,
+      color 0.2s ease;
+  }
+  .borrar[hidden],
+  .activos[hidden] {
+    display: none;
+  }
+
+  .temp:focus-visible,
+  .aplic-btn:focus-visible,
+  .opcion:focus-visible,
+  .borrar:focus-visible,
+  .abrir-panel:focus-visible,
+  .ver-res:focus-visible,
+  .cerrar-panel:focus-visible {
+    outline: 2px solid var(--red);
+    outline-offset: 2px;
+  }
+  .temp:active:not(:disabled),
+  .aplic-btn:active,
+  .borrar:active {
+    scale: 0.97;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .temp:not(:disabled):not([aria-pressed='true']):hover,
+    .aplic-btn:not(.on):hover,
+    .buscar:not(:focus-within):hover {
+      position: relative;
+      z-index: 1;
+      border-color: #fff;
+      color: #fff;
+    }
+    .temp:not(:disabled):hover svg {
+      transform: scale(1.15);
+    }
+    .ventilada:not(:disabled):hover svg {
+      transform: rotate(120deg);
+    }
+    .opcion:not(:disabled):hover {
+      background: #f4f4f4;
+    }
+    .borrar:hover {
+      background: var(--red-d);
+    }
+  }
+  @keyframes entra {
+    from {
+      opacity: 0;
+      transform: translateX(6px);
+    }
+  }
+
+  @media (max-width: 1280px) {
+    .temp {
+      padding: 0 12px;
+    }
+    .borrar span {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+    }
+    .borrar {
+      width: var(--alto);
+      justify-content: center;
+      padding: 0;
+    }
+  }
+
+  /* ——— Móvil: buscador y botón de filtros; los filtros suben en un panel desde abajo ——— */
+  @media (max-width: 1024px) {
+    .filtros {
+      --alto: 50px;
+      margin-top: 32px;
+    }
+    .barra {
+      gap: 8px;
+      padding: 8px;
+    }
+    .buscar {
+      flex: 1 1 auto;
+      padding: 0 14px;
+    }
+    .buscar input {
+      font-size: 17px;
+    }
+    .fin {
+      display: none;
+    }
+    .abrir-panel {
+      position: relative;
+      display: inline-grid;
+      place-items: center;
+      width: var(--alto);
+      height: var(--alto);
+      border: 0;
+      background: var(--ink);
+      color: #fff;
+      cursor: pointer;
+    }
+    .sr-movil {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+    }
+    .activos {
+      position: absolute;
+      top: -6px;
+      right: -6px;
+      display: grid;
+      place-items: center;
+      min-width: 20px;
+      height: 20px;
+      padding: 0 5px;
+      background: var(--red);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .velo {
+      display: block;
+      position: fixed;
+      inset: 0;
+      z-index: 40;
+      background: rgba(21, 23, 25, 0.5);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    .abierto .velo {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .panel {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 41;
+      display: grid;
+      align-items: start;
+      gap: 22px;
+      max-height: 88svh;
+      overflow-y: auto;
+      padding: 8px var(--gut) 0;
+      background: #fff;
+      border-top: 3px solid var(--ink);
+      box-shadow: 0 -24px 60px -20px rgba(0, 0, 0, 0.4);
+      translate: 0 100%;
+      visibility: hidden;
+      transition:
+        translate 0.4s cubic-bezier(0.32, 0.72, 0, 1),
+        visibility 0s 0.4s;
+    }
+    .abierto .panel {
+      translate: 0 0;
+      visibility: visible;
+      transition:
+        translate 0.5s cubic-bezier(0.32, 0.72, 0, 1),
+        visibility 0s;
+    }
+    .panel-cab {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .panel-cab p {
+      margin: 0;
+      font-size: 26px;
+      font-weight: 700;
+    }
+    .cerrar-panel {
+      display: grid;
+      place-items: center;
+      width: 44px;
+      height: 44px;
+      margin-right: -10px;
+      border: 0;
+      background: none;
+      color: var(--ink);
+      cursor: pointer;
+    }
+    .etq-movil {
+      display: block;
+      grid-column: 1 / -1;
+      margin-bottom: 6px;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    .temps {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      height: auto;
+    }
+    .temp {
+      flex-direction: column;
+      justify-content: center;
+      gap: 6px;
+      height: 78px;
+      padding: 0 4px;
+      border-color: var(--borde);
+      font-size: 15px;
+      color: var(--body);
+    }
+    /* El panel de abajo es blanco: los iconos con su color normal y la elegida en negro */
+    .ventilada {
+      --tc: #6f7a81;
+    }
+    .refrigerada {
+      --tc: #2a7fc4;
+    }
+    .calefactada {
+      --tc: var(--red);
+    }
+    .temp[aria-pressed='true'] {
+      background: var(--ink);
+      border-color: var(--ink);
+      color: #fff;
+    }
+    .temp:disabled {
+      color: #b4b8bb;
+    }
+    .temp svg {
+      width: 24px;
+      height: 24px;
+    }
+    .aplic-btn {
+      display: none;
+    }
+    .orden select {
+      width: 100%;
+      height: 48px;
+      border-color: var(--borde);
+      background-color: #fff;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='16' height='16'%3E%3Cpath d='M7 4v16M4 17l3 3 3-3M17 20V4M14 7l3-3 3 3' fill='none' stroke='%231a1a1a' stroke-width='1.6'/%3E%3C/svg%3E");
+      color: var(--ink);
+    }
+    .aplic-menu {
+      position: static;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 0;
+      padding: 0;
+      border: 1px solid var(--borde);
+      box-shadow: none;
+      opacity: 1;
+      translate: none;
+      visibility: visible;
+    }
+    .aplic-menu > .opcion {
+      margin-bottom: 0;
+    }
+    .opcion {
+      height: 48px;
+    }
+    .ver-res {
+      display: block;
+      position: sticky;
+      bottom: 0;
+      height: 54px;
+      margin: 0 calc(var(--gut) * -1);
+      margin-bottom: env(safe-area-inset-bottom);
+      border: 0;
+      background: var(--red);
+      font: 700 18px var(--f);
+      color: #fff;
+      cursor: pointer;
+    }
+    .ver-res::after {
+      content: ' »';
+      font-weight: 300;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .panel,
+    .abierto .panel,
+    .sugerencias,
+    .aplic-menu {
+      transition: visibility 0s;
+    }
+  }
+</style>

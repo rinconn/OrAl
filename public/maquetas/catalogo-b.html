@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Maqueta B · Lámina de catálogo</title>
+<style>
+@font-face { font-family: 'Helvetica Neue Cond'; src: url('/fonts/HelveticaNeue-LightCond.otf') format('opentype'); font-weight: 300; font-display: swap; }
+@font-face { font-family: 'Helvetica Neue Cond'; src: url('/fonts/HelveticaNeue-Cond.otf') format('opentype'); font-weight: 400; font-display: swap; }
+@font-face { font-family: 'Helvetica Neue Cond'; src: url('/fonts/HelveticaNeue-BoldCond.otf') format('opentype'); font-weight: 700; font-display: swap; }
+
+:root {
+  --red: #dd040a; --red-d: #b40308;
+  --ink: #1a1a1a; --body: #4d4d4d; --muted: #6e6e6e;
+  --line: #d2d2d2; --panel: #f2f2f2; --band: #f8f8f8; --white: #fff;
+  --f: 'Helvetica Neue Cond', 'Roboto Condensed', 'Arial Narrow', Arial, sans-serif;
+  --gut: clamp(16px, 4vw, 48px);
+}
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; font-family: var(--f); color: var(--ink); background: var(--white); -webkit-font-smoothing: antialiased; }
+::selection { background: var(--red); color: #fff; }
+:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }
+
+.catalogo { max-width: 1280px; margin: 0 auto; padding: 24px var(--gut) 160px; }
+
+/* Filtros: pestañas de texto con barra roja bajo la activa y cuántos modelos hay en cada una */
+.filtros { position: sticky; top: 0; z-index: 5; background: var(--white); display: flex; gap: 4px 32px; flex-wrap: wrap;
+  border-bottom: 1px solid var(--line); overflow-x: auto; }
+.filtros button { position: relative; font: 400 20px/1 var(--f); color: var(--muted); background: none; border: 0; padding: 18px 0 16px; cursor: pointer; white-space: nowrap; }
+.filtros button sup { font-size: 13px; margin-left: 3px; font-variant-numeric: tabular-nums; }
+.filtros button:hover { color: var(--ink); }
+.filtros button[aria-pressed="true"] { color: var(--ink); font-weight: 700; }
+.filtros button[aria-pressed="true"]::after { content: ''; position: absolute; left: 0; right: 0; bottom: -1px; height: 3px; background: var(--red); }
+.filtros button:disabled { color: #b5b5b5; cursor: default; }
+
+/* Categoría: título grande a la izquierda, explicación a la derecha, sobre una franja gris */
+.familia { margin-top: 48px; }
+.familia__cab { display: grid; grid-template-columns: auto 1fr; align-items: end; gap: 8px 40px; padding: 28px 28px 24px; background: var(--panel); }
+.familia h2 { margin: 0; font-size: clamp(40px, 5vw, 64px); font-weight: 700; line-height: .9; letter-spacing: -.015em; }
+.familia__desc { margin: 0; max-width: 46ch; justify-self: end; text-align: right; font-size: 18px; line-height: 1.35; color: var(--body); }
+.familia__desc b { display: block; color: var(--ink); font-variant-numeric: tabular-nums; }
+@media (max-width: 640px) { .familia__cab { grid-template-columns: 1fr; padding: 22px 16px 18px; } .familia__desc { justify-self: start; text-align: left; } }
+
+/* Rejilla de lámina: las líneas separan, no las cajas */
+.grid { display: grid; grid-template-columns: repeat(3, 1fr); border-left: 1px solid var(--line); }
+@media (max-width: 1024px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 640px) { .grid { grid-template-columns: 1fr; } .filtros { flex-wrap: nowrap; gap: 22px; } .filtros button { font-size: 17px; } .celda { padding: 18px 16px 20px; } .tira dd { font-size: 21px; } }
+.celda { position: relative; display: flex; flex-direction: column; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 20px 28px 22px; background: var(--white); }
+.celda::before { content: ''; position: absolute; left: -1px; right: -1px; top: 0; height: 4px; background: transparent; }
+.celda:hover { background: var(--band); }
+.celda.sel::before { background: var(--red); }
+.celda__top { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.celda h3 { margin: 0; font-size: 28px; font-weight: 700; line-height: 1.05; }
+.celda h3 a { color: inherit; text-decoration: none; }
+.celda h3 a:hover { color: var(--red); }
+.celda__temp { font-size: 15px; color: var(--muted); white-space: nowrap; }
+.celda__foto { display: block; aspect-ratio: 1; margin: 8px -8px 4px; mix-blend-mode: multiply; }
+.celda__foto img { width: 100%; height: 100%; object-fit: contain; }
+
+/* Specs en tira: tres cifras en columnas con su unidad debajo, iguales en todas las celdas */
+.tira { display: grid; grid-template-columns: 1.25fr 1fr 1fr; margin: 0; border-top: 2px solid var(--ink); }
+.tira div { padding: 10px 0 0; }
+.tira div + div { padding-left: 14px; border-left: 1px solid var(--line); }
+.tira dd { margin: 0; font-size: 24px; font-weight: 700; line-height: 1.05; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.tira dt { margin-top: 3px; font-size: 14px; color: var(--muted); }
+.celda__pant { margin: 12px 0 0; font-size: 15px; color: var(--body); }
+
+.celda__acc { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: auto; padding-top: 18px; }
+.toggle { font: 400 16px/1 var(--f); color: var(--ink); background: var(--white); border: 1px solid var(--ink); padding: 11px 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
+.toggle svg { width: 14px; height: 14px; stroke: currentColor; stroke-width: 2; fill: none; }
+.toggle:hover { background: var(--ink); color: #fff; }
+.toggle[aria-pressed="true"] { background: var(--red); border-color: var(--red); color: #fff; font-weight: 700; }
+.toggle[aria-pressed="true"]:hover { background: var(--red-d); }
+.toggle:disabled { color: #9a9a9a; border-color: var(--line); background: var(--white); cursor: not-allowed; }
+.ficha { font-size: 17px; font-weight: 700; color: var(--red); text-decoration: none; }
+.ficha:hover { text-decoration: underline; text-underline-offset: 4px; }
+
+.vacio { padding: 48px 0; font-size: 20px; color: var(--muted); }
+
+/* Barra de comparar: cuatro huecos con la foto de cada máquina elegida */
+.barra { position: fixed; left: 0; right: 0; bottom: 0; z-index: 10; background: var(--white); border-top: 1px solid var(--line); box-shadow: 0 -8px 24px -12px rgba(0,0,0,.18); transform: translateY(100%); visibility: hidden; }
+.barra.on { transform: none; visibility: visible; }
+.barra__in { max-width: 1280px; margin: 0 auto; padding: 12px var(--gut); display: flex; align-items: center; gap: 24px; }
+.huecos { display: grid; grid-template-columns: repeat(4, minmax(0, 168px)); gap: 8px; flex: 1; }
+.hueco { height: 64px; border: 1px dashed var(--line); display: flex; align-items: center; gap: 8px; padding: 4px 8px 4px 4px; font-size: 15px; color: var(--muted); min-width: 0; }
+.hueco img { width: 54px; height: 54px; object-fit: contain; flex: none; }
+.hueco span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ink); font-weight: 700; }
+.hueco.lleno { border-style: solid; }
+.hueco.libre { justify-content: center; }
+.hueco button { background: none; border: 0; padding: 4px; color: var(--muted); cursor: pointer; display: grid; flex: none; }
+.hueco button:hover { color: var(--red); }
+.hueco svg { width: 14px; height: 14px; stroke: currentColor; stroke-width: 2; fill: none; }
+.btn { font: 700 19px/1 var(--f); color: #fff; background: var(--red); border: 0; padding: 18px 26px; cursor: pointer; white-space: nowrap; }
+.btn:hover { background: var(--red-d); }
+.btn:disabled { background: var(--panel); color: var(--muted); cursor: not-allowed; }
+@media (max-width: 760px) { .huecos { grid-template-columns: repeat(4, 1fr); } .hueco { height: 52px; justify-content: center; padding: 2px; } .hueco span, .hueco button, .hueco.libre { font-size: 0; } .hueco img { width: 44px; height: 44px; } .barra__in { gap: 12px; } .btn { padding: 16px 16px; font-size: 17px; } }
+</style>
+</head>
+<body>
+<main class="catalogo">
+  <div class="filtros" id="filtros" role="toolbar" aria-label="Filtrar por temperatura"></div>
+  <div id="familias"></div>
+</main>
+
+<div class="barra" id="barra" aria-live="polite">
+  <div class="barra__in">
+    <div class="huecos" id="huecos"></div>
+    <button class="btn" id="comparar" type="button"></button>
+  </div>
+</div>
+
+<script>
+const familias = [
+  { id: 'peq', nombre: 'Compactas', desc: 'Para microtubos y tubos pequeños en el día a día del laboratorio.' },
+  { id: 'uni', nombre: 'Universales', desc: 'Una sola centrífuga para tubos, frascos y placas.' },
+];
+const productos = [
+  { slug: 'minicen', serie: 'minicen', nombre: 'Minicen', fam: 'peq', cap: '12 × 2 ml', rpm: '15.000', xg: '15.596', pant: 'LCD', temp: 'ventilada' },
+  { slug: 'microcen-24', serie: 'microcen-24', nombre: 'Microcen 24', fam: 'peq', cap: '10 × 15 ml', rpm: '8.000', xg: '6.511', pant: 'LED', temp: 'ventilada' },
+  { slug: 'biocen-22', serie: 'biocen-22', nombre: 'Biocen 22', fam: 'peq', cap: '24 × 2 ml', rpm: '15.000', xg: '21.885', pant: 'LED', temp: 'ventilada' },
+  { slug: 'biocen-22-r', serie: 'biocen-22-r', nombre: 'Biocen 22 R', fam: 'peq', cap: '8 × 15 ml', rpm: '18.100', xg: '31.865', pant: 'LCD', temp: 'refrigerada' },
+  { slug: 'digicen-22', serie: 'digicen-22', nombre: 'Digicen 22', fam: 'uni', cap: '4 × 125 ml', rpm: '16.500', xg: '26.480', pant: 'TFT', temp: 'ventilada' },
+  { slug: 'digicen-22-r', serie: 'digicen-22', nombre: 'Digicen 22 R', fam: 'uni', cap: '4 × 125 ml', rpm: '16.500', xg: '26.480', pant: 'TFT', temp: 'refrigerada' },
+  { slug: 'bioprocen-22-r', serie: 'bioprocen-22-r', nombre: 'Bioprocen 22 R', fam: 'uni', cap: '6 × 50 ml', rpm: '18.100', xg: '31.865', pant: 'LCD', temp: 'refrigerada' },
+  { slug: 'unicen-21', serie: 'unicen-21', nombre: 'Unicen 21', fam: 'uni', cap: '4 × 100 ml', rpm: '4.200', xg: '2.938', pant: 'LED', temp: 'ventilada' },
+];
+const temps = [['todas', 'Todas'], ['ventilada', 'Ventilada'], ['refrigerada', 'Refrigerada'], ['calefactada', 'Calefactada']];
+const MAX = 4;
+let filtro = 'todas';
+const sel = new Set();
+
+const ico = {
+  mas: '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3v10M3 8h10"/></svg>',
+  check: '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3.2 3L13 4.5"/></svg>',
+  x: '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg>',
+};
+const cap = (t) => t[0].toUpperCase() + t.slice(1);
+const cuantos = (id) => productos.filter((p) => id === 'todas' || p.temp === id).length;
+
+function celda(p) {
+  const on = sel.has(p.slug);
+  return `<article class="celda${on ? ' sel' : ''}">
+    <div class="celda__top"><h3><a href="/centrifugas/${p.serie}/">${p.nombre}</a></h3><span class="celda__temp">${cap(p.temp)}</span></div>
+    <a class="celda__foto" href="/centrifugas/${p.serie}/" tabindex="-1" aria-hidden="true"><img src="/img/catalogo/${p.slug}.webp" alt="" width="640" height="640" loading="lazy"></a>
+    <dl class="tira">
+      <div><dd>${p.cap}</dd><dt>Capacidad</dt></div>
+      <div><dd>${p.rpm}</dd><dt>rpm</dt></div>
+      <div><dd>${p.xg}</dd><dt>× g</dt></div>
+    </dl>
+    <p class="celda__pant">Pantalla ${p.pant}</p>
+    <div class="celda__acc">
+      <button type="button" class="toggle" aria-pressed="${on}" data-comp="${p.slug}" ${!on && sel.size >= MAX ? 'disabled' : ''}>${on ? ico.check + 'En comparación' : ico.mas + 'Comparar'}</button>
+      <a class="ficha" href="/centrifugas/${p.serie}/">Ver ficha »</a>
+    </div>
+  </article>`;
+}
+
+function pintar() {
+  document.getElementById('filtros').innerHTML = temps.map(([id, t]) => {
+    const n = cuantos(id);
+    return `<button type="button" aria-pressed="${filtro === id}" data-f="${id}" ${n ? '' : 'disabled'}>${t}<sup>${n}</sup></button>`;
+  }).join('');
+  const visibles = productos.filter((p) => filtro === 'todas' || p.temp === filtro);
+  document.getElementById('familias').innerHTML = familias.map((f) => {
+    const ps = visibles.filter((p) => p.fam === f.id);
+    if (!ps.length) return '';
+    return `<section class="familia"><header class="familia__cab"><h2>${f.nombre}</h2><p class="familia__desc"><b>${ps.length} modelos</b>${f.desc}</p></header>
+      <div class="grid">${ps.map(celda).join('')}</div></section>`;
+  }).join('') || '<p class="vacio">No hay modelos con este filtro.</p>';
+  barra();
+}
+
+function barra() {
+  document.getElementById('barra').classList.toggle('on', sel.size > 0);
+  const elegidos = [...sel].map((s) => productos.find((p) => p.slug === s));
+  document.getElementById('huecos').innerHTML = Array.from({ length: MAX }, (_, i) => {
+    const p = elegidos[i];
+    return p
+      ? `<div class="hueco lleno"><img src="/img/catalogo/${p.slug}.webp" alt=""><span>${p.nombre}</span><button type="button" data-quitar="${p.slug}" aria-label="Quitar ${p.nombre}">${ico.x}</button></div>`
+      : `<div class="hueco libre">${i === elegidos.length ? 'Añade otra' : ''}</div>`;
+  }).join('');
+  const btn = document.getElementById('comparar');
+  btn.textContent = `Comparar (${sel.size})`;
+  btn.disabled = sel.size < 2;
+}
+
+document.addEventListener('click', (e) => {
+  const f = e.target.closest('[data-f]');
+  if (f) { filtro = f.dataset.f; pintar(); return; }
+  const q = e.target.closest('[data-quitar]');
+  if (q) { sel.delete(q.dataset.quitar); pintar(); return; }
+  const c = e.target.closest('[data-comp]');
+  if (c) {
+    const s = c.dataset.comp;
+    sel.has(s) ? sel.delete(s) : sel.add(s);
+    pintar();
+    document.querySelector(`[data-comp="${s}"]`)?.focus();
+  }
+});
+pintar();
+</script>
+</body>
+</html>

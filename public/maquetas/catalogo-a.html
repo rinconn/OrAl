@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Maqueta A · Tarjeta técnica</title>
+<style>
+@font-face { font-family: 'Helvetica Neue Cond'; src: url('/fonts/HelveticaNeue-LightCond.otf') format('opentype'); font-weight: 300; font-display: swap; }
+@font-face { font-family: 'Helvetica Neue Cond'; src: url('/fonts/HelveticaNeue-Cond.otf') format('opentype'); font-weight: 400; font-display: swap; }
+@font-face { font-family: 'Helvetica Neue Cond'; src: url('/fonts/HelveticaNeue-BoldCond.otf') format('opentype'); font-weight: 700; font-display: swap; }
+
+:root {
+  --red: #dd040a; --red-d: #b40308;
+  --ink: #1a1a1a; --body: #4d4d4d; --muted: #6e6e6e;
+  --line: #d2d2d2; --line-soft: #e4e4e4; --panel: #f2f2f2; --white: #fff; --carbon: #151719;
+  --f: 'Helvetica Neue Cond', 'Roboto Condensed', 'Arial Narrow', Arial, sans-serif;
+  --gut: clamp(16px, 4vw, 48px);
+}
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; font-family: var(--f); color: var(--ink); background: var(--panel); -webkit-font-smoothing: antialiased; }
+::selection { background: var(--red); color: #fff; }
+:focus-visible { outline: 2px solid var(--red); outline-offset: 3px; }
+
+.catalogo { max-width: 1280px; margin: 0 auto; padding: 32px var(--gut) 140px; }
+
+/* Barra de filtros: control segmentado, fija bajo la cabecera */
+.filtros { position: sticky; top: 0; z-index: 5; display: flex; flex-wrap: wrap; align-items: center; gap: 12px 24px;
+  padding: 14px 0; background: var(--panel); border-bottom: 1px solid var(--line); }
+.filtros__titulo { font-size: 15px; color: var(--muted); }
+.seg { display: inline-flex; background: var(--white); border: 1px solid var(--line); padding: 3px; gap: 2px; }
+.seg button { font: 400 16px/1 var(--f); color: var(--body); background: none; border: 0; padding: 10px 16px; cursor: pointer; }
+.seg button:hover { color: var(--ink); background: var(--panel); }
+.seg button[aria-pressed="true"] { background: var(--red); color: #fff; font-weight: 700; }
+.filtros__cuenta { margin-left: auto; font-size: 15px; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+/* Categoría */
+.familia { margin-top: 56px; }
+.familia__cab { display: flex; align-items: baseline; gap: 14px; margin-bottom: 20px; }
+.familia h2 { margin: 0; font-weight: 700; font-size: clamp(36px, 4.4vw, 56px); line-height: .95; letter-spacing: -.01em; }
+.familia__n { font-size: 18px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.familia__desc { margin: 0 0 24px; max-width: 60ch; font-size: 18px; line-height: 1.4; color: var(--body); }
+
+.grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+@media (max-width: 1024px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 640px) { .grid { grid-template-columns: 1fr; } .filtros__cuenta { margin-left: 0; } .seg { width: 100%; } .seg button { flex: 1; padding: 10px 6px; font-size: 15px; } }
+
+/* Tarjeta */
+.tarjeta { position: relative; display: flex; flex-direction: column; background: var(--white); border: 1px solid var(--line-soft); overflow: hidden;
+  box-shadow: 0 1px 2px rgba(0,0,0,.04); }
+.tarjeta:hover { border-color: var(--line); box-shadow: 0 6px 18px -8px rgba(0,0,0,.18); }
+.tarjeta.sel { border-color: var(--red); box-shadow: 0 0 0 1px var(--red); }
+.tarjeta__foto { display: block; aspect-ratio: 4 / 3; padding: 20px 24px 4px; }
+.tarjeta__foto img { width: 100%; height: 100%; object-fit: contain; }
+.tarjeta__cuerpo { padding: 4px 24px 0; flex: 1; }
+.tarjeta__temp { display: inline-block; font-size: 14px; color: var(--muted); }
+.tarjeta h3 { margin: 2px 0 18px; font-size: 30px; font-weight: 700; line-height: 1; }
+.tarjeta h3 a { color: inherit; text-decoration: none; }
+.tarjeta h3 a:hover { color: var(--red); }
+
+/* Specs: etiqueta encima, valor grande; mismas filas en todas las tarjetas */
+.specs { display: grid; grid-template-columns: 1fr 1fr; margin: 0; border-top: 1px solid var(--line-soft); }
+.specs div { padding: 12px 0; border-bottom: 1px solid var(--line-soft); }
+.specs div:nth-child(odd) { padding-right: 12px; border-right: 1px solid var(--line-soft); }
+.specs div:nth-child(even) { padding-left: 16px; }
+.specs dt { font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+.specs dd { margin: 4px 0 0; font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.specs dd small { font-size: 15px; font-weight: 400; color: var(--muted); }
+
+/* Acciones */
+.acciones { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 24px 20px; }
+.comparar { display: inline-flex; align-items: center; gap: 10px; font-size: 16px; color: var(--body); cursor: pointer; user-select: none; }
+.comparar input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.caja { width: 20px; height: 20px; border: 1.5px solid #8c8c8c; border-radius: 2px; display: grid; place-items: center; background: #fff; }
+.caja svg { width: 14px; height: 14px; stroke: #fff; stroke-width: 2.5; fill: none; opacity: 0; }
+.comparar:hover .caja { border-color: var(--ink); }
+.comparar input:checked + .caja { background: var(--red); border-color: var(--red); }
+.comparar input:checked + .caja svg { opacity: 1; }
+.comparar input:checked ~ span { color: var(--ink); font-weight: 700; }
+.comparar input:focus-visible + .caja { outline: 2px solid var(--red); outline-offset: 2px; }
+.ficha { font-size: 16px; font-weight: 700; color: var(--ink); text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
+.ficha svg { width: 16px; height: 16px; stroke: currentColor; stroke-width: 2; fill: none; }
+.ficha:hover { color: var(--red); }
+
+.vacio { padding: 40px 0; font-size: 18px; color: var(--muted); }
+.vacio button { font: inherit; color: var(--red); background: none; border: 0; padding: 0; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+
+/* Barra de comparar */
+.barra { position: fixed; left: 0; right: 0; bottom: 0; z-index: 10; background: var(--carbon); color: #fff; transform: translateY(100%); visibility: hidden; }
+.barra.on { transform: none; visibility: visible; }
+.barra__in { max-width: 1280px; margin: 0 auto; padding: 14px var(--gut); display: flex; align-items: center; gap: 20px; }
+.barra__lista { display: flex; gap: 8px; flex-wrap: wrap; flex: 1; min-width: 0; }
+.chip { display: inline-flex; align-items: center; gap: 8px; font-size: 15px; padding: 6px 8px 6px 12px; border: 1px solid #33383c; }
+.chip button { background: none; border: 0; color: #bfc5c9; cursor: pointer; padding: 2px; display: grid; }
+.chip button:hover { color: #fff; }
+.chip svg { width: 14px; height: 14px; stroke: currentColor; stroke-width: 2; fill: none; }
+.barra__limpiar { font: 15px var(--f); color: #bfc5c9; background: none; border: 0; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+.barra__limpiar:hover { color: #fff; }
+.btn { font: 700 18px/1 var(--f); color: #fff; background: var(--red); border: 0; padding: 14px 22px; cursor: pointer; white-space: nowrap; }
+.btn:hover { background: var(--red-d); }
+.btn:disabled { background: #33383c; color: #9aa1a6; cursor: not-allowed; }
+@media (max-width: 640px) { .barra__lista, .barra__limpiar { display: none; } .barra__in { justify-content: space-between; } .btn { flex: 1; } }
+.barra__aviso { font-size: 15px; color: #bfc5c9; }
+</style>
+</head>
+<body>
+<main class="catalogo">
+  <div class="filtros" role="toolbar" aria-label="Filtrar por temperatura">
+    <span class="filtros__titulo">Temperatura</span>
+    <div class="seg" id="filtros"></div>
+    <span class="filtros__cuenta" id="cuenta"></span>
+  </div>
+  <div id="familias"></div>
+</main>
+
+<div class="barra" id="barra" aria-live="polite">
+  <div class="barra__in">
+    <div class="barra__lista" id="chips"></div>
+    <span class="barra__aviso" id="aviso"></span>
+    <button class="barra__limpiar" id="limpiar" type="button">Quitar todas</button>
+    <button class="btn" id="comparar" type="button"></button>
+  </div>
+</div>
+
+<script>
+const familias = [
+  { id: 'peq', nombre: 'Compactas', desc: 'Para microtubos y tubos pequeños en el día a día del laboratorio.' },
+  { id: 'uni', nombre: 'Universales', desc: 'Una sola centrífuga para tubos, frascos y placas.' },
+];
+const productos = [
+  { slug: 'minicen', serie: 'minicen', nombre: 'Minicen', fam: 'peq', cap: '12 × 2 ml', rpm: '15.000', xg: '15.596', pant: 'LCD', temp: 'ventilada' },
+  { slug: 'microcen-24', serie: 'microcen-24', nombre: 'Microcen 24', fam: 'peq', cap: '10 × 15 ml', rpm: '8.000', xg: '6.511', pant: 'LED', temp: 'ventilada' },
+  { slug: 'biocen-22', serie: 'biocen-22', nombre: 'Biocen 22', fam: 'peq', cap: '24 × 2 ml', rpm: '15.000', xg: '21.885', pant: 'LED', temp: 'ventilada' },
+  { slug: 'biocen-22-r', serie: 'biocen-22-r', nombre: 'Biocen 22 R', fam: 'peq', cap: '8 × 15 ml', rpm: '18.100', xg: '31.865', pant: 'LCD', temp: 'refrigerada' },
+  { slug: 'digicen-22', serie: 'digicen-22', nombre: 'Digicen 22', fam: 'uni', cap: '4 × 125 ml', rpm: '16.500', xg: '26.480', pant: 'TFT', temp: 'ventilada' },
+  { slug: 'digicen-22-r', serie: 'digicen-22', nombre: 'Digicen 22 R', fam: 'uni', cap: '4 × 125 ml', rpm: '16.500', xg: '26.480', pant: 'TFT', temp: 'refrigerada' },
+  { slug: 'bioprocen-22-r', serie: 'bioprocen-22-r', nombre: 'Bioprocen 22 R', fam: 'uni', cap: '6 × 50 ml', rpm: '18.100', xg: '31.865', pant: 'LCD', temp: 'refrigerada' },
+  { slug: 'unicen-21', serie: 'unicen-21', nombre: 'Unicen 21', fam: 'uni', cap: '4 × 100 ml', rpm: '4.200', xg: '2.938', pant: 'LED', temp: 'ventilada' },
+];
+const temps = [['todas', 'Todas'], ['ventilada', 'Ventilada'], ['refrigerada', 'Refrigerada'], ['calefactada', 'Calefactada']];
+const MAX = 4;
+let filtro = 'todas';
+const sel = new Set();
+
+const ico = {
+  check: '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3.2 3L13 4.5"/></svg>',
+  flecha: '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg>',
+  x: '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg>',
+};
+const cap = (t) => t[0].toUpperCase() + t.slice(1);
+
+function tarjeta(p) {
+  const on = sel.has(p.slug);
+  return `<article class="tarjeta${on ? ' sel' : ''}" data-slug="${p.slug}">
+    <a class="tarjeta__foto" href="/centrifugas/${p.serie}/" tabindex="-1" aria-hidden="true"><img src="/img/catalogo/${p.slug}.webp" alt="" width="640" height="640" loading="lazy"></a>
+    <div class="tarjeta__cuerpo">
+      <span class="tarjeta__temp">${cap(p.temp)}</span>
+      <h3><a href="/centrifugas/${p.serie}/">${p.nombre}</a></h3>
+      <dl class="specs">
+        <div><dt>Capacidad</dt><dd>${p.cap}</dd></div>
+        <div><dt>Velocidad</dt><dd>${p.rpm} <small>rpm</small></dd></div>
+        <div><dt>Fuerza</dt><dd>${p.xg} <small>× g</small></dd></div>
+        <div><dt>Pantalla</dt><dd>${p.pant}</dd></div>
+      </dl>
+    </div>
+    <div class="acciones">
+      <label class="comparar"><input type="checkbox" ${on ? 'checked' : ''} ${!on && sel.size >= MAX ? 'disabled' : ''} data-comp="${p.slug}"><span class="caja">${ico.check}</span><span>Comparar</span></label>
+      <a class="ficha" href="/centrifugas/${p.serie}/">Ver ficha »</a>
+    </div>
+  </article>`;
+}
+
+function pintar() {
+  document.getElementById('filtros').innerHTML = temps.map(([id, t]) =>
+    `<button type="button" aria-pressed="${filtro === id}" data-f="${id}">${t}</button>`).join('');
+  const visibles = productos.filter((p) => filtro === 'todas' || p.temp === filtro);
+  document.getElementById('cuenta').textContent = `${visibles.length} modelos`;
+  const html = familias.map((f) => {
+    const ps = visibles.filter((p) => p.fam === f.id);
+    if (!ps.length) return '';
+    return `<section class="familia"><div class="familia__cab"><h2>${f.nombre}</h2><span class="familia__n">${ps.length} modelos</span></div>
+      <p class="familia__desc">${f.desc}</p><div class="grid">${ps.map(tarjeta).join('')}</div></section>`;
+  }).join('');
+  document.getElementById('familias').innerHTML = html ||
+    `<p class="vacio">Ninguna centrífuga de estas familias es ${filtro}. <button type="button" data-f="todas">Ver todas</button></p>`;
+  barra();
+}
+
+function barra() {
+  const b = document.getElementById('barra');
+  b.classList.toggle('on', sel.size > 0);
+  document.getElementById('chips').innerHTML = [...sel].map((s) => {
+    const p = productos.find((x) => x.slug === s);
+    return `<span class="chip">${p.nombre}<button type="button" data-quitar="${s}" aria-label="Quitar ${p.nombre}">${ico.x}</button></span>`;
+  }).join('');
+  const btn = document.getElementById('comparar');
+  btn.textContent = `Comparar (${sel.size})`;
+  btn.disabled = sel.size < 2;
+  document.getElementById('aviso').textContent = sel.size < 2 ? 'Elige otra para comparar' : sel.size >= MAX ? `Máximo ${MAX}` : '';
+}
+
+document.addEventListener('click', (e) => {
+  const f = e.target.closest('[data-f]');
+  if (f) { filtro = f.dataset.f; pintar(); return; }
+  const q = e.target.closest('[data-quitar]');
+  if (q) { sel.delete(q.dataset.quitar); pintar(); return; }
+  if (e.target.id === 'limpiar') { sel.clear(); pintar(); }
+});
+document.addEventListener('change', (e) => {
+  const c = e.target.dataset.comp;
+  if (!c) return;
+  e.target.checked ? sel.add(c) : sel.delete(c);
+  pintar();
+  document.querySelector(`[data-comp="${c}"]`)?.focus();
+});
+pintar();
+</script>
+</body>
+</html>
