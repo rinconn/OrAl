@@ -10,7 +10,11 @@ export interface Celda {
 }
 export interface Hoja {
   titulo: string;
-  lineas: string[];
+  /** Tipo de documento, encima del título ("Selección de equipos") */
+  tipo: string;
+  fecha: string;
+  /** Lo que resume el documento, con su etiqueta: selección, orden, modelos */
+  datos: [string, string][];
   cabecera: (Celda & { ud?: string; num?: boolean })[];
   filas: Celda[][];
   archivo: string;
@@ -114,10 +118,11 @@ export function excel(h: Hoja) {
     typeof v === 'number'
       ? `<c r="${ref}" s="3"><v>${v}</v></c>`
       : `<c r="${ref}" t="inlineStr" s="${s}"><is><t xml:space="preserve">${escapar(v)}</t></is></c>`;
-  const ini = h.lineas.length + 3;
+  const lineas = [...h.datos.map(([e, v]) => `${e}: ${v}`), h.fecha];
+  const ini = lineas.length + 3;
   const filasXml = [
     `<row r="1">${celda(h.titulo, 'A1', 1)}</row>`,
-    ...h.lineas.map((l, i) => `<row r="${i + 2}">${celda(l, `A${i + 2}`, 4)}</row>`),
+    ...lineas.map((l, i) => `<row r="${i + 2}">${celda(l, `A${i + 2}`, 4)}</row>`),
     `<row r="${ini}">${cab.map((t, i) => celda(t, `${col(i)}${ini}`, 2)).join('')}</row>`,
     ...filas.map(
       (f, j) => `<row r="${ini + j + 1}">${f.map((v, i) => celda(v, `${col(i)}${ini + j + 1}`, 0)).join('')}</row>`,
@@ -172,23 +177,38 @@ export function excel(h: Hoja) {
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }
 
-// ——— PDF: una hoja aparte con el logo, el título, lo filtrado y la tabla; se imprime solo ella ———
-export async function pdf(h: Hoja, pie: string) {
+// ——— PDF: un documento de empresa. Banda oscura con el logo en blanco, el tipo de documento, el título y la fecha;
+// debajo, lo que resume con sus etiquetas; la tabla con filas alternas; y en el margen de cada hoja, la empresa a la
+// izquierda y el número de página a la derecha. Se imprime solo ella ———
+export interface Pie {
+  empresa: string;
+  fuente: string;
+}
+export async function pdf(h: Hoja, pie: Pie) {
   document.getElementById('impreso')?.remove();
   const hoja = document.createElement('div');
   hoja.id = 'impreso';
   const img = (src?: string, cls = '') => (src ? `<img src="${src}" alt="" class="${cls}" loading="eager">` : '');
   const num = h.cabecera.map((c) => !!c.num);
+  const comparativa = h.cabecera.some((c) => c.img);
+  hoja.className = comparativa ? 'es-comp' : '';
   hoja.innerHTML =
-    `<header><img class="logo" src="/img/marca/logo-ortoalresa-color-horizontal.svg" alt="orto alresa">` +
-    `<div><h1>${escapar(h.titulo)}</h1>${h.lineas.map((l) => `<p>${escapar(l)}</p>`).join('')}</div></header>` +
-    `<table><thead><tr>${h.cabecera.map((c, i) => `<th${num[i] ? ' class="num"' : ''}>${img(c.img, 'cab')}${escapar(c.t)}</th>`).join('')}</tr></thead>` +
+    `<header class="banda"><img class="logo" src="/img/marca/logo-ortoalresa-white.svg" alt="orto alresa">` +
+    `<div class="doc"><p class="tipo">${escapar(h.tipo)}</p><h1>${escapar(h.titulo)}</h1></div>` +
+    `<p class="fecha">${escapar(h.fecha)}</p></header>` +
+    `<dl class="datos">${h.datos.map(([e, v]) => `<div><dt>${escapar(e)}</dt><dd>${escapar(v)}</dd></div>`).join('')}</dl>` +
+    `<table><thead><tr>${h.cabecera.map((c, i) => `<th${num[i] ? ' class="num"' : ''}>${img(c.img, 'cab')}<span>${escapar(c.t)}</span></th>`).join('')}</tr></thead>` +
     `<tbody>${h.filas
       .map(
         (f) =>
           `<tr>${f.map((c, i) => `<td${num[i] ? ' class="num"' : ''}>${img(c.img, 'foto')}${escapar(c.t)}</td>`).join('')}</tr>`,
       )
-      .join('')}</tbody></table><footer>${escapar(pie)}</footer>`;
+      .join('')}</tbody></table>` +
+    `<p class="fuente">${escapar(pie.fuente)}</p>`;
+  // El pie de cada hoja va en el margen de la página: la empresa y "1 / 2"
+  const margen = document.createElement('style');
+  margen.textContent = `@media print { @page { @bottom-left { content: "${pie.empresa.replace(/["\\]/g, '')}"; font: 7.5pt Arial, sans-serif; color: #6e6e6e; } @bottom-right { content: counter(page) " / " counter(pages); font: 7.5pt Arial, sans-serif; color: #6e6e6e; } } }`;
+  document.head.append(margen);
   document.body.append(hoja);
   // Que las fotos estén cargadas antes de abrir la impresión
   await Promise.all([...hoja.querySelectorAll('img')].map((i) => i.decode().catch(() => undefined)));
@@ -200,6 +220,7 @@ export async function pdf(h: Hoja, pie: string) {
     document.body.classList.remove('imprimiendo');
     document.title = titulo;
     hoja.remove();
+    margen.remove();
     window.removeEventListener('afterprint', fin);
   };
   window.addEventListener('afterprint', fin);

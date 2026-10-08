@@ -630,12 +630,20 @@ const tubos = Object.entries(porTipo)
       comp: tv.compTitulo,
       todo: tv.todo,
       seleccion: tv.seleccion,
-      filtrado: tv.filtrado('{x}'),
       uno: tv.modelos(1),
       varios: tv.modelos(999),
       archivo: tv.archivo,
       archivoComp: tv.archivoComp,
-      pie: tv.pie,
+      etqSeleccion: tv.etqSeleccion,
+      etqOrden: tv.etqOrden,
+      etqModelos: tv.etqModelos,
+      tipoTabla: tv.tipoTabla,
+      tipoComp: tv.tipoComp,
+      mayorCorto: tv.mayorCorto,
+      menorCorto: tv.menorCorto,
+      catalogoOrden: tv.catalogoOrden,
+      fuente: tv.fuente,
+      empresa: `Orto Alresa · ${contacto.empresa} · ${contacto.direccion} · ortoalresa.com`,
     })}
   />
   <script
@@ -679,14 +687,19 @@ const tubos = Object.entries(porTipo)
     const { cabecera, filas } = leerTabla(tabla, hayMarcadas ? marcada : undefined);
     const d = hoy();
     const puesto = JSON.parse(document.getElementById('salas')?.dataset.resumen ?? '[]') as string[];
-    const ordenado = !document.querySelector<HTMLElement>('.tabla-vista .invertir')?.hidden;
-    const orden = document.querySelector('.tabla-estado p')?.textContent?.trim();
+    // La columna por la que se ordena y hacia dónde ("Fuerza máx., de mayor a menor")
+    const col = tabla.querySelector<HTMLElement>('th[aria-sort="descending"], th[aria-sort="ascending"]');
+    const orden = col
+      ? `${col.textContent!.trim()}, ${col.getAttribute('aria-sort') === 'ascending' ? tx.menorCorto : tx.mayorCorto}`
+      : tx.catalogoOrden;
     return {
+      tipo: tx.tipoTabla,
       titulo: tx.titulo,
-      lineas: [
-        hayMarcadas ? tx.seleccion : puesto.length ? tx.filtrado.replace('{x}', puesto.join(' · ')) : tx.todo,
-        ...(ordenado && orden ? [orden] : []),
-        `${filas.length === 1 ? tx.uno : tx.varios.replace('999', String(filas.length))} · ${d.texto}`,
+      fecha: d.texto,
+      datos: [
+        [tx.etqSeleccion, hayMarcadas ? tx.seleccion : puesto.length ? puesto.join(' · ') : tx.todo],
+        [tx.etqOrden, orden],
+        [tx.etqModelos, filas.length === 1 ? tx.uno : tx.varios.replace('999', String(filas.length))],
       ],
       cabecera,
       filas,
@@ -699,8 +712,18 @@ const tubos = Object.entries(porTipo)
     const { cabecera, filas } = leerTabla(tabla);
     const d = hoy();
     return {
+      tipo: tx.tipoComp,
       titulo: tx.comp,
-      lineas: [d.texto],
+      fecha: d.texto,
+      datos: [
+        [
+          tx.etqModelos,
+          cabecera
+            .slice(1)
+            .map((c) => c.t)
+            .join(' · '),
+        ],
+      ],
       cabecera,
       filas,
       archivo: `${tx.archivoComp}-${d.archivo}`,
@@ -711,7 +734,7 @@ const tubos = Object.entries(porTipo)
       const h = b.closest('#comparador') ? hojaComparativa() : hojaTabla();
       if (!h) return;
       if (b.dataset.exportar === 'excel') excel(h);
-      else void pdf(h, tx.pie);
+      else void pdf(h, { empresa: tx.empresa, fuente: tx.fuente });
     });
   }
 
@@ -2530,15 +2553,16 @@ const tubos = Object.entries(porTipo)
 </style>
 
 <style is:global>
-  /* ——— Hoja para el PDF: solo existe mientras se imprime. Logo, título y lo filtrado arriba, la tabla con la cabecera
-     oscura y la raya roja de la marca, y al pie la web. A4 vertical, con las fotos pequeñas para que quepa ——— */
+  /* ——— Hoja para el PDF: solo existe mientras se imprime. Un documento de empresa: banda carbón con el logo en blanco,
+     el tipo de documento, el título y la fecha, cerrada por la raya roja; debajo, sus datos con etiqueta; la tabla con
+     la cabecera oscura y filas alternas; y en el margen de cada hoja la empresa y el número de página ——— */
   #impreso {
     display: none;
   }
   @media print {
     @page {
       size: A4;
-      margin: 14mm 12mm;
+      margin: 12mm 12mm 16mm;
     }
     body.imprimiendo {
       background: #fff;
@@ -2553,85 +2577,160 @@ const tubos = Object.entries(porTipo)
       print-color-adjust: exact;
       -webkit-print-color-adjust: exact;
     }
-    #impreso header {
-      display: flex;
-      align-items: flex-end;
-      gap: 24px;
-      padding-bottom: 14px;
-      margin-bottom: 16px;
-      border-bottom: 1px solid var(--line);
+    #impreso .banda {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: end;
+      gap: 0 28px;
+      padding: 22px 24px 20px;
+      background: var(--carbon);
+      border-bottom: 4px solid var(--red);
+      color: #fff;
     }
     #impreso .logo {
-      width: 150px;
+      align-self: center;
+      width: 132px;
       height: auto;
+      padding-right: 28px;
+      border-right: 1px solid var(--carbon-line);
+    }
+    #impreso .tipo {
+      margin: 0 0 4px;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--red);
     }
     #impreso h1 {
-      margin: 0 0 4px;
-      font-size: 24px;
-      font-weight: 700;
-      line-height: 1.1;
-    }
-    #impreso header p {
       margin: 0;
-      font-size: 12px;
+      font-size: 24px;
+      font-weight: 300;
+      line-height: 1.05;
+      color: #fff;
+    }
+    #impreso .fecha {
+      margin: 0;
+      font-size: 11px;
+      color: var(--on-dark);
+      white-space: nowrap;
+    }
+    #impreso .datos {
+      display: flex;
+      flex-wrap: wrap;
+      margin: 0 0 18px;
+      background: var(--panel);
+    }
+    #impreso .datos div {
+      flex: 1 1 auto;
+      padding: 10px 24px;
+    }
+    #impreso .datos div + div {
+      border-left: 1px solid #fff;
+    }
+    #impreso dt {
+      font-size: 8.5px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
       color: var(--muted);
+    }
+    #impreso dd {
+      margin: 2px 0 0;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--ink);
     }
     #impreso table {
       width: 100%;
       border-collapse: collapse;
-      border-top: 3px solid var(--red);
-      font-size: 12px;
+      font-size: 11px;
       font-variant-numeric: tabular-nums;
     }
     #impreso thead {
       display: table-header-group;
     }
     #impreso th {
-      padding: 8px 8px;
+      padding: 8px 10px;
       background: var(--ink);
+      border-bottom: 2px solid var(--red);
       color: #fff;
-      font-size: 10px;
+      font-size: 8.5px;
       font-weight: 700;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.08em;
       text-align: left;
       text-transform: uppercase;
       vertical-align: bottom;
     }
     #impreso td {
-      padding: 5px 8px;
-      border-bottom: 1px solid #e3e3e3;
+      padding: 6px 10px;
+      border-bottom: 1px solid #e6e6e6;
+      color: var(--body);
       vertical-align: middle;
+    }
+    #impreso tbody tr:nth-child(even) td {
+      background: var(--band);
     }
     #impreso tr {
       break-inside: avoid;
     }
     #impreso td:first-child {
       font-weight: 700;
+      color: var(--ink);
       white-space: nowrap;
     }
     #impreso .num {
       text-align: right;
       white-space: nowrap;
     }
+    #impreso td.num {
+      color: var(--ink);
+    }
     #impreso .foto {
       display: inline-block;
-      width: 28px;
-      height: 28px;
-      margin-right: 8px;
+      width: 26px;
+      height: 26px;
+      margin-right: 10px;
       object-fit: contain;
       vertical-align: middle;
     }
+    /* Comparativa: las máquinas en columnas, con su foto sobre fondo blanco y su nombre; las filas, con su etiqueta */
+    #impreso.es-comp table {
+      table-layout: fixed;
+    }
+    #impreso.es-comp th {
+      padding: 12px 12px 10px;
+      font-size: 12px;
+      letter-spacing: 0.02em;
+      text-transform: none;
+    }
+    #impreso.es-comp th:first-child {
+      width: 24%;
+    }
     #impreso .cab {
       display: block;
-      width: 90px;
-      height: 90px;
-      margin: 0 0 6px;
+      width: 100%;
+      height: 110px;
+      margin: 0 0 10px;
+      padding: 8px;
       object-fit: contain;
       background: #fff;
     }
-    #impreso footer {
-      margin-top: 14px;
-      font-size: 10px;
+    #impreso.es-comp td {
+      padding: 8px 12px;
+      font-size: 11.5px;
+      color: var(--ink);
+    }
+    #impreso.es-comp td:first-child {
+      font-size: 8.5px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      white-space: normal;
+    }
+    #impreso .fuente {
+      margin: 14px 0 0;
+      font-size: 8.5px;
       color: var(--muted);
     }
   }
