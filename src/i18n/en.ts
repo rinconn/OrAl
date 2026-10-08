@@ -251,6 +251,7 @@ export const en: Textos = {
       cortos: { accesorios: 'Accessories', laboratorio: 'Laboratory' },
       titulo: 'Filter by',
       buscar: 'Search a model or an application',
+      buscarCorto: 'Search',
       todo: 'All',
       todoTitulo: 'The full catalogue',
       aplicacion: 'Application',
