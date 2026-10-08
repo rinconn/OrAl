@@ -869,18 +869,19 @@ const iconos: Record<Temperatura, string> = {
     margin-top: clamp(48px, 6vw, 88px);
   }
 
-  /* ——— La barra: oscura sobre la sección blanca, con la raya roja arriba; los controles, con borde fino claro ——— */
+  /* ——— La barra: blanca con contorno fino y la raya roja arriba; los controles, con borde gris claro y lo elegido en gris muy claro con borde oscuro ——— */
   .barra {
-    --osc: #787e85;
+    --osc: #d2d5d8;
     position: relative;
     display: flex;
     align-items: center;
     gap: 10px;
     padding: 14px;
     flex-wrap: wrap;
-    background: #5a5f65;
+    background: #fff;
+    border: 1px solid var(--line);
     border-top: 3px solid var(--red);
-    box-shadow: 0 30px 60px -40px rgba(17, 19, 21, 0.6);
+    box-shadow: 0 30px 60px -44px rgba(17, 19, 21, 0.35);
   }
 
   /* Buscador */
@@ -892,17 +893,17 @@ const iconos: Record<Temperatura, string> = {
     align-items: center;
     height: var(--alto);
     padding: 0 16px;
-    background: #4d5258;
+    background: #fff;
     border: 1px solid var(--osc);
-    color: #e3e6e8;
+    color: var(--muted);
     transition:
       border-color 0.2s ease,
       box-shadow 0.2s ease;
   }
   .buscar:focus-within {
-    border-color: #fff;
-    box-shadow: inset 0 0 0 1px #fff;
-    color: #fff;
+    border-color: var(--ink);
+    box-shadow: inset 0 0 0 1px var(--ink);
+    color: var(--ink);
   }
   .lupa {
     flex: none;
@@ -916,10 +917,10 @@ const iconos: Record<Temperatura, string> = {
     outline: 0;
     background: none;
     font: 400 19px var(--f);
-    color: #fff;
+    color: var(--ink);
   }
   .buscar input::placeholder {
-    color: #fff;
+    color: var(--muted);
   }
 
   /* Sugerencias: debajo del buscador, con foto y aplicación */
@@ -1043,7 +1044,7 @@ const iconos: Record<Temperatura, string> = {
     border: 1px solid var(--osc);
     background: none;
     font: 400 17px var(--f);
-    color: #d5d9dc;
+    color: var(--body);
     cursor: pointer;
     transition:
       background-color 0.2s ease,
@@ -1061,35 +1062,26 @@ const iconos: Record<Temperatura, string> = {
       transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
   }
   .ventilada {
-    --tc: #aab3b9;
+    --tc: #6f7a81;
   }
   .refrigerada {
-    --tc: #4ea6ec;
+    --tc: #2a7fc4;
   }
   .calefactada {
-    --tc: #ff3b3f;
+    --tc: var(--red);
   }
-  /* Elegida: en blanco, con la raya de su color debajo */
+  /* Elegida: gris muy claro con borde oscuro y la raya de su color debajo */
   .temp[aria-pressed='true'] {
     position: relative;
     z-index: 1;
-    background: #fff;
-    border-color: #fff;
+    background: var(--panel);
+    border-color: var(--ink);
     color: var(--ink);
     font-weight: 700;
     box-shadow: inset 0 -3px 0 var(--tc);
   }
-  .temp.ventilada[aria-pressed='true'] {
-    --tc: #6f7a81;
-  }
-  .temp.refrigerada[aria-pressed='true'] {
-    --tc: #2a7fc4;
-  }
-  .temp.calefactada[aria-pressed='true'] {
-    --tc: var(--red);
-  }
   .temp:disabled {
-    color: #9ba1a7;
+    color: #b4b8bb;
     cursor: default;
   }
   .temp:disabled svg {
@@ -1108,7 +1100,7 @@ const iconos: Record<Temperatura, string> = {
     border: 1px solid var(--osc);
     background: none;
     font: 400 17px var(--f);
-    color: #fff;
+    color: var(--ink);
     white-space: nowrap;
     cursor: pointer;
     transition: border-color 0.2s ease;
@@ -1117,14 +1109,14 @@ const iconos: Record<Temperatura, string> = {
     transition: rotate 0.3s cubic-bezier(0.23, 1, 0.32, 1);
   }
   .aplic-btn[aria-expanded='true'] {
-    border-color: #fff;
+    border-color: var(--ink);
   }
   .aplic-btn[aria-expanded='true'] svg {
     rotate: 180deg;
   }
   .aplic-btn.on {
-    background: #fff;
-    border-color: #fff;
+    background: var(--panel);
+    border-color: var(--ink);
     color: var(--ink);
     font-weight: 700;
     box-shadow: inset 0 -3px 0 var(--red);
@@ -1135,12 +1127,12 @@ const iconos: Record<Temperatura, string> = {
     border: 1px solid var(--osc);
     border-radius: 0;
     background: transparent
-      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='16' height='16'%3E%3Cpath d='M7 4v16M4 17l3 3 3-3M17 20V4M14 7l3-3 3 3' fill='none' stroke='%23fff' stroke-width='1.6'/%3E%3C/svg%3E")
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='16' height='16'%3E%3Cpath d='M7 4v16M4 17l3 3 3-3M17 20V4M14 7l3-3 3 3' fill='none' stroke='%231a1a1a' stroke-width='1.6'/%3E%3C/svg%3E")
       no-repeat right 14px center;
     -webkit-appearance: none;
     appearance: none;
     font: 400 17px var(--f);
-    color: #fff;
+    color: var(--ink);
     cursor: pointer;
     transition: border-color 0.2s ease;
   }
@@ -1159,7 +1151,7 @@ const iconos: Record<Temperatura, string> = {
     border: 1px solid var(--osc);
     background: none;
     font: 400 17px var(--f);
-    color: #fff;
+    color: var(--ink);
     white-space: nowrap;
     cursor: pointer;
     transition: border-color 0.2s ease;
@@ -1175,14 +1167,14 @@ const iconos: Record<Temperatura, string> = {
     transition: rotate 0.3s cubic-bezier(0.23, 1, 0.32, 1);
   }
   .tubo-btn[aria-expanded='true'] {
-    border-color: #fff;
+    border-color: var(--ink);
   }
   .tubo-btn[aria-expanded='true'] .flechita {
     rotate: 180deg;
   }
   .tubo-btn.on {
-    background: #fff;
-    border-color: #fff;
+    background: var(--panel);
+    border-color: var(--ink);
     color: var(--ink);
     font-weight: 700;
     box-shadow: inset 0 -3px 0 var(--red);
@@ -1268,7 +1260,7 @@ const iconos: Record<Temperatura, string> = {
   }
   @media (hover: hover) and (pointer: fine) {
     .tubo-btn:not(.on):hover {
-      border-color: #fff;
+      border-color: var(--ink);
     }
     .t-op:not(:disabled):not([aria-pressed='true']):hover {
       border-color: var(--ink);
@@ -1289,7 +1281,7 @@ const iconos: Record<Temperatura, string> = {
     border: 1px solid var(--osc);
     background: none;
     font: 400 17px var(--f);
-    color: #fff;
+    color: var(--ink);
     white-space: nowrap;
     cursor: pointer;
     transition: border-color 0.2s ease;
@@ -1304,14 +1296,14 @@ const iconos: Record<Temperatura, string> = {
     transition: rotate 0.3s cubic-bezier(0.23, 1, 0.32, 1);
   }
   .min-btn[aria-expanded='true'] {
-    border-color: #fff;
+    border-color: var(--ink);
   }
   .min-btn[aria-expanded='true'] .flechita {
     rotate: 180deg;
   }
   .min-btn.on {
-    background: #fff;
-    border-color: #fff;
+    background: var(--panel);
+    border-color: var(--ink);
     color: var(--ink);
     font-weight: 700;
     box-shadow: inset 0 -3px 0 var(--red);
@@ -1426,7 +1418,7 @@ const iconos: Record<Temperatura, string> = {
   }
   @media (hover: hover) and (pointer: fine) {
     .min-btn:not(.on):hover {
-      border-color: #fff;
+      border-color: var(--ink);
     }
     .min-campos input:hover:not(:focus) {
       border-color: #8c959b;
@@ -1444,7 +1436,7 @@ const iconos: Record<Temperatura, string> = {
   }
   @media (hover: hover) and (pointer: fine) {
     .orden select:hover {
-      border-color: #fff;
+      border-color: var(--ink);
     }
   }
   .aplic-menu {
@@ -1540,7 +1532,7 @@ const iconos: Record<Temperatura, string> = {
     height: var(--alto);
     border: 1px solid var(--osc);
     background: transparent;
-    color: #e3e6e8;
+    color: var(--body);
     cursor: pointer;
     transition:
       background-color 0.2s ease,
@@ -1552,8 +1544,8 @@ const iconos: Record<Temperatura, string> = {
   }
   .vista button[aria-pressed='true'] {
     position: relative;
-    background: #fff;
-    border-color: #fff;
+    background: var(--panel);
+    border-color: var(--ink);
     color: var(--ink);
     box-shadow: inset 0 -3px 0 var(--red);
   }
@@ -1570,8 +1562,8 @@ const iconos: Record<Temperatura, string> = {
     .vista button:not([aria-pressed='true']):hover {
       position: relative;
       z-index: 1;
-      border-color: #fff;
-      color: #fff;
+      border-color: var(--ink);
+      color: var(--ink);
     }
   }
 
@@ -1588,14 +1580,14 @@ const iconos: Record<Temperatura, string> = {
   .cuenta {
     margin: 0;
     font-size: 16px;
-    color: #e3e6e8;
+    color: var(--muted);
     font-variant-numeric: tabular-nums;
   }
   .cuenta :global(b) {
     margin-right: 1px;
     font-size: 28px;
     font-weight: 700;
-    color: #fff;
+    color: var(--ink);
     vertical-align: -2px;
   }
   .borrar {
@@ -1641,8 +1633,8 @@ const iconos: Record<Temperatura, string> = {
     .buscar:not(:focus-within):hover {
       position: relative;
       z-index: 1;
-      border-color: #fff;
-      color: #fff;
+      border-color: var(--ink);
+      color: var(--ink);
     }
     .temp:not(:disabled):hover svg {
       transform: scale(1.15);
