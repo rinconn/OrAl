@@ -144,9 +144,9 @@ const filasTabla = (Object.keys(familias) as Familia[]).flatMap((fam) =>
   modelos.filter((m) => familiaDe(m) === fam).map((m) => ({ m, color: familias[fam].color as string })),
 );
 const columnasOrden = [
-  { o: 'cap', nombre: tf.capacidad },
-  { o: 'rpm', nombre: tf.velocidad },
-  { o: 'xg', nombre: tf.fuerza },
+  { o: 'cap', nombre: tf.capacidad, ud: undefined },
+  { o: 'rpm', nombre: tf.velocidad, ud: 'rpm' },
+  { o: 'xg', nombre: tf.fuerza, ud: 'xg' },
 ];
 // Barra bajo cada cifra: su tamaño frente a la mayor de la columna (sin barra si no hay cifra)
 const maximos: Record<string, number> = {
@@ -186,6 +186,33 @@ const tubosDe = (slug: string) => {
   return r;
 };
 const tubosModelo = Object.fromEntries(modelos.map((m) => [m.slug, tubosDe(m.slug)]));
+
+// ——— Mínimos: velocidad y fuerza máximas de cada versión, y cuántos tubos de cuántos ml caben a la vez en alguno de
+// sus rotores (más la capacidad de la tabla de la serie). Solo se guardan las combinaciones que no mejora otra ———
+const mlMax = (s?: string) => {
+  const hasta = s?.slice(0, s.lastIndexOf('ml')) ?? '';
+  const ns = hasta.match(/\d[\d.,]*/g)?.map((x) => Number(x.replace(/\.(?=\d{3})/g, '').replace(',', '.'))) ?? [];
+  return ns.length ? Math.max(...ns) : 0;
+};
+const capacidadesDe = (m: Modelo) => {
+  const pares: [number, number][] = [];
+  const serie = /(\d+)\s*×\s*([\d.,/]+)\s*ml/.exec(m.capacidad);
+  if (serie) pares.push([Number(serie[1]), mlMax(`${serie[2].split('/').pop()} ml`)]);
+  for (const id of fichaCentrifuga(m.slug)?.rotores ?? [])
+    for (const tu of rotor(id)?.tubos ?? []) {
+      const n = Number(tu.posiciones) || 0;
+      const ml = mlMax(tu.capacidad);
+      if (n && ml) pares.push([n, ml]);
+    }
+  const unicos = [...new Map(pares.map((p) => [p.join('x'), p])).values()];
+  return unicos.filter(([n, ml]) => !unicos.some(([n2, ml2]) => n2 >= n && ml2 >= ml && (n2 > n || ml2 > ml)));
+};
+const cifrasModelo = Object.fromEntries(
+  modelos.map((m) => [
+    m.slug,
+    { rpm: num(m.rpm), xg: num(m.xg ?? fichaCentrifuga(m.slug)?.xg), cap: capacidadesDe(m) },
+  ]),
+);
 // Para el filtro: los tubos agrupados por tipo (los tipos con más máquinas primero) y ordenados por medidas
 const cuenta: Record<string, number> = {};
 for (const ts of Object.values(tubosModelo)) for (const k of Object.keys(ts)) cuenta[k] = (cuenta[k] ?? 0) + 1;
@@ -258,16 +285,30 @@ const tubos = Object.entries(porTipo)
             </svg>
             {tv.invertir}
           </button>
+          {/* Descargar lo que se ve (filtros y orden incluidos) para mandárselo al cliente */}
+          <div class="descargar" role="group" aria-label={tv.descargar}>
+            <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+              <path d="M12 4v11M7 10l5 5 5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="1.7" />
+            </svg>
+            <span class="d-etq">{tv.descargar}</span>
+            <button type="button" data-exportar="pdf" title={tv.descargarEn('PDF')}>
+              PDF
+            </button>
+            <button type="button" data-exportar="excel" title={tv.descargarEn('Excel')}>
+              Excel
+            </button>
+          </div>
         </div>
         <div class="tabla-scroll">
           <table>
             <thead>
               <tr>
-                <th scope="col">{tv.modelo}</th>
-                <th scope="col">{tc.aplicacion}</th>
+                <th scope="col" data-cols={`${tv.modelo}|${tc.aplicacion}`}>
+                  {tv.modelo}
+                </th>
                 <th scope="col">{tc.temperatura}</th>
                 {columnasOrden.map((c) => (
-                  <th scope="col" class="num" aria-sort="none">
+                  <th scope="col" class="num" aria-sort="none" data-ud={c.ud}>
                     <button type="button" data-o={c.o} aria-label={tv.ordenarPor(c.nombre)}>
                       {c.nombre}
                       <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
@@ -277,7 +318,15 @@ const tubos = Object.entries(porTipo)
                     </button>
                   </th>
                 ))}
-                <th scope="col">{tf.pantalla}</th>
+                <th scope="col" class="centro">
+                  {tf.pantalla}
+                </th>
+                <th scope="col" class="centro fuera">
+                  {tc.comparar}
+                </th>
+                <th scope="col" class="centro fuera">
+                  {tp.corto}
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -303,10 +352,13 @@ const tubos = Object.entries(porTipo)
                   <th scope="row">
                     <a href={ruta(lang, `/centrifugas/${m.slug}/`)}>
                       <img src={m.imagen.src} alt="" width="48" height="48" loading="lazy" decoding="async" />
-                      <span>{m.nombre}</span>
+                      {/* La aplicación, debajo del nombre: una columna menos y la fila se lee de un vistazo */}
+                      <span class="nom">
+                        <b data-x>{m.nombre}</b>
+                        <small data-x>{t.catalogo.categorias[m.categoria]}</small>
+                      </span>
                     </a>
                   </th>
-                  <td>{t.catalogo.categorias[m.categoria]}</td>
                   <td class:list={['temp', m.temperatura]}>
                     <IconoTemp t={m.temperatura} size={16} />
                     {may(t.temperatura[m.temperatura])}
@@ -314,13 +366,34 @@ const tubos = Object.entries(porTipo)
                   <td class="num c-cap" style={barra(capacidadMl(m), 'cap')}>
                     {capacidad(m)}
                   </td>
-                  <td class="num c-rpm" style={barra(num(m.rpm), 'rpm')}>
+                  <td class="num c-rpm" style={barra(num(m.rpm), 'rpm')} data-n={num(m.rpm)}>
                     {numero(lang, m.rpm)} rpm
                   </td>
-                  <td class="num c-xg" style={barra(num(m.xg ?? fichaCentrifuga(m.slug)?.xg), 'xg')}>
+                  <td
+                    class="num c-xg"
+                    style={barra(num(m.xg ?? fichaCentrifuga(m.slug)?.xg), 'xg')}
+                    data-n={num(m.xg ?? fichaCentrifuga(m.slug)?.xg) || undefined}
+                  >
                     {fuerza(m) ? `${fuerza(m)} xg` : '—'}
                   </td>
-                  <td>{m.pantalla}</td>
+                  <td class="centro">{m.pantalla}</td>
+                  {/* Las mismas casilla y "+" que las tarjetas: los scripts las cogen todas y las tienen a la par */}
+                  <td class="centro fuera">
+                    <label class="comparar" title={tc.comparar}>
+                      <input type="checkbox" value={m.slug} />
+                      <span class="caja" aria-hidden="true" />
+                      <span class="sr">
+                        {tc.comparar} {m.nombre}
+                      </span>
+                    </label>
+                  </td>
+                  <td class="pres fuera">
+                    <button type="button" class="anadir" data-slug={m.slug} title={tp.anadir}>
+                      <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                        <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                      </svg>
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -510,6 +583,18 @@ const tubos = Object.entries(porTipo)
   <dialog class="comparador" id="comparador" aria-labelledby="comparador-tit">
     <div class="comp-cab">
       <h2 id="comparador-tit">{tc.titulo}</h2>
+      <div class="descargar" role="group" aria-label={tv.descargar}>
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+          <path d="M12 4v11M7 10l5 5 5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="1.7" />
+        </svg>
+        <span class="d-etq">{tv.descargar}</span>
+        <button type="button" data-exportar="pdf" title={tv.descargarEn('PDF')}>
+          PDF
+        </button>
+        <button type="button" data-exportar="excel" title={tv.descargarEn('Excel')}>
+          Excel
+        </button>
+      </div>
       <button type="button" class="cerrar-comp" aria-label={tc.cerrar}>
         <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
           <path d={cruz} stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path>
@@ -531,7 +616,27 @@ const tubos = Object.entries(porTipo)
   <script
     type="application/json"
     id="datos-tubos"
-    set:html={JSON.stringify({ modelos: tubosModelo, texto: t.catalogo.filtros.conTubo('{r}', '{t}', '{n}') })}
+    set:html={JSON.stringify({
+      modelos: tubosModelo,
+      cifras: cifrasModelo,
+      texto: t.catalogo.filtros.conTubo('{r}', '{t}', '{n}'),
+    })}
+  />
+  <script
+    type="application/json"
+    id="datos-exportar"
+    set:html={JSON.stringify({
+      titulo: tv.docTitulo,
+      comp: tv.compTitulo,
+      todo: tv.todo,
+      seleccion: tv.seleccion,
+      filtrado: tv.filtrado('{x}'),
+      uno: tv.modelos(1),
+      varios: tv.modelos(999),
+      archivo: tv.archivo,
+      archivoComp: tv.archivoComp,
+      pie: tv.pie,
+    })}
   />
   <script
     type="application/json"
@@ -561,6 +666,54 @@ const tubos = Object.entries(porTipo)
   iniciarComparador();
   import { iniciarPresupuesto } from '../../scripts/presupuesto';
   iniciarPresupuesto();
+
+  // ——— Descargar la tabla (lo filtrado, en su orden) o la comparativa, en PDF o en Excel ———
+  import { excel, hoy, leerTabla, pdf, type Hoja } from '../../scripts/exportar';
+  const tx = JSON.parse(document.getElementById('datos-exportar')?.textContent ?? '{}') as Record<string, string>;
+  const hojaTabla = (): Hoja | undefined => {
+    const tabla = document.querySelector<HTMLTableElement>('.tabla-vista table');
+    if (!tabla) return;
+    // Si se han marcado filas (Comparar o Presupuesto), salen solo esas; si no, todo lo que dejan los filtros
+    const marcada = (tr: HTMLTableRowElement) => !!tr.querySelector('.comparar input:checked, .anadir[hidden]');
+    const hayMarcadas = [...tabla.tBodies[0].rows].some((tr) => !tr.hidden && marcada(tr));
+    const { cabecera, filas } = leerTabla(tabla, hayMarcadas ? marcada : undefined);
+    const d = hoy();
+    const puesto = JSON.parse(document.getElementById('salas')?.dataset.resumen ?? '[]') as string[];
+    const ordenado = !document.querySelector<HTMLElement>('.tabla-vista .invertir')?.hidden;
+    const orden = document.querySelector('.tabla-estado p')?.textContent?.trim();
+    return {
+      titulo: tx.titulo,
+      lineas: [
+        hayMarcadas ? tx.seleccion : puesto.length ? tx.filtrado.replace('{x}', puesto.join(' · ')) : tx.todo,
+        ...(ordenado && orden ? [orden] : []),
+        `${filas.length === 1 ? tx.uno : tx.varios.replace('999', String(filas.length))} · ${d.texto}`,
+      ],
+      cabecera,
+      filas,
+      archivo: `${tx.archivo}-${d.archivo}`,
+    };
+  };
+  const hojaComparativa = (): Hoja | undefined => {
+    const tabla = document.querySelector<HTMLTableElement>('#comparador .comp-tabla table');
+    if (!tabla) return;
+    const { cabecera, filas } = leerTabla(tabla);
+    const d = hoy();
+    return {
+      titulo: tx.comp,
+      lineas: [d.texto],
+      cabecera,
+      filas,
+      archivo: `${tx.archivoComp}-${d.archivo}`,
+    };
+  };
+  for (const b of document.querySelectorAll<HTMLButtonElement>('[data-exportar]')) {
+    b.addEventListener('click', () => {
+      const h = b.closest('#comparador') ? hojaComparativa() : hojaTabla();
+      if (!h) return;
+      if (b.dataset.exportar === 'excel') excel(h);
+      else void pdf(h, tx.pie);
+    });
+  }
 
   const salasEl = document.getElementById('salas');
   const quieto = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -635,7 +788,19 @@ const tubos = Object.entries(porTipo)
     }
   };
   document.addEventListener('catalogo:filtrado', (e) => {
-    tuboActual = (e as CustomEvent<{ tubo?: string }>).detail?.tubo ?? '';
+    const detalle = (e as CustomEvent<{ tubo?: string; validos?: string[] }>).detail;
+    tuboActual = detalle?.tubo ?? '';
+    // Con mínimos puestos, cada tarjeta enseña una versión que llega a ellos
+    const validos = detalle?.validos;
+    if (validos)
+      for (const g of document.querySelectorAll<HTMLElement>('.versiones')) {
+        const actual = g.querySelector<HTMLButtonElement>('[aria-pressed="true"]');
+        if (actual && validos.includes(actual.dataset.slug!)) continue;
+        const otra = [...g.querySelectorAll<HTMLButtonElement>('button')].find((x) =>
+          validos.includes(x.dataset.slug!),
+        );
+        if (otra) verVersion(g.closest<HTMLElement>('.ficha')!, otra.dataset.i!, false);
+      }
     if (tuboActual)
       for (const g of document.querySelectorAll<HTMLElement>('.versiones')) {
         const actual = g.querySelector<HTMLButtonElement>('[aria-pressed="true"]');
@@ -799,6 +964,67 @@ const tubos = Object.entries(porTipo)
   .invertir[hidden] {
     display: none;
   }
+  /* Descargar: la flecha, la palabra y dos botones pegados, PDF y Excel */
+  .tabla-estado .invertir {
+    margin-left: auto;
+  }
+  .descargar {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    gap: 8px;
+    font-size: 15px;
+    color: var(--muted);
+  }
+  .descargar svg {
+    color: var(--red);
+  }
+  .descargar button {
+    height: 44px;
+    padding: 0 14px;
+    border: 1px solid var(--line);
+    background: #fff;
+    font: 700 15px var(--f);
+    color: var(--ink);
+    cursor: pointer;
+    transition:
+      border-color 0.2s ease,
+      color 0.2s ease;
+  }
+  .descargar button + button {
+    margin-left: -9px;
+  }
+  .descargar button:active {
+    scale: 0.97;
+  }
+  .descargar button:focus-visible {
+    outline: 2px solid var(--red);
+    outline-offset: 2px;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .descargar button:hover {
+      position: relative;
+      border-color: var(--red);
+      color: var(--red);
+    }
+  }
+  @media (max-width: 640px) {
+    .tabla-estado {
+      flex-wrap: wrap;
+    }
+    .tabla-estado p {
+      flex-basis: 100%;
+    }
+    .tabla-estado .invertir {
+      margin-left: 0;
+    }
+    .tabla-estado .descargar {
+      margin-left: auto;
+    }
+    .descargar .d-etq {
+      display: none;
+    }
+  }
   .invertir svg {
     color: var(--red);
   }
@@ -818,7 +1044,7 @@ const tubos = Object.entries(porTipo)
   }
   .tabla-vista th,
   .tabla-vista td {
-    padding: 12px 18px;
+    padding: 9px 16px;
     text-align: left;
     vertical-align: middle;
     border-bottom: 1px solid #ececec;
@@ -840,6 +1066,9 @@ const tubos = Object.entries(porTipo)
     position: sticky;
     left: 0;
     z-index: 2;
+  }
+  .tabla-vista .centro {
+    text-align: center;
   }
   .tabla-vista .num {
     text-align: right;
@@ -898,7 +1127,7 @@ const tubos = Object.entries(porTipo)
     display: flex;
     align-items: center;
     gap: 14px;
-    padding-left: 18px;
+    padding-left: 16px;
     font-size: 17px;
     font-weight: 700;
     color: var(--ink);
@@ -907,12 +1136,22 @@ const tubos = Object.entries(porTipo)
   }
   .tabla-vista tbody a img {
     flex: none;
-    width: 52px;
-    height: 52px;
+    width: 42px;
+    height: 42px;
     object-fit: contain;
     transition: scale 0.3s cubic-bezier(0.23, 1, 0.32, 1);
   }
-  .tabla-vista tbody a span::after {
+  .tabla-vista .nom {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+  }
+  .tabla-vista .nom small {
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--muted);
+  }
+  .tabla-vista tbody a b::after {
     content: '»';
     display: inline-block;
     margin-left: 8px;
@@ -937,8 +1176,8 @@ const tubos = Object.entries(porTipo)
   .tabla-vista td.num[style]::after {
     content: '';
     position: absolute;
-    right: 18px;
-    bottom: 9px;
+    right: 16px;
+    bottom: 7px;
     width: max(3px, calc(var(--p) * 120px));
     height: 3px;
     background: #dcdcdc;
@@ -972,6 +1211,85 @@ const tubos = Object.entries(porTipo)
   .tabla-vista tbody tr[hidden] {
     display: none;
   }
+  /* Comparar y Presupuesto en la fila: solo la casilla y el "+"; añadida, el contador "− 1 ud. +" en pequeño */
+  .tabla-vista .comparar {
+    position: static;
+    height: 32px;
+    padding: 0 9px;
+  }
+  .tabla-vista td.pres {
+    width: 1%;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+  .tabla-vista .anadir,
+  .tabla-vista :global(.paso) {
+    display: inline-flex;
+    height: 32px;
+    border: 1px solid #d3d6d9;
+    background: #fff;
+  }
+  .tabla-vista .anadir {
+    position: static;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    padding: 0;
+    color: var(--red);
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+  .tabla-vista :global(.paso) {
+    background: #f3f4f5;
+    animation: aparece-paso 0.25s var(--ease);
+  }
+  .tabla-vista :global(.paso[hidden]) {
+    display: none;
+  }
+  .tabla-vista :global(.paso button) {
+    display: grid;
+    place-items: center;
+    width: 30px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--red);
+    cursor: pointer;
+  }
+  .tabla-vista :global(.paso button svg) {
+    width: 15px;
+    height: 15px;
+  }
+  .tabla-vista :global(.paso button.borrar) {
+    color: var(--muted);
+  }
+  .tabla-vista :global(.paso output) {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 0 4px;
+    font-size: 14px;
+    font-variant-numeric: tabular-nums;
+  }
+  .tabla-vista .anadir:focus-visible,
+  .tabla-vista :global(.paso button:focus-visible) {
+    outline: 2px solid var(--red);
+    outline-offset: -2px;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .tabla-vista .anadir:hover,
+    .tabla-vista :global(.paso button:hover) {
+      background: #e9ebed;
+    }
+    .tabla-vista :global(.paso button.borrar:hover) {
+      color: var(--red);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .tabla-vista :global(.paso) {
+      animation: none;
+    }
+  }
   @media (hover: hover) and (pointer: fine) {
     .tabla-vista thead button:hover svg {
       opacity: 1;
@@ -993,7 +1311,7 @@ const tubos = Object.entries(porTipo)
     .tabla-vista tbody tr:hover a img {
       scale: 1.1;
     }
-    .tabla-vista tbody tr:hover a span::after {
+    .tabla-vista tbody tr:hover a b::after {
       opacity: 1;
       translate: 0 0;
     }
@@ -1959,13 +2277,14 @@ const tubos = Object.entries(porTipo)
     z-index: 2;
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    gap: 16px;
     padding: 22px clamp(20px, 3vw, 36px);
     background: #fff;
     border-top: 3px solid var(--red);
     border-bottom: 1px solid var(--line);
   }
   .comp-cab h2 {
+    margin-right: auto;
     font-size: clamp(26px, 2.6vw, 34px);
     font-weight: 300;
   }
@@ -2206,6 +2525,114 @@ const tubos = Object.entries(porTipo)
     .comparador[open],
     .elegidas :global(li) {
       animation: none;
+    }
+  }
+</style>
+
+<style is:global>
+  /* ——— Hoja para el PDF: solo existe mientras se imprime. Logo, título y lo filtrado arriba, la tabla con la cabecera
+     oscura y la raya roja de la marca, y al pie la web. A4 vertical, con las fotos pequeñas para que quepa ——— */
+  #impreso {
+    display: none;
+  }
+  @media print {
+    @page {
+      size: A4;
+      margin: 14mm 12mm;
+    }
+    body.imprimiendo {
+      background: #fff;
+    }
+    body.imprimiendo > :not(#impreso) {
+      display: none !important;
+    }
+    body.imprimiendo #impreso {
+      display: block;
+      font-family: var(--f);
+      color: var(--ink);
+      print-color-adjust: exact;
+      -webkit-print-color-adjust: exact;
+    }
+    #impreso header {
+      display: flex;
+      align-items: flex-end;
+      gap: 24px;
+      padding-bottom: 14px;
+      margin-bottom: 16px;
+      border-bottom: 1px solid var(--line);
+    }
+    #impreso .logo {
+      width: 150px;
+      height: auto;
+    }
+    #impreso h1 {
+      margin: 0 0 4px;
+      font-size: 24px;
+      font-weight: 700;
+      line-height: 1.1;
+    }
+    #impreso header p {
+      margin: 0;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    #impreso table {
+      width: 100%;
+      border-collapse: collapse;
+      border-top: 3px solid var(--red);
+      font-size: 12px;
+      font-variant-numeric: tabular-nums;
+    }
+    #impreso thead {
+      display: table-header-group;
+    }
+    #impreso th {
+      padding: 8px 8px;
+      background: var(--ink);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-align: left;
+      text-transform: uppercase;
+      vertical-align: bottom;
+    }
+    #impreso td {
+      padding: 5px 8px;
+      border-bottom: 1px solid #e3e3e3;
+      vertical-align: middle;
+    }
+    #impreso tr {
+      break-inside: avoid;
+    }
+    #impreso td:first-child {
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    #impreso .num {
+      text-align: right;
+      white-space: nowrap;
+    }
+    #impreso .foto {
+      display: inline-block;
+      width: 28px;
+      height: 28px;
+      margin-right: 8px;
+      object-fit: contain;
+      vertical-align: middle;
+    }
+    #impreso .cab {
+      display: block;
+      width: 90px;
+      height: 90px;
+      margin: 0 0 6px;
+      object-fit: contain;
+      background: #fff;
+    }
+    #impreso footer {
+      margin-top: 14px;
+      font-size: 10px;
+      color: var(--muted);
     }
   }
 </style>
