@@ -1105,3 +1105,37 @@ entera delante, si se ensancha el contenido de 1280 a 1440 px.
   sale con esas cantidades.
 - **Descartado:** solo un icono "+" (no dice que es para el presupuesto), "✓ Añadido" en rojo con "Quitar" al pasar
   el ratón (en móvil no se podría quitar) y dejarlo como estaba.
+
+## 24. Tabla del catálogo, mínimos y descargas para el cliente
+
+### 24.1 Vista en tabla, más ligera
+
+- **Problema:** con tarjetas, comparar cifras de 23 modelos obliga a ir de una en una. La primera tabla tenía una
+  columna por dato y filas altas, y se veía cargada.
+- **Ahora:** una fila por versión, ordenable por capacidad, velocidad o fuerza, con Comparar y Presupuesto al final.
+  La aplicación va debajo del nombre (una columna menos), las fotos y los márgenes son más pequeños (filas de 77 a
+  67 px) y la casilla de Comparar marcada es solo el cuadro rojo, sin el fondo negro de la tarjeta.
+- **Por qué:** el distribuidor busca por cifra y compara de un vistazo; lo que no aporta a esa lectura, fuera.
+- **Descartado:** quitar la pantalla o la temperatura (se miran al elegir) y dejar los botones con su palabra en cada
+  fila (repetían lo que ya dice la cabecera).
+
+### 24.2 Filtro por mínimos
+
+- **Problema:** el laboratorio pide un requisito ("15.000 xg y 4 tubos de 250 ml"), no un modelo.
+- **Ahora:** fuerza, velocidad y capacidad mínimas; la capacidad se mira en todos los rotores de cada versión.
+- **Por qué:** es como pregunta el cliente final, y el distribuidor contesta sin abrir fichas.
+- **Descartado:** rangos con deslizadores (imprecisos para cifras de miles) y filtrar solo por la capacidad de serie.
+
+### 24.3 Descargar en PDF o Excel
+
+- **Problema:** para mandar opciones al cliente, el distribuidor copiaba cifras o reenviaba el catálogo entero.
+- **Ahora:** "Descargar · PDF | Excel" en la tabla, en las tarjetas, en el comparador y en el presupuesto. Sale lo que
+  se ve (filtros y orden) o, si se han marcado filas, solo esas. El PDF es un documento de empresa (banda carbón con el
+  logo, datos con etiqueta, tabla con filas alternas y pie de membrete) y se ve antes en una vista previa, con
+  "Descargar PDF" e "Imprimir". El Excel trae cifras como números, filtro y fila fija. Sin resultados, no se puede
+  descargar.
+- **Por qué:** primero se enseñan opciones (tabla o comparativa) y, cuando el cliente elige, se pasa la lista de
+  presupuesto con unidades: el mismo diseño para todo lo que sale de la web.
+- **Descartado:** la hoja de impresión del navegador (sin descarga, con su cabecera y "atrás" fuera del catálogo),
+  descargar sin vista previa y la letra condensada de la marca en el PDF (ver
+  [decisión 0010](decisiones/0010-pdf-generado-con-jspdf.md)).

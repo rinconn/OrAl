@@ -255,15 +255,30 @@ const tubos = Object.entries(porTipo)
       grupos={grupos.map((g) => ({ nombre: g.nombre, cats: g.cats.map((c) => ({ v: c, nombre: nombreCorto(c) })) }))}
     />
 
-    <!-- Atajos: una entrada por familia, con su color, que lleva a su sección -->
-    <nav class="wrap atajos" aria-label={t.catalogo.atajos}>
-      {salas.map((s) => (
-        <a href={`#sala-${s.id}`} data-ir={s.id} style={`--fam: ${s.color}`}>
-          {s.nombre}
-          <span class="n">{s.fichas.length}</span>
-        </a>
-      ))}
-    </nav>
+    <!-- Atajos: una entrada por familia, con su color, que lleva a su sección; a la derecha, descargar lo que se ve
+         (los modelos que dejan los filtros, como en la tabla) -->
+    <div class="wrap atajos-fila">
+      <nav class="atajos" aria-label={t.catalogo.atajos}>
+        {salas.map((s) => (
+          <a href={`#sala-${s.id}`} data-ir={s.id} style={`--fam: ${s.color}`}>
+            {s.nombre}
+            <span class="n">{s.fichas.length}</span>
+          </a>
+        ))}
+      </nav>
+      <div class="descargar" role="group" aria-label={tv.descargar}>
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+          <path d="M12 4v11M7 10l5 5 5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="1.7" />
+        </svg>
+        <span class="d-etq">{tv.descargar}</span>
+        <button type="button" data-exportar="pdf" title={tv.descargarEn('PDF')}>
+          PDF
+        </button>
+        <button type="button" data-exportar="excel" title={tv.descargarEn('Excel')}>
+          Excel
+        </button>
+      </div>
+    </div>
 
     <div class="wrap salas" id="salas">
       {/* Vista en tabla: todos los modelos, una fila por versión, ordenables por capacidad, velocidad o fuerza */}
@@ -823,9 +838,31 @@ const tubos = Object.entries(porTipo)
           : hojaTabla();
       if (!h) return;
       if (b.dataset.exportar === 'excel') excel(h);
-      else void pdf(h, { empresa: tx.empresa, web: 'ortoalresa.com', pagina: tx.pagina, fuente: tx.fuente });
+      // El presupuesto no lleva datos técnicos: sin la línea de dónde salen
+      else
+        void pdf(h, {
+          empresa: tx.empresa,
+          web: 'ortoalresa.com',
+          pagina: tx.pagina,
+          fuente: b.closest('#presupuesto') ? '' : tx.fuente,
+        });
     });
   }
+
+  // Sin ningún modelo a la vista, ni tabla ni descargas: queda solo el mensaje de "sin resultados"
+  // (los filtros de la dirección ya se han aplicado al cargar: se mira también al arrancar)
+  const conFilas = () => {
+    const tabla = document.querySelector<HTMLElement>('.tabla-vista');
+    if (!tabla) return;
+    const hay = [...tabla.querySelectorAll<HTMLElement>('tbody tr')].some((tr) => !tr.hidden);
+    tabla.classList.toggle('sin-filas', !hay);
+    for (const b of document.querySelectorAll<HTMLButtonElement>(
+      '.tabla-estado [data-exportar], .atajos-fila [data-exportar]',
+    ))
+      b.disabled = !hay;
+  };
+  conFilas();
+  document.addEventListener('catalogo:filtrado', conFilas);
 
   const salasEl = document.getElementById('salas');
   const quieto = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -1032,12 +1069,15 @@ const tubos = Object.entries(porTipo)
      caja con el nombre fijo ——— */
   .tabla-vista,
   .en-tabla .sala,
-  .en-tabla .atajos {
+  .en-tabla .atajos-fila {
     display: none;
   }
   .en-tabla .tabla-vista {
     display: block;
     margin-bottom: clamp(48px, 6vw, 88px);
+  }
+  .en-tabla .tabla-vista.sin-filas {
+    display: none;
   }
   .tabla-estado {
     display: flex;
@@ -1106,6 +1146,10 @@ const tubos = Object.entries(porTipo)
   .descargar button + button {
     margin-left: -9px;
   }
+  .descargar button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
   .descargar button:active {
     scale: 0.97;
   }
@@ -1114,7 +1158,7 @@ const tubos = Object.entries(porTipo)
     outline-offset: 2px;
   }
   @media (hover: hover) and (pointer: fine) {
-    .descargar button:hover {
+    .descargar button:hover:not(:disabled) {
       position: relative;
       border-color: var(--red);
       color: var(--red);
@@ -1787,11 +1831,25 @@ const tubos = Object.entries(porTipo)
     }
   }
   /* ——— Atajos a las familias: una fila de pastillas con el color de cada una ——— */
+  .atajos-fila {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px 24px;
+    margin-top: 20px;
+  }
   .atajos {
     display: flex;
+    flex: 1;
     flex-wrap: wrap;
     gap: 8px;
-    margin-top: 20px;
+  }
+  .atajos-fila .descargar button {
+    height: 40px;
+  }
+  @media (max-width: 900px) {
+    .atajos-fila {
+      flex-direction: column;
+    }
   }
   .atajos a {
     display: inline-flex;
