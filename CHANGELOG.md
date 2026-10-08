@@ -55,7 +55,7 @@ Hasta que se publique la web, todo va en "Sin publicar"; al publicar se cierra l
 
 ### Cambiado
 
-- Productos: el **selector de versión** de las tarjetas pasa a ser un interruptor segmentado: pista oscura sobre la foto y la versión elegida en blanco. "Versión" queda como texto suelto dentro de la pista, sin caja ni separador, porque antes parecía un botón más.
+- Productos: el **selector de versión** de las tarjetas pasa a ser pestañas que salen de la raya de color de la foto: la elegida, del color de la raya y algo más alta, como parte de ella; las otras, oscuras. Se quita la etiqueta "Versión" de delante, que parecía un botón más.
 - Tecnología propia en acordeón: REI System, SmartConnect y Configurador en tres franjas; la abierta enseña foto y texto y las cerradas son tiras con número, nombre en vertical y "+". Al abrir una, una cortina roja barre su foto. En móvil, una encima de otra. "Propia" en rojo. La sección pasa de unos 2.800 px a unos 1.050 en escritorio.
 - Más rojo de marca en los títulos: "en el laboratorio" (Aplicaciones), como "propia" en Tecnología. En Empresa, "más allá de lo estándar" se queda en blanco con una raya roja más fina: sobre la foto de tapones rojos, más rojo la cargaba.
 - Cabecera a todo el ancho de la pantalla, como la de la web actual: logo pegado a la izquierda y banderas, lupa y Contacto a la derecha (antes iba en el ancho máximo de la página, centrada).
