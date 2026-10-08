@@ -483,6 +483,9 @@ export const es = {
       accesorios: 'Accesorios para este modelo',
       mas: 'Más de',
       otras: ['Otras', 'centrífugas'],
+      galeria: { foto: 'Foto', detalle: 'Detalle', tresD: 'Ver en 3D' },
+      frenteGama: 'La barra compara con la más alta de la gama',
+      indice: 'En esta ficha',
     },
   },
 

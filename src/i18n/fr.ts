@@ -474,6 +474,9 @@ export const fr: Textos = {
       accesorios: 'Accessoires pour ce modèle',
       mas: 'Plus de',
       otras: ['Autres', 'centrifugeuses'],
+      galeria: { foto: 'Photo', detalle: 'Détail', tresD: 'Voir en 3D' },
+      frenteGama: 'La barre compare avec la plus élevée de la gamme',
+      indice: 'Sur cette page',
     },
   },
 
