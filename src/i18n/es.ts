@@ -257,6 +257,7 @@ export const es = {
       cortos: { accesorios: 'Accesorios', laboratorio: 'Laboratorio' },
       titulo: 'Filtrar por',
       buscar: 'Busca un modelo o una aplicación',
+      buscarCorto: 'Buscar',
       todo: 'Todo',
       todoTitulo: 'Todo el catálogo',
       aplicacion: 'Aplicación',

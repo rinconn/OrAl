@@ -56,6 +56,7 @@ const iconos: Record<Temperatura, string> = {
           type="search"
           name="q"
           placeholder={f.buscar}
+          data-corto={f.buscarCorto}
           aria-label={f.buscar}
           autocomplete="off"
           enterkeyhint="search"
@@ -317,6 +318,11 @@ const iconos: Record<Temperatura, string> = {
     const quieto = matchMedia('(prefers-reduced-motion: reduce)');
     const movil = matchMedia('(max-width: 1024px)');
     const curva = 'cubic-bezier(0.23, 1, 0.32, 1)';
+    // En móvil el buscador es estrecho y la frase larga se cortaba a media palabra: allí va la corta
+    const largo = q.placeholder;
+    const ajustaTexto = () => (q.placeholder = movil.matches ? (q.dataset.corto ?? largo) : largo);
+    ajustaTexto();
+    movil.addEventListener('change', ajustaTexto);
 
     let aplic = '';
     const elegidas = new Set<string>();
