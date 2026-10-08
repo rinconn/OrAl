@@ -869,7 +869,7 @@ const iconos: Record<Temperatura, string> = {
     margin-top: clamp(48px, 6vw, 88px);
   }
 
-  /* ——— La barra: blanca con contorno fino y la raya roja arriba; los controles, con borde gris claro y lo elegido en negro ——— */
+  /* ——— La barra: blanca con contorno fino y la raya roja arriba; los controles, con borde gris claro y lo elegido en gris muy claro con borde oscuro ——— */
   .barra {
     --osc: #d2d5d8;
     position: relative;
@@ -1070,21 +1070,15 @@ const iconos: Record<Temperatura, string> = {
   .calefactada {
     --tc: var(--red);
   }
-  /* Elegida: en negro, con la raya de su color debajo */
+  /* Elegida: gris muy claro con borde oscuro y la raya de su color debajo */
   .temp[aria-pressed='true'] {
     position: relative;
     z-index: 1;
-    background: var(--ink);
+    background: var(--panel);
     border-color: var(--ink);
-    color: #fff;
+    color: var(--ink);
     font-weight: 700;
     box-shadow: inset 0 -3px 0 var(--tc);
-  }
-  .temp.ventilada[aria-pressed='true'] {
-    --tc: #aab3b9;
-  }
-  .temp.refrigerada[aria-pressed='true'] {
-    --tc: #4ea6ec;
   }
   .temp:disabled {
     color: #b4b8bb;
@@ -1121,9 +1115,9 @@ const iconos: Record<Temperatura, string> = {
     rotate: 180deg;
   }
   .aplic-btn.on {
-    background: var(--ink);
+    background: var(--panel);
     border-color: var(--ink);
-    color: #fff;
+    color: var(--ink);
     font-weight: 700;
     box-shadow: inset 0 -3px 0 var(--red);
   }
@@ -1179,9 +1173,9 @@ const iconos: Record<Temperatura, string> = {
     rotate: 180deg;
   }
   .tubo-btn.on {
-    background: var(--ink);
+    background: var(--panel);
     border-color: var(--ink);
-    color: #fff;
+    color: var(--ink);
     font-weight: 700;
     box-shadow: inset 0 -3px 0 var(--red);
   }
@@ -1308,9 +1302,9 @@ const iconos: Record<Temperatura, string> = {
     rotate: 180deg;
   }
   .min-btn.on {
-    background: var(--ink);
+    background: var(--panel);
     border-color: var(--ink);
-    color: #fff;
+    color: var(--ink);
     font-weight: 700;
     box-shadow: inset 0 -3px 0 var(--red);
   }
@@ -1550,9 +1544,9 @@ const iconos: Record<Temperatura, string> = {
   }
   .vista button[aria-pressed='true'] {
     position: relative;
-    background: var(--ink);
+    background: var(--panel);
     border-color: var(--ink);
-    color: #fff;
+    color: var(--ink);
     box-shadow: inset 0 -3px 0 var(--red);
   }
   .vista button:focus-visible {
