@@ -106,3 +106,7 @@ Hasta que se publique la web, todo va en "Sin publicar"; al publicar se cierra l
 - Pestaña roja vertical de la izquierda ("Expertos en centrifugación · desde 1949"): tapaba el contenido y repetía lo que ya dice el inicio. Fuera también el texto `meta.pestana` de los tres idiomas.
 - Las cuatro tarjetas de la portada (48 h, 1 semana, 3 años, ISO 13485): la primera pantalla queda con el titular, la frase y los dos botones sobre la foto del rotor. Fuera `src/data/cifras.ts` y los textos `hero.cifras` de los tres idiomas. Los datos siguen en Distribuidores y Empresa.
 - Botón "Ver antes y después" y sus notas en cada sección: fuera de la web. Las notas se guardan en `docs/antes-y-despues.md`.
+
+### Corregido
+
+- Productos: la caja del presupuesto (abajo a la derecha), aun cerrada, tapaba lo que quedaba encima de su botón: no se podía pulsar el "+" de algunas filas de la tabla ni "PDF" y "Excel". Ahora solo reciben el clic su botón y su panel abierto.
