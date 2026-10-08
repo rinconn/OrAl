@@ -116,9 +116,61 @@ const numSeccion = (id: string) => String(secciones.findIndex((x) => x.id === id
 const v0 = versiones[0];
 const voltajes = [...new Set(versiones.map((v) => v.voltaje).filter(Boolean))].join(' / ');
 const frecuencias = [...new Set(versiones.map((v) => v.frecuencia).filter(Boolean))].join(' / ');
-const codigos = versiones.map((v) => v.codigo).join(' · ');
+const codigos = versiones.map((v) => v.codigo);
+// Medidas dibujadas: la caja de la máquina en isométrico, a escala, con sus tres cotas
+const cotas = v0?.medidas?.split(/x/i).map((s) => Number(s.trim()));
+type P3 = [number, number, number];
+const caja =
+  cotas?.length === 3 && cotas.every((x) => x > 0)
+    ? (() => {
+        const [w, d, h] = cotas;
+        const c = Math.cos(Math.PI / 6);
+        const s = 0.5;
+        const [W, H, pad] = [320, 240, 34];
+        const k = Math.min((W - 2 * pad) / ((w + d) * c), (H - 2 * pad) / ((w + d) * s + h));
+        const ox = pad + d * c * k + (W - 2 * pad - (w + d) * c * k) / 2;
+        const oy = pad + h * k + (H - 2 * pad - ((w + d) * s + h) * k) / 2;
+        const P = ([x, y, z]: P3) => [ox + (x - y) * c * k, oy + (x + y) * s * k - z * k];
+        const cara = (...a: P3[]) =>
+          a
+            .map((p) =>
+              P(p)
+                .map((v) => v.toFixed(1))
+                .join(','),
+            )
+            .join(' ');
+        // Cota: la arista desplazada hacia fuera, con la cifra un poco más allá
+        const cota = (a: P3, b: P3, dx: number, dy: number, mm: number, eje: string) => {
+          const [A, B] = [P(a), P(b)];
+          return {
+            x1: (A[0] + dx).toFixed(1),
+            y1: (A[1] + dy).toFixed(1),
+            x2: (B[0] + dx).toFixed(1),
+            y2: (B[1] + dy).toFixed(1),
+            tx: ((A[0] + B[0]) / 2 + dx * 2).toFixed(1),
+            ty: ((A[1] + B[1]) / 2 + dy * 2 + 4).toFixed(1),
+            mm,
+            eje,
+          };
+        };
+        const o = 13;
+        return {
+          W,
+          H,
+          arriba: cara([0, 0, h], [w, 0, h], [w, d, h], [0, d, h]),
+          frente: cara([0, d, 0], [w, d, 0], [w, d, h], [0, d, h]),
+          lado: cara([w, 0, 0], [w, d, 0], [w, d, h], [w, 0, h]),
+          cotas: [
+            cota([0, d, 0], [w, d, 0], -c * o, s * o, w, tf.cotas.an),
+            cota([w, 0, 0], [w, d, 0], c * o, s * o, d, tf.cotas.fo),
+            cota([0, d, 0], [0, d, h], -o, 0, h, tf.cotas.al),
+          ],
+        };
+      })()
+    : undefined;
+
 const vistazo = [
-  v0?.medidas && { k: tf.versiones.medidas, v: valor('medidas', v0.medidas) },
+  !caja && v0?.medidas && { k: tf.versiones.medidas, v: valor('medidas', v0.medidas) },
   v0?.peso && { k: tf.versiones.peso, v: valor('peso', v0.peso) },
   v0?.consumo && { k: tf.versiones.consumo, v: valor('consumo', v0.consumo) },
   rotores.length && { k: tf.secciones.rotores, v: String(rotores.length) },
@@ -209,7 +261,56 @@ const descripcion = m
               )}
             </div>
           ))}
+          <button type="button" class="ampliar" aria-label={tg.ampliar} data-pista={tg.ampliar}>
+            <svg viewBox="0 0 20 20" aria-hidden="true">
+              <path d="M2 7V2h5M13 2h5v5M18 13v5h-5M7 18H2v-5" />
+            </svg>
+          </button>
+          {vistas.length > 1 && (
+            <div class="mandos">
+              <button type="button" class="paso" data-paso="-1" aria-label={tg.anterior}>
+                <svg viewBox="0 0 20 20" aria-hidden="true">
+                  <path d="M12.5 4 6.5 10l6 6" />
+                </svg>
+              </button>
+              <span class="cuenta" aria-hidden="true">
+                <b>01</b>
+                <span>/ {String(vistas.length).padStart(2, '0')}</span>
+              </span>
+              <button type="button" class="paso" data-paso="1" aria-label={tg.siguiente}>
+                <svg viewBox="0 0 20 20" aria-hidden="true">
+                  <path d="m7.5 4 6 6-6 6" />
+                </svg>
+              </button>
+            </div>
+          )}
         </div>
+        <!-- Pantalla completa: las fotos grandes sobre negro, con flechas, y clic para acercar donde se pulsa -->
+        <dialog class="visor-foto" aria-label={nombre}>
+          <figure>
+            <img src="" alt="" />
+            <figcaption>
+              <b></b>
+              <span class="lb-cuenta"></span>
+              <span class="lb-pista">{tg.zoom}</span>
+            </figcaption>
+          </figure>
+          <button type="button" class="lb-paso" data-paso="-1" aria-label={tg.anterior}>
+            <svg viewBox="0 0 20 20" aria-hidden="true">
+              <path d="M12.5 4 6.5 10l6 6" />
+            </svg>
+          </button>
+          <button type="button" class="lb-paso" data-paso="1" aria-label={tg.siguiente}>
+            <svg viewBox="0 0 20 20" aria-hidden="true">
+              <path d="m7.5 4 6 6-6 6" />
+            </svg>
+          </button>
+          <button type="button" class="lb-cerrar" aria-label={tg.cerrar}>
+            <svg viewBox="0 0 20 20" aria-hidden="true">
+              <path d="m4 4 12 12M16 4 4 16" />
+            </svg>
+          </button>
+        </dialog>
         {vistas.length > 1 && (
           <div class="miniaturas" role="tablist" aria-label={nombre}>
             {vistas.map((v, i) => (
@@ -351,10 +452,22 @@ const descripcion = m
                   </dd>
                 </div>
               )}
-              {codigos && (
+              {codigos.length > 0 && (
                 <div>
                   <dt>{tf.versiones.codigo}</dt>
-                  <dd>{codigos}</dd>
+                  <dd class="codigos">
+                    {codigos.map((x) => (
+                      <button
+                        type="button"
+                        class="copiar"
+                        data-copiar={x}
+                        data-pista={tf.copiar}
+                        data-hecho={tf.copiado}
+                      >
+                        {x}
+                      </button>
+                    ))}
+                  </dd>
                 </div>
               )}
             </dl>
@@ -431,17 +544,43 @@ const descripcion = m
                   <p>{d}</p>
                 ))}
               </div>
-              {vistazo.length > 0 && (
-                <div class="vistazo">
+              {(caja || vistazo.length > 0) && (
+                <div class:list={['vistazo', { 'con-caja': caja }]}>
                   <h3>{tf.vistazo}</h3>
-                  <dl>
-                    {vistazo.map((x) => (
-                      <div>
-                        <dt>{x.k}</dt>
-                        <dd>{x.v}</dd>
-                      </div>
-                    ))}
-                  </dl>
+                  <div class="vistazo-in">
+                    {caja && (
+                      <figure class="caja">
+                        <svg viewBox={`0 0 ${caja.W} ${caja.H}`} role="img" aria-label={valor('medidas', v0!.medidas)}>
+                          <polygon class="c-arriba" points={caja.arriba} />
+                          <polygon class="c-frente" points={caja.frente} />
+                          <polygon class="c-lado" points={caja.lado} />
+                          {caja.cotas.map((x) => (
+                            <g class="cota">
+                              <line x1={x.x1} y1={x.y1} x2={x.x2} y2={x.y2} />
+                              <circle cx={x.x1} cy={x.y1} r="2.2" />
+                              <circle cx={x.x2} cy={x.y2} r="2.2" />
+                              <text x={x.tx} y={x.ty}>
+                                {x.mm}
+                                <tspan dx="3">{x.eje}</tspan>
+                              </text>
+                            </g>
+                          ))}
+                        </svg>
+                        <figcaption>
+                          <b>{valor('medidas', v0!.medidas)}</b>
+                          <span>{tf.versiones.medidas}</span>
+                        </figcaption>
+                      </figure>
+                    )}
+                    <dl>
+                      {vistazo.map((x) => (
+                        <div>
+                          <dt>{x.k}</dt>
+                          <dd>{x.v}</dd>
+                        </div>
+                      ))}
+                    </dl>
+                  </div>
                 </div>
               )}
             </section>
@@ -625,7 +764,17 @@ const descripcion = m
                   <tbody>
                     {versiones.map((v) => (
                       <tr>
-                        <th scope="row">{v.codigo}</th>
+                        <th scope="row">
+                          <button
+                            type="button"
+                            class="copiar"
+                            data-copiar={v.codigo}
+                            data-pista={tf.copiar}
+                            data-hecho={tf.copiado}
+                          >
+                            {v.codigo}
+                          </button>
+                        </th>
                         {columnas.map((k) => (
                           <td>{valor(k, v[k])}</td>
                         ))}
@@ -691,25 +840,127 @@ const descripcion = m
 </Base>
 
 <script>
-  // Galería: cada miniatura enseña su vista; con las flechas se pasa de una a otra
+  // Galería: cada miniatura enseña su vista; las flechas (del escenario o del teclado) pasan de una a otra
+  const escena = document.querySelector<HTMLElement>('.escena');
   const minis = [...document.querySelectorAll<HTMLButtonElement>('.miniaturas .mini')];
-  const verVista = (b: HTMLButtonElement) => {
-    for (const x of minis) {
-      const si = x === b;
-      x.setAttribute('aria-selected', String(si));
-      x.tabIndex = si ? 0 : -1;
-      document.getElementById(x.dataset.vista!)!.hidden = !si;
+  const vistas = [...document.querySelectorAll<HTMLElement>('.escena .vista')];
+  const cuenta = document.querySelector<HTMLElement>('.cuenta b');
+  const dos = (n: number) => String(n).padStart(2, '0');
+  let iVista = 0;
+  const verVista = (i: number) => {
+    iVista = (i + vistas.length) % vistas.length;
+    vistas.forEach((v, j) => (v.hidden = j !== iVista));
+    minis.forEach((x, j) => {
+      x.setAttribute('aria-selected', String(j === iVista));
+      x.tabIndex = j === iVista ? 0 : -1;
+    });
+    // La miniatura elegida, a la vista en su tira (sin mover la página)
+    const mi = minis[iVista];
+    if (mi) {
+      const tira = mi.parentElement!;
+      if (mi.offsetLeft < tira.scrollLeft || mi.offsetLeft + mi.offsetWidth > tira.scrollLeft + tira.clientWidth) {
+        tira.scrollTo({ left: mi.offsetLeft - 8, behavior: 'smooth' });
+      }
     }
+    if (cuenta) cuenta.textContent = dos(iVista + 1);
+    escena?.setAttribute('data-vista', vistas[iVista].dataset.tipo!);
   };
-  for (const b of minis) {
-    b.addEventListener('click', () => verVista(b));
+  minis.forEach((b, i) => {
+    b.addEventListener('click', () => verVista(i));
     b.addEventListener('keydown', (e) => {
       const j = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
       if (!j) return;
-      const c = minis[(minis.indexOf(b) + j + minis.length) % minis.length];
-      verVista(c);
-      c.focus();
+      verVista(i + j);
+      minis[iVista].focus();
     });
+  });
+  for (const b of document.querySelectorAll<HTMLButtonElement>('.mandos .paso')) {
+    b.addEventListener('click', () => verVista(iVista + Number(b.dataset.paso)));
+  }
+  if (vistas.length) verVista(0);
+
+  // Pantalla completa: solo las fotos (el 3D tiene su propio visor). Clic en la foto para acercar donde se pulsa
+  const visor = document.querySelector<HTMLDialogElement>('.visor-foto');
+  if (escena && visor) {
+    const fotos = vistas.filter((v) => v.dataset.tipo !== '3d');
+    const img = visor.querySelector('img')!;
+    const pie = visor.querySelector('figcaption b')!;
+    const lbCuenta = visor.querySelector('.lb-cuenta')!;
+    let iFoto = 0;
+    const verFoto = (i: number) => {
+      iFoto = (i + fotos.length) % fotos.length;
+      const o = fotos[iFoto].querySelector('img')!;
+      img.src = o.currentSrc || o.src;
+      img.alt = o.alt;
+      img.classList.remove('cerca');
+      pie.textContent = o.alt;
+      lbCuenta.textContent = `${dos(iFoto + 1)} / ${dos(fotos.length)}`;
+    };
+    const abrir = () => {
+      const i = fotos.indexOf(vistas[iVista]);
+      if (i < 0) return;
+      verFoto(i);
+      visor.showModal();
+    };
+    escena.querySelector('.ampliar')!.addEventListener('click', abrir);
+    for (const f of fotos) f.querySelector('img')!.addEventListener('click', abrir);
+    for (const b of visor.querySelectorAll<HTMLButtonElement>('.lb-paso')) {
+      b.hidden = fotos.length < 2;
+      b.addEventListener('click', () => verFoto(iFoto + Number(b.dataset.paso)));
+    }
+    visor.querySelector('.lb-cerrar')!.addEventListener('click', () => visor.close());
+    visor.addEventListener('click', (e) => e.target === visor && visor.close());
+    visor.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight') verFoto(iFoto + 1);
+      if (e.key === 'ArrowLeft') verFoto(iFoto - 1);
+    });
+    visor.addEventListener('close', () => verVista(vistas.indexOf(fotos[iFoto])));
+    img.addEventListener('click', (e) => {
+      const r = img.getBoundingClientRect();
+      img.style.transformOrigin = `${((e.clientX - r.left) / r.width) * 100}% ${((e.clientY - r.top) / r.height) * 100}%`;
+      img.classList.toggle('cerca');
+    });
+  }
+
+  // Códigos: un clic los copia (para el pedido) y avisa sin moverse de sitio
+  for (const b of document.querySelectorAll<HTMLButtonElement>('[data-copiar]')) {
+    const pista = b.dataset.pista!;
+    b.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(b.dataset.copiar!);
+        b.dataset.pista = b.dataset.hecho;
+        b.classList.add('hecho');
+        setTimeout(() => {
+          b.dataset.pista = pista;
+          b.classList.remove('hecho');
+        }, 1600);
+      } catch {
+        /* sin portapapeles, se queda como texto seleccionable */
+      }
+    });
+  }
+
+  // Las secciones entran suaves al llegar a ellas (sin JS o con movimiento reducido se ven tal cual)
+  if (!matchMedia('(prefers-reduced-motion: reduce)').matches && 'IntersectionObserver' in window) {
+    const piezas = document.querySelectorAll<HTMLElement>(
+      '.panel-cab, .texto, .vistazo, .tarjetas-texto article, .por-tubo, .selector, .panel > .tabla-scroll, .panel .rejilla > li',
+    );
+    const io = new IntersectionObserver(
+      (es) => {
+        for (const x of es) {
+          if (!x.isIntersecting) continue;
+          x.target.classList.add('visto');
+          io.unobserve(x.target);
+        }
+      },
+      { rootMargin: '0px 0px -8% 0px' },
+    );
+    for (const p of piezas) {
+      if (p.getBoundingClientRect().top > innerHeight) {
+        p.classList.add('entra');
+        io.observe(p);
+      }
+    }
   }
 
   // Datos técnicos: velocidad y fuerza cuentan desde 0 hasta su cifra, con el mismo separador de miles
@@ -866,10 +1117,184 @@ const descripcion = m
   .escena {
     position: relative;
     aspect-ratio: 5 / 4;
-    border-bottom: 6px solid var(--fam-vivo);
     min-height: 420px;
     overflow: hidden;
     background: var(--carbon);
+  }
+  .vista:not([data-tipo='3d']) img {
+    cursor: zoom-in;
+  }
+  /* Mandos del escenario: ampliar arriba a la derecha y, abajo, flechas con el contador entre ellas */
+  .ampliar,
+  .paso {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border: 0;
+    color: var(--ink);
+    background: rgba(255, 255, 255, 0.92);
+    cursor: pointer;
+    transition:
+      background 0.2s var(--ease),
+      color 0.2s var(--ease),
+      opacity 0.25s var(--ease);
+  }
+  .ampliar:hover,
+  .paso:hover {
+    color: #fff;
+    background: var(--red);
+  }
+  .ampliar svg,
+  .paso svg,
+  .lb-paso svg,
+  .lb-cerrar svg {
+    width: 20px;
+    height: 20px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+  }
+  .ampliar {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    z-index: 3;
+  }
+  .ampliar svg path {
+    transition: transform 0.25s var(--ease);
+    transform-origin: center;
+  }
+  .ampliar:hover svg path {
+    transform: scale(1.12);
+  }
+  .mandos {
+    position: absolute;
+    right: 16px;
+    bottom: 16px;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.92);
+  }
+  .mandos .paso {
+    background: none;
+  }
+  .mandos .paso:hover {
+    background: var(--red);
+  }
+  .cuenta {
+    padding-inline: 4px;
+    font-size: 15px;
+    font-variant-numeric: tabular-nums;
+    color: var(--muted);
+  }
+  .cuenta b {
+    color: var(--ink);
+  }
+  /* El 3D trae sus propios mandos abajo: los de la galería se apartan */
+  .escena[data-vista='3d'] .ampliar {
+    opacity: 0;
+    pointer-events: none;
+  }
+  .escena[data-vista='3d'] .mandos {
+    top: 16px;
+    bottom: auto;
+  }
+
+  /* Pantalla completa */
+  .visor-foto {
+    width: 100vw;
+    max-width: none;
+    height: 100dvh;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    color: #fff;
+    background: #0e0f10;
+  }
+  .visor-foto::backdrop {
+    background: rgba(0, 0, 0, 0.7);
+  }
+  .visor-foto[open] {
+    display: grid;
+    place-items: center;
+    animation: aparece 0.3s var(--ease);
+  }
+  .visor-foto figure {
+    display: grid;
+    grid-template-rows: minmax(0, 1fr) auto;
+    width: min(100%, 1200px);
+    height: 100%;
+    margin: 0;
+    padding: 72px 96px 24px;
+    overflow: hidden;
+  }
+  .visor-foto img {
+    place-self: center;
+    max-width: 100%;
+    max-height: 100%;
+    background: #fff;
+    cursor: zoom-in;
+    transition: transform 0.45s var(--ease);
+  }
+  .visor-foto img.cerca {
+    transform: scale(2.2);
+    cursor: zoom-out;
+  }
+  .visor-foto figcaption {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 6px 18px;
+    padding-top: 16px;
+    font-size: 16px;
+    color: var(--on-dark);
+  }
+  .visor-foto figcaption b {
+    font-size: 20px;
+    color: #fff;
+  }
+  .lb-cuenta {
+    font-variant-numeric: tabular-nums;
+  }
+  .lb-pista {
+    margin-left: auto;
+  }
+  .lb-paso,
+  .lb-cerrar {
+    position: absolute;
+    display: grid;
+    place-items: center;
+    width: 56px;
+    height: 56px;
+    padding: 0;
+    border: 1px solid var(--carbon-line);
+    color: #fff;
+    background: rgba(21, 23, 25, 0.8);
+    cursor: pointer;
+    transition: background 0.2s var(--ease);
+  }
+  .lb-paso:hover,
+  .lb-cerrar:hover {
+    background: var(--red);
+    border-color: var(--red);
+  }
+  .lb-paso {
+    top: 50%;
+    translate: 0 -50%;
+  }
+  .lb-paso[data-paso='-1'] {
+    left: 24px;
+  }
+  .lb-paso[data-paso='1'] {
+    right: 24px;
+  }
+  .lb-cerrar {
+    top: 16px;
+    right: 24px;
   }
   .vista {
     position: absolute;
@@ -971,6 +1396,7 @@ const descripcion = m
 
   /* Miniaturas: la elegida, con la raya roja debajo */
   .miniaturas {
+    position: relative;
     display: flex;
     gap: 10px;
     margin-top: 12px;
@@ -1357,6 +1783,57 @@ const descripcion = m
     font-weight: 400;
     color: var(--muted);
   }
+  /* Códigos que se copian de un clic: subrayado de puntos y la pista encima al pasar */
+  .codigos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 10px;
+  }
+  .copiar {
+    position: relative;
+    padding: 0;
+    border: 0;
+    background: none;
+    font: inherit;
+    color: inherit;
+    text-decoration: underline dotted 1px;
+    text-underline-offset: 4px;
+    text-decoration-color: var(--steel);
+    cursor: copy;
+    transition: color 0.2s var(--ease);
+  }
+  .copiar:hover {
+    color: var(--red);
+    text-decoration-color: currentColor;
+  }
+  .copiar::after {
+    content: attr(data-pista);
+    position: absolute;
+    left: 50%;
+    bottom: calc(100% + 8px);
+    z-index: 5;
+    padding: 5px 9px;
+    font-size: 13px;
+    font-weight: 700;
+    white-space: nowrap;
+    color: #fff;
+    background: var(--ink);
+    opacity: 0;
+    pointer-events: none;
+    translate: -50% 4px;
+    transition:
+      opacity 0.18s var(--ease),
+      translate 0.18s var(--ease);
+  }
+  .copiar:hover::after,
+  .copiar:focus-visible::after,
+  .copiar.hecho::after {
+    opacity: 1;
+    translate: -50% 0;
+  }
+  .copiar.hecho::after {
+    background: var(--t-ventilada);
+  }
   .placa-temp {
     display: inline-flex;
     align-items: center;
@@ -1584,6 +2061,108 @@ const descripcion = m
     grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
     gap: 10px;
     margin: 0;
+  }
+  /* Con medidas: el dibujo acotado a la izquierda y el resto apilado a su lado */
+  .con-caja .vistazo-in {
+    display: grid;
+    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+    gap: 10px;
+  }
+  .con-caja dl {
+    grid-template-columns: minmax(0, 1fr);
+    align-content: stretch;
+  }
+  .caja {
+    position: relative;
+    display: grid;
+    grid-template-rows: minmax(0, 1fr) auto;
+    margin: 0;
+    padding: 12px 22px 18px;
+    background:
+      linear-gradient(var(--line) 1px, transparent 1px) 0 0 / 22px 22px,
+      linear-gradient(90deg, var(--line) 1px, transparent 1px) 0 0 / 22px 22px,
+      #fff;
+    background-blend-mode: normal;
+    border: 1px solid var(--line);
+  }
+  .caja::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(255, 255, 255, 0.55);
+  }
+  .caja > * {
+    position: relative;
+  }
+  .caja svg {
+    width: 100%;
+    max-height: 290px;
+    overflow: visible;
+  }
+  .caja polygon {
+    stroke: var(--ink);
+    stroke-width: 1.4;
+    stroke-linejoin: round;
+  }
+  .c-arriba {
+    fill: #fff;
+  }
+  .c-frente {
+    fill: #e6e8ea;
+  }
+  .c-lado {
+    fill: #cfd3d7;
+  }
+  .cota line {
+    stroke: var(--red);
+    stroke-width: 1.2;
+  }
+  .cota circle {
+    fill: var(--red);
+  }
+  .cota text {
+    font: 700 15px var(--f);
+    fill: var(--ink);
+    text-anchor: middle;
+  }
+  .cota tspan {
+    font-weight: 400;
+    font-size: 12px;
+    fill: var(--muted);
+  }
+  .cota:nth-child(6) text {
+    text-anchor: end;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .caja polygon {
+      stroke-dasharray: 1400;
+      stroke-dashoffset: 1400;
+      transition: stroke-dashoffset 1.6s var(--ease);
+    }
+    .cota {
+      opacity: 0;
+      transition: opacity 0.5s 1s var(--ease);
+    }
+    .vistazo:not(.entra) .caja polygon,
+    .vistazo.visto .caja polygon {
+      stroke-dashoffset: 0;
+    }
+    .vistazo:not(.entra) .cota,
+    .vistazo.visto .cota {
+      opacity: 1;
+    }
+  }
+  .caja figcaption {
+    display: grid;
+    gap: 2px;
+  }
+  .caja figcaption b {
+    font-size: 22px;
+    line-height: 1.2;
+  }
+  .caja figcaption span {
+    font-size: 14px;
+    color: var(--body);
   }
   .vistazo div {
     position: relative;
@@ -1958,6 +2537,27 @@ const descripcion = m
     grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   }
 
+  /* Entrada de las secciones al llegar */
+  @media (prefers-reduced-motion: no-preference) {
+    .entra {
+      opacity: 0;
+      translate: 0 18px;
+      transition:
+        opacity 0.6s var(--ease),
+        translate 0.6s var(--ease);
+    }
+    .entra.visto {
+      opacity: 1;
+      translate: 0 0;
+    }
+    .rejilla > li.entra:nth-child(2) {
+      transition-delay: 0.08s;
+    }
+    .rejilla > li.entra:nth-child(3) {
+      transition-delay: 0.16s;
+    }
+  }
+
   @keyframes aparece {
     from {
       opacity: 0;
@@ -1994,6 +2594,9 @@ const descripcion = m
     }
     .vista[data-tipo='3d'] {
       position: relative;
+    }
+    .escena[data-vista='3d'] .mandos {
+      display: none;
     }
     .escena:has(.vista[data-tipo='3d']:not([hidden])) {
       aspect-ratio: auto;
@@ -2056,6 +2659,25 @@ const descripcion = m
     }
   }
   @media (max-width: 640px) {
+    .con-caja .vistazo-in {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .con-caja dl {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .visor-foto figure {
+      padding: 64px 12px 76px;
+    }
+    .lb-paso {
+      top: auto;
+      bottom: 12px;
+      translate: none;
+      width: 48px;
+      height: 48px;
+    }
+    .lb-pista {
+      display: none;
+    }
     .instrumento {
       grid-template-columns: 118px minmax(0, 1fr);
       gap: 18px;
