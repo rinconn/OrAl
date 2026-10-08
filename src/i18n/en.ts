@@ -472,6 +472,7 @@ export const en: Textos = {
       },
       accesorios: 'Accessories for this model',
       mas: 'More',
+      otras: ['Other', 'centrifuges'],
     },
   },
 

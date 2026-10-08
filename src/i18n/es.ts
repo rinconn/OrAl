@@ -482,6 +482,7 @@ export const es = {
       },
       accesorios: 'Accesorios para este modelo',
       mas: 'Más de',
+      otras: ['Otras', 'centrífugas'],
     },
   },
 

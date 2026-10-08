@@ -55,6 +55,7 @@ Hasta que se publique la web, todo va en "Sin publicar"; al publicar se cierra l
 
 ### Cambiado
 
+- Ficha de producto: la **foto ocupa toda la altura** de la columna de datos (antes quedaba un hueco blanco debajo), con la máquina apoyada en el suelo gris. Al bajar, la **barra de pestañas enseña el nombre del modelo y "Pedir a un distribuidor"** (en móvil, solo las pestañas). Si la aplicación tiene menos de tres modelos, "Más de…" pasa a **"Otras centrífugas"** y se completa con modelos de la misma temperatura, cada uno con su aplicación.
 - Productos: el **contador de la barra** ya no dice "22 productos" (en la portada salen 23 centrífugas y parecía que faltaba una): en tarjetas dice "17 series · 5 más" (series de centrífugas y, aparte, accesorios y otros equipos) y en la tabla "23 modelos", una por versión.
 - Productos, en móvil: los **atajos de familia van en una sola fila que se desliza** de borde a borde, en vez de cuatro filas que ocupaban media pantalla antes del primer producto; y el **buscador dice "Buscar"** (en tableta y móvil), porque la frase larga se cortaba a media palabra en un campo tan estrecho.
 - Productos: la **barra de filtros** pasa de gris oscuro a blanca con contorno fino y la raya roja arriba, más limpia sobre la sección blanca. Los controles, con borde gris claro y texto oscuro; lo elegido, en gris muy claro con borde oscuro y su raya de color.

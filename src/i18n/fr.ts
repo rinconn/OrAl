@@ -473,6 +473,7 @@ export const fr: Textos = {
       },
       accesorios: 'Accessoires pour ce modèle',
       mas: 'Plus de',
+      otras: ['Autres', 'centrifugeuses'],
     },
   },
 
