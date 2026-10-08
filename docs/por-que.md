@@ -1155,3 +1155,14 @@ entera delante, si se ensancha el contenido de 1280 a 1440 px.
 - **Descartado:** fotos de catálogo inventadas o generadas (no hay más fotos reales que estas), un 3D falso para las
   máquinas sin modelo, mantener las pestañas (obligan a clicar para ver lo que el distribuidor quiere comparar) y la
   barra fija con nombre de la primera versión (el índice la sustituye).
+
+### 25.1 Datos técnicos como un instrumento
+
+- **Problema:** la placa oscura con tres cifras y barras finas seguía siendo una tabla, pesada y sin nada propio.
+- **Ahora:** el rotor de la máquina visto desde arriba, con tantos huecos como tubos lleva su capacidad, que gira y frena
+  al cargar como la centrífuga al parar; al lado, velocidad y fuerza en una regla de 0 a la más alta de la gama, con la
+  cifra contando. La raya del color de la familia une la ficha con su tarjeta del catálogo.
+- **Por qué:** se entiende sin leer: cuántos tubos caben y si la máquina es de las rápidas de la gama. Y es de centrífugas,
+  no un adorno genérico.
+- **Descartado:** relojes de aguja (ocupan mucho y se leen peor que una regla) y animarlo en bucle (cansa; solo al
+  cargar y al pasar el ratón).
