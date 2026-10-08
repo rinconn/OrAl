@@ -132,6 +132,17 @@ export function iniciarComparador() {
   });
   dialogo.addEventListener('close', () => abrir.focus());
 
+  // Desde la tabla: comparar las filas elegidas (hasta 3), sustituyendo a lo que hubiera
+  document.addEventListener('comparar:abrir', (ev) => {
+    const slugs = ((ev as CustomEvent<string[]>).detail ?? []).filter((s) => datos.maquinas[s]).slice(0, MAX);
+    if (slugs.length < 2) return;
+    elegidas = slugs;
+    guardar();
+    pintarBarra();
+    pintarTabla();
+    dialogo.showModal();
+  });
+
   // Si una tarjeta cambia de versión, su casilla pasa a ser la de esa versión
   document.addEventListener('catalogo:version', pintarBarra);
 
