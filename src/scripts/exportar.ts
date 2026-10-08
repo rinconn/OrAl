@@ -1,7 +1,7 @@
 // Descargar lo que se ve para mandárselo al cliente: la tabla del catálogo (con sus filtros y su orden) o la
 // comparativa, en PDF o en Excel. Se lee la propia tabla de la página: lo oculto por los filtros no sale, y las
 // columnas de botones (marcadas con .fuera) tampoco. El Excel se escribe aquí mismo (un .xlsx de verdad, sin
-// librerías); el PDF es la hoja de impresión de la marca, que el navegador guarda como PDF.
+// librerías); el PDF lo hace jsPDF y se enseña antes en una vista previa, desde donde se descarga o se imprime.
 
 export interface Celda {
   t: string;
@@ -177,54 +177,281 @@ export function excel(h: Hoja) {
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }
 
-// ——— PDF: un documento de empresa. Banda oscura con el logo en blanco, el tipo de documento, el título y la fecha;
-// debajo, lo que resume con sus etiquetas; la tabla con filas alternas; y en el margen de cada hoja, la empresa a la
-// izquierda y el número de página a la derecha. Se imprime solo ella ———
+// ——— PDF: un documento de empresa en A4, generado aquí (jsPDF, que solo se carga al pedirlo). Banda carbón con el
+// logo en blanco, el tipo de documento, el título y la fecha, cerrada por la raya roja; debajo, lo que resume con sus
+// etiquetas; la tabla con cabecera oscura y filas alternas; y al pie de cada hoja, la empresa y "1 / 2". Se enseña en
+// una vista previa, con "Descargar PDF" e "Imprimir", y se elige ———
 export interface Pie {
+  /** Razón social y dirección, en gris bajo la marca */
   empresa: string;
+  web: string;
+  /** "Página {p} de {n}" */
+  pagina: string;
   fuente: string;
 }
-export async function pdf(h: Hoja, pie: Pie) {
-  document.getElementById('impreso')?.remove();
-  const hoja = document.createElement('div');
-  hoja.id = 'impreso';
-  const img = (src?: string, cls = '') => (src ? `<img src="${src}" alt="" class="${cls}" loading="eager">` : '');
-  const num = h.cabecera.map((c) => !!c.num);
+type Rgb = [number, number, number];
+const ROJO: Rgb = [221, 4, 10];
+const TINTA: Rgb = [26, 26, 26];
+const CARBON: Rgb = [21, 23, 25];
+const GRIS: Rgb = [110, 110, 110];
+// Las letras del PDF son las estándar (Helvetica): lo que no cabe en ellas, por su equivalente
+const pdfTxt = (s: string) => s.replace(/[‘’]/g, "'").replace(/≥/g, '>=').replace(/≤/g, '<=').replace(/[–—]/g, '-');
+// Una imagen de la página, lista para el PDF: las fotos en JPEG sobre blanco; el logo, en PNG con su transparencia
+type Img = { data: string; w: number; h: number };
+const cargar = (src: string, lado: number, png = false) =>
+  new Promise<Img | undefined>((ok) => {
+    const im = new Image();
+    im.onload = () => {
+      const nw = im.naturalWidth || lado;
+      const nh = im.naturalHeight || lado;
+      // El logo (SVG) se dibuja a ese ancho para que salga nítido; las fotos, como mucho a ese lado
+      const k = png ? lado / nw : Math.min(1, lado / Math.max(nw, nh));
+      const w = Math.max(1, Math.round(nw * k));
+      const h = Math.max(1, Math.round(nh * k));
+      const c = Object.assign(document.createElement('canvas'), { width: w, height: h });
+      const g = c.getContext('2d')!;
+      if (!png) {
+        g.fillStyle = '#fff';
+        g.fillRect(0, 0, w, h);
+      }
+      g.drawImage(im, 0, 0, w, h);
+      ok({ data: c.toDataURL(png ? 'image/png' : 'image/jpeg', 0.9), w, h });
+    };
+    im.onerror = () => ok(undefined);
+    im.src = src;
+  });
+// Cabe en una caja sin deformarse, centrada
+const encajar = (im: Img, x: number, y: number, w: number, h: number) => {
+  const k = Math.min(w / im.w, h / im.h);
+  return [x + (w - im.w * k) / 2, y + (h - im.h * k) / 2, im.w * k, im.h * k] as const;
+};
+
+async function generar(h: Hoja, pie: Pie) {
+  const [{ jsPDF }, { autoTable }] = await Promise.all([import('jspdf'), import('jspdf-autotable')]);
+  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+  doc.setProperties({ title: pdfTxt(`${h.titulo} · ${h.fecha}`), author: 'Orto Alresa', creator: 'ortoalresa.com' });
+  const M = 12;
+  const ancho = 210 - 2 * M;
   const comparativa = h.cabecera.some((c) => c.img);
-  hoja.className = comparativa ? 'es-comp' : '';
-  hoja.innerHTML =
-    `<header class="banda"><img class="logo" src="/img/marca/logo-ortoalresa-white.svg" alt="orto alresa">` +
-    `<div class="doc"><p class="tipo">${escapar(h.tipo)}</p><h1>${escapar(h.titulo)}</h1></div>` +
-    `<p class="fecha">${escapar(h.fecha)}</p></header>` +
-    `<dl class="datos">${h.datos.map(([e, v]) => `<div><dt>${escapar(e)}</dt><dd>${escapar(v)}</dd></div>`).join('')}</dl>` +
-    `<table><thead><tr>${h.cabecera.map((c, i) => `<th${num[i] ? ' class="num"' : ''}>${img(c.img, 'cab')}<span>${escapar(c.t)}</span></th>`).join('')}</tr></thead>` +
-    `<tbody>${h.filas
-      .map(
-        (f) =>
-          `<tr>${f.map((c, i) => `<td${num[i] ? ' class="num"' : ''}>${img(c.img, 'foto')}${escapar(c.t)}</td>`).join('')}</tr>`,
-      )
-      .join('')}</tbody></table>` +
-    `<p class="fuente">${escapar(pie.fuente)}</p>`;
-  // El pie de cada hoja va en el margen de la página: la empresa y "1 / 2"
-  const margen = document.createElement('style');
-  margen.textContent = `@media print { @page { @bottom-left { content: "${pie.empresa.replace(/["\\]/g, '')}"; font: 7.5pt Arial, sans-serif; color: #6e6e6e; } @bottom-right { content: counter(page) " / " counter(pages); font: 7.5pt Arial, sans-serif; color: #6e6e6e; } } }`;
-  document.head.append(margen);
-  document.body.append(hoja);
-  // Que las fotos estén cargadas antes de abrir la impresión
-  await Promise.all([...hoja.querySelectorAll('img')].map((i) => i.decode().catch(() => undefined)));
-  const titulo = document.title;
-  // El navegador usa el título de la página como nombre del PDF
-  document.title = h.archivo;
-  document.body.classList.add('imprimiendo');
-  const fin = () => {
-    document.body.classList.remove('imprimiendo');
-    document.title = titulo;
-    hoja.remove();
-    margen.remove();
-    window.removeEventListener('afterprint', fin);
-  };
-  window.addEventListener('afterprint', fin);
-  window.print();
+  const [logo, ...fotos] = await Promise.all([
+    cargar('/img/marca/logo-ortoalresa-white.svg', 600, true),
+    ...h.cabecera.map((c) => (c.img ? cargar(c.img, 500) : Promise.resolve(undefined))),
+    ...h.filas.map((f) => (f[0]?.img ? cargar(f[0].img, 160) : Promise.resolve(undefined))),
+  ]);
+  const fotosCab = fotos.slice(0, h.cabecera.length);
+  const fotosFila = fotos.slice(h.cabecera.length);
+
+  // Banda: logo, raya vertical, tipo en rojo y título; la fecha a la derecha
+  doc.setFillColor(...CARBON);
+  doc.rect(M, M, ancho, 25, 'F');
+  let x = M + 7;
+  if (logo) {
+    const lh = 10;
+    const lw = (logo.w / logo.h) * lh;
+    doc.addImage(logo.data, 'PNG', x, M + (25 - lh) / 2, lw, lh);
+    x += lw + 7;
+    doc.setDrawColor(51, 56, 60);
+    doc.setLineWidth(0.3);
+    doc.line(x, M + 6, x, M + 19);
+    x += 7;
+  }
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(6.5);
+  doc.setTextColor(...ROJO);
+  doc.setCharSpace(0.5);
+  doc.text(pdfTxt(h.tipo.toUpperCase()), x, M + 10.5);
+  doc.setCharSpace(0);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(17);
+  doc.setTextColor(255, 255, 255);
+  doc.text(pdfTxt(h.titulo), x, M + 18.5);
+  doc.setFontSize(8);
+  doc.setTextColor(191, 197, 201);
+  doc.text(pdfTxt(h.fecha), M + ancho - 7, M + 18.5, { align: 'right' });
+  doc.setFillColor(...ROJO);
+  doc.rect(M, M + 25, ancho, 1.2, 'F');
+
+  // Datos: una franja gris con cada dato y su etiqueta
+  const y0 = M + 26.2;
+  const cw = ancho / h.datos.length;
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9);
+  const valores = h.datos.map(([, v]) => doc.splitTextToSize(pdfTxt(v), cw - 12) as string[]);
+  const alto = 11 + 4 * Math.max(...valores.map((l) => l.length));
+  doc.setFillColor(242, 242, 242);
+  doc.rect(M, y0, ancho, alto, 'F');
+  h.datos.forEach(([e], i) => {
+    const cx = M + i * cw;
+    if (i) {
+      doc.setDrawColor(255, 255, 255);
+      doc.setLineWidth(0.4);
+      doc.line(cx, y0, cx, y0 + alto);
+    }
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(6);
+    doc.setTextColor(...GRIS);
+    doc.setCharSpace(0.4);
+    doc.text(pdfTxt(e.toUpperCase()), cx + 6, y0 + 5.5);
+    doc.setCharSpace(0);
+    doc.setFontSize(9);
+    doc.setTextColor(...TINTA);
+    doc.text(valores[i], cx + 6, y0 + 10.5);
+  });
+
+  // La tabla: cabecera oscura con la raya roja (en la comparativa, cada máquina con su foto) y filas alternas
+  const num = h.cabecera.map((c) => !!c.num);
+  const conFoto = fotosFila.some(Boolean);
+  autoTable(doc, {
+    startY: y0 + alto + 6,
+    margin: { left: M, right: M, top: M + 4, bottom: 18 },
+    head: [h.cabecera.map((c) => pdfTxt(comparativa ? c.t : c.t.toUpperCase()))],
+    body: h.filas.map((f) => f.map((c) => pdfTxt(comparativa ? c.t : c.t))),
+    showHead: 'everyPage',
+    theme: 'plain',
+    styles: {
+      font: 'helvetica',
+      fontSize: 8.5,
+      textColor: [77, 77, 77],
+      cellPadding: { top: 2.4, bottom: 2.4, left: 3, right: 3 },
+      valign: 'middle',
+      lineColor: [230, 230, 230],
+      lineWidth: { bottom: 0.2 },
+    },
+    headStyles: {
+      fillColor: TINTA,
+      textColor: [255, 255, 255],
+      fontStyle: 'bold',
+      fontSize: comparativa ? 9 : 6.5,
+      valign: 'bottom',
+      cellPadding: comparativa
+        ? { top: 33, bottom: 3, left: 3, right: 3 }
+        : { top: 3.2, bottom: 3.2, left: 3, right: 3 },
+      lineWidth: 0,
+    },
+    alternateRowStyles: { fillColor: [248, 248, 248] },
+    columnStyles: Object.fromEntries(
+      h.cabecera.map((_, i) => [
+        i,
+        i === 0
+          ? comparativa
+            ? { cellWidth: ancho * 0.24 }
+            : {
+                fontStyle: 'bold' as const,
+                textColor: TINTA,
+                ...(conFoto ? { cellPadding: { top: 2.4, bottom: 2.4, left: 13, right: 3 }, minCellHeight: 10 } : {}),
+              }
+          : { halign: num[i] ? ('right' as const) : ('left' as const), ...(num[i] ? { textColor: TINTA } : {}) },
+      ]),
+    ),
+    didParseCell: (d) => {
+      if (!comparativa || d.section !== 'body') return;
+      // Comparativa: la etiqueta de cada fila pequeña, en gris y mayúsculas; los valores, en negro
+      if (d.column.index === 0) {
+        d.cell.text = d.cell.text.map((t) => t.toUpperCase());
+        Object.assign(d.cell.styles, { fontStyle: 'bold', fontSize: 6.5, textColor: GRIS });
+      } else d.cell.styles.textColor = TINTA;
+    },
+    didDrawCell: (d) => {
+      const { x: cx, y: cy, width: w, height: ch } = d.cell;
+      if (d.section === 'head') {
+        doc.setFillColor(...ROJO);
+        doc.rect(cx, cy + ch - 0.7, w, 0.7, 'F');
+        const f = fotosCab[d.column.index];
+        if (f) {
+          doc.setFillColor(255, 255, 255);
+          doc.rect(cx + 3, cy + 3, w - 6, 27, 'F');
+          doc.addImage(f.data, 'JPEG', ...encajar(f, cx + 4, cy + 4, w - 8, 25));
+        }
+      }
+      if (d.section === 'body' && d.column.index === 0 && !comparativa) {
+        const f = fotosFila[d.row.index];
+        if (f) doc.addImage(f.data, 'JPEG', ...encajar(f, cx + 3, cy + (ch - 7) / 2, 7, 7));
+      }
+    },
+  });
+
+  // De dónde salen los datos, bajo la tabla
+  const fin = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY;
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(6.5);
+  doc.setTextColor(...GRIS);
+  doc.text(pdfTxt(pie.fuente), M, Math.min(fin + 6, 297 - 20));
+
+  // Pie de cada hoja, como un membrete: raya roja corta, la marca en negrita y debajo la empresa en gris; a la
+  // derecha la web en rojo y "Página 1 de 2"
+  const n = doc.getNumberOfPages();
+  for (let p = 1; p <= n; p++) {
+    doc.setPage(p);
+    doc.setFillColor(...ROJO);
+    doc.rect(M, 297 - 15, 14, 0.9, 'F');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(7);
+    doc.setTextColor(...TINTA);
+    doc.setCharSpace(0.8);
+    doc.text('ORTO ALRESA', M, 297 - 10);
+    doc.setCharSpace(0);
+    doc.setTextColor(...ROJO);
+    doc.text(pdfTxt(pie.web), M + ancho, 297 - 10, { align: 'right' });
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(6);
+    doc.setTextColor(...GRIS);
+    doc.text(pdfTxt(pie.empresa), M, 297 - 6.5);
+    doc.text(pdfTxt(pie.pagina.replace('{p}', String(p)).replace('{n}', String(n))), M + ancho, 297 - 6.5, {
+      align: 'right',
+    });
+  }
+  return doc.output('blob');
+}
+
+// Vista previa: el PDF ya hecho dentro de una ventana, con "Descargar PDF" e "Imprimir"
+let enlace = '';
+let nombre = '';
+export async function pdf(h: Hoja, pie: Pie) {
+  const dialogo = document.getElementById('vista-pdf') as HTMLDialogElement | null;
+  if (!dialogo) return;
+  const marco = dialogo.querySelector('iframe')!;
+  dialogo.classList.remove('fallo');
+  dialogo.classList.add('cargando');
+  if (!dialogo.open) dialogo.showModal();
+  let blob: Blob;
+  try {
+    blob = await generar(h, pie);
+  } catch {
+    dialogo.classList.replace('cargando', 'fallo');
+    return;
+  }
+  if (enlace) URL.revokeObjectURL(enlace);
+  enlace = URL.createObjectURL(blob);
+  nombre = `${h.archivo}.pdf`;
+  // Sin visor de PDF en el navegador (la mayoría de móviles), solo se ofrece descargarlo
+  dialogo.classList.toggle('sin-visor', navigator.pdfViewerEnabled === false);
+  marco.src = `${enlace}#view=FitH&navpanes=0`;
+  dialogo.classList.remove('cargando');
+}
+export function iniciarVistaPdf() {
+  const dialogo = document.getElementById('vista-pdf') as HTMLDialogElement | null;
+  if (!dialogo) return;
+  const marco = dialogo.querySelector('iframe')!;
+  dialogo.querySelector('.vp-descargar')!.addEventListener('click', () => {
+    if (!enlace) return;
+    const a = Object.assign(document.createElement('a'), { href: enlace, download: nombre });
+    document.body.append(a);
+    a.click();
+    a.remove();
+  });
+  dialogo.querySelector('.vp-imprimir')!.addEventListener('click', () => {
+    try {
+      marco.contentWindow?.focus();
+      marco.contentWindow?.print();
+    } catch {
+      window.open(enlace, '_blank');
+    }
+  });
+  dialogo.querySelector('.vp-cerrar')!.addEventListener('click', () => dialogo.close());
+  dialogo.addEventListener('click', (ev) => {
+    if (ev.target === dialogo) dialogo.close();
+  });
+  dialogo.addEventListener('close', () => marco.removeAttribute('src'));
 }
 
 // Fecha del día para el nombre del archivo (2026-10-08) y para la cabecera, en el idioma de la página
