@@ -1140,16 +1140,18 @@ entera delante, si se ensancha el contenido de 1280 a 1440 px.
   descargar sin vista previa y la letra condensada de la marca en el PDF (ver
   [decisión 0010](decisiones/0010-pdf-generado-con-jspdf.md)).
 
-## 25. Ficha de producto: sin huecos y con el pedido siempre a mano
+## 25. Ficha de producto: galería, cifras frente a la gama e índice fijo
 
-- **Problema:** la foto era más baja que la columna de datos y dejaba un hueco blanco debajo; al bajar a las pestañas
-  se perdía qué modelo se miraba y el botón de pedir; y una aplicación con un solo modelo más dejaba "Más de…" con
-  una tarjeta suelta y media pantalla vacía.
-- **Ahora:** la foto llena la altura de los datos, con la máquina apoyada en el suelo gris y su sombra. La barra de
-  pestañas, al quedar fija, enseña a la izquierda el nombre y a la derecha "Pedir a un distribuidor". Con menos de
-  tres modelos en la aplicación, el bloque final es "Otras centrífugas": primero los de la aplicación y luego los de la
-  misma temperatura, cada tarjeta con su aplicación.
-- **Por qué:** el distribuidor lee la ficha técnica o los rotores con el nombre delante y puede pedir sin volver arriba;
-  y la página termina con tres opciones, no con un hueco.
-- **Descartado:** la foto fija al bajar (seguía el hueco al entrar) y repetir el botón de catálogo PDF en la barra (ya
-  está en "De un vistazo").
+- **Problema:** la foto era blanco sobre blanco, solo había una; la placa de datos era una lista larga e igual de
+  importante en cada fila; la barra de pestañas oscura escondía la información detrás de clics y quedaba pesada; y
+  "Más de…" usaba una tarjeta más pobre que la del catálogo y, con un solo modelo, dejaba media pantalla vacía.
+- **Ahora:** galería sobre la mesa de laboratorio de las tarjetas, con miniaturas de las fotos reales que hay (máquina,
+  detalle del panel, rotores) y el 3D donde existe (Digicen 22). Datos técnicos con capacidad, velocidad y fuerza en
+  grande y una barra frente a la más alta de la gama; el resto en dos columnas. Debajo, todo seguido y numerado
+  (01 Descripción, 02 Ficha técnica…) con un índice fijo que marca la sección, llena una raya de progreso y lleva
+  siempre el botón de pedir. Al final, las mismas tarjetas que el catálogo.
+- **Por qué:** el distribuidor ve la máquina como en el catálogo, sabe de un vistazo si es de las rápidas de la gama,
+  puede leer la ficha entera bajando (o saltar con el índice) sin perder qué modelo mira ni el botón de pedir.
+- **Descartado:** fotos de catálogo inventadas o generadas (no hay más fotos reales que estas), un 3D falso para las
+  máquinas sin modelo, mantener las pestañas (obligan a clicar para ver lo que el distribuidor quiere comparar) y la
+  barra fija con nombre de la primera versión (el índice la sustituye).
