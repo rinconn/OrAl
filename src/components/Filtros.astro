@@ -5,7 +5,7 @@
 // buscador y botón de filtros, que abre un panel desde abajo. Sin JS no aparece y se ve todo el catálogo.
 // Los filtros se guardan en la dirección para poder compartir una búsqueda.
 import type { Temperatura } from '../data/productos';
-import { idioma, textos } from '../i18n';
+import { idioma, numero, textos } from '../i18n';
 
 interface Props {
   /** Aplicaciones por grupo: generales, especiales y otros productos */
@@ -15,8 +15,10 @@ interface Props {
 }
 
 const { grupos, tubos } = Astro.props;
-const t = textos(idioma(Astro.currentLocale));
+const lang = idioma(Astro.currentLocale);
+const t = textos(lang);
 const f = t.catalogo.filtros;
+const m = f.minimos;
 const temperaturas: Temperatura[] = ['ventilada', 'refrigerada', 'calefactada'];
 const may = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 const cruz = 'M6 6l12 12M18 6 6 18';
@@ -198,6 +200,71 @@ const iconos: Record<Temperatura, string> = {
           </div>
         </div>
 
+        <!-- Mínimos: el laboratorio pide un requisito, no un modelo. Fuerza, velocidad y cuántos tubos de cuántos ml a
+             la vez; queda la máquina que llega a todo con alguna de sus versiones -->
+        <div class="minimos">
+          <span class="etq-movil">{m.boton}</span>
+          <button
+            type="button"
+            class="min-btn"
+            aria-expanded="false"
+            aria-controls="min-menu"
+            data-todos={m.boton}
+            data-tubos={m.tubos}
+          >
+            <span class="min-txt">{m.boton}</span>
+            <svg class="flechita" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+              <path d="m6 9 6 6 6-6" fill="none" stroke="currentColor" stroke-width="1.8"></path>
+            </svg>
+          </button>
+          <div class="min-menu" id="min-menu" role="group" aria-label={m.boton}>
+            <p class="min-ayuda">{m.ayuda}</p>
+            <label class="min-fila">
+              <span class="min-etq">{m.fuerza}</span>
+              <span class="min-campos">
+                <span class="ge" aria-hidden="true">
+                  ≥
+                </span>
+                <input name="xg" inputmode="numeric" autocomplete="off" placeholder={numero(lang, '15.000')} />
+                <span class="ud">xg</span>
+              </span>
+            </label>
+            <label class="min-fila">
+              <span class="min-etq">{m.velocidad}</span>
+              <span class="min-campos">
+                <span class="ge" aria-hidden="true">
+                  ≥
+                </span>
+                <input name="rpm" inputmode="numeric" autocomplete="off" placeholder={numero(lang, '10.000')} />
+                <span class="ud">rpm</span>
+              </span>
+            </label>
+            <div class="min-fila" role="group" aria-label={m.capacidad}>
+              <span class="min-etq">{m.capacidad}</span>
+              <span class="min-campos">
+                <span class="ge" aria-hidden="true">
+                  ≥
+                </span>
+                <input name="n" inputmode="numeric" autocomplete="off" placeholder="4" aria-label={m.tubos} />
+                <span class="ud">
+                  {m.tubos} {m.de}
+                </span>
+                <input
+                  name="ml"
+                  inputmode="decimal"
+                  autocomplete="off"
+                  placeholder="250"
+                  aria-label={`${m.capacidad} (ml)`}
+                />
+                <span class="ud">ml</span>
+              </span>
+            </div>
+            <button type="button" class="min-quitar">
+              {m.quitar}
+            </button>
+          </div>
+        </div>
+
         <!-- Ordenar: dentro de cada familia, por la cifra que se elija (de mayor a menor) -->
         <label class="orden">
           <span class="etq-movil">{f.ordenar}</span>
@@ -263,18 +330,36 @@ const iconos: Record<Temperatura, string> = {
     const tuboBtn = form.querySelector<HTMLButtonElement>('.tubo-btn')!;
     const tuboTxt = form.querySelector<HTMLElement>('.tubo-txt')!;
     const opsTubo = [...form.querySelectorAll<HTMLButtonElement>('.t-op')];
-    const tubosModelo =
-      (
-        JSON.parse(document.getElementById('datos-tubos')?.textContent ?? '{}') as {
-          modelos?: Record<string, Record<string, unknown>>;
-        }
-      ).modelos ?? {};
+    const datosTubos = JSON.parse(document.getElementById('datos-tubos')?.textContent ?? '{}') as {
+      modelos?: Record<string, Record<string, unknown>>;
+      cifras?: Record<string, { rpm: number; xg: number; cap: [number, number][] }>;
+    };
+    const tubosModelo = datosTubos.modelos ?? {};
     const admite = (el: HTMLElement) =>
       !selTubo.value || (el.dataset.slugs ?? '').split(' ').some((x) => tubosModelo[x]?.[selTubo.value]);
+    // Mínimos: lo escrito en cada campo, solo la cifra ("15.000" o "15 000" son 15000; los ml admiten decimales)
+    const camposMin = [...form.querySelectorAll<HTMLInputElement>('.min-menu input')];
+    const campo = (k: string) => camposMin.find((x) => x.name === k)!;
+    const leer = (k: string) => {
+      const v = campo(k).value.trim();
+      return k === 'ml' ? Number(v.replace(/[^\d.,]/g, '').replace(',', '.')) || 0 : Number(v.replace(/\D/g, '')) || 0;
+    };
+    const minBtn = form.querySelector<HTMLButtonElement>('.min-btn')!;
+    const minTxt = form.querySelector<HTMLElement>('.min-txt')!;
+    const hayMin = () => camposMin.some((x) => leer(x.name) > 0);
+    // Una versión vale si llega a todos; la capacidad, en un mismo rotor: al menos n tubos de al menos esos ml
+    const llega = (slug: string) => {
+      const c = datosTubos.cifras?.[slug];
+      if (!c) return false;
+      const [xg, rpm, n, ml] = ['xg', 'rpm', 'n', 'ml'].map(leer);
+      return c.xg >= xg && c.rpm >= rpm && (!n && !ml ? true : c.cap.some(([cn, cml]) => cn >= n && cml >= ml));
+    };
+    const alcanza = (el: HTMLElement) => !hayMin() || (el.dataset.slugs ?? '').split(' ').some(llega);
     const cumple = (el: HTMLElement, c = aplic, ts: Set<string> = elegidas) =>
       (!c || el.dataset.cat === c) &&
       (!ts.size || (el.dataset.t ?? '').split(' ').some((x) => ts.has(x))) &&
       admite(el) &&
+      alcanza(el) &&
       casaTexto(el);
 
     // ——— Sugerencias del buscador: foto, nombre y aplicación de cada máquina que coincide ———
@@ -472,11 +557,24 @@ const iconos: Record<Temperatura, string> = {
       tuboTxt.textContent = tuboElegido ? tuboElegido.dataset.nombre! : tuboBtn.dataset.todos!;
       tuboBtn.classList.toggle('on', !!tuboElegido);
 
+      // Mínimos: el botón enseña el primero y cuántos más ("≥ 15.000 xg +1"); el resumen entero, al pasar por encima
+      const resumen = [
+        leer('xg') && `≥ ${campo('xg').value.trim()} xg`,
+        leer('rpm') && `≥ ${campo('rpm').value.trim()} rpm`,
+        (leer('n') || leer('ml')) &&
+          `≥ ${[leer('n') && `${leer('n')}${leer('ml') ? '' : ` ${minBtn.dataset.tubos}`}`, leer('ml') && `${campo('ml').value.trim()} ml`].filter(Boolean).join(' × ')}`,
+      ].filter(Boolean) as string[];
+      minTxt.textContent = resumen.length
+        ? resumen[0] + (resumen.length > 1 ? ` +${resumen.length - 1}` : '')
+        : minBtn.dataset.todos!;
+      minBtn.title = resumen.join(' · ');
+      minBtn.classList.toggle('on', resumen.length > 0);
+
       const elegida = aplic ? opciones.find((b) => b.dataset.aplic === aplic) : undefined;
       aplicTxt.textContent = elegida ? elegida.dataset.nombre! : aplicBtn.dataset.todas!;
       aplicBtn.classList.toggle('on', !!elegida);
 
-      const nActivos = (aplic ? 1 : 0) + elegidas.size + (selTubo.value ? 1 : 0);
+      const nActivos = (aplic ? 1 : 0) + elegidas.size + (selTubo.value ? 1 : 0) + (hayMin() ? 1 : 0);
       activos.hidden = nActivos === 0;
       activos.textContent = String(nActivos);
       borrar.hidden = nActivos === 0 && !q.value.trim();
@@ -497,9 +595,25 @@ const iconos: Record<Temperatura, string> = {
         a.hidden = s.hidden;
         a.querySelector('.n')!.textContent = String(visibles.filter(de(s)).length);
       }
+      // Lo puesto, en palabras, para la cabecera de lo que se descarga (tabla en PDF o Excel)
+      salasEl.dataset.resumen = JSON.stringify(
+        [
+          q.value.trim() && `"${q.value.trim()}"`,
+          elegida?.dataset.nombre,
+          ...temps.filter((b) => elegidas.has(b.dataset.temp!)).map((b) => b.textContent!.trim()),
+          tuboElegido?.dataset.nombre,
+          ...resumen,
+        ].filter(Boolean),
+      );
       // Cada tarjeta con versiones enseña la que cumple la temperatura elegida
       document.dispatchEvent(
-        new CustomEvent('catalogo:filtrado', { detail: { temps: [...elegidas], tubo: selTubo.value } }),
+        new CustomEvent('catalogo:filtrado', {
+          detail: {
+            temps: [...elegidas],
+            tubo: selTubo.value,
+            validos: hayMin() ? Object.keys(datosTubos.cifras ?? {}).filter(llega) : undefined,
+          },
+        }),
       );
 
       if (animar) {
@@ -539,6 +653,7 @@ const iconos: Record<Temperatura, string> = {
       poner('dir', orden.value && asc ? 'asc' : '');
       poner('v', vista);
       poner('tubo', selTubo.value);
+      for (const x of camposMin) poner(x.name, leer(x.name) ? String(leer(x.name)) : '');
       history.replaceState(null, '', url);
     };
 
@@ -557,6 +672,7 @@ const iconos: Record<Temperatura, string> = {
       if (url.searchParams.get('v') === 'tabla') vista = 'tabla';
       const tu = url.searchParams.get('tubo') ?? '';
       if (tu && opsTubo.some((x) => x.dataset.tubo === tu)) selTubo.value = tu;
+      for (const x of camposMin) x.value = url.searchParams.get(x.name) ?? '';
     }
 
     // ——— Desplegable de aplicación ———
@@ -564,6 +680,7 @@ const iconos: Record<Temperatura, string> = {
     const cerrarMenu = () => aplicBtn.setAttribute('aria-expanded', 'false');
     aplicBtn.addEventListener('click', () => {
       cerrarTubos();
+      cerrarMin();
       aplicBtn.setAttribute('aria-expanded', String(!menuAbierto()));
     });
     // ——— Panel de tubos ———
@@ -571,7 +688,48 @@ const iconos: Record<Temperatura, string> = {
     const cerrarTubos = () => tuboBtn.setAttribute('aria-expanded', 'false');
     tuboBtn.addEventListener('click', () => {
       cerrarMenu();
+      cerrarMin();
       tuboBtn.setAttribute('aria-expanded', String(!tubosAbierto()));
+    });
+    // ——— Panel de mínimos: se filtra mientras se escribe; Intro o Esc lo cierran ———
+    const minAbierto = () => minBtn.getAttribute('aria-expanded') === 'true';
+    const cerrarMin = () => minBtn.setAttribute('aria-expanded', 'false');
+    minBtn.addEventListener('click', () => {
+      cerrarMenu();
+      cerrarTubos();
+      minBtn.setAttribute('aria-expanded', String(!minAbierto()));
+      if (minAbierto() && !movil.matches) camposMin[0].focus();
+    });
+    let esperaMin = 0;
+    // Al salir del campo, la cifra con su separador de miles (15000 → 15.000)
+    const miles = new Intl.NumberFormat(document.documentElement.lang || 'es');
+    const formatear = (x: HTMLInputElement) => {
+      if (x.name !== 'ml' && leer(x.name)) x.value = miles.format(leer(x.name));
+    };
+    for (const x of camposMin) {
+      formatear(x);
+      x.addEventListener('blur', () => {
+        formatear(x);
+        aplicar(false);
+      });
+      x.addEventListener('input', () => {
+        clearTimeout(esperaMin);
+        esperaMin = window.setTimeout(aplicar, 200);
+      });
+      x.addEventListener('keydown', (e) => {
+        if (e.key !== 'Enter') return;
+        e.preventDefault();
+        clearTimeout(esperaMin);
+        aplicar();
+        if (movil.matches) return;
+        cerrarMin();
+        minBtn.focus();
+      });
+    }
+    form.querySelector('.min-quitar')!.addEventListener('click', () => {
+      for (const x of camposMin) x.value = '';
+      aplicar();
+      if (!movil.matches) camposMin[0].focus();
     });
     for (const b of opsTubo) {
       b.addEventListener('click', () => {
@@ -585,6 +743,7 @@ const iconos: Record<Temperatura, string> = {
       const el = e.target as Element;
       if (menuAbierto() && !el.closest('.aplic')) cerrarMenu();
       if (tubosAbierto() && !el.closest('.tubo')) cerrarTubos();
+      if (minAbierto() && !el.closest('.minimos')) cerrarMin();
       if (!el.closest('.buscar')) cerrarSug();
     });
     for (const b of opciones) {
@@ -639,6 +798,7 @@ const iconos: Record<Temperatura, string> = {
         orden.value = '';
         asc = false;
         selTubo.value = '';
+        for (const x of camposMin) x.value = '';
         aplicar();
       });
     }
@@ -675,6 +835,9 @@ const iconos: Record<Temperatura, string> = {
       } else if (tubosAbierto()) {
         cerrarTubos();
         tuboBtn.focus();
+      } else if (minAbierto() && !movil.matches) {
+        cerrarMin();
+        minBtn.focus();
       } else cerrar();
     });
     panel.addEventListener('keydown', (e) => {
@@ -1112,6 +1275,166 @@ const iconos: Record<Temperatura, string> = {
       background: #f4f4f4;
     }
   }
+  /* ——— Mínimos: botón como el de tubo; al abrirlo, una ficha blanca con un campo por cifra ——— */
+  .minimos {
+    position: relative;
+  }
+  .min-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    max-width: 320px;
+    height: var(--alto);
+    padding: 0 16px;
+    border: 1px solid var(--osc);
+    background: none;
+    font: 400 17px var(--f);
+    color: #fff;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: border-color 0.2s ease;
+  }
+  .min-txt {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-variant-numeric: tabular-nums;
+  }
+  .min-btn .flechita {
+    flex: none;
+    transition: rotate 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+  }
+  .min-btn[aria-expanded='true'] {
+    border-color: #fff;
+  }
+  .min-btn[aria-expanded='true'] .flechita {
+    rotate: 180deg;
+  }
+  .min-btn.on {
+    background: #fff;
+    border-color: #fff;
+    color: var(--ink);
+    font-weight: 700;
+    box-shadow: inset 0 -3px 0 var(--red);
+  }
+  .min-menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    z-index: 5;
+    display: grid;
+    gap: 10px;
+    width: 400px;
+    padding: 16px;
+    background: #fff;
+    border: 1px solid var(--ink);
+    box-shadow: 0 24px 50px -20px rgba(17, 19, 21, 0.35);
+    opacity: 0;
+    translate: 0 -6px;
+    visibility: hidden;
+    transition:
+      opacity 0.18s ease,
+      translate 0.25s cubic-bezier(0.23, 1, 0.32, 1),
+      visibility 0s 0.25s;
+  }
+  .min-btn[aria-expanded='true'] + .min-menu {
+    opacity: 1;
+    translate: 0 0;
+    visibility: visible;
+    transition:
+      opacity 0.18s ease,
+      translate 0.25s cubic-bezier(0.23, 1, 0.32, 1);
+  }
+  .min-ayuda {
+    margin: 0 0 4px;
+    font-size: 15px;
+    line-height: 1.35;
+    color: var(--muted);
+  }
+  .min-fila {
+    display: grid;
+    grid-template-columns: 96px 1fr;
+    align-items: center;
+    gap: 12px;
+  }
+  .min-etq {
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink);
+  }
+  .min-campos {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+    color: var(--muted);
+  }
+  .min-campos .ge {
+    color: var(--red);
+    font-weight: 700;
+  }
+  .min-campos input {
+    width: 100%;
+    min-width: 0;
+    flex: 1 1 0;
+    height: 42px;
+    padding: 0 10px;
+    border: 1px solid #c9cdd1;
+    border-radius: 0;
+    background: #fff;
+    font: 400 17px var(--f);
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+    transition: border-color 0.15s ease;
+  }
+  .min-campos input[name='n'] {
+    flex: 0 0 56px;
+  }
+  .min-campos input::placeholder {
+    color: #b4b8bb;
+  }
+  .min-campos input:focus {
+    outline: 0;
+    border-color: var(--ink);
+    box-shadow: inset 0 -2px 0 var(--red);
+  }
+  .min-campos .ud {
+    flex: none;
+    white-space: nowrap;
+  }
+  /* La unidad del final con el mismo ancho en las tres filas, para que los campos acaben alineados */
+  .min-campos .ud:last-child {
+    width: 2em;
+  }
+  .min-quitar {
+    justify-self: start;
+    margin-top: 4px;
+    padding: 6px 0;
+    border: 0;
+    background: none;
+    font: 400 15px var(--f);
+    color: var(--ink);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    cursor: pointer;
+  }
+  .min-btn:focus-visible,
+  .min-quitar:focus-visible {
+    outline: 2px solid var(--red);
+    outline-offset: 2px;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .min-btn:not(.on):hover {
+      border-color: #fff;
+    }
+    .min-campos input:hover:not(:focus) {
+      border-color: #8c959b;
+    }
+    .min-quitar:hover {
+      color: var(--red);
+    }
+  }
   .orden select option {
     color: var(--ink);
   }
@@ -1531,8 +1854,26 @@ const iconos: Record<Temperatura, string> = {
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='16' height='16'%3E%3Cpath d='M7 4v16M4 17l3 3 3-3M17 20V4M14 7l3-3 3 3' fill='none' stroke='%231a1a1a' stroke-width='1.6'/%3E%3C/svg%3E");
       color: var(--ink);
     }
-    .tubo-btn {
+    .tubo-btn,
+    .min-btn {
       display: none;
+    }
+    .min-menu {
+      position: static;
+      width: auto;
+      padding: 0;
+      border: 0;
+      box-shadow: none;
+      opacity: 1;
+      translate: none;
+      visibility: visible;
+    }
+    .min-fila {
+      grid-template-columns: 86px 1fr;
+    }
+    .min-campos input {
+      height: 48px;
+      border-color: var(--borde);
     }
     .tubo-menu {
       position: static;
