@@ -375,7 +375,7 @@ async function generar(h: Hoja, pie: Pie) {
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(6.5);
   doc.setTextColor(...GRIS);
-  doc.text(pdfTxt(pie.fuente), M, Math.min(fin + 6, 297 - 20));
+  if (pie.fuente) doc.text(pdfTxt(pie.fuente), M, Math.min(fin + 6, 297 - 20));
 
   // Pie de cada hoja, como un membrete: raya roja corta, la marca en negrita y debajo la empresa en gris; a la
   // derecha la web en rojo y "Página 1 de 2"
