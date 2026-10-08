@@ -113,7 +113,7 @@ const col = (i: number): string => (i < 26 ? '' : col(Math.floor(i / 26) - 1)) +
 export function excel(h: Hoja) {
   const cab = h.cabecera.map((c) => (c.ud ? `${c.t} (${c.ud})` : c.t));
   // Con unidad en la cabecera, la cifra va como número (se puede ordenar y sumar en Excel)
-  const filas = h.filas.map((f) => f.map((c, i) => (h.cabecera[i]?.ud && c.n ? c.n : c.t)));
+  const filas = h.filas.map((f) => f.map((c, i) => ((h.cabecera[i]?.ud || h.cabecera[i]?.num) && c.n ? c.n : c.t)));
   const celda = (v: string | number, ref: string, s: number) =>
     typeof v === 'number'
       ? `<c r="${ref}" s="3"><v>${v}</v></c>`
