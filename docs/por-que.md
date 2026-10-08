@@ -1166,3 +1166,16 @@ entera delante, si se ensancha el contenido de 1280 a 1440 px.
   no un adorno genérico.
 - **Descartado:** relojes de aguja (ocupan mucho y se leen peor que una regla) y animarlo en bucle (cansa; solo al
   cargar y al pasar el ratón).
+
+### 25.2 Una ficha más trabajada: galería con mandos, medidas dibujadas y códigos que se copian
+
+- **Problema:** la ficha se veía simple: la galería solo cambiaba con las miniaturas, las fotos no se podían ver en grande,
+  las medidas eran un texto más y el código, que es lo que el distribuidor necesita para pedir, había que copiarlo a mano.
+  La raya del color de la familia bajo la galería repetía la de Datos técnicos.
+- **Ahora:** flechas con contador y botón de ampliar sobre la foto; pantalla completa con flechas, teclado y clic para
+  acercar justo donde se pulsa. En "De un vistazo", la caja de la máquina en isométrico, a escala real entre sus tres
+  medidas y con sus cotas en rojo, que se dibuja al llegar. Los códigos (CE 202…) se copian de un clic. Las secciones
+  entran suaves al bajar (sin JS o con movimiento reducido, se ven tal cual). La raya de familia queda solo en Datos técnicos.
+- **Por qué:** se ve la máquina de cerca sin salir de la ficha, se entiende su tamaño sin leer tres cifras y pedir es
+  copiar y pegar el código.
+- **Descartado:** volver a las pestañas o a la barra fija (ver 25) y un zoom con lupa al pasar el ratón (tapa la foto).
