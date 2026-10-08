@@ -562,6 +562,19 @@ const tubos = Object.entries(porTipo)
         {tp.pedir}
       </a>
       <p class="pres-nota">{tp.nota}</p>
+      {/* La lista, con sus unidades, en PDF o Excel: para el cliente o para adjuntarla al pedir presupuesto */}
+      <div class="descargar" role="group" aria-label={tv.descargar}>
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+          <path d="M12 4v11M7 10l5 5 5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="1.7" />
+        </svg>
+        <span class="d-etq">{tv.descargar}</span>
+        <button type="button" data-exportar="pdf" title={tv.descargarEn('PDF')}>
+          PDF
+        </button>
+        <button type="button" data-exportar="excel" title={tv.descargarEn('Excel')}>
+          Excel
+        </button>
+      </div>
       <button type="button" class="pres-vaciar">
         {tp.vaciar}
       </button>
@@ -642,6 +655,11 @@ const tubos = Object.entries(porTipo)
       mayorCorto: tv.mayorCorto,
       menorCorto: tv.menorCorto,
       catalogoOrden: tv.catalogoOrden,
+      tipoPres: tv.tipoPres,
+      presTitulo: tv.presTitulo,
+      producto: tv.producto,
+      etqUnidades: tv.etqUnidades,
+      archivoPres: tv.archivoPres,
       fuente: tv.fuente,
       empresa: `Orto Alresa · ${contacto.empresa} · ${contacto.direccion} · ortoalresa.com`,
     })}
@@ -729,9 +747,42 @@ const tubos = Object.entries(porTipo)
       archivo: `${tx.archivoComp}-${d.archivo}`,
     };
   };
+  // La lista de presupuesto tal como está en su panel: cada producto con su foto y sus unidades
+  const hojaPresupuesto = (): Hoja | undefined => {
+    const items = [...document.querySelectorAll<HTMLElement>('#presupuesto .pres-lista li')];
+    if (!items.length) return;
+    const filas = items.map((li) => {
+      const n = Number(li.querySelector('output')?.textContent) || 1;
+      return [
+        {
+          t: li.querySelector('span')!.textContent!.trim(),
+          img: li.querySelector('img')?.getAttribute('src') ?? undefined,
+        },
+        { t: String(n), n },
+      ];
+    });
+    const total = filas.reduce((s, f) => s + (f[1].n ?? 0), 0);
+    const d = hoy();
+    return {
+      tipo: tx.tipoPres,
+      titulo: tx.presTitulo,
+      fecha: d.texto,
+      datos: [
+        [tx.etqModelos, String(filas.length)],
+        [tx.etqUnidades, String(total)],
+      ],
+      cabecera: [{ t: tx.producto }, { t: tx.etqUnidades, num: true }],
+      filas,
+      archivo: `${tx.archivoPres}-${d.archivo}`,
+    };
+  };
   for (const b of document.querySelectorAll<HTMLButtonElement>('[data-exportar]')) {
     b.addEventListener('click', () => {
-      const h = b.closest('#comparador') ? hojaComparativa() : hojaTabla();
+      const h = b.closest('#comparador')
+        ? hojaComparativa()
+        : b.closest('#presupuesto')
+          ? hojaPresupuesto()
+          : hojaTabla();
       if (!h) return;
       if (b.dataset.exportar === 'excel') excel(h);
       else void pdf(h, { empresa: tx.empresa, fuente: tx.fuente });
@@ -2124,6 +2175,15 @@ const tubos = Object.entries(porTipo)
     font-size: 14px;
     color: var(--muted);
     text-align: center;
+  }
+  /* En el panel, la descarga va centrada bajo la nota, más pequeña que "Pedir presupuesto" */
+  .pres-panel .descargar {
+    display: flex;
+    justify-content: center;
+    margin-top: 14px;
+  }
+  .pres-panel .descargar button {
+    height: 38px;
   }
   .pres-vaciar {
     display: block;
