@@ -635,6 +635,42 @@ const tubos = Object.entries(porTipo)
       texto: t.catalogo.filtros.conTubo('{r}', '{t}', '{n}'),
     })}
   />
+  <!-- Vista previa del PDF: el documento ya hecho, y desde aquí se descarga o se imprime -->
+  <dialog class="vista-pdf" id="vista-pdf" aria-labelledby="vista-pdf-tit">
+    <div class="vp-cab">
+      <h2 id="vista-pdf-tit">{tv.vistaPrevia}</h2>
+      <button type="button" class="vp-descargar">
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+          <path d="M12 4v11M7 10l5 5 5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="1.8" />
+        </svg>
+        {tv.descargarPdf}
+      </button>
+      <button type="button" class="vp-imprimir">
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+          <path
+            d="M7 9V4h10v5M7 17H5v-7h14v7h-2M8 14h8v6H8z"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.6"
+            stroke-linejoin="round"
+          />
+        </svg>
+        {tv.imprimir}
+      </button>
+      <button type="button" class="vp-cerrar" aria-label={tc.cerrar}>
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+          <path d={cruz} stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path>
+        </svg>
+      </button>
+    </div>
+    <div class="vp-cuerpo">
+      <iframe title={tv.vistaPrevia}></iframe>
+      <p class="vp-espera">{tv.preparando}</p>
+      <p class="vp-sin">{tv.sinVista}</p>
+      <p class="vp-fallo">{tv.fallo}</p>
+    </div>
+  </dialog>
+
   <script
     type="application/json"
     id="datos-exportar"
@@ -661,7 +697,8 @@ const tubos = Object.entries(porTipo)
       etqUnidades: tv.etqUnidades,
       archivoPres: tv.archivoPres,
       fuente: tv.fuente,
-      empresa: `Orto Alresa · ${contacto.empresa} · ${contacto.direccion} · ortoalresa.com`,
+      empresa: `${contacto.empresa} · ${contacto.direccion}`,
+      pagina: tv.pagina,
     })}
   />
   <script
@@ -694,7 +731,8 @@ const tubos = Object.entries(porTipo)
   iniciarPresupuesto();
 
   // ——— Descargar la tabla (lo filtrado, en su orden) o la comparativa, en PDF o en Excel ———
-  import { excel, hoy, leerTabla, pdf, type Hoja } from '../../scripts/exportar';
+  import { excel, hoy, iniciarVistaPdf, leerTabla, pdf, type Hoja } from '../../scripts/exportar';
+  iniciarVistaPdf();
   const tx = JSON.parse(document.getElementById('datos-exportar')?.textContent ?? '{}') as Record<string, string>;
   const hojaTabla = (): Hoja | undefined => {
     const tabla = document.querySelector<HTMLTableElement>('.tabla-vista table');
@@ -785,7 +823,7 @@ const tubos = Object.entries(porTipo)
           : hojaTabla();
       if (!h) return;
       if (b.dataset.exportar === 'excel') excel(h);
-      else void pdf(h, { empresa: tx.empresa, fuente: tx.fuente });
+      else void pdf(h, { empresa: tx.empresa, web: 'ortoalresa.com', pagina: tx.pagina, fuente: tx.fuente });
     });
   }
 
@@ -2618,188 +2656,160 @@ const tubos = Object.entries(porTipo)
       animation: none;
     }
   }
-</style>
 
-<style is:global>
-  /* ——— Hoja para el PDF: solo existe mientras se imprime. Un documento de empresa: banda carbón con el logo en blanco,
-     el tipo de documento, el título y la fecha, cerrada por la raya roja; debajo, sus datos con etiqueta; la tabla con
-     la cabecera oscura y filas alternas; y en el margen de cada hoja la empresa y el número de página ——— */
-  #impreso {
+  /* ——— Vista previa del PDF: una ventana grande con el documento y, arriba, "Descargar PDF" (rojo) e "Imprimir" ——— */
+  .vista-pdf {
+    width: min(980px, calc(100vw - 32px));
+    height: min(92vh, 1200px);
+    max-width: none;
+    max-height: none;
+    padding: 0;
+    border: 0;
+    border-top: 3px solid var(--red);
+    background: #fff;
+    box-shadow: 0 40px 80px -30px rgba(17, 19, 21, 0.6);
+  }
+  .vista-pdf[open] {
+    display: flex;
+    flex-direction: column;
+  }
+  .vista-pdf::backdrop {
+    background: rgba(21, 23, 25, 0.55);
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+  }
+  .vp-cab {
+    display: flex;
+    flex: none;
+    align-items: center;
+    gap: 12px;
+    padding: 14px clamp(16px, 2.4vw, 28px);
+    border-bottom: 1px solid var(--line);
+  }
+  .vp-cab h2 {
+    margin-right: auto;
+    font-size: clamp(22px, 2.2vw, 28px);
+    font-weight: 300;
+  }
+  .vp-descargar,
+  .vp-imprimir {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 44px;
+    padding: 0 18px;
+    font: 700 16px var(--f);
+    text-decoration: none;
+    cursor: pointer;
+    transition:
+      background-color 0.2s ease,
+      border-color 0.2s ease,
+      color 0.2s ease;
+  }
+  .vp-descargar {
+    border: 1px solid var(--red);
+    background: var(--red);
+    color: #fff;
+  }
+  .vp-imprimir {
+    border: 1px solid var(--line);
+    background: #fff;
+    color: var(--ink);
+  }
+  .vp-imprimir svg {
+    color: var(--red);
+  }
+  .vp-cerrar {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border: 0;
+    background: none;
+    color: var(--ink);
+    cursor: pointer;
+  }
+  .vp-descargar:active,
+  .vp-imprimir:active {
+    scale: 0.97;
+  }
+  .vp-descargar:focus-visible,
+  .vp-imprimir:focus-visible,
+  .vp-cerrar:focus-visible {
+    outline: 2px solid var(--red);
+    outline-offset: 2px;
+  }
+  .vp-cuerpo {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    background: #e9ebed;
+  }
+  .vp-cuerpo iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+  .vp-espera,
+  .vp-sin,
+  .vp-fallo {
+    position: absolute;
+    inset: 0;
+    display: none;
+    place-items: center;
+    margin: 0;
+    padding: 24px;
+    font-size: 17px;
+    color: var(--muted);
+    text-align: center;
+  }
+  /* Mientras se hace, "Preparando…" y los botones apagados; sin visor de PDF (móvil), solo se ofrece descargarlo */
+  .vista-pdf.cargando .vp-espera,
+  .vista-pdf.sin-visor .vp-sin,
+  .vista-pdf.fallo .vp-fallo {
+    display: grid;
+  }
+  .vista-pdf.cargando iframe,
+  .vista-pdf.fallo iframe,
+  .vista-pdf.sin-visor iframe,
+  .vista-pdf.sin-visor .vp-imprimir {
+    visibility: hidden;
+  }
+  .vista-pdf.sin-visor .vp-imprimir {
     display: none;
   }
-  @media print {
-    @page {
-      size: A4;
-      margin: 12mm 12mm 16mm;
+  .vista-pdf.cargando .vp-descargar,
+  .vista-pdf.cargando .vp-imprimir,
+  .vista-pdf.fallo .vp-descargar,
+  .vista-pdf.fallo .vp-imprimir {
+    opacity: 0.4;
+    pointer-events: none;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .vp-descargar:hover {
+      border-color: var(--red-d);
+      background: var(--red-d);
     }
-    body.imprimiendo {
-      background: #fff;
-    }
-    body.imprimiendo > :not(#impreso) {
-      display: none !important;
-    }
-    body.imprimiendo #impreso {
-      display: block;
-      font-family: var(--f);
-      color: var(--ink);
-      print-color-adjust: exact;
-      -webkit-print-color-adjust: exact;
-    }
-    #impreso .banda {
-      display: grid;
-      grid-template-columns: auto 1fr auto;
-      align-items: end;
-      gap: 0 28px;
-      padding: 22px 24px 20px;
-      background: var(--carbon);
-      border-bottom: 4px solid var(--red);
-      color: #fff;
-    }
-    #impreso .logo {
-      align-self: center;
-      width: 132px;
-      height: auto;
-      padding-right: 28px;
-      border-right: 1px solid var(--carbon-line);
-    }
-    #impreso .tipo {
-      margin: 0 0 4px;
-      font-size: 9px;
-      font-weight: 700;
-      letter-spacing: 0.16em;
-      text-transform: uppercase;
+    .vp-imprimir:hover {
+      border-color: var(--red);
       color: var(--red);
     }
-    #impreso h1 {
-      margin: 0;
-      font-size: 24px;
-      font-weight: 300;
-      line-height: 1.05;
-      color: #fff;
+  }
+  @media (max-width: 640px) {
+    .vista-pdf {
+      width: 100vw;
+      height: 100dvh;
     }
-    #impreso .fecha {
-      margin: 0;
-      font-size: 11px;
-      color: var(--on-dark);
-      white-space: nowrap;
-    }
-    #impreso .datos {
-      display: flex;
+    .vp-cab {
       flex-wrap: wrap;
-      margin: 0 0 18px;
-      background: var(--panel);
     }
-    #impreso .datos div {
-      flex: 1 1 auto;
-      padding: 10px 24px;
+    .vp-cab h2 {
+      flex-basis: calc(100% - 56px);
     }
-    #impreso .datos div + div {
-      border-left: 1px solid #fff;
-    }
-    #impreso dt {
-      font-size: 8.5px;
-      font-weight: 700;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--muted);
-    }
-    #impreso dd {
-      margin: 2px 0 0;
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--ink);
-    }
-    #impreso table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 11px;
-      font-variant-numeric: tabular-nums;
-    }
-    #impreso thead {
-      display: table-header-group;
-    }
-    #impreso th {
-      padding: 8px 10px;
-      background: var(--ink);
-      border-bottom: 2px solid var(--red);
-      color: #fff;
-      font-size: 8.5px;
-      font-weight: 700;
-      letter-spacing: 0.08em;
-      text-align: left;
-      text-transform: uppercase;
-      vertical-align: bottom;
-    }
-    #impreso td {
-      padding: 6px 10px;
-      border-bottom: 1px solid #e6e6e6;
-      color: var(--body);
-      vertical-align: middle;
-    }
-    #impreso tbody tr:nth-child(even) td {
-      background: var(--band);
-    }
-    #impreso tr {
-      break-inside: avoid;
-    }
-    #impreso td:first-child {
-      font-weight: 700;
-      color: var(--ink);
-      white-space: nowrap;
-    }
-    #impreso .num {
-      text-align: right;
-      white-space: nowrap;
-    }
-    #impreso td.num {
-      color: var(--ink);
-    }
-    #impreso .foto {
-      display: inline-block;
-      width: 26px;
-      height: 26px;
-      margin-right: 10px;
-      object-fit: contain;
-      vertical-align: middle;
-    }
-    /* Comparativa: las máquinas en columnas, con su foto sobre fondo blanco y su nombre; las filas, con su etiqueta */
-    #impreso.es-comp table {
-      table-layout: fixed;
-    }
-    #impreso.es-comp th {
-      padding: 12px 12px 10px;
-      font-size: 12px;
-      letter-spacing: 0.02em;
-      text-transform: none;
-    }
-    #impreso.es-comp th:first-child {
-      width: 24%;
-    }
-    #impreso .cab {
-      display: block;
-      width: 100%;
-      height: 110px;
-      margin: 0 0 10px;
-      padding: 8px;
-      object-fit: contain;
-      background: #fff;
-    }
-    #impreso.es-comp td {
-      padding: 8px 12px;
-      font-size: 11.5px;
-      color: var(--ink);
-    }
-    #impreso.es-comp td:first-child {
-      font-size: 8.5px;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--muted);
-      white-space: normal;
-    }
-    #impreso .fuente {
-      margin: 14px 0 0;
-      font-size: 8.5px;
-      color: var(--muted);
+    .vp-descargar,
+    .vp-imprimir {
+      flex: 1;
+      justify-content: center;
     }
   }
 </style>
