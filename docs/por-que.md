@@ -1130,7 +1130,7 @@ entera delante, si se ensancha el contenido de 1280 a 1440 px.
 
 - **Problema:** para mandar opciones al cliente, el distribuidor copiaba cifras o reenviaba el catálogo entero.
 - **Ahora:** "Descargar · PDF | Excel" en la tabla, en las tarjetas, en el comparador y en el presupuesto. Sale lo que
-  se ve (filtros y orden) o, si se han marcado filas, solo esas. El PDF es un documento de empresa (banda carbón con el
+  se ve (filtros y orden) o, si se han elegido filas en la tabla con la casilla de delante de la foto, solo esas (sin límite; Comparar se queda en 3 y solo para comparar). El PDF es un documento de empresa (banda carbón con el
   logo, datos con etiqueta, tabla con filas alternas y pie de membrete) y se ve antes en una vista previa, con
   "Descargar PDF" e "Imprimir". El Excel trae cifras como números, filtro y fila fija. Sin resultados, no se puede
   descargar.

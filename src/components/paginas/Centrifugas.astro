@@ -289,6 +289,20 @@ const tubos = Object.entries(porTipo)
         {/* Qué orden se ve: lo rellena el script de los filtros; "Invertir" da la vuelta al orden elegido */}
         <div class="tabla-estado">
           <p aria-live="polite" data-catalogo={tv.catalogo} data-mayor={tv.mayor} data-menor={tv.menor}></p>
+          {/* Cuántas filas hay elegidas, con la × para quitar la elección */}
+          <button
+            type="button"
+            class="eleccion"
+            hidden
+            data-uno={tv.elegidos(1)}
+            data-varios={tv.elegidos(999)}
+            title={tv.quitarEleccion}
+          >
+            <span></span>
+            <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+              <path d={cruz} stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+            </svg>
+          </button>
           <button type="button" class="invertir" hidden>
             <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
               <path
@@ -319,7 +333,14 @@ const tubos = Object.entries(porTipo)
             <thead>
               <tr>
                 <th scope="col" data-cols={`${tv.modelo}|${tc.aplicacion}`}>
-                  {tv.modelo}
+                  {/* Elegir todas las filas a la vista, para descargar solo las elegidas */}
+                  <span class="mod">
+                    <label class="elegir" title={tv.elegirTodos}>
+                      <input type="checkbox" class="elegir-todas" aria-label={tv.elegirTodos} />
+                      <span class="caja" aria-hidden="true" />
+                    </label>
+                    {tv.modelo}
+                  </span>
                 </th>
                 <th scope="col">{tc.temperatura}</th>
                 {columnasOrden.map((c) => (
@@ -365,14 +386,21 @@ const tubos = Object.entries(porTipo)
                   )}
                 >
                   <th scope="row">
-                    <a href={ruta(lang, `/centrifugas/${m.slug}/`)}>
-                      <img src={m.imagen.src} alt="" width="48" height="48" loading="lazy" decoding="async" />
-                      {/* La aplicación, debajo del nombre: una columna menos y la fila se lee de un vistazo */}
-                      <span class="nom">
-                        <b data-x>{m.nombre}</b>
-                        <small data-x>{t.catalogo.categorias[m.categoria]}</small>
-                      </span>
-                    </a>
+                    <span class="mod">
+                      {/* Elegir la fila: si hay alguna elegida, la descarga lleva solo esas */}
+                      <label class="elegir" title={tv.elegir}>
+                        <input type="checkbox" value={m.slug} aria-label={`${tv.elegir}: ${m.nombre}`} />
+                        <span class="caja" aria-hidden="true" />
+                      </label>
+                      <a href={ruta(lang, `/centrifugas/${m.slug}/`)}>
+                        <img src={m.imagen.src} alt="" width="48" height="48" loading="lazy" decoding="async" />
+                        {/* La aplicación, debajo del nombre: una columna menos y la fila se lee de un vistazo */}
+                        <span class="nom">
+                          <b data-x>{m.nombre}</b>
+                          <small data-x>{t.catalogo.categorias[m.categoria]}</small>
+                        </span>
+                      </a>
+                    </span>
                   </th>
                   <td class:list={['temp', m.temperatura]}>
                     <IconoTemp t={m.temperatura} size={16} />
@@ -749,12 +777,12 @@ const tubos = Object.entries(porTipo)
   import { excel, hoy, iniciarVistaPdf, leerTabla, pdf, type Hoja } from '../../scripts/exportar';
   iniciarVistaPdf();
   const tx = JSON.parse(document.getElementById('datos-exportar')?.textContent ?? '{}') as Record<string, string>;
-  const hojaTabla = (): Hoja | undefined => {
+  const hojaTabla = (enTabla: boolean): Hoja | undefined => {
     const tabla = document.querySelector<HTMLTableElement>('.tabla-vista table');
     if (!tabla) return;
-    // Si se han marcado filas (Comparar o Presupuesto), salen solo esas; si no, todo lo que dejan los filtros
-    const marcada = (tr: HTMLTableRowElement) => !!tr.querySelector('.comparar input:checked, .anadir[hidden]');
-    const hayMarcadas = [...tabla.tBodies[0].rows].some((tr) => !tr.hidden && marcada(tr));
+    // Si se han elegido filas en la tabla, salen solo esas; si no (o desde las tarjetas), todo lo que dejan los filtros
+    const marcada = (tr: HTMLTableRowElement) => !!tr.querySelector('.elegir input:checked');
+    const hayMarcadas = enTabla && [...tabla.tBodies[0].rows].some((tr) => !tr.hidden && marcada(tr));
     const { cabecera, filas } = leerTabla(tabla, hayMarcadas ? marcada : undefined);
     const d = hoy();
     const puesto = JSON.parse(document.getElementById('salas')?.dataset.resumen ?? '[]') as string[];
@@ -835,7 +863,7 @@ const tubos = Object.entries(porTipo)
         ? hojaComparativa()
         : b.closest('#presupuesto')
           ? hojaPresupuesto()
-          : hojaTabla();
+          : hojaTabla(!!b.closest('.tabla-vista'));
       if (!h) return;
       if (b.dataset.exportar === 'excel') excel(h);
       // El presupuesto no lleva datos técnicos: sin la línea de dónde salen
@@ -861,6 +889,36 @@ const tubos = Object.entries(porTipo)
     ))
       b.disabled = !hay;
   };
+
+  // ——— Elegir filas de la tabla para descargar solo esas: la casilla de cada fila, "todas" en la cabecera (las que
+  // se ven) y, encima, cuántas hay con su × para quitarlas ———
+  const elegirTodas = document.querySelector<HTMLInputElement>('.elegir-todas');
+  const casillasFila = [...document.querySelectorAll<HTMLInputElement>('.tabla-vista tbody .elegir input')];
+  const eleccion = document.querySelector<HTMLButtonElement>('.tabla-estado .eleccion');
+  const pintarEleccion = () => {
+    const vis = casillasFila.filter((c) => !c.closest('tr')!.hidden);
+    const n = vis.filter((c) => c.checked).length;
+    for (const c of casillasFila) c.closest('tr')!.classList.toggle('elegida', c.checked);
+    if (elegirTodas) {
+      elegirTodas.checked = n > 0 && n === vis.length;
+      elegirTodas.indeterminate = n > 0 && n < vis.length;
+    }
+    if (eleccion) {
+      eleccion.hidden = n === 0;
+      eleccion.querySelector('span')!.textContent =
+        n === 1 ? eleccion.dataset.uno! : eleccion.dataset.varios!.replace('999', String(n));
+    }
+  };
+  for (const c of casillasFila) c.addEventListener('change', pintarEleccion);
+  elegirTodas?.addEventListener('change', () => {
+    for (const c of casillasFila) if (!c.closest('tr')!.hidden) c.checked = elegirTodas.checked;
+    pintarEleccion();
+  });
+  eleccion?.addEventListener('click', () => {
+    for (const c of casillasFila) c.checked = false;
+    pintarEleccion();
+  });
+  document.addEventListener('catalogo:filtrado', pintarEleccion);
   conFilas();
   document.addEventListener('catalogo:filtrado', conFilas);
 
@@ -1385,6 +1443,87 @@ const tubos = Object.entries(porTipo)
   .tabla-vista .caja::after {
     left: 5px;
     top: 1px;
+  }
+  /* Elegir filas: la casilla delante de la foto, gris; elegida, cuadro rojo y la fila apenas rosada. Encima, cuántas
+     hay elegidas en rojo, y su × las quita */
+  .tabla-vista .mod {
+    display: flex;
+    align-items: center;
+  }
+  .elegir {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 30px;
+    height: 32px;
+    margin-left: 10px;
+    color: #9aa1a6;
+    cursor: pointer;
+  }
+  .tabla-vista thead .elegir {
+    margin-left: -6px;
+    margin-right: 8px;
+    color: var(--steel);
+  }
+  .elegir input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+  }
+  .elegir input:checked + .caja,
+  .elegir input:indeterminate + .caja {
+    background: var(--red);
+    border-color: var(--red);
+  }
+  .elegir input:checked + .caja::after {
+    opacity: 1;
+    scale: 1;
+  }
+  .elegir input:indeterminate + .caja::after {
+    left: 2.5px;
+    top: 5px;
+    width: 8px;
+    height: 0;
+    border-width: 0 0 2px;
+    rotate: 0deg;
+    opacity: 1;
+    scale: 1;
+  }
+  .elegir input:focus-visible + .caja {
+    outline: 2px solid var(--red);
+    outline-offset: 2px;
+  }
+  .tabla-vista .mod a {
+    padding-left: 6px;
+  }
+  .tabla-vista tbody tr.elegida th,
+  .tabla-vista tbody tr.elegida td {
+    background-color: #fdf5f5;
+  }
+  .eleccion {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    gap: 8px;
+    height: 44px;
+    margin-left: auto;
+    padding: 0 14px;
+    border: 1px solid var(--red);
+    background: rgba(221, 4, 10, 0.05);
+    font: 700 15px var(--f);
+    color: var(--red);
+    cursor: pointer;
+  }
+  .eleccion[hidden] {
+    display: none;
+  }
+  .eleccion:not([hidden]) + .invertir {
+    margin-left: 0;
+  }
+  .eleccion:focus-visible {
+    outline: 2px solid var(--red);
+    outline-offset: 2px;
   }
   .tabla-vista td.pres {
     width: 1%;
