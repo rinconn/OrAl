@@ -303,6 +303,8 @@ const tubos = Object.entries(porTipo)
               <path d={cruz} stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
             </svg>
           </button>
+          {/* Con 2 o 3 elegidas, compararlas; con más, el botón dice que el máximo es 3 */}
+          <button type="button" class="comparar-eleg" hidden data-txt={tc.abrir(999)} data-maximo={tc.maximo}></button>
           <button type="button" class="invertir" hidden>
             <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
               <path
@@ -356,9 +358,6 @@ const tubos = Object.entries(porTipo)
                 ))}
                 <th scope="col" class="centro">
                   {tf.pantalla}
-                </th>
-                <th scope="col" class="centro fuera">
-                  {tc.comparar}
                 </th>
                 <th scope="col" class="centro fuera">
                   {tp.corto}
@@ -420,16 +419,7 @@ const tubos = Object.entries(porTipo)
                     {fuerza(m) ? `${fuerza(m)} xg` : '—'}
                   </td>
                   <td class="centro">{m.pantalla}</td>
-                  {/* Las mismas casilla y "+" que las tarjetas: los scripts las cogen todas y las tienen a la par */}
-                  <td class="centro fuera">
-                    <label class="comparar" title={tc.comparar}>
-                      <input type="checkbox" value={m.slug} />
-                      <span class="caja" aria-hidden="true" />
-                      <span class="sr">
-                        {tc.comparar} {m.nombre}
-                      </span>
-                    </label>
-                  </td>
+                  {/* El mismo "+" que las tarjetas: el script los coge todos y los tiene a la par */}
                   <td class="pres fuera">
                     <button type="button" class="anadir" data-slug={m.slug} title={tp.anadir}>
                       <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
@@ -892,6 +882,8 @@ const tubos = Object.entries(porTipo)
   const elegirTodas = document.querySelector<HTMLInputElement>('.elegir-todas');
   const casillasFila = [...document.querySelectorAll<HTMLInputElement>('.tabla-vista tbody .elegir input')];
   const eleccion = document.querySelector<HTMLButtonElement>('.tabla-estado .eleccion');
+  const compararEleg = document.querySelector<HTMLButtonElement>('.tabla-estado .comparar-eleg');
+  const elegidasVis = () => casillasFila.filter((c) => c.checked && !c.closest('tr')!.hidden).map((c) => c.value);
   const pintarEleccion = () => {
     const vis = casillasFila.filter((c) => !c.closest('tr')!.hidden);
     const n = vis.filter((c) => c.checked).length;
@@ -905,12 +897,21 @@ const tubos = Object.entries(porTipo)
       eleccion.querySelector('span')!.textContent =
         n === 1 ? eleccion.dataset.uno! : eleccion.dataset.varios!.replace('999', String(n));
     }
+    if (compararEleg) {
+      compararEleg.hidden = n < 2;
+      compararEleg.disabled = n > 3;
+      compararEleg.textContent =
+        n > 3 ? compararEleg.dataset.maximo! : compararEleg.dataset.txt!.replace('999', String(n));
+    }
   };
   for (const c of casillasFila) c.addEventListener('change', pintarEleccion);
   elegirTodas?.addEventListener('change', () => {
     for (const c of casillasFila) if (!c.closest('tr')!.hidden) c.checked = elegirTodas.checked;
     pintarEleccion();
   });
+  compararEleg?.addEventListener('click', () =>
+    document.dispatchEvent(new CustomEvent('comparar:abrir', { detail: elegidasVis() })),
+  );
   eleccion?.addEventListener('click', () => {
     for (const c of casillasFila) c.checked = false;
     pintarEleccion();
@@ -1422,17 +1423,7 @@ const tubos = Object.entries(porTipo)
   .tabla-vista tbody tr[hidden] {
     display: none;
   }
-  /* Comparar y Presupuesto en la fila: solo la casilla y el "+"; añadida, el contador "− 1 ud. +" en pequeño */
-  .tabla-vista .comparar {
-    position: static;
-    height: 32px;
-    padding: 0 9px;
-  }
-  /* En la fila la casilla va sola: marcada, solo el cuadro rojo con su tick, sin el fondo negro de la tarjeta */
-  .tabla-vista .comparar:has(input:checked) {
-    color: var(--ink);
-    background: transparent;
-  }
+  /* Presupuesto en la fila: solo el "+"; añadida, el contador "− 1 ud. +" en pequeño */
   .tabla-vista .caja {
     width: 16px;
     height: 16px;
@@ -1512,10 +1503,44 @@ const tubos = Object.entries(porTipo)
     color: var(--red);
     cursor: pointer;
   }
-  .eleccion[hidden] {
+  .eleccion[hidden],
+  .comparar-eleg[hidden] {
     display: none;
   }
-  .eleccion:not([hidden]) + .invertir {
+  .comparar-eleg {
+    flex: none;
+    height: 44px;
+    padding: 0 16px;
+    border: 1px solid var(--red);
+    background: var(--red);
+    font: 700 15px var(--f);
+    color: #fff;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+  .comparar-eleg::after {
+    content: ' »';
+  }
+  .comparar-eleg:disabled {
+    border-color: var(--line);
+    background: #fff;
+    color: var(--muted);
+    cursor: not-allowed;
+  }
+  .comparar-eleg:disabled::after {
+    content: '';
+  }
+  .comparar-eleg:focus-visible {
+    outline: 2px solid var(--red);
+    outline-offset: 2px;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .comparar-eleg:hover:not(:disabled) {
+      border-color: var(--red-d);
+      background: var(--red-d);
+    }
+  }
+  .eleccion:not([hidden]) ~ .invertir {
     margin-left: 0;
   }
   .eleccion:focus-visible {
