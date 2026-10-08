@@ -148,6 +148,13 @@ const columnasOrden = [
   { o: 'rpm', nombre: tf.velocidad },
   { o: 'xg', nombre: tf.fuerza },
 ];
+// Barra bajo cada cifra: su tamaño frente a la mayor de la columna (sin barra si no hay cifra)
+const maximos: Record<string, number> = {
+  cap: Math.max(...filasTabla.map(({ m }) => capacidadMl(m))),
+  rpm: Math.max(...filasTabla.map(({ m }) => num(m.rpm))),
+  xg: Math.max(...filasTabla.map(({ m }) => num(m.xg ?? fichaCentrifuga(m.slug)?.xg))),
+};
+const barra = (v: number, k: string) => (v ? `--p: ${(v / maximos[k]).toFixed(3)}` : undefined);
 
 // Lista de presupuesto: todo lo del catálogo, con su nombre y su foto
 const tp = t.catalogo.presupuesto;
@@ -237,6 +244,21 @@ const tubos = Object.entries(porTipo)
         <h2 id="tabla-tit" class="sr">
           {tv.tablaTitulo}
         </h2>
+        {/* Qué orden se ve: lo rellena el script de los filtros; "Invertir" da la vuelta al orden elegido */}
+        <div class="tabla-estado">
+          <p aria-live="polite" data-catalogo={tv.catalogo} data-mayor={tv.mayor} data-menor={tv.menor}></p>
+          <button type="button" class="invertir" hidden>
+            <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+              <path
+                d="M7 4v16M4 17l3 3 3-3M17 20V4M14 7l3-3 3 3"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.7"
+              />
+            </svg>
+            {tv.invertir}
+          </button>
+        </div>
         <div class="tabla-scroll">
           <table>
             <thead>
@@ -289,9 +311,15 @@ const tubos = Object.entries(porTipo)
                     <IconoTemp t={m.temperatura} size={16} />
                     {may(t.temperatura[m.temperatura])}
                   </td>
-                  <td class="num">{capacidad(m)}</td>
-                  <td class="num">{numero(lang, m.rpm)} rpm</td>
-                  <td class="num">{fuerza(m) ? `${fuerza(m)} xg` : '—'}</td>
+                  <td class="num c-cap" style={barra(capacidadMl(m), 'cap')}>
+                    {capacidad(m)}
+                  </td>
+                  <td class="num c-rpm" style={barra(num(m.rpm), 'rpm')}>
+                    {numero(lang, m.rpm)} rpm
+                  </td>
+                  <td class="num c-xg" style={barra(num(m.xg ?? fichaCentrifuga(m.slug)?.xg), 'xg')}>
+                    {fuerza(m) ? `${fuerza(m)} xg` : '—'}
+                  </td>
                   <td>{m.pantalla}</td>
                 </tr>
               ))}
@@ -721,8 +749,10 @@ const tubos = Object.entries(porTipo)
     padding-top: clamp(40px, 5vw, 72px);
   }
 
-  /* ——— Vista en tabla: sustituye a las familias y sus atajos; filas finas, cifras alineadas a la derecha y el color de
-     la familia en una raya a la izquierda de cada modelo. En móvil se desplaza dentro de su caja con el nombre fijo ——— */
+  /* ——— Vista en tabla: sustituye a las familias y sus atajos. Cabecera oscura con la raya roja de la marca, la columna
+     por la que se ordena marcada en rojo y una barra fina bajo cada cifra con su tamaño frente a la mayor. Cada modelo
+     lleva el color de su familia a la izquierda, que se vuelve rojo al pasar el ratón. En móvil se desplaza dentro de su
+     caja con el nombre fijo ——— */
   .tabla-vista,
   .en-tabla .sala,
   .en-tabla .atajos {
@@ -732,9 +762,53 @@ const tubos = Object.entries(porTipo)
     display: block;
     margin-bottom: clamp(48px, 6vw, 88px);
   }
+  .tabla-estado {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    min-height: 44px;
+    margin-bottom: 14px;
+  }
+  .tabla-estado p {
+    margin: 0;
+    font-size: 17px;
+    color: var(--muted);
+  }
+  .tabla-estado p :global(b) {
+    font-weight: 700;
+    color: var(--ink);
+    box-shadow: inset 0 -2px 0 var(--red);
+  }
+  .invertir {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    gap: 8px;
+    height: 44px;
+    padding: 0 16px;
+    border: 1px solid var(--line);
+    background: #fff;
+    font: 700 15px var(--f);
+    color: var(--ink);
+    cursor: pointer;
+    transition:
+      border-color 0.2s ease,
+      color 0.2s ease;
+  }
+  .invertir[hidden] {
+    display: none;
+  }
+  .invertir svg {
+    color: var(--red);
+  }
+  .invertir:active {
+    scale: 0.97;
+  }
   .tabla-scroll {
     overflow-x: auto;
-    border-top: 3px solid var(--ink);
+    border-top: 3px solid var(--red);
+    box-shadow: 0 30px 60px -48px rgba(17, 19, 21, 0.5);
   }
   .tabla-vista table {
     width: 100%;
@@ -744,22 +818,28 @@ const tubos = Object.entries(porTipo)
   }
   .tabla-vista th,
   .tabla-vista td {
-    padding: 10px 16px;
+    padding: 12px 18px;
     text-align: left;
     vertical-align: middle;
-    border-bottom: 1px solid #e6e6e6;
+    border-bottom: 1px solid #ececec;
     white-space: nowrap;
   }
   .tabla-vista thead th {
-    height: 52px;
+    height: 54px;
     padding-top: 0;
     padding-bottom: 0;
-    font-size: 14px;
+    background: var(--ink);
+    border-bottom: 0;
+    font-size: 13px;
     font-weight: 700;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
-    color: var(--muted);
-    border-bottom-color: var(--line);
+    color: var(--steel);
+  }
+  .tabla-vista thead th:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 2;
   }
   .tabla-vista .num {
     text-align: right;
@@ -768,7 +848,7 @@ const tubos = Object.entries(porTipo)
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    height: 36px;
+    height: 54px;
     margin-right: -6px;
     padding: 0 6px;
     border: 0;
@@ -776,19 +856,17 @@ const tubos = Object.entries(porTipo)
     font: inherit;
     letter-spacing: inherit;
     text-transform: inherit;
-    color: inherit;
+    color: #fff;
     cursor: pointer;
     transition: color 0.2s ease;
   }
   .tabla-vista thead button svg {
-    opacity: 0.5;
-    transition:
-      opacity 0.2s ease,
-      rotate 0.2s ease;
+    opacity: 0.45;
+    transition: opacity 0.2s ease;
   }
-  .tabla-vista th[aria-sort='descending'] button,
-  .tabla-vista th[aria-sort='ascending'] button {
-    color: var(--ink);
+  .tabla-vista th[aria-sort='descending'],
+  .tabla-vista th[aria-sort='ascending'] {
+    box-shadow: inset 0 -3px 0 var(--red);
   }
   .tabla-vista th[aria-sort='descending'] svg,
   .tabla-vista th[aria-sort='ascending'] svg {
@@ -800,7 +878,8 @@ const tubos = Object.entries(porTipo)
     display: none;
   }
   .tabla-vista thead button:focus-visible,
-  .tabla-vista tbody a:focus-visible {
+  .tabla-vista tbody a:focus-visible,
+  .invertir:focus-visible {
     outline: 2px solid var(--red);
     outline-offset: 2px;
   }
@@ -811,39 +890,71 @@ const tubos = Object.entries(porTipo)
     padding-left: 0;
     background: #fff;
     box-shadow: inset 3px 0 0 var(--fam);
+    transition:
+      box-shadow 0.2s ease,
+      background-color 0.2s ease;
   }
   .tabla-vista tbody a {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding-left: 16px;
+    gap: 14px;
+    padding-left: 18px;
     font-size: 17px;
     font-weight: 700;
     color: var(--ink);
     text-decoration: none;
+    transition: color 0.2s ease;
   }
   .tabla-vista tbody a img {
     flex: none;
-    width: 48px;
-    height: 48px;
+    width: 52px;
+    height: 52px;
     object-fit: contain;
+    transition: scale 0.3s cubic-bezier(0.23, 1, 0.32, 1);
   }
   .tabla-vista tbody a span::after {
-    content: ' »';
+    content: '»';
+    display: inline-block;
+    margin-left: 8px;
     color: var(--red);
     opacity: 0;
-    transition: opacity 0.2s ease;
+    translate: -6px 0;
+    transition:
+      opacity 0.2s ease,
+      translate 0.2s ease;
   }
   .tabla-vista td {
     font-size: 16px;
     color: var(--body);
+    transition: background-color 0.2s ease;
   }
   .tabla-vista td.num {
+    position: relative;
     font-size: 17px;
     color: var(--ink);
   }
-  .tabla-vista td.temp {
-    display: table-cell;
+  /* Barra bajo la cifra, alineada a la derecha como el número */
+  .tabla-vista td.num[style]::after {
+    content: '';
+    position: absolute;
+    right: 18px;
+    bottom: 9px;
+    width: max(3px, calc(var(--p) * 120px));
+    height: 3px;
+    background: #dcdcdc;
+    transition: background-color 0.2s ease;
+  }
+  /* La columna por la que se ordena: fondo apenas rojo, cifra en negrita y barra roja */
+  .tabla-vista[data-o='cap'] td.c-cap,
+  .tabla-vista[data-o='rpm'] td.c-rpm,
+  .tabla-vista[data-o='xg'] td.c-xg {
+    background: rgba(221, 4, 10, 0.05);
+    font-weight: 700;
+  }
+  .tabla-vista[data-o='cap'] td.c-cap::after,
+  .tabla-vista[data-o='rpm'] td.c-rpm::after,
+  .tabla-vista[data-o='xg'] td.c-xg::after {
+    background: var(--red);
   }
   .tabla-vista td.temp :global(.icono-temp) {
     margin-right: 6px;
@@ -862,21 +973,38 @@ const tubos = Object.entries(porTipo)
     display: none;
   }
   @media (hover: hover) and (pointer: fine) {
-    .tabla-vista thead button:hover {
-      color: var(--ink);
-    }
     .tabla-vista thead button:hover svg {
       opacity: 1;
     }
+    .invertir:hover {
+      border-color: var(--red);
+      color: var(--red);
+    }
     .tabla-vista tbody tr:hover th,
     .tabla-vista tbody tr:hover td {
-      background: var(--band);
+      background-color: var(--band);
+    }
+    .tabla-vista tbody tr:hover th {
+      box-shadow: inset 6px 0 0 var(--red);
+    }
+    .tabla-vista tbody tr:hover a {
+      color: var(--red);
+    }
+    .tabla-vista tbody tr:hover a img {
+      scale: 1.1;
     }
     .tabla-vista tbody tr:hover a span::after {
       opacity: 1;
+      translate: 0 0;
+    }
+    .tabla-vista tbody tr:hover td.num::after {
+      background: #bdbdbd;
     }
   }
   @media (max-width: 1024px) {
+    .tabla-estado p {
+      font-size: 15px;
+    }
     .tabla-vista th,
     .tabla-vista td {
       padding: 8px 12px;
@@ -888,6 +1016,11 @@ const tubos = Object.entries(porTipo)
     .tabla-vista tbody a img {
       width: 40px;
       height: 40px;
+    }
+    .tabla-vista td.num[style]::after {
+      right: 12px;
+      bottom: 6px;
+      width: max(3px, calc(var(--p) * 80px));
     }
   }
 
