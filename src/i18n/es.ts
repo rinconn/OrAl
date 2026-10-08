@@ -278,6 +278,14 @@ export const es = {
         velocidad: 'Más velocidad',
         fuerza: 'Más fuerza',
       },
+      vista: {
+        titulo: 'Vista',
+        tarjetas: 'Ver en tarjetas',
+        tabla: 'Ver en tabla',
+        tablaTitulo: 'Todos los modelos',
+        modelo: 'Modelo',
+        ordenarPor: (x: string) => `Ordenar por ${x.toLowerCase()}`,
+      },
       quitar: (x: string) => `Quitar el filtro ${x}`,
     },
     // Comparador del catálogo: 2 o 3 centrífugas lado a lado

@@ -273,6 +273,14 @@ export const fr: Textos = {
         velocidad: 'Plus de vitesse',
         fuerza: 'Plus de force',
       },
+      vista: {
+        titulo: 'Affichage',
+        tarjetas: 'Vue en cartes',
+        tabla: 'Vue en tableau',
+        tablaTitulo: 'Tous les modèles',
+        modelo: 'Modèle',
+        ordenarPor: (x: string) => `Trier par ${x.toLowerCase()}`,
+      },
       quitar: (x: string) => `Retirer le filtre ${x}`,
     },
     comparar: {

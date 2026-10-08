@@ -65,6 +65,25 @@ const iconos: Record<Temperatura, string> = {
         <ul class="sugerencias" id="sugerencias" role="listbox" aria-label={f.buscar}></ul>
       </div>
 
+      <!-- Vista: tarjetas por familia o una tabla con todos los modelos, ordenable por columnas -->
+      <div class="vista" role="group" aria-label={f.vista.titulo}>
+        <button type="button" data-vista="" aria-pressed="true" aria-label={f.vista.tarjetas} title={f.vista.tarjetas}>
+          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+            <path
+              d="M4 4h6.5v6.5H4zM13.5 4H20v6.5h-6.5zM4 13.5h6.5V20H4zM13.5 13.5H20V20h-6.5z"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.6"
+            ></path>
+          </svg>
+        </button>
+        <button type="button" data-vista="tabla" aria-pressed="false" aria-label={f.vista.tabla} title={f.vista.tabla}>
+          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+            <path d="M4 5h16M4 10h16M4 15h16M4 20h16" fill="none" stroke="currentColor" stroke-width="1.6"></path>
+          </svg>
+        </button>
+      </div>
+
       <button type="button" class="abrir-panel" aria-expanded="false" aria-controls="panel-filtros">
         <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
           <path d="M4 7h16M7 12h10M10 17h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path>
@@ -351,16 +370,35 @@ const iconos: Record<Temperatura, string> = {
     // Orden: el del catálogo (guardado al cargar) o de mayor a menor por capacidad, velocidad o fuerza
     const orden = form.querySelector<HTMLSelectElement>('select[name=o]')!;
     fichas.forEach((el, i) => (el.dataset.orden = String(i)));
-    const reordenar = () => {
+    // Tabla: una fila por modelo, con los mismos datos que las tarjetas. Desde sus columnas se ordena de mayor a menor
+    // y, pulsando otra vez, de menor a mayor; lo que no tiene la cifra (capacidad sin ml) va siempre al final
+    const tabla = salasEl.querySelector<HTMLElement>('.tabla-vista');
+    const filas = [...(tabla?.querySelectorAll<HTMLElement>('tbody tr') ?? [])];
+    filas.forEach((el, i) => (el.dataset.orden = String(i)));
+    const cabs = [...(tabla?.querySelectorAll<HTMLButtonElement>('th button[data-o]') ?? [])];
+    let asc = false;
+    const ordenar = (els: HTMLElement[]) => {
       const k = orden.value;
-      for (const ul of salasEl.querySelectorAll<HTMLElement>('.piezas')) {
-        const lis = [...ul.querySelectorAll<HTMLElement>(':scope > .ficha')];
-        lis.sort((a, b) =>
-          k ? Number(b.dataset[k] ?? 0) - Number(a.dataset[k] ?? 0) : Number(a.dataset.orden) - Number(b.dataset.orden),
-        );
-        ul.append(...lis);
+      return els.sort((a, b) => {
+        if (!k) return Number(a.dataset.orden) - Number(b.dataset.orden);
+        const [x, y] = [Number(a.dataset[k] ?? 0), Number(b.dataset[k] ?? 0)];
+        if (!x || !y) return y - x;
+        return asc ? x - y : y - x;
+      });
+    };
+    const reordenar = () => {
+      for (const ul of salasEl.querySelectorAll<HTMLElement>('.piezas'))
+        ul.append(...ordenar([...ul.querySelectorAll<HTMLElement>(':scope > .ficha')]));
+      tabla?.querySelector('tbody')?.append(...ordenar([...filas]));
+      for (const b of cabs) {
+        const on = b.dataset.o === orden.value;
+        b.closest('th')!.setAttribute('aria-sort', on ? (asc ? 'ascending' : 'descending') : 'none');
       }
     };
+    // Vista elegida: tarjetas (por defecto) o tabla
+    const vistas = [...form.querySelectorAll<HTMLButtonElement>('.vista button')];
+    let vista = '';
+    const enTabla = () => vista === 'tabla' && !!tabla;
 
     const aplicar = (animar = true) => {
       animar &&= !quieto.matches;
@@ -368,8 +406,14 @@ const iconos: Record<Temperatura, string> = {
       if (animar) for (const el of moviles()) if (el.offsetParent) antes.set(el, el.getBoundingClientRect());
       reordenar();
 
+      salasEl.closest('.catalogo')?.classList.toggle('en-tabla', enTabla());
+      for (const b of vistas) b.setAttribute('aria-pressed', String((b.dataset.vista ?? '') === vista));
+      const filasVis = filas.filter((el) => cumple(el));
+      for (const el of filas) el.hidden = !filasVis.includes(el);
       const visibles = fichas.filter((el) => cumple(el));
       for (const el of fichas) el.hidden = !visibles.includes(el);
+      // En la tabla, el total cuenta modelos; en las tarjetas, fichas
+      const total = enTabla() ? filasVis.length : visibles.length;
       for (const s of salas) {
         const n = visibles.filter(de(s)).length;
         s.hidden = n === 0;
@@ -414,16 +458,16 @@ const iconos: Record<Temperatura, string> = {
       activos.hidden = nActivos === 0;
       activos.textContent = String(nActivos);
       borrar.hidden = nActivos === 0 && !q.value.trim();
-      const txt = cuenta(visibles.length, d.uno!, d.varios!);
-      const num = String(visibles.length);
+      const txt = cuenta(total, d.uno!, d.varios!);
+      const num = String(total);
       const i = txt.indexOf(num);
       cuentaEl.replaceChildren(
         txt.slice(0, i),
         Object.assign(document.createElement('b'), { textContent: num }),
         txt.slice(i + num.length),
       );
-      verRes.textContent = cuenta(visibles.length, d.verUno!, d.verVarios!);
-      if (vacio) vacio.hidden = visibles.length > 0;
+      verRes.textContent = cuenta(total, d.verUno!, d.verVarios!);
+      if (vacio) vacio.hidden = total > 0;
       // Los atajos a cada familia, con lo que queda en ella
       for (const s of salas) {
         const a = document.querySelector<HTMLElement>(`.atajos [data-ir="${s.dataset.sala}"]`);
@@ -470,6 +514,8 @@ const iconos: Record<Temperatura, string> = {
       poner('t', [...elegidas].join(','));
       poner('q', q.value.trim());
       poner('o', orden.value);
+      poner('dir', orden.value && asc ? 'asc' : '');
+      poner('v', vista);
       poner('tubo', selTubo.value);
       history.replaceState(null, '', url);
     };
@@ -485,6 +531,8 @@ const iconos: Record<Temperatura, string> = {
       q.value = url.searchParams.get('q') ?? '';
       const o = url.searchParams.get('o') ?? '';
       if ([...orden.options].some((x) => x.value === o)) orden.value = o;
+      asc = url.searchParams.get('dir') === 'asc';
+      if (url.searchParams.get('v') === 'tabla') vista = 'tabla';
       const tu = url.searchParams.get('tubo') ?? '';
       if (tu && opsTubo.some((x) => x.dataset.tubo === tu)) selTubo.value = tu;
     }
@@ -539,7 +587,23 @@ const iconos: Record<Temperatura, string> = {
       clearTimeout(espera);
       espera = window.setTimeout(aplicar, 140);
     });
-    orden.addEventListener('change', () => aplicar());
+    orden.addEventListener('change', () => {
+      asc = false;
+      aplicar();
+    });
+    for (const b of cabs) {
+      b.addEventListener('click', () => {
+        asc = orden.value === b.dataset.o ? !asc : false;
+        orden.value = b.dataset.o!;
+        aplicar(false);
+      });
+    }
+    for (const b of vistas) {
+      b.addEventListener('click', () => {
+        vista = b.dataset.vista ?? '';
+        aplicar(false);
+      });
+    }
     form.addEventListener('submit', (e) => {
       e.preventDefault();
       cerrarSug();
@@ -551,6 +615,7 @@ const iconos: Record<Temperatura, string> = {
         elegidas.clear();
         q.value = '';
         orden.value = '';
+        asc = false;
         selTubo.value = '';
         aplicar();
       });
@@ -1118,6 +1183,53 @@ const iconos: Record<Temperatura, string> = {
     cursor: default;
   }
 
+  /* Vista: tarjetas o tabla, dos botones cuadrados pegados */
+  .vista {
+    display: flex;
+    flex: none;
+  }
+  .vista button {
+    display: inline-grid;
+    place-items: center;
+    width: var(--alto);
+    height: var(--alto);
+    border: 1px solid var(--osc);
+    background: transparent;
+    color: #e3e6e8;
+    cursor: pointer;
+    transition:
+      background-color 0.2s ease,
+      border-color 0.2s ease,
+      color 0.2s ease;
+  }
+  .vista button + button {
+    margin-left: -1px;
+  }
+  .vista button[aria-pressed='true'] {
+    position: relative;
+    background: #fff;
+    border-color: #fff;
+    color: var(--ink);
+    box-shadow: inset 0 -3px 0 var(--red);
+  }
+  .vista button:focus-visible {
+    position: relative;
+    z-index: 1;
+    outline: 2px solid var(--red);
+    outline-offset: 2px;
+  }
+  .vista button:active {
+    scale: 0.97;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .vista button:not([aria-pressed='true']):hover {
+      position: relative;
+      z-index: 1;
+      border-color: #fff;
+      color: #fff;
+    }
+  }
+
   /* Total y borrar */
   .fin {
     order: 2;
@@ -1236,7 +1348,7 @@ const iconos: Record<Temperatura, string> = {
       padding: 8px;
     }
     .buscar {
-      flex: 1 1 auto;
+      flex: 1 1 0;
       padding: 0 14px;
     }
     .buscar input {
