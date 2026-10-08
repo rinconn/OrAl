@@ -272,6 +272,14 @@ export const en: Textos = {
         velocidad: 'Highest speed',
         fuerza: 'Highest force',
       },
+      vista: {
+        titulo: 'View',
+        tarjetas: 'Card view',
+        tabla: 'Table view',
+        tablaTitulo: 'All models',
+        modelo: 'Model',
+        ordenarPor: (x: string) => `Sort by ${x.toLowerCase()}`,
+      },
       quitar: (x: string) => `Remove the ${x} filter`,
     },
     comparar: {

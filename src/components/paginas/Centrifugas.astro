@@ -138,6 +138,17 @@ const filasComparar = [
 ];
 const cruz = 'M6 6l12 12M18 6 6 18';
 
+// Vista en tabla: los modelos en el orden del catálogo (por familias) y las columnas por las que se puede ordenar
+const tv = f.vista;
+const filasTabla = (Object.keys(familias) as Familia[]).flatMap((fam) =>
+  modelos.filter((m) => familiaDe(m) === fam).map((m) => ({ m, color: familias[fam].color as string })),
+);
+const columnasOrden = [
+  { o: 'cap', nombre: tf.capacidad },
+  { o: 'rpm', nombre: tf.velocidad },
+  { o: 'xg', nombre: tf.fuerza },
+];
+
 // Lista de presupuesto: todo lo del catálogo, con su nombre y su foto
 const tp = t.catalogo.presupuesto;
 const presupuestables = Object.fromEntries(
@@ -221,6 +232,74 @@ const tubos = Object.entries(porTipo)
     </nav>
 
     <div class="wrap salas" id="salas">
+      {/* Vista en tabla: todos los modelos, una fila por versión, ordenables por capacidad, velocidad o fuerza */}
+      <section class="tabla-vista" aria-labelledby="tabla-tit">
+        <h2 id="tabla-tit" class="sr">
+          {tv.tablaTitulo}
+        </h2>
+        <div class="tabla-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">{tv.modelo}</th>
+                <th scope="col">{tc.aplicacion}</th>
+                <th scope="col">{tc.temperatura}</th>
+                {columnasOrden.map((c) => (
+                  <th scope="col" class="num" aria-sort="none">
+                    <button type="button" data-o={c.o} aria-label={tv.ordenarPor(c.nombre)}>
+                      {c.nombre}
+                      <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+                        <path class="ar" d="m7 10 5-5 5 5" fill="none" stroke="currentColor" stroke-width="1.8" />
+                        <path class="ab" d="m7 14 5 5 5-5" fill="none" stroke="currentColor" stroke-width="1.8" />
+                      </svg>
+                    </button>
+                  </th>
+                ))}
+                <th scope="col">{tf.pantalla}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filasTabla.map(({ m, color }) => (
+                <tr
+                  style={`--fam: ${color}`}
+                  data-cat={m.categoria}
+                  data-t={m.temperatura}
+                  data-slugs={m.slug}
+                  data-cap={capacidadMl(m)}
+                  data-rpm={num(m.rpm)}
+                  data-xg={num(m.xg ?? fichaCentrifuga(m.slug)?.xg)}
+                  data-texto={plano(
+                    m.nombre,
+                    t.familias[familiaDe(m)],
+                    t.catalogo.categorias[m.categoria],
+                    textoSerie(lang, m.serie).frase,
+                    capacidad(m),
+                    m.pantalla,
+                    t.temperatura[m.temperatura],
+                  )}
+                >
+                  <th scope="row">
+                    <a href={ruta(lang, `/centrifugas/${m.slug}/`)}>
+                      <img src={m.imagen.src} alt="" width="48" height="48" loading="lazy" decoding="async" />
+                      <span>{m.nombre}</span>
+                    </a>
+                  </th>
+                  <td>{t.catalogo.categorias[m.categoria]}</td>
+                  <td class:list={['temp', m.temperatura]}>
+                    <IconoTemp t={m.temperatura} size={16} />
+                    {may(t.temperatura[m.temperatura])}
+                  </td>
+                  <td class="num">{capacidad(m)}</td>
+                  <td class="num">{numero(lang, m.rpm)} rpm</td>
+                  <td class="num">{fuerza(m) ? `${fuerza(m)} xg` : '—'}</td>
+                  <td>{m.pantalla}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
       {salas.map((s, i) => (
         <section class="sala" data-sala={s.id} aria-labelledby={`sala-${s.id}`} style={`--fam: ${s.color}`}>
           <header class="sala-cab">
@@ -640,6 +719,176 @@ const tubos = Object.entries(porTipo)
 
   .salas {
     padding-top: clamp(40px, 5vw, 72px);
+  }
+
+  /* ——— Vista en tabla: sustituye a las familias y sus atajos; filas finas, cifras alineadas a la derecha y el color de
+     la familia en una raya a la izquierda de cada modelo. En móvil se desplaza dentro de su caja con el nombre fijo ——— */
+  .tabla-vista,
+  .en-tabla .sala,
+  .en-tabla .atajos {
+    display: none;
+  }
+  .en-tabla .tabla-vista {
+    display: block;
+    margin-bottom: clamp(48px, 6vw, 88px);
+  }
+  .tabla-scroll {
+    overflow-x: auto;
+    border-top: 3px solid var(--ink);
+  }
+  .tabla-vista table {
+    width: 100%;
+    min-width: 860px;
+    border-collapse: collapse;
+    font-variant-numeric: tabular-nums;
+  }
+  .tabla-vista th,
+  .tabla-vista td {
+    padding: 10px 16px;
+    text-align: left;
+    vertical-align: middle;
+    border-bottom: 1px solid #e6e6e6;
+    white-space: nowrap;
+  }
+  .tabla-vista thead th {
+    height: 52px;
+    padding-top: 0;
+    padding-bottom: 0;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--muted);
+    border-bottom-color: var(--line);
+  }
+  .tabla-vista .num {
+    text-align: right;
+  }
+  .tabla-vista thead button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 36px;
+    margin-right: -6px;
+    padding: 0 6px;
+    border: 0;
+    background: none;
+    font: inherit;
+    letter-spacing: inherit;
+    text-transform: inherit;
+    color: inherit;
+    cursor: pointer;
+    transition: color 0.2s ease;
+  }
+  .tabla-vista thead button svg {
+    opacity: 0.5;
+    transition:
+      opacity 0.2s ease,
+      rotate 0.2s ease;
+  }
+  .tabla-vista th[aria-sort='descending'] button,
+  .tabla-vista th[aria-sort='ascending'] button {
+    color: var(--ink);
+  }
+  .tabla-vista th[aria-sort='descending'] svg,
+  .tabla-vista th[aria-sort='ascending'] svg {
+    opacity: 1;
+    color: var(--red);
+  }
+  .tabla-vista th[aria-sort='descending'] .ar,
+  .tabla-vista th[aria-sort='ascending'] .ab {
+    display: none;
+  }
+  .tabla-vista thead button:focus-visible,
+  .tabla-vista tbody a:focus-visible {
+    outline: 2px solid var(--red);
+    outline-offset: 2px;
+  }
+  .tabla-vista tbody th {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    padding-left: 0;
+    background: #fff;
+    box-shadow: inset 3px 0 0 var(--fam);
+  }
+  .tabla-vista tbody a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-left: 16px;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--ink);
+    text-decoration: none;
+  }
+  .tabla-vista tbody a img {
+    flex: none;
+    width: 48px;
+    height: 48px;
+    object-fit: contain;
+  }
+  .tabla-vista tbody a span::after {
+    content: ' »';
+    color: var(--red);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+  .tabla-vista td {
+    font-size: 16px;
+    color: var(--body);
+  }
+  .tabla-vista td.num {
+    font-size: 17px;
+    color: var(--ink);
+  }
+  .tabla-vista td.temp {
+    display: table-cell;
+  }
+  .tabla-vista td.temp :global(.icono-temp) {
+    margin-right: 6px;
+    vertical-align: -3px;
+  }
+  .tabla-vista td.ventilada :global(.icono-temp) {
+    color: var(--t-ventilada);
+  }
+  .tabla-vista td.refrigerada :global(.icono-temp) {
+    color: var(--t-refrigerada);
+  }
+  .tabla-vista td.calefactada :global(.icono-temp) {
+    color: var(--t-calefactada);
+  }
+  .tabla-vista tbody tr[hidden] {
+    display: none;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .tabla-vista thead button:hover {
+      color: var(--ink);
+    }
+    .tabla-vista thead button:hover svg {
+      opacity: 1;
+    }
+    .tabla-vista tbody tr:hover th,
+    .tabla-vista tbody tr:hover td {
+      background: var(--band);
+    }
+    .tabla-vista tbody tr:hover a span::after {
+      opacity: 1;
+    }
+  }
+  @media (max-width: 1024px) {
+    .tabla-vista th,
+    .tabla-vista td {
+      padding: 8px 12px;
+    }
+    .tabla-vista tbody a {
+      padding-left: 12px;
+      font-size: 16px;
+    }
+    .tabla-vista tbody a img {
+      width: 40px;
+      height: 40px;
+    }
   }
 
   .sala + .sala {
