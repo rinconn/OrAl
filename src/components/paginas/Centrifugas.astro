@@ -1329,6 +1329,19 @@ const tubos = Object.entries(porTipo)
     height: 32px;
     padding: 0 9px;
   }
+  /* En la fila la casilla va sola: marcada, solo el cuadro rojo con su tick, sin el fondo negro de la tarjeta */
+  .tabla-vista .comparar:has(input:checked) {
+    color: var(--ink);
+    background: transparent;
+  }
+  .tabla-vista .caja {
+    width: 16px;
+    height: 16px;
+  }
+  .tabla-vista .caja::after {
+    left: 5px;
+    top: 1px;
+  }
   .tabla-vista td.pres {
     width: 1%;
     padding-top: 0;
