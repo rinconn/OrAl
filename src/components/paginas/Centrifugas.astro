@@ -2027,75 +2027,68 @@ const tubos = Object.entries(porTipo)
     }
   }
 
-  /* ——— Selector de versión: al pie de la foto, blanco; la elegida, en negro ——— */
+  /* ——— Selector de versión: al pie de la foto, un interruptor segmentado. Pista oscura y la elegida en blanco;
+     "Versión" es texto suelto dentro de la pista, sin caja ni separador, para que no parezca otro botón ——— */
   .versiones {
     position: absolute;
     left: 16px;
-    top: calc(80cqw - 50px);
+    top: calc(80cqw - 48px);
     z-index: 3;
     display: flex;
-    background: #fff;
-    box-shadow: 0 1px 3px rgba(17, 19, 21, 0.2);
-  }
-  .versiones {
-    align-items: stretch;
-  }
-  /* "VERSIÓN" delante, para que se lea como una elección y no como dos temperaturas a la vez */
-  .v-etq {
-    display: flex;
     align-items: center;
-    padding: 0 10px;
-    border-right: 1px solid #d3d6d9;
-    font-size: 12px;
+    gap: 2px;
+    padding: 3px;
+    background: rgba(17, 19, 21, 0.78);
+    backdrop-filter: blur(6px);
+  }
+  .v-etq {
+    padding: 0 8px 0 7px;
+    font-size: 11px;
     font-weight: 700;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: var(--muted);
+    color: rgba(255, 255, 255, 0.6);
   }
   .versiones button {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    height: 34px;
-    padding: 0 12px;
+    height: 30px;
+    padding: 0 11px;
     border: 0;
-    background: #fff;
+    background: transparent;
     font: 700 14px var(--f);
-    color: var(--ink);
+    color: rgba(255, 255, 255, 0.82);
     cursor: pointer;
     transition:
       background-color 0.2s ease,
       color 0.2s ease;
   }
-  .versiones button + button {
-    border-left: 1px solid #d3d6d9;
-  }
   .versiones button[aria-pressed='true'] {
-    background: var(--ink);
-    color: #fff;
+    background: #fff;
+    color: var(--ink);
+    cursor: default;
   }
   .versiones button :global(svg) {
     flex: none;
   }
-  .versiones button[data-t='ventilada'] :global(svg) {
+  .versiones button[aria-pressed='true'][data-t='ventilada'] :global(svg) {
     color: #6f7a81;
   }
-  .versiones button[data-t='refrigerada'] :global(svg) {
+  .versiones button[aria-pressed='true'][data-t='refrigerada'] :global(svg) {
     color: #2a7fc4;
   }
-  .versiones button[data-t='calefactada'] :global(svg) {
+  .versiones button[aria-pressed='true'][data-t='calefactada'] :global(svg) {
     color: var(--red);
   }
-  .versiones button[aria-pressed='true'] :global(svg) {
-    color: #fff;
-  }
   .versiones button:focus-visible {
-    outline: 2px solid var(--red);
-    outline-offset: 2px;
+    outline: 2px solid #fff;
+    outline-offset: 1px;
   }
   @media (hover: hover) and (pointer: fine) {
     .versiones button:not([aria-pressed='true']):hover {
-      background: #eef0f1;
+      background: rgba(255, 255, 255, 0.14);
+      color: #fff;
     }
   }
 
