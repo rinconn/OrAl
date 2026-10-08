@@ -394,7 +394,29 @@ const iconos: Record<Temperatura, string> = {
         const on = b.dataset.o === orden.value;
         b.closest('th')!.setAttribute('aria-sort', on ? (asc ? 'ascending' : 'descending') : 'none');
       }
+      // Encima de la tabla, en palabras, qué orden se ve; la columna elegida se marca en rojo
+      if (!tabla) return;
+      tabla.dataset.o = orden.value;
+      const cab = cabs.find((b) => b.dataset.o === orden.value);
+      const nombre = cab?.firstChild?.textContent?.trim().toLowerCase() ?? '';
+      const ds = estado!.dataset;
+      const plantilla = asc ? ds.menor! : ds.mayor!;
+      const k = plantilla.indexOf('{x}');
+      if (cab)
+        estado!.replaceChildren(
+          plantilla.slice(0, k),
+          Object.assign(document.createElement('b'), { textContent: nombre }),
+          plantilla.slice(k + 3),
+        );
+      else estado!.textContent = ds.catalogo!;
+      invertir!.hidden = !cab;
     };
+    const estado = tabla?.querySelector<HTMLElement>('.tabla-estado p');
+    const invertir = tabla?.querySelector<HTMLButtonElement>('.invertir');
+    invertir?.addEventListener('click', () => {
+      asc = !asc;
+      aplicar(false);
+    });
     // Vista elegida: tarjetas (por defecto) o tabla
     const vistas = [...form.querySelectorAll<HTMLButtonElement>('.vista button')];
     let vista = '';
