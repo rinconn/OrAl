@@ -263,6 +263,10 @@ export const es = {
       aplicacion: 'Aplicación',
       temperatura: 'Temperatura',
       resultados: (n: number) => (n === 1 ? '1 producto' : `${n} productos`),
+      // El contador de la barra: en tarjetas, series de centrífugas y el resto aparte; en la tabla, modelos
+      series: (n: number) => (n === 1 ? '1 serie' : `${n} series`),
+      mas: (n: number) => `${n} más`,
+      modelos: (n: number) => (n === 1 ? '1 modelo' : `${n} modelos`),
       limpiar: 'Borrar filtros',
       vacio: 'Ningún producto cumple todos estos filtros.',
       boton: 'Filtros',
