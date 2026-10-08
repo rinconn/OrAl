@@ -138,6 +138,24 @@ const filasComparar = [
 ];
 const cruz = 'M6 6l12 12M18 6 6 18';
 
+// Vista en tabla: los modelos en el orden del catálogo (por familias) y las columnas por las que se puede ordenar
+const tv = f.vista;
+const filasTabla = (Object.keys(familias) as Familia[]).flatMap((fam) =>
+  modelos.filter((m) => familiaDe(m) === fam).map((m) => ({ m, color: familias[fam].color as string })),
+);
+const columnasOrden = [
+  { o: 'cap', nombre: tf.capacidad, ud: undefined },
+  { o: 'rpm', nombre: tf.velocidad, ud: 'rpm' },
+  { o: 'xg', nombre: tf.fuerza, ud: 'xg' },
+];
+// Barra bajo cada cifra: su tamaño frente a la mayor de la columna (sin barra si no hay cifra)
+const maximos: Record<string, number> = {
+  cap: Math.max(...filasTabla.map(({ m }) => capacidadMl(m))),
+  rpm: Math.max(...filasTabla.map(({ m }) => num(m.rpm))),
+  xg: Math.max(...filasTabla.map(({ m }) => num(m.xg ?? fichaCentrifuga(m.slug)?.xg))),
+};
+const barra = (v: number, k: string) => (v ? `--p: ${(v / maximos[k]).toFixed(3)}` : undefined);
+
 // Lista de presupuesto: todo lo del catálogo, con su nombre y su foto
 const tp = t.catalogo.presupuesto;
 const presupuestables = Object.fromEntries(
@@ -168,6 +186,33 @@ const tubosDe = (slug: string) => {
   return r;
 };
 const tubosModelo = Object.fromEntries(modelos.map((m) => [m.slug, tubosDe(m.slug)]));
+
+// ——— Mínimos: velocidad y fuerza máximas de cada versión, y cuántos tubos de cuántos ml caben a la vez en alguno de
+// sus rotores (más la capacidad de la tabla de la serie). Solo se guardan las combinaciones que no mejora otra ———
+const mlMax = (s?: string) => {
+  const hasta = s?.slice(0, s.lastIndexOf('ml')) ?? '';
+  const ns = hasta.match(/\d[\d.,]*/g)?.map((x) => Number(x.replace(/\.(?=\d{3})/g, '').replace(',', '.'))) ?? [];
+  return ns.length ? Math.max(...ns) : 0;
+};
+const capacidadesDe = (m: Modelo) => {
+  const pares: [number, number][] = [];
+  const serie = /(\d+)\s*×\s*([\d.,/]+)\s*ml/.exec(m.capacidad);
+  if (serie) pares.push([Number(serie[1]), mlMax(`${serie[2].split('/').pop()} ml`)]);
+  for (const id of fichaCentrifuga(m.slug)?.rotores ?? [])
+    for (const tu of rotor(id)?.tubos ?? []) {
+      const n = Number(tu.posiciones) || 0;
+      const ml = mlMax(tu.capacidad);
+      if (n && ml) pares.push([n, ml]);
+    }
+  const unicos = [...new Map(pares.map((p) => [p.join('x'), p])).values()];
+  return unicos.filter(([n, ml]) => !unicos.some(([n2, ml2]) => n2 >= n && ml2 >= ml && (n2 > n || ml2 > ml)));
+};
+const cifrasModelo = Object.fromEntries(
+  modelos.map((m) => [
+    m.slug,
+    { rpm: num(m.rpm), xg: num(m.xg ?? fichaCentrifuga(m.slug)?.xg), cap: capacidadesDe(m) },
+  ]),
+);
 // Para el filtro: los tubos agrupados por tipo (los tipos con más máquinas primero) y ordenados por medidas
 const cuenta: Record<string, number> = {};
 for (const ts of Object.values(tubosModelo)) for (const k of Object.keys(ts)) cuenta[k] = (cuenta[k] ?? 0) + 1;
@@ -210,17 +255,185 @@ const tubos = Object.entries(porTipo)
       grupos={grupos.map((g) => ({ nombre: g.nombre, cats: g.cats.map((c) => ({ v: c, nombre: nombreCorto(c) })) }))}
     />
 
-    <!-- Atajos: una entrada por familia, con su color, que lleva a su sección -->
-    <nav class="wrap atajos" aria-label={t.catalogo.atajos}>
-      {salas.map((s) => (
-        <a href={`#sala-${s.id}`} data-ir={s.id} style={`--fam: ${s.color}`}>
-          {s.nombre}
-          <span class="n">{s.fichas.length}</span>
-        </a>
-      ))}
-    </nav>
+    <!-- Atajos: una entrada por familia, con su color, que lleva a su sección; a la derecha, descargar lo que se ve
+         (los modelos que dejan los filtros, como en la tabla) -->
+    <div class="wrap atajos-fila">
+      <nav class="atajos" aria-label={t.catalogo.atajos}>
+        {salas.map((s) => (
+          <a href={`#sala-${s.id}`} data-ir={s.id} style={`--fam: ${s.color}`}>
+            {s.nombre}
+            <span class="n">{s.fichas.length}</span>
+          </a>
+        ))}
+      </nav>
+      <div class="descargar" role="group" aria-label={tv.descargar}>
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+          <path d="M12 4v11M7 10l5 5 5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="1.7" />
+        </svg>
+        <span class="d-etq">{tv.descargar}</span>
+        <button type="button" data-exportar="pdf" title={tv.descargarEn('PDF')}>
+          PDF
+        </button>
+        <button type="button" data-exportar="excel" title={tv.descargarEn('Excel')}>
+          Excel
+        </button>
+      </div>
+    </div>
 
     <div class="wrap salas" id="salas">
+      {/* Vista en tabla: todos los modelos, una fila por versión, ordenables por capacidad, velocidad o fuerza */}
+      <section class="tabla-vista" aria-labelledby="tabla-tit">
+        <h2 id="tabla-tit" class="sr">
+          {tv.tablaTitulo}
+        </h2>
+        {/* Qué orden se ve: lo rellena el script de los filtros; "Invertir" da la vuelta al orden elegido */}
+        <div class="tabla-estado">
+          <p aria-live="polite" data-catalogo={tv.catalogo} data-mayor={tv.mayor} data-menor={tv.menor}></p>
+          {/* Cuántas filas hay elegidas, con la × para quitar la elección */}
+          <button
+            type="button"
+            class="eleccion"
+            hidden
+            data-uno={tv.elegidos(1)}
+            data-varios={tv.elegidos(999)}
+            title={tv.quitarEleccion}
+          >
+            <span></span>
+            <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+              <path d={cruz} stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+            </svg>
+          </button>
+          {/* Con 2 o 3 elegidas, compararlas; con más, el botón dice que el máximo es 3 */}
+          <button type="button" class="comparar-eleg" hidden data-txt={tc.abrir(999)} data-maximo={tc.maximo}></button>
+          <button type="button" class="invertir" hidden>
+            <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+              <path
+                d="M7 4v16M4 17l3 3 3-3M17 20V4M14 7l3-3 3 3"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.7"
+              />
+            </svg>
+            {tv.invertir}
+          </button>
+          {/* Descargar lo que se ve (filtros y orden incluidos) para mandárselo al cliente */}
+          <div class="descargar" role="group" aria-label={tv.descargar}>
+            <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+              <path d="M12 4v11M7 10l5 5 5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="1.7" />
+            </svg>
+            <span class="d-etq">{tv.descargar}</span>
+            <button type="button" data-exportar="pdf" title={tv.descargarEn('PDF')}>
+              PDF
+            </button>
+            <button type="button" data-exportar="excel" title={tv.descargarEn('Excel')}>
+              Excel
+            </button>
+          </div>
+        </div>
+        <div class="tabla-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col" data-cols={`${tv.modelo}|${tc.aplicacion}`}>
+                  {/* Elegir todas las filas a la vista, para descargar solo las elegidas */}
+                  <span class="mod">
+                    <label class="elegir" title={tv.elegirTodos}>
+                      <input type="checkbox" class="elegir-todas" aria-label={tv.elegirTodos} />
+                      <span class="caja" aria-hidden="true" />
+                    </label>
+                    {tv.modelo}
+                  </span>
+                </th>
+                <th scope="col">{tc.temperatura}</th>
+                {columnasOrden.map((c) => (
+                  <th scope="col" class="num" aria-sort="none" data-ud={c.ud}>
+                    <button type="button" data-o={c.o} aria-label={tv.ordenarPor(c.nombre)}>
+                      {c.nombre}
+                      <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+                        <path class="ar" d="m7 10 5-5 5 5" fill="none" stroke="currentColor" stroke-width="1.8" />
+                        <path class="ab" d="m7 14 5 5 5-5" fill="none" stroke="currentColor" stroke-width="1.8" />
+                      </svg>
+                    </button>
+                  </th>
+                ))}
+                <th scope="col" class="centro">
+                  {tf.pantalla}
+                </th>
+                <th scope="col" class="centro fuera">
+                  {tp.corto}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {filasTabla.map(({ m, color }) => (
+                <tr
+                  style={`--fam: ${color}`}
+                  data-cat={m.categoria}
+                  data-t={m.temperatura}
+                  data-slugs={m.slug}
+                  data-cap={capacidadMl(m)}
+                  data-rpm={num(m.rpm)}
+                  data-xg={num(m.xg ?? fichaCentrifuga(m.slug)?.xg)}
+                  data-texto={plano(
+                    m.nombre,
+                    t.familias[familiaDe(m)],
+                    t.catalogo.categorias[m.categoria],
+                    textoSerie(lang, m.serie).frase,
+                    capacidad(m),
+                    m.pantalla,
+                    t.temperatura[m.temperatura],
+                  )}
+                >
+                  <th scope="row">
+                    <span class="mod">
+                      {/* Elegir la fila: si hay alguna elegida, la descarga lleva solo esas */}
+                      <label class="elegir" title={tv.elegir}>
+                        <input type="checkbox" value={m.slug} aria-label={`${tv.elegir}: ${m.nombre}`} />
+                        <span class="caja" aria-hidden="true" />
+                      </label>
+                      <a href={ruta(lang, `/centrifugas/${m.slug}/`)}>
+                        <img src={m.imagen.src} alt="" width="48" height="48" loading="lazy" decoding="async" />
+                        {/* La aplicación, debajo del nombre: una columna menos y la fila se lee de un vistazo */}
+                        <span class="nom">
+                          <b data-x>{m.nombre}</b>
+                          <small data-x>{t.catalogo.categorias[m.categoria]}</small>
+                        </span>
+                      </a>
+                    </span>
+                  </th>
+                  <td class:list={['temp', m.temperatura]}>
+                    <IconoTemp t={m.temperatura} size={16} />
+                    {may(t.temperatura[m.temperatura])}
+                  </td>
+                  <td class="num c-cap" style={barra(capacidadMl(m), 'cap')}>
+                    {capacidad(m)}
+                  </td>
+                  <td class="num c-rpm" style={barra(num(m.rpm), 'rpm')} data-n={num(m.rpm)}>
+                    {numero(lang, m.rpm)} rpm
+                  </td>
+                  <td
+                    class="num c-xg"
+                    style={barra(num(m.xg ?? fichaCentrifuga(m.slug)?.xg), 'xg')}
+                    data-n={num(m.xg ?? fichaCentrifuga(m.slug)?.xg) || undefined}
+                  >
+                    {fuerza(m) ? `${fuerza(m)} xg` : '—'}
+                  </td>
+                  <td class="centro">{m.pantalla}</td>
+                  {/* El mismo "+" que las tarjetas: el script los coge todos y los tiene a la par */}
+                  <td class="pres fuera">
+                    <button type="button" class="anadir" data-slug={m.slug} title={tp.anadir}>
+                      <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                        <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                      </svg>
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
       {salas.map((s, i) => (
         <section class="sala" data-sala={s.id} aria-labelledby={`sala-${s.id}`} style={`--fam: ${s.color}`}>
           <header class="sala-cab">
@@ -266,9 +479,6 @@ const tubos = Object.entries(porTipo)
                   />
                   {x.ms.length > 1 && (
                     <div class="versiones" role="group" aria-label={tc.version}>
-                      <span class="v-etq" aria-hidden="true">
-                        {tc.version}
-                      </span>
                       {etiquetas(x.ms).map((e, i) => (
                         <button
                           type="button"
@@ -382,6 +592,19 @@ const tubos = Object.entries(porTipo)
         {tp.pedir}
       </a>
       <p class="pres-nota">{tp.nota}</p>
+      {/* La lista, con sus unidades, en PDF o Excel: para el cliente o para adjuntarla al pedir presupuesto */}
+      <div class="descargar" role="group" aria-label={tv.descargar}>
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+          <path d="M12 4v11M7 10l5 5 5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="1.7" />
+        </svg>
+        <span class="d-etq">{tv.descargar}</span>
+        <button type="button" data-exportar="pdf" title={tv.descargarEn('PDF')}>
+          PDF
+        </button>
+        <button type="button" data-exportar="excel" title={tv.descargarEn('Excel')}>
+          Excel
+        </button>
+      </div>
       <button type="button" class="pres-vaciar">
         {tp.vaciar}
       </button>
@@ -403,6 +626,18 @@ const tubos = Object.entries(porTipo)
   <dialog class="comparador" id="comparador" aria-labelledby="comparador-tit">
     <div class="comp-cab">
       <h2 id="comparador-tit">{tc.titulo}</h2>
+      <div class="descargar" role="group" aria-label={tv.descargar}>
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+          <path d="M12 4v11M7 10l5 5 5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="1.7" />
+        </svg>
+        <span class="d-etq">{tv.descargar}</span>
+        <button type="button" data-exportar="pdf" title={tv.descargarEn('PDF')}>
+          PDF
+        </button>
+        <button type="button" data-exportar="excel" title={tv.descargarEn('Excel')}>
+          Excel
+        </button>
+      </div>
       <button type="button" class="cerrar-comp" aria-label={tc.cerrar}>
         <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
           <path d={cruz} stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path>
@@ -424,7 +659,77 @@ const tubos = Object.entries(porTipo)
   <script
     type="application/json"
     id="datos-tubos"
-    set:html={JSON.stringify({ modelos: tubosModelo, texto: t.catalogo.filtros.conTubo('{r}', '{t}', '{n}') })}
+    set:html={JSON.stringify({
+      modelos: tubosModelo,
+      cifras: cifrasModelo,
+      texto: t.catalogo.filtros.conTubo('{r}', '{t}', '{n}'),
+    })}
+  />
+  <!-- Vista previa del PDF: el documento ya hecho, y desde aquí se descarga o se imprime -->
+  <dialog class="vista-pdf" id="vista-pdf" aria-labelledby="vista-pdf-tit">
+    <div class="vp-cab">
+      <h2 id="vista-pdf-tit">{tv.vistaPrevia}</h2>
+      <button type="button" class="vp-descargar">
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+          <path d="M12 4v11M7 10l5 5 5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="1.8" />
+        </svg>
+        {tv.descargarPdf}
+      </button>
+      <button type="button" class="vp-imprimir">
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+          <path
+            d="M7 9V4h10v5M7 17H5v-7h14v7h-2M8 14h8v6H8z"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.6"
+            stroke-linejoin="round"
+          />
+        </svg>
+        {tv.imprimir}
+      </button>
+      <button type="button" class="vp-cerrar" aria-label={tc.cerrar}>
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+          <path d={cruz} stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path>
+        </svg>
+      </button>
+    </div>
+    <div class="vp-cuerpo">
+      <iframe title={tv.vistaPrevia}></iframe>
+      <p class="vp-espera">{tv.preparando}</p>
+      <p class="vp-sin">{tv.sinVista}</p>
+      <p class="vp-fallo">{tv.fallo}</p>
+    </div>
+  </dialog>
+
+  <script
+    type="application/json"
+    id="datos-exportar"
+    set:html={JSON.stringify({
+      titulo: tv.docTitulo,
+      comp: tv.compTitulo,
+      todo: tv.todo,
+      seleccion: tv.seleccion,
+      uno: tv.modelos(1),
+      varios: tv.modelos(999),
+      archivo: tv.archivo,
+      archivoComp: tv.archivoComp,
+      etqSeleccion: tv.etqSeleccion,
+      etqOrden: tv.etqOrden,
+      etqModelos: tv.etqModelos,
+      tipoTabla: tv.tipoTabla,
+      tipoComp: tv.tipoComp,
+      mayorCorto: tv.mayorCorto,
+      menorCorto: tv.menorCorto,
+      catalogoOrden: tv.catalogoOrden,
+      tipoPres: tv.tipoPres,
+      presTitulo: tv.presTitulo,
+      producto: tv.producto,
+      etqUnidades: tv.etqUnidades,
+      archivoPres: tv.archivoPres,
+      fuente: tv.fuente,
+      empresa: `${contacto.empresa} · ${contacto.direccion}`,
+      pagina: tv.pagina,
+    })}
   />
   <script
     type="application/json"
@@ -454,6 +759,166 @@ const tubos = Object.entries(porTipo)
   iniciarComparador();
   import { iniciarPresupuesto } from '../../scripts/presupuesto';
   iniciarPresupuesto();
+
+  // ——— Descargar la tabla (lo filtrado, en su orden) o la comparativa, en PDF o en Excel ———
+  import { excel, hoy, iniciarVistaPdf, leerTabla, pdf, type Hoja } from '../../scripts/exportar';
+  iniciarVistaPdf();
+  const tx = JSON.parse(document.getElementById('datos-exportar')?.textContent ?? '{}') as Record<string, string>;
+  const hojaTabla = (enTabla: boolean): Hoja | undefined => {
+    const tabla = document.querySelector<HTMLTableElement>('.tabla-vista table');
+    if (!tabla) return;
+    // Si se han elegido filas en la tabla, salen solo esas; si no (o desde las tarjetas), todo lo que dejan los filtros
+    const marcada = (tr: HTMLTableRowElement) => !!tr.querySelector('.elegir input:checked');
+    const hayMarcadas = enTabla && [...tabla.tBodies[0].rows].some((tr) => !tr.hidden && marcada(tr));
+    const { cabecera, filas } = leerTabla(tabla, hayMarcadas ? marcada : undefined);
+    const d = hoy();
+    const puesto = JSON.parse(document.getElementById('salas')?.dataset.resumen ?? '[]') as string[];
+    // La columna por la que se ordena y hacia dónde ("Fuerza máx., de mayor a menor")
+    const col = tabla.querySelector<HTMLElement>('th[aria-sort="descending"], th[aria-sort="ascending"]');
+    const orden = col
+      ? `${col.textContent!.trim()}, ${col.getAttribute('aria-sort') === 'ascending' ? tx.menorCorto : tx.mayorCorto}`
+      : tx.catalogoOrden;
+    return {
+      tipo: tx.tipoTabla,
+      titulo: tx.titulo,
+      fecha: d.texto,
+      datos: [
+        [tx.etqSeleccion, hayMarcadas ? tx.seleccion : puesto.length ? puesto.join(' · ') : tx.todo],
+        [tx.etqOrden, orden],
+        [tx.etqModelos, filas.length === 1 ? tx.uno : tx.varios.replace('999', String(filas.length))],
+      ],
+      cabecera,
+      filas,
+      archivo: `${tx.archivo}-${d.archivo}`,
+    };
+  };
+  const hojaComparativa = (): Hoja | undefined => {
+    const tabla = document.querySelector<HTMLTableElement>('#comparador .comp-tabla table');
+    if (!tabla) return;
+    const { cabecera, filas } = leerTabla(tabla);
+    const d = hoy();
+    return {
+      tipo: tx.tipoComp,
+      titulo: tx.comp,
+      fecha: d.texto,
+      datos: [
+        [
+          tx.etqModelos,
+          cabecera
+            .slice(1)
+            .map((c) => c.t)
+            .join(' · '),
+        ],
+      ],
+      cabecera,
+      filas,
+      archivo: `${tx.archivoComp}-${d.archivo}`,
+    };
+  };
+  // La lista de presupuesto tal como está en su panel: cada producto con su foto y sus unidades
+  const hojaPresupuesto = (): Hoja | undefined => {
+    const items = [...document.querySelectorAll<HTMLElement>('#presupuesto .pres-lista li')];
+    if (!items.length) return;
+    const filas = items.map((li) => {
+      const n = Number(li.querySelector('output')?.textContent) || 1;
+      return [
+        {
+          t: li.querySelector('span')!.textContent!.trim(),
+          img: li.querySelector('img')?.getAttribute('src') ?? undefined,
+        },
+        { t: String(n), n },
+      ];
+    });
+    const total = filas.reduce((s, f) => s + (f[1].n ?? 0), 0);
+    const d = hoy();
+    return {
+      tipo: tx.tipoPres,
+      titulo: tx.presTitulo,
+      fecha: d.texto,
+      datos: [
+        [tx.etqModelos, String(filas.length)],
+        [tx.etqUnidades, String(total)],
+      ],
+      cabecera: [{ t: tx.producto }, { t: tx.etqUnidades, num: true }],
+      filas,
+      archivo: `${tx.archivoPres}-${d.archivo}`,
+    };
+  };
+  for (const b of document.querySelectorAll<HTMLButtonElement>('[data-exportar]')) {
+    b.addEventListener('click', () => {
+      const h = b.closest('#comparador')
+        ? hojaComparativa()
+        : b.closest('#presupuesto')
+          ? hojaPresupuesto()
+          : hojaTabla(!!b.closest('.tabla-vista'));
+      if (!h) return;
+      if (b.dataset.exportar === 'excel') excel(h);
+      // El presupuesto no lleva datos técnicos: sin la línea de dónde salen
+      else
+        void pdf(h, {
+          empresa: tx.empresa,
+          web: 'ortoalresa.com',
+          pagina: tx.pagina,
+          fuente: b.closest('#presupuesto') ? '' : tx.fuente,
+        });
+    });
+  }
+
+  // Sin ningún modelo a la vista, ni tabla ni descargas: queda solo el mensaje de "sin resultados"
+  // (los filtros de la dirección ya se han aplicado al cargar: se mira también al arrancar)
+  const conFilas = () => {
+    const tabla = document.querySelector<HTMLElement>('.tabla-vista');
+    if (!tabla) return;
+    const hay = [...tabla.querySelectorAll<HTMLElement>('tbody tr')].some((tr) => !tr.hidden);
+    tabla.classList.toggle('sin-filas', !hay);
+    for (const b of document.querySelectorAll<HTMLButtonElement>(
+      '.tabla-estado [data-exportar], .atajos-fila [data-exportar]',
+    ))
+      b.disabled = !hay;
+  };
+
+  // ——— Elegir filas de la tabla para descargar solo esas: la casilla de cada fila, "todas" en la cabecera (las que
+  // se ven) y, encima, cuántas hay con su × para quitarlas ———
+  const elegirTodas = document.querySelector<HTMLInputElement>('.elegir-todas');
+  const casillasFila = [...document.querySelectorAll<HTMLInputElement>('.tabla-vista tbody .elegir input')];
+  const eleccion = document.querySelector<HTMLButtonElement>('.tabla-estado .eleccion');
+  const compararEleg = document.querySelector<HTMLButtonElement>('.tabla-estado .comparar-eleg');
+  const elegidasVis = () => casillasFila.filter((c) => c.checked && !c.closest('tr')!.hidden).map((c) => c.value);
+  const pintarEleccion = () => {
+    const vis = casillasFila.filter((c) => !c.closest('tr')!.hidden);
+    const n = vis.filter((c) => c.checked).length;
+    for (const c of casillasFila) c.closest('tr')!.classList.toggle('elegida', c.checked);
+    if (elegirTodas) {
+      elegirTodas.checked = n > 0 && n === vis.length;
+      elegirTodas.indeterminate = n > 0 && n < vis.length;
+    }
+    if (eleccion) {
+      eleccion.hidden = n === 0;
+      eleccion.querySelector('span')!.textContent =
+        n === 1 ? eleccion.dataset.uno! : eleccion.dataset.varios!.replace('999', String(n));
+    }
+    if (compararEleg) {
+      compararEleg.hidden = n < 2;
+      compararEleg.disabled = n > 3;
+      compararEleg.textContent =
+        n > 3 ? compararEleg.dataset.maximo! : compararEleg.dataset.txt!.replace('999', String(n));
+    }
+  };
+  for (const c of casillasFila) c.addEventListener('change', pintarEleccion);
+  elegirTodas?.addEventListener('change', () => {
+    for (const c of casillasFila) if (!c.closest('tr')!.hidden) c.checked = elegirTodas.checked;
+    pintarEleccion();
+  });
+  compararEleg?.addEventListener('click', () =>
+    document.dispatchEvent(new CustomEvent('comparar:abrir', { detail: elegidasVis() })),
+  );
+  eleccion?.addEventListener('click', () => {
+    for (const c of casillasFila) c.checked = false;
+    pintarEleccion();
+  });
+  document.addEventListener('catalogo:filtrado', pintarEleccion);
+  conFilas();
+  document.addEventListener('catalogo:filtrado', conFilas);
 
   const salasEl = document.getElementById('salas');
   const quieto = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -528,7 +993,19 @@ const tubos = Object.entries(porTipo)
     }
   };
   document.addEventListener('catalogo:filtrado', (e) => {
-    tuboActual = (e as CustomEvent<{ tubo?: string }>).detail?.tubo ?? '';
+    const detalle = (e as CustomEvent<{ tubo?: string; validos?: string[] }>).detail;
+    tuboActual = detalle?.tubo ?? '';
+    // Con mínimos puestos, cada tarjeta enseña una versión que llega a ellos
+    const validos = detalle?.validos;
+    if (validos)
+      for (const g of document.querySelectorAll<HTMLElement>('.versiones')) {
+        const actual = g.querySelector<HTMLButtonElement>('[aria-pressed="true"]');
+        if (actual && validos.includes(actual.dataset.slug!)) continue;
+        const otra = [...g.querySelectorAll<HTMLButtonElement>('button')].find((x) =>
+          validos.includes(x.dataset.slug!),
+        );
+        if (otra) verVersion(g.closest<HTMLElement>('.ficha')!, otra.dataset.i!, false);
+      }
     if (tuboActual)
       for (const g of document.querySelectorAll<HTMLElement>('.versiones')) {
         const actual = g.querySelector<HTMLButtonElement>('[aria-pressed="true"]');
@@ -640,6 +1117,559 @@ const tubos = Object.entries(porTipo)
 
   .salas {
     padding-top: clamp(40px, 5vw, 72px);
+  }
+
+  /* ——— Vista en tabla: sustituye a las familias y sus atajos. Cabecera oscura con la raya roja de la marca, la columna
+     por la que se ordena marcada en rojo y una barra fina bajo cada cifra con su tamaño frente a la mayor. Cada modelo
+     lleva el color de su familia a la izquierda, que se vuelve rojo al pasar el ratón. En móvil se desplaza dentro de su
+     caja con el nombre fijo ——— */
+  .tabla-vista,
+  .en-tabla .sala,
+  .en-tabla .atajos-fila {
+    display: none;
+  }
+  .en-tabla .tabla-vista {
+    display: block;
+    margin-bottom: clamp(48px, 6vw, 88px);
+  }
+  .en-tabla .tabla-vista.sin-filas {
+    display: none;
+  }
+  .tabla-estado {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    min-height: 44px;
+    margin-bottom: 14px;
+  }
+  .tabla-estado p {
+    margin: 0;
+    font-size: 17px;
+    color: var(--muted);
+  }
+  .tabla-estado p :global(b) {
+    font-weight: 700;
+    color: var(--ink);
+    box-shadow: inset 0 -2px 0 var(--red);
+  }
+  .invertir {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    gap: 8px;
+    height: 44px;
+    padding: 0 16px;
+    border: 1px solid var(--line);
+    background: #fff;
+    font: 700 15px var(--f);
+    color: var(--ink);
+    cursor: pointer;
+    transition:
+      border-color 0.2s ease,
+      color 0.2s ease;
+  }
+  .invertir[hidden] {
+    display: none;
+  }
+  /* Descargar: la flecha, la palabra y dos botones pegados, PDF y Excel */
+  .tabla-estado .invertir {
+    margin-left: auto;
+  }
+  .descargar {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    gap: 8px;
+    font-size: 15px;
+    color: var(--muted);
+  }
+  .descargar svg {
+    color: var(--red);
+  }
+  .descargar button {
+    height: 44px;
+    padding: 0 14px;
+    border: 1px solid var(--line);
+    background: #fff;
+    font: 700 15px var(--f);
+    color: var(--ink);
+    cursor: pointer;
+    transition:
+      border-color 0.2s ease,
+      color 0.2s ease;
+  }
+  .descargar button + button {
+    margin-left: -9px;
+  }
+  .descargar button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+  .descargar button:active {
+    scale: 0.97;
+  }
+  .descargar button:focus-visible {
+    outline: 2px solid var(--red);
+    outline-offset: 2px;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .descargar button:hover:not(:disabled) {
+      position: relative;
+      border-color: var(--red);
+      color: var(--red);
+    }
+  }
+  @media (max-width: 640px) {
+    .tabla-estado {
+      flex-wrap: wrap;
+    }
+    .tabla-estado p {
+      flex-basis: 100%;
+    }
+    .tabla-estado .invertir {
+      margin-left: 0;
+    }
+    .tabla-estado .descargar {
+      margin-left: auto;
+    }
+    .descargar .d-etq {
+      display: none;
+    }
+  }
+  .invertir svg {
+    color: var(--red);
+  }
+  .invertir:active {
+    scale: 0.97;
+  }
+  .tabla-scroll {
+    overflow-x: auto;
+    border-top: 3px solid var(--red);
+    box-shadow: 0 30px 60px -48px rgba(17, 19, 21, 0.5);
+  }
+  .tabla-vista table {
+    width: 100%;
+    min-width: 860px;
+    border-collapse: collapse;
+    font-variant-numeric: tabular-nums;
+  }
+  .tabla-vista th,
+  .tabla-vista td {
+    padding: 9px 16px;
+    text-align: left;
+    vertical-align: middle;
+    border-bottom: 1px solid #ececec;
+    white-space: nowrap;
+  }
+  .tabla-vista thead th {
+    height: 54px;
+    padding-top: 0;
+    padding-bottom: 0;
+    background: var(--ink);
+    border-bottom: 0;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--steel);
+  }
+  .tabla-vista thead th:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 2;
+  }
+  .tabla-vista .centro {
+    text-align: center;
+  }
+  .tabla-vista .num {
+    text-align: right;
+  }
+  .tabla-vista thead button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 54px;
+    margin-right: -6px;
+    padding: 0 6px;
+    border: 0;
+    background: none;
+    font: inherit;
+    letter-spacing: inherit;
+    text-transform: inherit;
+    color: #fff;
+    cursor: pointer;
+    transition: color 0.2s ease;
+  }
+  .tabla-vista thead button svg {
+    opacity: 0.45;
+    transition: opacity 0.2s ease;
+  }
+  .tabla-vista th[aria-sort='descending'],
+  .tabla-vista th[aria-sort='ascending'] {
+    box-shadow: inset 0 -3px 0 var(--red);
+  }
+  .tabla-vista th[aria-sort='descending'] svg,
+  .tabla-vista th[aria-sort='ascending'] svg {
+    opacity: 1;
+    color: var(--red);
+  }
+  .tabla-vista th[aria-sort='descending'] .ar,
+  .tabla-vista th[aria-sort='ascending'] .ab {
+    display: none;
+  }
+  .tabla-vista thead button:focus-visible,
+  .tabla-vista tbody a:focus-visible,
+  .invertir:focus-visible {
+    outline: 2px solid var(--red);
+    outline-offset: 2px;
+  }
+  .tabla-vista tbody th {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    padding-left: 0;
+    background: #fff;
+    box-shadow: inset 3px 0 0 var(--fam);
+    transition:
+      box-shadow 0.2s ease,
+      background-color 0.2s ease;
+  }
+  .tabla-vista tbody a {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding-left: 16px;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--ink);
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+  .tabla-vista tbody a img {
+    flex: none;
+    width: 42px;
+    height: 42px;
+    object-fit: contain;
+    transition: scale 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+  }
+  .tabla-vista .nom {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+  }
+  .tabla-vista .nom small {
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--muted);
+  }
+  .tabla-vista tbody a b::after {
+    content: '»';
+    display: inline-block;
+    margin-left: 8px;
+    color: var(--red);
+    opacity: 0;
+    translate: -6px 0;
+    transition:
+      opacity 0.2s ease,
+      translate 0.2s ease;
+  }
+  .tabla-vista td {
+    font-size: 16px;
+    color: var(--body);
+    transition: background-color 0.2s ease;
+  }
+  .tabla-vista td.num {
+    position: relative;
+    font-size: 17px;
+    color: var(--ink);
+  }
+  /* Barra bajo la cifra, alineada a la derecha como el número */
+  .tabla-vista td.num[style]::after {
+    content: '';
+    position: absolute;
+    right: 16px;
+    bottom: 7px;
+    width: max(3px, calc(var(--p) * 120px));
+    height: 3px;
+    background: #dcdcdc;
+    transition: background-color 0.2s ease;
+  }
+  /* La columna por la que se ordena: fondo apenas rojo, cifra en negrita y barra roja */
+  .tabla-vista[data-o='cap'] td.c-cap,
+  .tabla-vista[data-o='rpm'] td.c-rpm,
+  .tabla-vista[data-o='xg'] td.c-xg {
+    background: rgba(221, 4, 10, 0.05);
+    font-weight: 700;
+  }
+  .tabla-vista[data-o='cap'] td.c-cap::after,
+  .tabla-vista[data-o='rpm'] td.c-rpm::after,
+  .tabla-vista[data-o='xg'] td.c-xg::after {
+    background: var(--red);
+  }
+  .tabla-vista td.temp :global(.icono-temp) {
+    margin-right: 6px;
+    vertical-align: -3px;
+  }
+  .tabla-vista td.ventilada :global(.icono-temp) {
+    color: var(--t-ventilada);
+  }
+  .tabla-vista td.refrigerada :global(.icono-temp) {
+    color: var(--t-refrigerada);
+  }
+  .tabla-vista td.calefactada :global(.icono-temp) {
+    color: var(--t-calefactada);
+  }
+  .tabla-vista tbody tr[hidden] {
+    display: none;
+  }
+  /* Presupuesto en la fila: solo el "+"; añadida, el contador "− 1 ud. +" en pequeño */
+  .tabla-vista .caja {
+    width: 16px;
+    height: 16px;
+  }
+  .tabla-vista .caja::after {
+    left: 5px;
+    top: 1px;
+  }
+  /* Elegir filas: la casilla delante de la foto, gris; elegida, cuadro rojo y la fila apenas rosada. Encima, cuántas
+     hay elegidas en rojo, y su × las quita */
+  .tabla-vista .mod {
+    display: flex;
+    align-items: center;
+  }
+  .elegir {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 30px;
+    height: 32px;
+    margin-left: 10px;
+    color: #9aa1a6;
+    cursor: pointer;
+  }
+  .tabla-vista thead .elegir {
+    margin-left: -6px;
+    margin-right: 8px;
+    color: var(--steel);
+  }
+  .elegir input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+  }
+  .elegir input:checked + .caja,
+  .elegir input:indeterminate + .caja {
+    background: var(--red);
+    border-color: var(--red);
+  }
+  .elegir input:checked + .caja::after {
+    opacity: 1;
+    scale: 1;
+  }
+  .elegir input:indeterminate + .caja::after {
+    left: 2.5px;
+    top: 5px;
+    width: 8px;
+    height: 0;
+    border-width: 0 0 2px;
+    rotate: 0deg;
+    opacity: 1;
+    scale: 1;
+  }
+  .elegir input:focus-visible + .caja {
+    outline: 2px solid var(--red);
+    outline-offset: 2px;
+  }
+  .tabla-vista .mod a {
+    padding-left: 6px;
+  }
+  .tabla-vista tbody tr.elegida th,
+  .tabla-vista tbody tr.elegida td {
+    background-color: #fdf5f5;
+  }
+  .eleccion {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    gap: 8px;
+    height: 44px;
+    margin-left: auto;
+    padding: 0 14px;
+    border: 1px solid var(--red);
+    background: rgba(221, 4, 10, 0.05);
+    font: 700 15px var(--f);
+    color: var(--red);
+    cursor: pointer;
+  }
+  .eleccion[hidden],
+  .comparar-eleg[hidden] {
+    display: none;
+  }
+  .comparar-eleg {
+    flex: none;
+    height: 44px;
+    padding: 0 16px;
+    border: 1px solid var(--red);
+    background: var(--red);
+    font: 700 15px var(--f);
+    color: #fff;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+  .comparar-eleg::after {
+    content: ' »';
+  }
+  .comparar-eleg:disabled {
+    border-color: var(--line);
+    background: #fff;
+    color: var(--muted);
+    cursor: not-allowed;
+  }
+  .comparar-eleg:disabled::after {
+    content: '';
+  }
+  .comparar-eleg:focus-visible {
+    outline: 2px solid var(--red);
+    outline-offset: 2px;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .comparar-eleg:hover:not(:disabled) {
+      border-color: var(--red-d);
+      background: var(--red-d);
+    }
+  }
+  .eleccion:not([hidden]) ~ .invertir {
+    margin-left: 0;
+  }
+  .eleccion:focus-visible {
+    outline: 2px solid var(--red);
+    outline-offset: 2px;
+  }
+  .tabla-vista td.pres {
+    width: 1%;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+  .tabla-vista .anadir,
+  .tabla-vista :global(.paso) {
+    display: inline-flex;
+    height: 32px;
+    border: 1px solid #d3d6d9;
+    background: #fff;
+  }
+  .tabla-vista .anadir {
+    position: static;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    padding: 0;
+    color: var(--red);
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+  .tabla-vista :global(.paso) {
+    background: #f3f4f5;
+    animation: aparece-paso 0.25s var(--ease);
+  }
+  .tabla-vista :global(.paso[hidden]) {
+    display: none;
+  }
+  .tabla-vista :global(.paso button) {
+    display: grid;
+    place-items: center;
+    width: 30px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--red);
+    cursor: pointer;
+  }
+  .tabla-vista :global(.paso button svg) {
+    width: 15px;
+    height: 15px;
+  }
+  .tabla-vista :global(.paso button.borrar) {
+    color: var(--muted);
+  }
+  .tabla-vista :global(.paso output) {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 0 4px;
+    font-size: 14px;
+    font-variant-numeric: tabular-nums;
+  }
+  .tabla-vista .anadir:focus-visible,
+  .tabla-vista :global(.paso button:focus-visible) {
+    outline: 2px solid var(--red);
+    outline-offset: -2px;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .tabla-vista .anadir:hover,
+    .tabla-vista :global(.paso button:hover) {
+      background: #e9ebed;
+    }
+    .tabla-vista :global(.paso button.borrar:hover) {
+      color: var(--red);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .tabla-vista :global(.paso) {
+      animation: none;
+    }
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .tabla-vista thead button:hover svg {
+      opacity: 1;
+    }
+    .invertir:hover {
+      border-color: var(--red);
+      color: var(--red);
+    }
+    .tabla-vista tbody tr:hover th,
+    .tabla-vista tbody tr:hover td {
+      background-color: var(--band);
+    }
+    .tabla-vista tbody tr:hover th {
+      box-shadow: inset 6px 0 0 var(--red);
+    }
+    .tabla-vista tbody tr:hover a {
+      color: var(--red);
+    }
+    .tabla-vista tbody tr:hover a img {
+      scale: 1.1;
+    }
+    .tabla-vista tbody tr:hover a b::after {
+      opacity: 1;
+      translate: 0 0;
+    }
+    .tabla-vista tbody tr:hover td.num::after {
+      background: #bdbdbd;
+    }
+  }
+  @media (max-width: 1024px) {
+    .tabla-estado p {
+      font-size: 15px;
+    }
+    .tabla-vista th,
+    .tabla-vista td {
+      padding: 8px 12px;
+    }
+    .tabla-vista tbody a {
+      padding-left: 12px;
+      font-size: 16px;
+    }
+    .tabla-vista tbody a img {
+      width: 40px;
+      height: 40px;
+    }
+    .tabla-vista td.num[style]::after {
+      right: 12px;
+      bottom: 6px;
+      width: max(3px, calc(var(--p) * 80px));
+    }
   }
 
   .sala + .sala {
@@ -962,11 +1992,25 @@ const tubos = Object.entries(porTipo)
     }
   }
   /* ——— Atajos a las familias: una fila de pastillas con el color de cada una ——— */
+  .atajos-fila {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px 24px;
+    margin-top: 20px;
+  }
   .atajos {
     display: flex;
+    flex: 1;
     flex-wrap: wrap;
     gap: 8px;
-    margin-top: 20px;
+  }
+  .atajos-fila .descargar button {
+    height: 40px;
+  }
+  @media (max-width: 900px) {
+    .atajos-fila {
+      flex-direction: column;
+    }
   }
   .atajos a {
     display: inline-flex;
@@ -1005,75 +2049,52 @@ const tubos = Object.entries(porTipo)
     }
   }
 
-  /* ——— Selector de versión: al pie de la foto, blanco; la elegida, en negro ——— */
+  /* ——— Selector de versión: pestañas que salen de la raya de color de la foto. La elegida es del color de la raya
+     y parece formar parte de ella; las otras, oscuras y apagadas. Sin etiqueta "Versión" delante: con ella parecía
+     un botón más ——— */
   .versiones {
+    --fam-vivo: oklch(from var(--fam) calc(l + 0.06) calc(c * 2) h);
     position: absolute;
     left: 16px;
-    top: calc(80cqw - 50px);
+    top: calc(80cqw - 38px);
     z-index: 3;
     display: flex;
-    background: #fff;
-    box-shadow: 0 1px 3px rgba(17, 19, 21, 0.2);
-  }
-  .versiones {
-    align-items: stretch;
-  }
-  /* "VERSIÓN" delante, para que se lea como una elección y no como dos temperaturas a la vez */
-  .v-etq {
-    display: flex;
-    align-items: center;
-    padding: 0 10px;
-    border-right: 1px solid #d3d6d9;
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--muted);
+    align-items: flex-end;
+    gap: 2px;
   }
   .versiones button {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    height: 34px;
+    height: 28px;
     padding: 0 12px;
     border: 0;
-    background: #fff;
-    font: 700 14px var(--f);
-    color: var(--ink);
+    background: rgba(17, 19, 21, 0.62);
+    font: 700 13px var(--f);
+    color: rgba(255, 255, 255, 0.75);
     cursor: pointer;
     transition:
       background-color 0.2s ease,
-      color 0.2s ease;
-  }
-  .versiones button + button {
-    border-left: 1px solid #d3d6d9;
+      color 0.2s ease,
+      height 0.2s var(--sube, ease);
   }
   .versiones button[aria-pressed='true'] {
-    background: var(--ink);
-    color: #fff;
+    height: 32px;
+    background: var(--fam-vivo);
+    color: var(--ink);
+    cursor: default;
   }
   .versiones button :global(svg) {
     flex: none;
   }
-  .versiones button[data-t='ventilada'] :global(svg) {
-    color: #6f7a81;
-  }
-  .versiones button[data-t='refrigerada'] :global(svg) {
-    color: #2a7fc4;
-  }
-  .versiones button[data-t='calefactada'] :global(svg) {
-    color: var(--red);
-  }
-  .versiones button[aria-pressed='true'] :global(svg) {
-    color: #fff;
-  }
   .versiones button:focus-visible {
-    outline: 2px solid var(--red);
-    outline-offset: 2px;
+    outline: 2px solid #fff;
+    outline-offset: 1px;
   }
   @media (hover: hover) and (pointer: fine) {
     .versiones button:not([aria-pressed='true']):hover {
-      background: #eef0f1;
+      background: rgba(17, 19, 21, 0.85);
+      color: #fff;
     }
   }
 
@@ -1232,6 +2253,14 @@ const tubos = Object.entries(porTipo)
     align-items: flex-end;
     gap: 10px;
     transition: bottom 0.35s var(--ease);
+    /* La caja ocupa el sitio del panel aunque esté cerrado: que no tape lo de debajo, solo sus piezas reciben el clic */
+    pointer-events: none;
+  }
+  .presupuesto > * {
+    pointer-events: auto;
+  }
+  .presupuesto :global(.pres-aviso) {
+    pointer-events: none;
   }
   /* Con el panel de filtros abierto (móvil), el presupuesto se aparta para no tapar "Ver productos" */
   :global(html:has(#filtros.abierto)) .presupuesto {
@@ -1401,6 +2430,15 @@ const tubos = Object.entries(porTipo)
     font-size: 14px;
     color: var(--muted);
     text-align: center;
+  }
+  /* En el panel, la descarga va centrada bajo la nota, más pequeña que "Pedir presupuesto" */
+  .pres-panel .descargar {
+    display: flex;
+    justify-content: center;
+    margin-top: 14px;
+  }
+  .pres-panel .descargar button {
+    height: 38px;
   }
   .pres-vaciar {
     display: block;
@@ -1577,13 +2615,14 @@ const tubos = Object.entries(porTipo)
     z-index: 2;
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    gap: 16px;
     padding: 22px clamp(20px, 3vw, 36px);
     background: #fff;
     border-top: 3px solid var(--red);
     border-bottom: 1px solid var(--line);
   }
   .comp-cab h2 {
+    margin-right: auto;
     font-size: clamp(26px, 2.6vw, 34px);
     font-weight: 300;
   }
@@ -1824,6 +2863,162 @@ const tubos = Object.entries(porTipo)
     .comparador[open],
     .elegidas :global(li) {
       animation: none;
+    }
+  }
+
+  /* ——— Vista previa del PDF: una ventana grande con el documento y, arriba, "Descargar PDF" (rojo) e "Imprimir" ——— */
+  .vista-pdf {
+    width: min(980px, calc(100vw - 32px));
+    height: min(92vh, 1200px);
+    max-width: none;
+    max-height: none;
+    padding: 0;
+    border: 0;
+    border-top: 3px solid var(--red);
+    background: #fff;
+    box-shadow: 0 40px 80px -30px rgba(17, 19, 21, 0.6);
+  }
+  .vista-pdf[open] {
+    display: flex;
+    flex-direction: column;
+  }
+  .vista-pdf::backdrop {
+    background: rgba(21, 23, 25, 0.55);
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+  }
+  .vp-cab {
+    display: flex;
+    flex: none;
+    align-items: center;
+    gap: 12px;
+    padding: 14px clamp(16px, 2.4vw, 28px);
+    border-bottom: 1px solid var(--line);
+  }
+  .vp-cab h2 {
+    margin-right: auto;
+    font-size: clamp(22px, 2.2vw, 28px);
+    font-weight: 300;
+  }
+  .vp-descargar,
+  .vp-imprimir {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 44px;
+    padding: 0 18px;
+    font: 700 16px var(--f);
+    text-decoration: none;
+    cursor: pointer;
+    transition:
+      background-color 0.2s ease,
+      border-color 0.2s ease,
+      color 0.2s ease;
+  }
+  .vp-descargar {
+    border: 1px solid var(--red);
+    background: var(--red);
+    color: #fff;
+  }
+  .vp-imprimir {
+    border: 1px solid var(--line);
+    background: #fff;
+    color: var(--ink);
+  }
+  .vp-imprimir svg {
+    color: var(--red);
+  }
+  .vp-cerrar {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border: 0;
+    background: none;
+    color: var(--ink);
+    cursor: pointer;
+  }
+  .vp-descargar:active,
+  .vp-imprimir:active {
+    scale: 0.97;
+  }
+  .vp-descargar:focus-visible,
+  .vp-imprimir:focus-visible,
+  .vp-cerrar:focus-visible {
+    outline: 2px solid var(--red);
+    outline-offset: 2px;
+  }
+  .vp-cuerpo {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    background: #e9ebed;
+  }
+  .vp-cuerpo iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+  .vp-espera,
+  .vp-sin,
+  .vp-fallo {
+    position: absolute;
+    inset: 0;
+    display: none;
+    place-items: center;
+    margin: 0;
+    padding: 24px;
+    font-size: 17px;
+    color: var(--muted);
+    text-align: center;
+  }
+  /* Mientras se hace, "Preparando…" y los botones apagados; sin visor de PDF (móvil), solo se ofrece descargarlo */
+  .vista-pdf.cargando .vp-espera,
+  .vista-pdf.sin-visor .vp-sin,
+  .vista-pdf.fallo .vp-fallo {
+    display: grid;
+  }
+  .vista-pdf.cargando iframe,
+  .vista-pdf.fallo iframe,
+  .vista-pdf.sin-visor iframe,
+  .vista-pdf.sin-visor .vp-imprimir {
+    visibility: hidden;
+  }
+  .vista-pdf.sin-visor .vp-imprimir {
+    display: none;
+  }
+  .vista-pdf.cargando .vp-descargar,
+  .vista-pdf.cargando .vp-imprimir,
+  .vista-pdf.fallo .vp-descargar,
+  .vista-pdf.fallo .vp-imprimir {
+    opacity: 0.4;
+    pointer-events: none;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .vp-descargar:hover {
+      border-color: var(--red-d);
+      background: var(--red-d);
+    }
+    .vp-imprimir:hover {
+      border-color: var(--red);
+      color: var(--red);
+    }
+  }
+  @media (max-width: 640px) {
+    .vista-pdf {
+      width: 100vw;
+      height: 100dvh;
+    }
+    .vp-cab {
+      flex-wrap: wrap;
+    }
+    .vp-cab h2 {
+      flex-basis: calc(100% - 56px);
+    }
+    .vp-descargar,
+    .vp-imprimir {
+      flex: 1;
+      justify-content: center;
     }
   }
 </style>

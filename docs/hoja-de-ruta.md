@@ -48,6 +48,8 @@ Las fotos que faltan tienen su hueco en `src/data/medios.ts`.
 Selector por tipo de tubo, volumen, velocidad y temperatura, y comparativa entre modelos,
 alimentados por los datos de la fase 1.
 
+Hecho: vista en tabla con todos los modelos en el catálogo, ordenable por capacidad, velocidad o fuerza.
+
 ## 3 · Resto de páginas
 
 Distribuidores, Tecnología, Servicio técnico, Empresa, Contacto (un solo formulario que reparte según el
