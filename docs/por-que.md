@@ -1112,9 +1112,9 @@ entera delante, si se ensancha el contenido de 1280 a 1440 px.
 
 - **Problema:** con tarjetas, comparar cifras de 23 modelos obliga a ir de una en una. La primera tabla tenía una
   columna por dato y filas altas, y se veía cargada.
-- **Ahora:** una fila por versión, ordenable por capacidad, velocidad o fuerza, con Comparar y Presupuesto al final.
+- **Ahora:** una fila por versión, ordenable por capacidad, velocidad o fuerza, con una casilla para elegirla delante de la foto y el "+" de Presupuesto al final.
   La aplicación va debajo del nombre (una columna menos), las fotos y los márgenes son más pequeños (filas de 77 a
-  67 px) y la casilla de Comparar marcada es solo el cuadro rojo, sin el fondo negro de la tarjeta.
+  67 px). Las filas elegidas se comparan ("Comparar n »", con 2 o 3) o se descargan: una sola casilla por fila, en vez de una para comparar y otra para elegir, que confundían.
 - **Por qué:** el distribuidor busca por cifra y compara de un vistazo; lo que no aporta a esa lectura, fuera.
 - **Descartado:** quitar la pantalla o la temperatura (se miran al elegir) y dejar los botones con su palabra en cada
   fila (repetían lo que ya dice la cabecera).
@@ -1130,7 +1130,7 @@ entera delante, si se ensancha el contenido de 1280 a 1440 px.
 
 - **Problema:** para mandar opciones al cliente, el distribuidor copiaba cifras o reenviaba el catálogo entero.
 - **Ahora:** "Descargar · PDF | Excel" en la tabla, en las tarjetas, en el comparador y en el presupuesto. Sale lo que
-  se ve (filtros y orden) o, si se han elegido filas en la tabla con la casilla de delante de la foto, solo esas (sin límite; Comparar se queda en 3 y solo para comparar). El PDF es un documento de empresa (banda carbón con el
+  se ve (filtros y orden) o, si se han elegido filas en la tabla con la casilla de delante de la foto, solo esas (sin límite; para comparar, como mucho 3). El PDF es un documento de empresa (banda carbón con el
   logo, datos con etiqueta, tabla con filas alternas y pie de membrete) y se ve antes en una vista previa, con
   "Descargar PDF" e "Imprimir". El Excel trae cifras como números, filtro y fila fija. Sin resultados, no se puede
   descargar.
