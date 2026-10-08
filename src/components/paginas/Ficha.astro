@@ -63,7 +63,14 @@ const deAccesorios = [...accesorios].filter((a) => web?.accesorios.includes(a.sl
 const mismos = m
   ? modelos.filter((x) => x.categoria === m.categoria && x.slug !== m.slug)
   : (esAccesorio ? accesorios : equipos).filter((x) => x.slug !== p!.slug);
-const tres = mismos.slice(0, 3);
+// Si la aplicación tiene menos de tres modelos, se completa con centrífugas de la misma temperatura y luego las demás
+const otros = m
+  ? modelos
+      .filter((x) => x.categoria !== m.categoria)
+      .sort((a, b) => Number(b.temperatura === m.temperatura) - Number(a.temperatura === m.temperatura))
+  : [];
+const completa = mismos.length < 3 && otros.length > 0;
+const tres = [...mismos, ...(completa ? otros : [])].slice(0, 3);
 
 // Columnas de la tabla de versiones: solo las que tienen algún dato
 const columnas = (['medidas', 'peso', 'voltaje', 'frecuencia', 'consumo', 'zMax', 'calefaccion'] as const).filter((k) =>
@@ -246,19 +253,27 @@ const descripcion = m
   {secciones.length > 0 && (
     <section class="detalle" id="detalle">
       <div class="pestanas-barra">
-        <div class="wrap pestanas" role="tablist" aria-label={nombre}>
-          {secciones.map((x, i) => (
-            <a
-              role="tab"
-              href={`#${x.id}`}
-              id={`tab-${x.id}`}
-              aria-controls={x.id}
-              aria-selected={i === 0 ? 'true' : 'false'}
-            >
-              {x.nombre}
-              {x.n && <span class="n">{x.n}</span>}
-            </a>
-          ))}
+        <div class="wrap pestanas-in">
+          <p class="barra-nombre" aria-hidden="true">
+            {nombre}
+          </p>
+          <div class="pestanas" role="tablist" aria-label={nombre}>
+            {secciones.map((x, i) => (
+              <a
+                role="tab"
+                href={`#${x.id}`}
+                id={`tab-${x.id}`}
+                aria-controls={x.id}
+                aria-selected={i === 0 ? 'true' : 'false'}
+              >
+                {x.nombre}
+                {x.n && <span class="n">{x.n}</span>}
+              </a>
+            ))}
+          </div>
+          <a class="btn red barra-cta" href={ruta(lang, '/#distribuidores')} tabindex="-1">
+            {tf.distribuidor}
+          </a>
         </div>
       </div>
 
@@ -492,7 +507,7 @@ const descripcion = m
       <div class="wrap">
         <div class="cabeza">
           <h2>
-            {tf.mas} <b>{cat}</b>
+            {completa ? tf.otras[0] : tf.mas} <b>{completa ? tf.otras[1] : cat}</b>
           </h2>
           <a class="arrow" href={ruta(lang, `/centrifugas/?c=${catClave}`)}>
             {tf.volver}
@@ -503,7 +518,7 @@ const descripcion = m
             <li>
               {'rpm' in x ? (
                 <Tarjeta
-                  cat={cat}
+                  cat={t.catalogo.categorias[x.categoria]}
                   modelo={x}
                   capacidad={
                     x.capacidad === productos.find((s) => s.slug === x.serie)?.capacidad
@@ -557,6 +572,18 @@ const descripcion = m
       });
     }
     elegir(items[0].dataset.rotor!);
+  }
+
+  // Al dejar atrás la cabecera, la barra de pestañas enseña el nombre y el botón de pedir
+  const cabecera = document.querySelector('.cabecera');
+  const barra = document.querySelector<HTMLElement>('.pestanas-barra');
+  if (cabecera && barra) {
+    const cta = barra.querySelector<HTMLElement>('.barra-cta');
+    new IntersectionObserver(([e]) => {
+      const pegada = !e.isIntersecting && e.boundingClientRect.top < 0;
+      barra.classList.toggle('pegada', pegada);
+      cta?.setAttribute('tabindex', pegada ? '0' : '-1');
+    }).observe(cabecera);
   }
 
   // Pestañas: se ve un panel cada vez. Sin JS se ven todos, uno debajo de otro.
@@ -641,15 +668,16 @@ const descripcion = m
     color: var(--ink);
   }
   /* Foto de estudio, como en las tarjetas: blanco, suelo gris y contorno negro */
+  /* Ocupa toda la altura de la columna de datos, sin hueco debajo; la máquina apoyada en el suelo gris */
   .escaparate {
     grid-area: foto;
     position: relative;
-    align-self: start;
     display: grid;
-    place-items: center;
-    aspect-ratio: 1 / 0.86;
+    place-items: end center;
+    min-height: 460px;
+    padding-bottom: 56px;
     overflow: hidden;
-    background: linear-gradient(#fff 0 68%, #eceef0 68% 100%);
+    background: linear-gradient(to top, #eceef0 0 30%, #fff 30% 100%);
     border: 1px solid var(--ink);
   }
   @media (prefers-reduced-motion: no-preference) {
@@ -666,16 +694,17 @@ const descripcion = m
   .escaparate::after {
     content: '';
     position: absolute;
-    left: 22%;
-    right: 22%;
-    bottom: 10%;
-    height: 7%;
+    left: 20%;
+    right: 20%;
+    bottom: 38px;
+    height: 40px;
     background: radial-gradient(closest-side, rgba(17, 19, 21, 0.3), transparent);
   }
   .escaparate img {
     position: relative;
     z-index: 1;
     width: 76%;
+    max-width: 560px;
     height: auto;
   }
   .escaparate.oscuro {
@@ -683,6 +712,7 @@ const descripcion = m
     aspect-ratio: auto;
     min-height: 560px;
     padding: 18px 22px;
+    align-self: start;
     color: #fff;
     background: var(--carbon);
   }
@@ -918,7 +948,57 @@ const descripcion = m
   :global(html:has(#top:not(.oculta))) .pestanas-barra {
     top: 76px;
   }
+  .pestanas-in {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+  }
+  /* Nombre y botón: escondidos mientras se ve la cabecera, aparecen al quedar fija la barra */
+  .barra-nombre,
+  .barra-cta {
+    flex: none;
+    opacity: 0;
+    visibility: hidden;
+  }
+  .barra-nombre {
+    margin: 0 -24px 0 0;
+    max-width: 0;
+    overflow: hidden;
+    font-size: 20px;
+    font-weight: 700;
+    white-space: nowrap;
+    color: #fff;
+    transition:
+      opacity 0.3s var(--ease),
+      visibility 0.3s,
+      max-width 0.4s var(--ease),
+      margin 0.4s var(--ease);
+  }
+  .barra-cta {
+    margin-left: auto;
+    padding: 11px 18px;
+    font-size: 15px;
+    transform: translateX(8px);
+    transition:
+      opacity 0.3s var(--ease),
+      visibility 0.3s,
+      transform 0.3s var(--ease),
+      background 0.2s var(--ease);
+  }
+  .pegada .barra-nombre {
+    margin-right: 8px;
+    max-width: 320px;
+    opacity: 1;
+    visibility: visible;
+  }
+  .pegada .barra-cta {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+  }
   .pestanas {
+    flex: 1 1 auto;
+    min-width: 0;
     display: flex;
     gap: 4px;
     overflow-x: auto;
@@ -1449,7 +1529,15 @@ const descripcion = m
       grid-template-areas: 'migas' 'foto' 'datos';
     }
     .escaparate {
+      min-height: 0;
       aspect-ratio: 1 / 0.75;
+      padding-bottom: 40px;
+    }
+    .escaparate::after {
+      bottom: 26px;
+    }
+    .barra-nombre {
+      display: none;
     }
     .escaparate img {
       width: 58%;
@@ -1479,6 +1567,9 @@ const descripcion = m
     }
   }
   @media (max-width: 640px) {
+    .barra-cta {
+      display: none;
+    }
     .escaparate.oscuro {
       min-height: 0;
     }

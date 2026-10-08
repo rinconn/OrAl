@@ -1139,3 +1139,17 @@ entera delante, si se ensancha el contenido de 1280 a 1440 px.
 - **Descartado:** la hoja de impresión del navegador (sin descarga, con su cabecera y "atrás" fuera del catálogo),
   descargar sin vista previa y la letra condensada de la marca en el PDF (ver
   [decisión 0010](decisiones/0010-pdf-generado-con-jspdf.md)).
+
+## 25. Ficha de producto: sin huecos y con el pedido siempre a mano
+
+- **Problema:** la foto era más baja que la columna de datos y dejaba un hueco blanco debajo; al bajar a las pestañas
+  se perdía qué modelo se miraba y el botón de pedir; y una aplicación con un solo modelo más dejaba "Más de…" con
+  una tarjeta suelta y media pantalla vacía.
+- **Ahora:** la foto llena la altura de los datos, con la máquina apoyada en el suelo gris y su sombra. La barra de
+  pestañas, al quedar fija, enseña a la izquierda el nombre y a la derecha "Pedir a un distribuidor". Con menos de
+  tres modelos en la aplicación, el bloque final es "Otras centrífugas": primero los de la aplicación y luego los de la
+  misma temperatura, cada tarjeta con su aplicación.
+- **Por qué:** el distribuidor lee la ficha técnica o los rotores con el nombre delante y puede pedir sin volver arriba;
+  y la página termina con tres opciones, no con un hueco.
+- **Descartado:** la foto fija al bajar (seguía el hueco al entrar) y repetir el botón de catálogo PDF en la barra (ya
+  está en "De un vistazo").
