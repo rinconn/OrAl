@@ -2006,6 +2006,14 @@ const tubos = Object.entries(porTipo)
     align-items: flex-end;
     gap: 10px;
     transition: bottom 0.35s var(--ease);
+    /* La caja ocupa el sitio del panel aunque esté cerrado: que no tape lo de debajo, solo sus piezas reciben el clic */
+    pointer-events: none;
+  }
+  .presupuesto > * {
+    pointer-events: auto;
+  }
+  .presupuesto :global(.pres-aviso) {
+    pointer-events: none;
   }
   /* Con el panel de filtros abierto (móvil), el presupuesto se aparta para no tapar "Ver productos" */
   :global(html:has(#filtros.abierto)) .presupuesto {
