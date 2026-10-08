@@ -40,6 +40,12 @@ const iconos: Record<Temperatura, string> = {
   aria-label={f.titulo}
   data-uno={f.resultados(1)}
   data-varios={f.resultados(999)}
+  data-series-uno={f.series(1)}
+  data-series-varios={f.series(999)}
+  data-mas-uno={f.mas(1)}
+  data-mas-varios={f.mas(999)}
+  data-modelos-uno={f.modelos(1)}
+  data-modelos-varios={f.modelos(999)}
   data-ver-uno={f.ver(1)}
   data-ver-varios={f.ver(999)}
   hidden
@@ -56,6 +62,7 @@ const iconos: Record<Temperatura, string> = {
           type="search"
           name="q"
           placeholder={f.buscar}
+          data-corto={f.buscarCorto}
           aria-label={f.buscar}
           autocomplete="off"
           enterkeyhint="search"
@@ -317,6 +324,11 @@ const iconos: Record<Temperatura, string> = {
     const quieto = matchMedia('(prefers-reduced-motion: reduce)');
     const movil = matchMedia('(max-width: 1024px)');
     const curva = 'cubic-bezier(0.23, 1, 0.32, 1)';
+    // En móvil el buscador es estrecho y la frase larga se cortaba a media palabra: allí va la corta
+    const largo = q.placeholder;
+    const ajustaTexto = () => (q.placeholder = movil.matches ? (q.dataset.corto ?? largo) : largo);
+    ajustaTexto();
+    movil.addEventListener('change', ajustaTexto);
 
     let aplic = '';
     const elegidas = new Set<string>();
@@ -578,13 +590,22 @@ const iconos: Record<Temperatura, string> = {
       activos.hidden = nActivos === 0;
       activos.textContent = String(nActivos);
       borrar.hidden = nActivos === 0 && !q.value.trim();
-      const txt = cuenta(total, d.uno!, d.varios!);
-      const num = String(total);
-      const i = txt.indexOf(num);
+      // El contador no habla de "productos": en la portada salen 23 centrífugas (cada versión cuenta) y aquí había 22
+      // tarjetas, y parecía que faltaba una. En tarjetas, "17 series · 5 más"; en la tabla, "23 modelos"
+      const nSeries = visibles.filter((el) => el.dataset.slugs).length;
+      const nMas = visibles.length - nSeries;
+      const txt = enTabla()
+        ? cuenta(total, d.modelosUno!, d.modelosVarios!)
+        : [
+            nSeries && cuenta(nSeries, d.seriesUno!, d.seriesVarios!),
+            nMas && cuenta(nMas, nSeries ? d.masUno! : d.uno!, nSeries ? d.masVarios! : d.varios!),
+          ]
+            .filter(Boolean)
+            .join(' · ') || cuenta(0, d.uno!, d.varios!);
       cuentaEl.replaceChildren(
-        txt.slice(0, i),
-        Object.assign(document.createElement('b'), { textContent: num }),
-        txt.slice(i + num.length),
+        ...txt
+          .split(/(\d+)/)
+          .map((p, k) => (k % 2 ? Object.assign(document.createElement('b'), { textContent: p }) : p)),
       );
       verRes.textContent = cuenta(total, d.verUno!, d.verVarios!);
       if (vacio) vacio.hidden = total > 0;

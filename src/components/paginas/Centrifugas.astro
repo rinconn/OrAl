@@ -2012,6 +2012,29 @@ const tubos = Object.entries(porTipo)
       flex-direction: column;
     }
   }
+  /* En móvil, una sola fila que se desliza de borde a borde: en varias filas las siete familias ocupaban media
+     pantalla antes del primer producto */
+  @media (max-width: 640px) {
+    .atajos-fila {
+      align-items: stretch;
+    }
+    .atajos {
+      flex-wrap: nowrap;
+      margin-inline: calc(-1 * var(--gut));
+      padding-inline: var(--gut);
+      overflow-x: auto;
+      scroll-padding-inline: var(--gut);
+      scroll-snap-type: x proximity;
+      scrollbar-width: none;
+    }
+    .atajos::-webkit-scrollbar {
+      display: none;
+    }
+    .atajos a {
+      flex: none;
+      scroll-snap-align: start;
+    }
+  }
   .atajos a {
     display: inline-flex;
     align-items: center;

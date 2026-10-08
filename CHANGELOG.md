@@ -55,6 +55,8 @@ Hasta que se publique la web, todo va en "Sin publicar"; al publicar se cierra l
 
 ### Cambiado
 
+- Productos: el **contador de la barra** ya no dice "22 productos" (en la portada salen 23 centrífugas y parecía que faltaba una): en tarjetas dice "17 series · 5 más" (series de centrífugas y, aparte, accesorios y otros equipos) y en la tabla "23 modelos", una por versión.
+- Productos, en móvil: los **atajos de familia van en una sola fila que se desliza** de borde a borde, en vez de cuatro filas que ocupaban media pantalla antes del primer producto; y el **buscador dice "Buscar"** (en tableta y móvil), porque la frase larga se cortaba a media palabra en un campo tan estrecho.
 - Productos: la **barra de filtros** pasa de gris oscuro a blanca con contorno fino y la raya roja arriba, más limpia sobre la sección blanca. Los controles, con borde gris claro y texto oscuro; lo elegido, en gris muy claro con borde oscuro y su raya de color.
 - Productos: el **selector de versión** de las tarjetas pasa a ser pestañas que salen de la raya de color de la foto: la elegida, del color de la raya y algo más alta, como parte de ella; las otras, oscuras. Se quita la etiqueta "Versión" de delante, que parecía un botón más.
 - Tecnología propia en acordeón: REI System, SmartConnect y Configurador en tres franjas; la abierta enseña foto y texto y las cerradas son tiras con número, nombre en vertical y "+". Al abrir una, una cortina roja barre su foto. En móvil, una encima de otra. "Propia" en rojo. La sección pasa de unos 2.800 px a unos 1.050 en escritorio.
