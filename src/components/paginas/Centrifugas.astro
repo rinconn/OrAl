@@ -2168,6 +2168,35 @@ const tubos = Object.entries(porTipo)
       padding: 0;
       font-size: 16px;
     }
+    /* Y en teléfono, una banda de una línea con el nombre y el número de productos: las aplicaciones de la familia
+       ya van en cada tarjeta, y así la primera máquina asoma en la primera pantalla bajo el 3D */
+    .sala-cab {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      gap: 2px 12px;
+      margin-bottom: 12px;
+      padding: 10px 18px;
+      border-top-width: 6px;
+    }
+    .sala-cab h2 {
+      font-size: 28px;
+    }
+    .sala-n {
+      font-size: 15px;
+      white-space: nowrap;
+    }
+    .sala-usos {
+      display: none;
+    }
+    .sala-i {
+      top: 50%;
+      font-size: 56px;
+      translate: 0 -50%;
+    }
+    .salas {
+      padding-top: 12px;
+    }
   }
   /* ——— Atajos a las familias: una fila de pastillas con el color de cada una ——— */
   .atajos-fila {
@@ -2192,6 +2221,7 @@ const tubos = Object.entries(porTipo)
   @media (max-width: 640px) {
     .atajos-fila {
       align-items: stretch;
+      margin-top: 10px;
     }
     .atajos {
       flex-wrap: nowrap;

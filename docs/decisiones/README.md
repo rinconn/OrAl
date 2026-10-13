@@ -19,3 +19,4 @@ Así, dentro de un año, nadie tiene que adivinar por qué la web es como es.
 | 0008 | [El catálogo sale de la portada a su propia página](0008-catalogo-en-pagina-propia.md)                                 | Aceptada | 2026-10-02 |
 | 0009 | [Una ficha por producto con los datos de la web actual, y la Digicen 22 en 3D](0009-fichas-de-producto-y-modelo-3d.md) | Aceptada | 2026-10-06 |
 | 0010 | [Los PDF del catálogo se generan con jsPDF, en Helvetica](0010-pdf-generado-con-jspdf.md)                              | Aceptada | 2026-10-08 |
+| 0011 | [En móvil, el 3D arriba y compacto, y el catálogo asomando en la primera pantalla](0011-movil-3d-compacto.md)          | Aceptada | 2026-10-13 |
