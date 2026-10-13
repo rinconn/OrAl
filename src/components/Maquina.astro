@@ -1,7 +1,7 @@
 ---
 // Una tarjeta del catálogo (una por serie: si tiene versiones, la página pone el selector encima): caja con borde, y arriba la máquina sobre una mesa de laboratorio oscura (la misma foto
 // en todas, retocada: solo una gradilla de tubos y un matraz rojos en los bordes), para que la máquina blanca destaque; debajo, la raya del color de su familia. La máquina, grande, con su
-// sombra de apoyo; la temperatura en una etiqueta con su icono. Debajo, aplicación, nombre, frase, placa con tres cifras y
+// sombra de apoyo; la temperatura en una etiqueta con su icono (con varias versiones, la dice el selector). Debajo, aplicación, nombre, frase, placa con tres cifras y
 // "Ver producto »". Al pasar el ratón: el borde se oscurece, la tarjeta sube un poco y la máquina crece ligeramente.
 import type { Modelo } from '../data/productos';
 import type { ProductoLab } from '../data/laboratorio';
@@ -43,10 +43,12 @@ const cifras = (v: Version) => [
     {vs ? (
       vs.map((v, i) => (
         <>
-          <span class:list={['temp', v.m.temperatura]} data-v={i} hidden={i > 0}>
-            <IconoTemp t={v.m.temperatura} size={15} />
-            {t.temperatura[v.m.temperatura]}
-          </span>
+          {vs.length === 1 && (
+            <span class:list={['temp', v.m.temperatura]}>
+              <IconoTemp t={v.m.temperatura} size={15} />
+              {t.temperatura[v.m.temperatura]}
+            </span>
+          )}
           <img
             src={v.m.imagen.src}
             alt=""
@@ -62,7 +64,6 @@ const cifras = (v: Version) => [
     ) : (
       <img src={p!.imagen.src} alt="" width={p!.imagen.ancho} height={p!.imagen.alto} loading="lazy" decoding="async" />
     )}
-    <span class="velo" aria-hidden="true"></span>
   </span>
 
   <span class="cuerpo">
@@ -80,7 +81,11 @@ const cifras = (v: Version) => [
   </span>
 
   <!-- Con un tubo elegido en los filtros: en qué rotor va y cuántos caben (lo rellena la página) -->
-  {vs && <span class="con-tubo" hidden />}
+  {vs && (
+    <span class="con-tubo" hidden>
+      <span class="texto" />
+    </span>
+  )}
 
   <!-- Placa de datos: cada cifra con su nombre arriba y la unidad pequeña al lado -->
   {vs ? (
@@ -175,14 +180,6 @@ const cifras = (v: Version) => [
     transform-origin: bottom;
     transition: transform 0.5s var(--sube);
   }
-  /* Al cambiar de versión: un velo frío (refrigerada) o cálido (calefactada) barre la foto y se va */
-  .velo {
-    position: absolute;
-    inset: 0;
-    z-index: 2;
-    pointer-events: none;
-    opacity: 0;
-  }
   .lab .estudio img {
     height: 74%;
   }
@@ -260,22 +257,34 @@ const cifras = (v: Version) => [
   .con-tubo {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 10px 24px;
+    gap: 12px;
+    min-height: 46px;
+    padding: 12px 24px;
     background: var(--ink);
     color: #fff;
     font-size: 15px;
     font-weight: 700;
-    line-height: 1.25;
+    line-height: 1.2;
   }
+  /* El texto se centra por sus mayúsculas, no por la caja de la letra (que deja más aire abajo) */
+  .con-tubo .texto {
+    text-box: trim-both cap alphabetic;
+  }
+  /* El tubo: un poco más alto que las mayúsculas, centrado con ellas */
   .con-tubo::before {
     content: '';
     flex: none;
-    width: 8px;
-    height: 18px;
+    box-sizing: border-box;
+    width: 9px;
+    height: 16px;
     border: 1.5px solid #fff;
     border-top: 4px solid var(--red);
-    border-radius: 0 0 4px 4px;
+    border-radius: 0 0 4.5px 4.5px;
+  }
+  /* Con la banda puesta, la placa va pegada debajo, sin hueco blanco entre las dos */
+  .con-tubo:not([hidden]) ~ .placa {
+    margin-top: 0;
+    border-top: 0;
   }
 
   /* Placa de datos: banda gris de borde a borde con tres casillas */

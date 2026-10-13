@@ -10,8 +10,11 @@ import { idioma, numero, textos } from '../i18n';
 interface Props {
   /** Aplicaciones por grupo: generales, especiales y otros productos */
   grupos: { nombre: string; cats: { v: string; nombre: string }[] }[];
-  /** Tubos que admite alguna máquina, agrupados por tipo ("tipo|medidas") */
-  tubos: { nombre: string; items: { v: string; nombre: string; medidas: string }[] }[];
+  /** Tubos que admite alguna máquina, por familia y dentro por tipo ("tipo|medidas") */
+  tubos: {
+    nombre: string;
+    subs: { nombre: string; items: { v: string; nombre: string; medidas: string }[] }[];
+  }[];
 }
 
 const { grupos, tubos } = Astro.props;
@@ -210,36 +213,48 @@ const iconos: Record<Temperatura, string> = {
               <p>{f.pasoTipo}</p>
               <p>{f.pasoMedida}</p>
             </div>
-            <div class="t-grupos" style={`--filas: ${Math.ceil(tubos.length / 3)}`}>
+            <!-- A la izquierda, las familias; a la derecha, los tipos de la familia abierta, cada uno con sus medidas -->
+            <div class="t-grupos" style={`--filas: ${tubos.length}`}>
               {tubos.map((g, i) => (
-                <div class="t-grupo" role="group" aria-label={g.nombre} data-tipo={`${g.items[0].v.split('|')[0]}|*`}>
+                <div
+                  class="t-grupo"
+                  role="group"
+                  aria-label={g.nombre}
+                  data-tipo={g.subs.map((x) => `${x.items[0].v.split('|')[0]}|*`).join('+')}
+                >
                   <button type="button" class="t-tipo" aria-expanded={i === 0 ? 'true' : 'false'}>
                     <span>{g.nombre}</span>
                     <span class="n"></span>
                   </button>
                   <div class="t-medidas">
-                    {g.items.length > 1 && (
-                      <button
-                        type="button"
-                        class="t-op t-todas"
-                        data-tubo={`${g.items[0].v.split('|')[0]}|*`}
-                        data-nombre={g.nombre}
-                        aria-pressed="false"
-                      >
-                        {f.todasMedidas}
-                      </button>
-                    )}
-                    {g.items.map((x) => (
-                      <button
-                        type="button"
-                        class="t-op"
-                        data-tubo={x.v}
-                        data-nombre={x.nombre}
-                        aria-label={x.nombre}
-                        aria-pressed="false"
-                      >
-                        {x.medidas}
-                      </button>
+                    {g.subs.map((s) => (
+                      <div class="t-sub" role="group" aria-label={s.nombre}>
+                        <p class="t-sub-nombre">{s.nombre}</p>
+                        {s.items.length > 1 && (
+                          <button
+                            type="button"
+                            class="t-op t-todas"
+                            data-tubo={`${s.items[0].v.split('|')[0]}|*`}
+                            data-nombre={s.nombre}
+                            aria-pressed="false"
+                          >
+                            {f.todasMedidas}
+                          </button>
+                        )}
+                        {s.items.map((x) => (
+                          <button
+                            type="button"
+                            class="t-op"
+                            data-tubo={x.v}
+                            data-nombre={x.nombre}
+                            aria-label={x.nombre}
+                            aria-pressed="false"
+                          >
+                            {/* Sin medidas en los datos (bolsas de sangre), la casilla no repite el nombre del tipo */}
+                            {x.medidas === s.nombre ? f.todasMedidas : x.medidas}
+                          </button>
+                        ))}
+                      </div>
                     ))}
                   </div>
                 </div>
@@ -414,8 +429,14 @@ const iconos: Record<Temperatura, string> = {
     };
     const tubosModelo = datosTubos.modelos ?? {};
     // "tipo|*" es el tipo con cualquiera de sus medidas
-    const vale = (ts: Record<string, unknown> | undefined, v: string) =>
-      !!ts && (v.endsWith('|*') ? Object.keys(ts).some((k) => k.startsWith(v.slice(0, -1))) : !!ts[v]);
+    // "tipo|*" es el tipo con cualquiera de sus medidas; "a|*+b|*", cualquiera de varios tipos (una familia)
+    const vale = (ts: Record<string, unknown> | undefined, v: string): boolean =>
+      !!ts &&
+      (v.includes('+')
+        ? v.split('+').some((x) => vale(ts, x))
+        : v.endsWith('|*')
+          ? Object.keys(ts).some((k) => k.startsWith(v.slice(0, -1)))
+          : !!ts[v]);
     const admite = (el: HTMLElement) =>
       !selTubo.value || (el.dataset.slugs ?? '').split(' ').some((x) => vale(tubosModelo[x], selTubo.value));
     // Mínimos: lo escrito en cada campo, solo la cifra ("15.000" o "15 000" son 15000; los ml admiten decimales)
@@ -648,8 +669,8 @@ const iconos: Record<Temperatura, string> = {
           selTubo.value = antes;
         }
       }
-      // Cada tipo: cuántas centrífugas lo admiten con los demás filtros, cada versión una (como en aplicación); el del
-      // tubo elegido, marcado; sin ninguna, apagado
+      // Cada familia: cuántas centrífugas admiten alguno de sus tipos con los demás filtros, cada versión una (como en
+      // aplicación); la del tubo elegido, marcada; sin ninguna, apagada
       for (const g of form.querySelectorAll<HTMLElement>('.t-grupo')) {
         const ops = [...g.querySelectorAll<HTMLButtonElement>('.t-op')];
         const antes = selTubo.value;
@@ -1405,10 +1426,10 @@ const iconos: Record<Temperatura, string> = {
       opacity 0.18s ease,
       translate 0.25s cubic-bezier(0.23, 1, 0.32, 1);
   }
-  /* Tipos en tres columnas que se leen de arriba abajo y, a la derecha, las medidas del tipo abierto */
+  /* Familias en una columna y, a la derecha, los tipos de la familia abierta con sus medidas */
   .t-grupos {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(300px, 1.3fr);
+    grid-template-columns: minmax(230px, 0.9fr) minmax(0, 2.6fr);
     grid-template-rows: repeat(var(--filas), auto);
     grid-auto-flow: column;
     column-gap: 4px;
@@ -1418,12 +1439,12 @@ const iconos: Record<Temperatura, string> = {
   }
   .t-pasos {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(300px, 1.3fr);
+    grid-template-columns: minmax(230px, 0.9fr) minmax(0, 2.6fr);
     column-gap: 4px;
     margin: 8px 0 6px;
   }
   .t-pasos p {
-    grid-column: 1 / 4;
+    grid-column: 1;
     margin: 0;
     padding: 0 12px;
     font-size: 17px;
@@ -1431,13 +1452,12 @@ const iconos: Record<Temperatura, string> = {
     color: var(--ink);
   }
   .t-pasos p + p {
-    grid-column: 4;
+    grid-column: 2;
     margin-left: 14px;
     padding: 0 16px;
   }
-  /* "Todas las medidas" del tipo, a lo ancho, encima de sus medidas */
+  /* "Cualquier medida" del tipo, la primera de sus casillas */
   .t-todas {
-    grid-column: 1 / -1;
     font-weight: 700;
   }
   .t-tipo {
@@ -1481,20 +1501,31 @@ const iconos: Record<Temperatura, string> = {
     opacity: 0.35;
     cursor: default;
   }
-  /* Medidas: casillas del mismo ancho, en columnas que cuadran */
+  /* Tipos de la familia: su nombre y debajo sus medidas, en casillas del mismo ancho que cuadran */
   .t-medidas {
     display: none;
-    grid-column: 4;
+    grid-column: 2;
     grid-row: 1 / -1;
     align-content: start;
-    grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
-    gap: 6px;
+    gap: 18px;
     margin-left: 14px;
     padding: 16px;
     background: #f4f4f4;
   }
   .t-tipo[aria-expanded='true'] + .t-medidas {
     display: grid;
+  }
+  .t-sub {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(156px, 1fr));
+    gap: 6px;
+  }
+  .t-sub-nombre {
+    grid-column: 1 / -1;
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--ink);
   }
   .t-op {
     height: 40px;
@@ -2303,8 +2334,10 @@ const iconos: Record<Temperatura, string> = {
     .t-tipo .n {
       margin-left: auto;
     }
+    .t-sub {
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    }
     .t-medidas {
-      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
       margin: 0;
       padding: 4px 12px 14px;
     }
