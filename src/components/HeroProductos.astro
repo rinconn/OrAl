@@ -918,16 +918,74 @@ const recorrido = ['PP 367', 'PC 497', 'PI 448', 'PE 494', 'PP 821', 'PC 279'];
     }
     .texto {
       order: 1;
-      padding: 44px var(--gut) 0;
+      padding: 28px var(--gut) 0;
     }
+    h1 {
+      font-size: clamp(42px, 12vw, 60px);
+    }
+    .lead {
+      margin-top: 12px;
+      font-size: 16px;
+    }
+    .btn-todas {
+      height: 46px;
+      margin-top: 18px;
+      padding: 0 20px;
+      font-size: 16px;
+    }
+    /* En móvil las cifras van en una fila corta, sin la raya, para que se vea pronto el catálogo */
     .raya {
-      margin-top: 36px;
+      display: none;
+    }
+    .cifras {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      padding-top: 22px;
+    }
+    .cifras li {
+      display: block;
+    }
+    .ico {
+      display: none;
+    }
+    .cifras b {
+      font-size: 20px;
+    }
+    .cifras small {
+      font-size: 12px;
     }
     .escena {
       position: relative;
       order: 2;
-      height: 100vw;
-      margin-top: 16px;
+      height: min(72vw, 340px);
+      margin-top: 4px;
+    }
+    .placa {
+      margin-bottom: 10px;
+    }
+    .placa b {
+      font-size: 19px;
+    }
+    /* Mandos en una sola fila que se desliza con el dedo, en vez de tres filas apiladas */
+    .mandos {
+      flex-wrap: nowrap;
+      justify-content: flex-start;
+      width: 100%;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .mandos > * {
+      flex: none;
+    }
+    .grupo button {
+      height: 34px;
+      padding: 0 11px;
+      font-size: 14px;
+    }
+    .accion {
+      height: 40px;
+      padding: 0 14px;
+      font-size: 14px;
     }
     .poster {
       left: 50%;
@@ -938,7 +996,7 @@ const recorrido = ['PP 367', 'PC 497', 'PI 448', 'PE 494', 'PP 821', 'PC 279'];
     }
     .columna {
       order: 3;
-      padding: 12px var(--gut) 32px;
+      padding: 8px var(--gut) 20px;
     }
     .ang,
     .pista {

@@ -80,7 +80,13 @@ const cifras = (v: Version) => [
   </span>
 
   <!-- Con un tubo elegido en los filtros: en qué rotor va y cuántos caben (lo rellena la página) -->
-  {vs && <span class="con-tubo" hidden />}
+  {
+    vs && (
+      <span class="con-tubo" hidden>
+        <span class="texto" />
+      </span>
+    )
+  }
 
   <!-- Placa de datos: cada cifra con su nombre arriba y la unidad pequeña al lado -->
   {vs ? (
@@ -260,22 +266,34 @@ const cifras = (v: Version) => [
   .con-tubo {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 10px 24px;
+    gap: 12px;
+    min-height: 46px;
+    padding: 12px 24px;
     background: var(--ink);
     color: #fff;
     font-size: 15px;
     font-weight: 700;
-    line-height: 1.25;
+    line-height: 1.2;
   }
+  /* El texto se centra por sus mayúsculas, no por la caja de la letra (que deja más aire abajo) */
+  .con-tubo .texto {
+    text-box: trim-both cap alphabetic;
+  }
+  /* El tubo: un poco más alto que las mayúsculas, centrado con ellas */
   .con-tubo::before {
     content: '';
     flex: none;
-    width: 8px;
-    height: 18px;
+    box-sizing: border-box;
+    width: 9px;
+    height: 16px;
     border: 1.5px solid #fff;
     border-top: 4px solid var(--red);
-    border-radius: 0 0 4px 4px;
+    border-radius: 0 0 4.5px 4.5px;
+  }
+  /* Con la banda puesta, la placa va pegada debajo, sin hueco blanco entre las dos */
+  .con-tubo:not([hidden]) ~ .placa {
+    margin-top: 0;
+    border-top: 0;
   }
 
   /* Placa de datos: banda gris de borde a borde con tres casillas */
@@ -403,6 +421,9 @@ const cifras = (v: Version) => [
   @media (max-width: 640px) {
     .cuerpo {
       padding: 18px 18px 20px;
+    }
+    .con-tubo {
+      padding-inline: 18px;
     }
     .ver {
       padding-right: 16px;
