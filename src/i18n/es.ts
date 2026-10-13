@@ -245,7 +245,7 @@ export const es = {
       tejidos: 'Tejidos',
       lacteos: 'Lácteos/Vet',
     },
-    grupos: { generales: 'Aplicaciones generales', especiales: 'Aplicaciones especiales', otros: 'Más productos' },
+    grupos: { otros: 'Más productos' },
     cifras: {
       desde: 'fabricando en Daganzo',
       stock: 'Siempre en stock',

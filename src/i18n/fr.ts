@@ -240,7 +240,7 @@ export const fr: Textos = {
       tejidos: 'Tissus',
       lacteos: 'Laitiers/Vét.',
     },
-    grupos: { generales: 'Applications générales', especiales: 'Applications spéciales', otros: 'Autres produits' },
+    grupos: { otros: 'Autres produits' },
     cifras: {
       desde: 'de fabrication à Daganzo',
       stock: 'Toujours en stock',

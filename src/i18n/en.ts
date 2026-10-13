@@ -239,7 +239,7 @@ export const en: Textos = {
       tejidos: 'Tissues',
       lacteos: 'Dairy/Vet',
     },
-    grupos: { generales: 'General applications', especiales: 'Special applications', otros: 'More products' },
+    grupos: { otros: 'More products' },
     cifras: {
       desde: 'manufacturing in Daganzo',
       stock: 'Always in stock',
