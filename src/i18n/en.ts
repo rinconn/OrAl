@@ -340,7 +340,7 @@ export const en: Textos = {
     comparar: {
       version: 'Version',
       comparar: 'Compare',
-      hasta: 'Up to 3 models',
+      hasta: 'Up to 3 centrifuges',
       elegir: 'Pick up to 3 centrifuges',
       elegirAyuda: 'Tap the ones you want to see side by side.',
       buscar: 'Search a model',
