@@ -2448,6 +2448,59 @@ const tubos = Object.entries(porTipo)
     }
   }
 
+  /* ——— Teléfono: la tarjeta compacta (src/components/Maquina.astro) mide 168 px de foto y nombre. Las versiones
+     cuelgan de la raya de la familia, en un hueco que solo se abre si las hay; la franja de abajo se reparte entre
+     Presupuesto, Comparar y la flecha a la ficha ——— */
+  @media (max-width: 640px) {
+    .ficha:has(.versiones) :global(.pieza) {
+      --hueco: 40px;
+    }
+    .versiones {
+      left: 2px;
+      top: calc(2px + 168px);
+      align-items: flex-start;
+    }
+    .versiones button {
+      height: 30px;
+      padding: 0 10px;
+    }
+    .versiones button[aria-pressed='true'] {
+      height: 34px;
+    }
+    .anadir,
+    .ficha :global(.paso) {
+      width: calc(42% - 2px);
+      height: 50px;
+    }
+    .anadir {
+      gap: 6px;
+      padding: 0 8px 0 14px;
+      font-size: 15px;
+    }
+    .ficha :global(.paso button) {
+      width: 40px;
+    }
+    .ficha :global(.paso output) {
+      font-size: 14px;
+    }
+    .ficha :global(.paso output b) {
+      font-size: 18px;
+    }
+    .comparar {
+      top: auto;
+      right: auto;
+      left: 42%;
+      bottom: 2px;
+      justify-content: center;
+      gap: 7px;
+      width: 33%;
+      height: 50px;
+      padding: 0 8px;
+      font-size: 13px;
+      border-right: 1px solid #b4b9bd;
+    }
+  }
+
   /* ——— Equipo a medida: una sola vez, al final del catálogo, sobre la mesa de laboratorio en oscuro ——— */
   .oem {
     display: flex;
