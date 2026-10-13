@@ -7,6 +7,8 @@ export interface Celda {
   t: string;
   n?: number;
   img?: string;
+  /** El mayor de su fila en la comparativa: negrita y punto rojo, como en la ventana */
+  mejor?: boolean;
 }
 export interface Hoja {
   titulo: string;
@@ -17,7 +19,33 @@ export interface Hoja {
   datos: [string, string][];
   cabecera: (Celda & { ud?: string; num?: boolean })[];
   filas: Celda[][];
+  /** Vista de tarjetas: en vez de la tabla, fichas con foto agrupadas por familia, como en la pantalla */
+  grupos?: Grupo[];
+  /** Comparativa: la leyenda del punto rojo ("El mayor de la comparación"), bajo la tabla */
+  leyenda?: string;
   archivo: string;
+}
+export interface Ficha {
+  img?: string;
+  /** Producto de laboratorio (no centrífuga): su foto va algo más pequeña, como en la tarjeta */
+  lab?: boolean;
+  temp?: string;
+  uso: string;
+  nombre: string;
+  frase?: string;
+  /** Cada cifra de la placa: nombre y valor con su unidad */
+  cifras: [string, string][];
+  /** Lo que ponen los productos de laboratorio en vez de cifras (su modelo) */
+  modelo?: string;
+}
+export interface Grupo {
+  n: string;
+  nombre: string;
+  /** Color de la familia, en hexadecimal */
+  color: string;
+  cuenta: string;
+  usos: string[];
+  fichas: Ficha[];
 }
 
 const limpio = (s?: string | null) => (s ?? '').replace(/\s+/g, ' ').trim();
@@ -29,7 +57,9 @@ const partes = (c: Element): Celda[] => {
   const xs = [...c.querySelectorAll<HTMLElement>('[data-x]')];
   if (xs.length) return xs.map((x) => ({ t: limpio(x.textContent) }));
   const n = (c as HTMLElement).dataset.n;
-  return [{ t: limpio(c.textContent), n: n ? Number(n) : undefined }];
+  return [
+    { t: limpio(c.textContent), n: n ? Number(n) : undefined, mejor: c.classList.contains('mejor') || undefined },
+  ];
 };
 export function leerTabla(tabla: HTMLTableElement, vale: (tr: HTMLTableRowElement) => boolean = () => true) {
   const celdas = (tr: Element) => [...tr.children].filter((c) => !c.classList.contains('fuera'));
@@ -225,9 +255,195 @@ const encajar = (im: Img, x: number, y: number, w: number, h: number) => {
   const k = Math.min(w / im.w, h / im.h);
   return [x + (w - im.w * k) / 2, y + (h - im.h * k) / 2, im.w * k, im.h * k] as const;
 };
+const imagen = (src: string) =>
+  new Promise<HTMLImageElement | undefined>((ok) => {
+    const im = new Image();
+    im.onload = () => ok(im);
+    im.onerror = () => ok(undefined);
+    im.src = src;
+  });
+// La foto de una tarjeta como en la pantalla: la máquina sobre la mesa oscura, apoyada en su sombra
+const estudio = async (src: string | undefined, fondo: HTMLImageElement | undefined, lab = false): Promise<Img> => {
+  const [w, h] = [640, 480];
+  const c = Object.assign(document.createElement('canvas'), { width: w, height: h });
+  const g = c.getContext('2d')!;
+  g.fillStyle = '#2b2e31';
+  g.fillRect(0, 0, w, h);
+  if (fondo) {
+    const k = Math.max(w / fondo.naturalWidth, h / fondo.naturalHeight);
+    const [fw, fh] = [fondo.naturalWidth * k, fondo.naturalHeight * k];
+    g.drawImage(fondo, (w - fw) / 2, (h - fh) / 2, fw, fh);
+  }
+  g.save();
+  g.filter = 'blur(12px)';
+  g.fillStyle = 'rgba(0,0,0,0.6)';
+  g.beginPath();
+  g.ellipse(w / 2, h * 0.87, w * 0.29, h * 0.035, 0, 0, Math.PI * 2);
+  g.fill();
+  g.restore();
+  const im = src ? await imagen(src) : undefined;
+  if (im) {
+    const alto = h * (lab ? 0.74 : 0.82);
+    const k = Math.min(alto / im.naturalHeight, (w * 0.86) / im.naturalWidth);
+    const [iw, ih] = [im.naturalWidth * k, im.naturalHeight * k];
+    g.drawImage(im, (w - iw) / 2, h * 0.89 - ih, iw, ih);
+  }
+  return { data: c.toDataURL('image/jpeg', 0.86), w, h };
+};
+const hexRgb = (hex: string): Rgb => {
+  const m = /^#?([\da-f]{2})([\da-f]{2})([\da-f]{2})$/i.exec(hex.trim());
+  return m ? [parseInt(m[1], 16), parseInt(m[2], 16), parseInt(m[3], 16)] : GRIS;
+};
+// Más claro, para que el color de la familia se lea sobre la banda oscura
+const aclarar = ([r, g, b]: Rgb, k: number): Rgb => [r + (255 - r) * k, g + (255 - g) * k, b + (255 - b) * k];
 
+// ——— Las tarjetas en el PDF: por familia, su cabecera oscura con el número, el nombre y cuántas hay; debajo, tres
+// fichas por fila con la foto sobre la mesa, la raya del color de la familia, aplicación, nombre, frase y la placa ———
+type Doc = InstanceType<(typeof import('jspdf'))['jsPDF']>;
+async function fichasPdf(doc: Doc, grupos: Grupo[], y: number, M: number, ancho: number) {
+  const fondo = await imagen('/img/fondos/mesa-tarjeta.webp');
+  const fotos = await Promise.all(grupos.map((gr) => Promise.all(gr.fichas.map((f) => estudio(f.img, fondo, f.lab)))));
+  const limite = 297 - 20;
+  const cols = 3;
+  const gap = 4;
+  const cw = (ancho - gap * (cols - 1)) / cols;
+  const ph = cw * 0.75;
+  const pad = 4;
+  const iw = cw - 2 * pad;
+  // Lo que ocupa cada ficha, para que las de una fila tengan el mismo alto
+  const medir = (f: Ficha) => {
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(12);
+    const nombre = doc.splitTextToSize(pdfTxt(f.nombre), iw) as string[];
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7);
+    const frase = (f.frase ? (doc.splitTextToSize(pdfTxt(f.frase), iw) as string[]) : []).slice(0, 3);
+    const n = Math.max(1, f.cifras.length);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    const valores = f.cifras.map(([, v]) => doc.splitTextToSize(pdfTxt(v), iw / n - 1.5) as string[]);
+    const lineasPlaca = Math.max(1, ...valores.map((l) => l.length));
+    doc.setFontSize(4.8);
+    const etiquetas = f.cifras.map(([k]) => doc.splitTextToSize(pdfTxt(k.toUpperCase()), iw / n - 2) as string[]);
+    const lineasEtq = Math.max(1, ...etiquetas.map((l) => l.length));
+    const placa = 4.5 + 2.2 * lineasEtq + 3.6 * lineasPlaca;
+    const cuerpo = 6.5 + 5.2 * nombre.length + (frase.length ? 1 + 3.1 * frase.length : 0) + 3 + placa;
+    return { nombre, frase, valores, etiquetas, lineasEtq, placa, cuerpo };
+  };
+  const nueva = () => {
+    doc.addPage();
+    return M + 2;
+  };
+
+  for (const [gi, gr] of grupos.entries()) {
+    const color = hexRgb(gr.color);
+    const medidas = gr.fichas.map(medir);
+    const altoFila = (i: number) => ph + 1.2 + Math.max(...medidas.slice(i, i + cols).map((m) => m.cuerpo));
+    // La cabecera nunca se queda sola al pie de una hoja: va con su primera fila
+    const cab = 17;
+    if (y + cab + 4 + altoFila(0) > limite) y = nueva();
+    doc.setFillColor(...CARBON);
+    doc.rect(M, y, ancho, cab, 'F');
+    doc.setFillColor(...color);
+    doc.rect(M, y, 1.6, cab, 'F');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(18);
+    doc.setTextColor(...aclarar(color, 0.25));
+    doc.text(gr.n, M + 6, y + 11.6);
+    const xn = M + 6 + doc.getTextWidth(gr.n) + 4;
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(14);
+    doc.setTextColor(255, 255, 255);
+    doc.text(pdfTxt(gr.nombre), xn, y + 8.6);
+    doc.setFontSize(6.5);
+    doc.setTextColor(191, 197, 201);
+    doc.text(pdfTxt(gr.usos.join('  ·  ')), xn, y + 13.4, { maxWidth: ancho - (xn - M) - 34 });
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    doc.text(pdfTxt(gr.cuenta), M + ancho - 6, y + 10.2, { align: 'right' });
+    y += cab + 4;
+
+    for (let i = 0; i < gr.fichas.length; i += cols) {
+      const alto = altoFila(i);
+      if (y + alto > limite) y = nueva();
+      gr.fichas.slice(i, i + cols).forEach((f, j) => {
+        const m = medidas[i + j];
+        const foto = fotos[gi][i + j];
+        const x = M + j * (cw + gap);
+        doc.setFillColor(255, 255, 255);
+        doc.rect(x, y, cw, alto, 'F');
+        doc.addImage(foto.data, 'JPEG', x, y, cw, ph);
+        doc.setFillColor(...aclarar(color, 0.1));
+        doc.rect(x, y + ph, cw, 1.2, 'F');
+        // La temperatura, en su etiqueta blanca sobre la foto
+        if (f.temp) {
+          const temp = f.temp.toUpperCase();
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(6);
+          const tw = doc.getTextWidth(pdfTxt(temp)) + 4;
+          doc.setFillColor(255, 255, 255);
+          doc.rect(x + 2.5, y + 2.5, tw, 5, 'F');
+          doc.setTextColor(...TINTA);
+          doc.text(pdfTxt(temp), x + 4.5, y + 5.9);
+        }
+        let yy = y + ph + 1.2 + 5.5;
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(6);
+        doc.setTextColor(...GRIS);
+        doc.setCharSpace(0.35);
+        doc.text(pdfTxt(f.uso.toUpperCase()), x + pad, yy, { maxWidth: iw });
+        doc.setCharSpace(0);
+        yy += 5.6;
+        doc.setFontSize(12);
+        doc.setTextColor(...TINTA);
+        doc.text(m.nombre, x + pad, yy);
+        yy += 5.2 * (m.nombre.length - 1);
+        if (m.frase.length) {
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(7);
+          doc.setTextColor(77, 77, 77);
+          doc.text(m.frase, x + pad, yy + 4.3, { lineHeightFactor: 1.25 });
+        }
+        // La placa, abajo del todo: cada cifra con su nombre encima, separadas por rayas finas
+        const yp = y + alto - m.placa - 3;
+        doc.setDrawColor(225, 225, 225);
+        doc.setLineWidth(0.25);
+        doc.line(x + pad, yp, x + cw - pad, yp);
+        if (f.cifras.length) {
+          const pw = iw / f.cifras.length;
+          f.cifras.forEach((_, c) => {
+            const px = x + pad + c * pw;
+            if (c) doc.line(px - 0.75, yp + 2, px - 0.75, yp + m.placa);
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(4.8);
+            doc.setTextColor(...GRIS);
+            doc.text(m.etiquetas[c], px + (c ? 0.75 : 0), yp + 4.2, { lineHeightFactor: 1.25 });
+            doc.setCharSpace(0);
+            doc.setFontSize(8);
+            doc.setTextColor(...TINTA);
+            doc.text(m.valores[c], px + (c ? 0.75 : 0), yp + 4.8 + 2.2 * m.lineasEtq + 2.8, { lineHeightFactor: 1.2 });
+          });
+        } else if (f.modelo) {
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(8);
+          doc.setTextColor(...TINTA);
+          doc.text(pdfTxt(f.modelo), x + pad, yp + 6.5, { maxWidth: iw });
+        }
+        doc.setDrawColor(95, 101, 107);
+        doc.setLineWidth(0.35);
+        doc.rect(x, y, cw, alto, 'S');
+      });
+      y += alto + gap;
+    }
+    y += 3;
+  }
+  return y;
+}
+
+let autoTablaCargada: (typeof import('jspdf-autotable'))['autoTable'] | undefined;
 async function generar(h: Hoja, pie: Pie) {
   const [{ jsPDF }, { autoTable }] = await Promise.all([import('jspdf'), import('jspdf-autotable')]);
+  autoTablaCargada = autoTable;
   const doc = new jsPDF({ unit: 'mm', format: 'a4' });
   doc.setProperties({ title: pdfTxt(`${h.titulo} · ${h.fecha}`), author: 'Orto Alresa', creator: 'ortoalresa.com' });
   const M = 12;
@@ -298,11 +514,46 @@ async function generar(h: Hoja, pie: Pie) {
     doc.text(valores[i], cx + 6, y0 + 10.5);
   });
 
-  // La tabla: cabecera oscura con la raya roja (en la comparativa, cada máquina con su foto) y filas alternas
+  // Vista de tarjetas: las fichas por familia en vez de la tabla
+  let fin: number;
+  if (h.grupos) fin = await fichasPdf(doc, h.grupos, y0 + alto + 6, M, ancho);
+  else fin = tabla(doc, h, { y: y0 + alto + 6, M, ancho, comparativa, fotosCab, fotosFila });
+
+  // La leyenda del punto rojo (comparativa) y de dónde salen los datos, bajo lo último
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(6.5);
+  doc.setTextColor(...GRIS);
+  let yl = Math.min(fin + (h.grupos ? 0 : 6), 297 - 20);
+  if (h.leyenda) {
+    doc.setFillColor(...ROJO);
+    doc.circle(M + 0.9, yl - 0.8, 0.9, 'F');
+    doc.text(pdfTxt(h.leyenda), M + 3.2, yl);
+    yl = Math.min(yl + 4, 297 - 20);
+  }
+  if (pie.fuente) doc.text(pdfTxt(pie.fuente), M, yl);
+  pieDeHojas(doc, pie, M, ancho);
+  return doc.output('blob');
+}
+
+// La tabla: cabecera oscura con la raya roja (en la comparativa, cada máquina con su foto) y filas alternas
+function tabla(
+  doc: Doc,
+  h: Hoja,
+  o: {
+    y: number;
+    M: number;
+    ancho: number;
+    comparativa: boolean;
+    fotosCab: (Img | undefined)[];
+    fotosFila: (Img | undefined)[];
+  },
+) {
+  const { M, ancho, comparativa, fotosCab, fotosFila } = o;
+  const autoTable = autoTablaCargada!;
   const num = h.cabecera.map((c) => !!c.num);
   const conFoto = fotosFila.some(Boolean);
   autoTable(doc, {
-    startY: y0 + alto + 6,
+    startY: o.y,
     margin: { left: M, right: M, top: M + 4, bottom: 18 },
     head: [h.cabecera.map((c) => pdfTxt(comparativa ? c.t : c.t.toUpperCase()))],
     body: h.filas.map((f) => f.map((c) => pdfTxt(comparativa ? c.t : c.t))),
@@ -349,7 +600,10 @@ async function generar(h: Hoja, pie: Pie) {
       if (d.column.index === 0) {
         d.cell.text = d.cell.text.map((t) => t.toUpperCase());
         Object.assign(d.cell.styles, { fontStyle: 'bold', fontSize: 6.5, textColor: GRIS });
-      } else d.cell.styles.textColor = TINTA;
+      } else {
+        d.cell.styles.textColor = TINTA;
+        if (h.filas[d.row.index]?.[d.column.index]?.mejor) d.cell.styles.fontStyle = 'bold';
+      }
     },
     didDrawCell: (d) => {
       const { x: cx, y: cy, width: w, height: ch } = d.cell;
@@ -363,6 +617,14 @@ async function generar(h: Hoja, pie: Pie) {
           doc.addImage(f.data, 'JPEG', ...encajar(f, cx + 4, cy + 4, w - 8, 25));
         }
       }
+      // El mayor de la fila: un punto rojo tras la cifra, como en la ventana
+      if (comparativa && d.section === 'body' && h.filas[d.row.index]?.[d.column.index]?.mejor) {
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(d.cell.styles.fontSize);
+        const tw = Math.max(...d.cell.text.map((t) => doc.getTextWidth(t)));
+        doc.setFillColor(...ROJO);
+        doc.circle(cx + 3 + tw + 2.2, cy + ch / 2, 0.85, 'F');
+      }
       if (d.section === 'body' && d.column.index === 0 && !comparativa) {
         const f = fotosFila[d.row.index];
         if (f) doc.addImage(f.data, 'JPEG', ...encajar(f, cx + 3, cy + (ch - 7) / 2, 7, 7));
@@ -370,15 +632,12 @@ async function generar(h: Hoja, pie: Pie) {
     },
   });
 
-  // De dónde salen los datos, bajo la tabla
-  const fin = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY;
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(6.5);
-  doc.setTextColor(...GRIS);
-  if (pie.fuente) doc.text(pdfTxt(pie.fuente), M, Math.min(fin + 6, 297 - 20));
+  return (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY;
+}
 
-  // Pie de cada hoja, como un membrete: raya roja corta, la marca en negrita y debajo la empresa en gris; a la
-  // derecha la web en rojo y "Página 1 de 2"
+// Pie de cada hoja, como un membrete: raya roja corta, la marca en negrita y debajo la empresa en gris; a la
+// derecha la web en rojo y "Página 1 de 2"
+function pieDeHojas(doc: Doc, pie: Pie, M: number, ancho: number) {
   const n = doc.getNumberOfPages();
   for (let p = 1; p <= n; p++) {
     doc.setPage(p);
@@ -400,7 +659,6 @@ async function generar(h: Hoja, pie: Pie) {
       align: 'right',
     });
   }
-  return doc.output('blob');
 }
 
 // Vista previa: el PDF ya hecho dentro de una ventana, con "Descargar PDF" e "Imprimir"
@@ -427,6 +685,15 @@ export async function pdf(h: Hoja, pie: Pie) {
   dialogo.classList.toggle('sin-visor', navigator.pdfViewerEnabled === false);
   marco.src = `${enlace}#view=FitH&navpanes=0`;
   dialogo.classList.remove('cargando');
+}
+// Sin vista previa: el PDF se hace y se descarga directamente (lo usa "Pedir presupuesto", para adjuntarlo al correo)
+export async function descargarPdf(h: Hoja, pie: Pie) {
+  const url = URL.createObjectURL(await generar(h, pie));
+  const a = Object.assign(document.createElement('a'), { href: url, download: `${h.archivo}.pdf` });
+  document.body.append(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 10000);
 }
 export function iniciarVistaPdf() {
   const dialogo = document.getElementById('vista-pdf') as HTMLDialogElement | null;

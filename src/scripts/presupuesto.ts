@@ -1,15 +1,22 @@
 // Lista de presupuesto del catálogo: "+ Presupuesto" en cada centrífuga, que al pulsarlo se vuelve un contador
 // "− 1 ud. +" (con 1, el "−" es una papelera y la quita); al añadir, un aviso breve junto al botón fijo de abajo a la
 // derecha, que dice cuántas hay y, al abrirlo, la lista con su foto y "Pedir presupuesto", que abre el correo de ventas con los modelos
-// ya escritos y cuántas unidades de cada uno. La lista se guarda en el navegador, así sigue al volver otro día.
+// ya escritos (unidades, datos clave y enlace a su ficha) y unos huecos para los datos del distribuidor. La lista se
+// guarda en el navegador, así sigue al volver otro día.
 
 interface DatosPresupuesto {
-  maquinas: Record<string, { nombre: string; img: string }>;
+  maquinas: Record<string, { nombre: string; img: string; datos?: string; url?: string }>;
   correo: string;
   textos: {
     quitar: string;
     asunto: string;
     cuerpo: string;
+    ficha: string;
+    misDatos: string;
+    campos: string[];
+    comentarios: string;
+    adjunto: string;
+    despedida: string;
     boton: string;
     anadir: string;
     quitarDeLista: string;
@@ -111,8 +118,23 @@ export function iniciarPresupuesto() {
         return `<li><img src="${m.img}" alt="" width="44" height="44"><span>${escapar(m.nombre)}</span><span class="pres-cant">${menos}<output>${n}</output><button type="button" data-mas="${s}" aria-label="${escapar(datos.textos.mas)}: ${escapar(m.nombre)}">${masIco}</button></span></li>`;
       })
       .join('');
-    const cuerpo = `${datos.textos.cuerpo}\n\n${elegidas.map((s) => `- ${unidades.get(s) ?? 1} × ${datos.maquinas[s].nombre}`).join('\n')}\n`;
-    pedir.href = `mailto:${datos.correo}?subject=${encodeURIComponent(datos.textos.asunto)}&body=${encodeURIComponent(cuerpo)}`;
+    // El correo: cada equipo con sus unidades, sus datos clave y su ficha; luego, huecos para quien lo pide
+    const tx = datos.textos;
+    const equipos = elegidas.map((s) => {
+      const m = datos.maquinas[s];
+      return [`${unidades.get(s) ?? 1} × ${m.nombre}`, m.datos && `   ${m.datos}`, m.url && `   ${tx.ficha}: ${m.url}`]
+        .filter(Boolean)
+        .join('\n');
+    });
+    const cuerpo = [
+      tx.cuerpo,
+      equipos.join('\n\n'),
+      tx.adjunto,
+      `${tx.misDatos}\n${tx.campos.map((c) => `- ${c}: `).join('\n')}`,
+      `${tx.comentarios}\n`,
+      tx.despedida,
+    ].join('\n\n');
+    pedir.href = `mailto:${datos.correo}?subject=${encodeURIComponent(tx.asunto)}&body=${encodeURIComponent(cuerpo)}`;
   };
 
   const cambiar = (slug: string, si: boolean) => {
@@ -193,6 +215,22 @@ export function iniciarPresupuesto() {
     guardar();
     pintar();
   });
+  // Desde el comparador: las comparadas pasan al presupuesto (las que ya estaban se quedan como estaban) y se abre
+  // la lista. Se abre en el siguiente ciclo para que el clic que lo pide no la cierre al llegar al documento.
+  document.addEventListener('presupuesto:anadir', (ev) => {
+    for (const s of (ev as CustomEvent<string[]>).detail ?? [])
+      if (datos.maquinas[s] && !elegidas.includes(s)) {
+        elegidas.push(s);
+        unidades.set(s, 1);
+      }
+    guardar();
+    pintar();
+    setTimeout(() => {
+      mostrar(true);
+      saltar();
+    });
+  });
+
   // Si una tarjeta cambia de versión, su botón pasa a hablar de esa versión
   document.addEventListener('catalogo:version', pintar);
   document.addEventListener('click', (ev) => {
