@@ -23,7 +23,7 @@ se usan literalmente (ver `sistema-diseno/catalogo/CONTENIDO-MARCA.md`).
 
 ## Gama
 
-- **23 modelos en 17 series** (no "más de 25", como decía la web actual). Cyto 22: 866 xg máx.
+- **23 modelos en 17 series** (no "más de 25", como decía la web actual). En la web se cuenta siempre en centrífugas, cada versión una: "23 centrífugas". Cyto 22: 866 xg máx.
 - Las fotos de la gama son recortes del propio catálogo (`public/img/gama/`) hasta que lleguen las originales.
 - La frase de cada ficha resume su ficha del catálogo; el titular "siempre en stock" sale de "continuo stock
   de nuestros productos" (Catálogo 2025, pág. 12).

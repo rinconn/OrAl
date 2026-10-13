@@ -45,12 +45,10 @@ const iconos: Record<Temperatura, string> = {
   aria-label={f.titulo}
   data-uno={f.resultados(1)}
   data-varios={f.resultados(999)}
-  data-series-uno={f.series(1)}
-  data-series-varios={f.series(999)}
+  data-cent-uno={f.centrifugas(1)}
+  data-cent-varios={f.centrifugas(999)}
   data-mas-uno={f.mas(1)}
   data-mas-varios={f.mas(999)}
-  data-modelos-uno={f.modelos(1)}
-  data-modelos-varios={f.modelos(999)}
   data-ver-uno={f.ver(1)}
   data-ver-varios={f.ver(999)}
   hidden
@@ -218,10 +216,15 @@ const iconos: Record<Temperatura, string> = {
             <!-- A la izquierda, las familias; a la derecha, los tipos de la familia abierta, cada uno con sus medidas -->
             <div class="t-grupos" style={`--filas: ${tubos.length}`}>
               {tubos.map((g, i) => (
-                <div class="t-grupo" role="group" aria-label={g.nombre}>
+                <div
+                  class="t-grupo"
+                  role="group"
+                  aria-label={g.nombre}
+                  data-tipo={g.subs.map((x) => `${x.items[0].v.split('|')[0]}|*`).join('+')}
+                >
                   <button type="button" class="t-tipo" aria-expanded={i === 0 ? 'true' : 'false'}>
                     <span>{g.nombre}</span>
-                    <span class="n">{g.subs.reduce((n, s) => n + s.items.length, 0)}</span>
+                    <span class="n"></span>
                   </button>
                   <div class="t-medidas">
                     {g.subs.map((s) => (
@@ -426,8 +429,14 @@ const iconos: Record<Temperatura, string> = {
     };
     const tubosModelo = datosTubos.modelos ?? {};
     // "tipo|*" es el tipo con cualquiera de sus medidas
-    const vale = (ts: Record<string, unknown> | undefined, v: string) =>
-      !!ts && (v.endsWith('|*') ? Object.keys(ts).some((k) => k.startsWith(v.slice(0, -1))) : !!ts[v]);
+    // "tipo|*" es el tipo con cualquiera de sus medidas; "a|*+b|*", cualquiera de varios tipos (una familia)
+    const vale = (ts: Record<string, unknown> | undefined, v: string): boolean =>
+      !!ts &&
+      (v.includes('+')
+        ? v.split('+').some((x) => vale(ts, x))
+        : v.endsWith('|*')
+          ? Object.keys(ts).some((k) => k.startsWith(v.slice(0, -1)))
+          : !!ts[v]);
     const admite = (el: HTMLElement) =>
       !selTubo.value || (el.dataset.slugs ?? '').split(' ').some((x) => vale(tubosModelo[x], selTubo.value));
     // Mínimos: lo escrito en cada campo, solo la cifra ("15.000" o "15 000" son 15000; los ml admiten decimales)
@@ -553,6 +562,16 @@ const iconos: Record<Temperatura, string> = {
     const tabla = salasEl.querySelector<HTMLElement>('.tabla-vista');
     const filas = [...(tabla?.querySelectorAll<HTMLElement>('tbody tr') ?? [])];
     filas.forEach((el, i) => (el.dataset.orden = String(i)));
+    // Todos los recuentos cuentan centrífugas, cada versión una (la tarjeta de la Consul 22 con la 22 R son dos), como
+    // la cabecera; de una tarjeta, solo las versiones que pasan los filtros. Accesorios y equipos cuentan uno cada uno
+    const filaDe = new Map(filas.map((el) => [el.dataset.slugs!, el]));
+    const piezas = (el: HTMLElement, c = aplic, ts: Set<string> = elegidas) => {
+      const slugs = el.dataset.slugs?.split(' ');
+      if (!slugs) return 1;
+      return Math.max(1, slugs.filter((x) => !filaDe.has(x) || cumple(filaDe.get(x)!, c, ts)).length);
+    };
+    const cuantas = (els: HTMLElement[], c = aplic, ts: Set<string> = elegidas) =>
+      els.reduce((n, el) => n + piezas(el, c, ts), 0);
     const cabs = [...(tabla?.querySelectorAll<HTMLButtonElement>('th button[data-o]') ?? [])];
     let asc = false;
     const ordenar = (els: HTMLElement[]) => {
@@ -612,12 +631,13 @@ const iconos: Record<Temperatura, string> = {
       for (const el of filas) el.hidden = !filasVis.includes(el);
       const visibles = fichas.filter((el) => cumple(el));
       for (const el of fichas) el.hidden = !visibles.includes(el);
-      // En la tabla, el total cuenta modelos; en las tarjetas, fichas
-      const total = enTabla() ? filasVis.length : visibles.length;
+      const total = enTabla() ? filasVis.length : cuantas(visibles);
       for (const s of salas) {
-        const n = visibles.filter(de(s)).length;
-        s.hidden = n === 0;
-        s.querySelector('.sala-n')!.textContent = cuenta(n, d.uno!, d.varios!);
+        const en = visibles.filter(de(s));
+        s.hidden = en.length === 0;
+        s.querySelector('.sala-n')!.textContent = en.some((el) => !el.dataset.slugs)
+          ? cuenta(en.length, d.uno!, d.varios!)
+          : cuenta(cuantas(en), d.centUno!, d.centVarios!);
       }
 
       for (const b of temps) {
@@ -628,7 +648,10 @@ const iconos: Record<Temperatura, string> = {
       }
       for (const b of opciones) {
         const v = b.dataset.aplic!;
-        const n = fichas.filter((el) => cumple(el, v)).length;
+        const n = cuantas(
+          fichas.filter((el) => cumple(el, v)),
+          v,
+        );
         const on = aplic === v;
         b.setAttribute('aria-pressed', String(on));
         b.querySelector('.n')!.textContent = String(n);
@@ -646,17 +669,19 @@ const iconos: Record<Temperatura, string> = {
           selTubo.value = antes;
         }
       }
-      // Cada tipo: cuántas medidas suyas quedan; el del tubo elegido, marcado; sin ninguna, apagado
+      // Cada familia: cuántas centrífugas admiten alguno de sus tipos con los demás filtros, cada versión una (como en
+      // aplicación); la del tubo elegido, marcada; sin ninguna, apagada
       for (const g of form.querySelectorAll<HTMLElement>('.t-grupo')) {
         const ops = [...g.querySelectorAll<HTMLButtonElement>('.t-op')];
-        const n = ops.filter((b) => !b.disabled && !b.classList.contains('t-todas')).length;
+        const antes = selTubo.value;
+        selTubo.value = g.dataset.tipo!;
+        const n = cuantas(fichas.filter((el) => cumple(el)));
+        selTubo.value = antes;
         const tipo = g.querySelector<HTMLButtonElement>('.t-tipo')!;
         tipo.querySelector('.n')!.textContent = String(n);
-        tipo.classList.toggle(
-          'on',
-          ops.some((b) => b.dataset.tubo === selTubo.value),
-        );
-        tipo.disabled = n === 0;
+        const on = ops.some((b) => b.dataset.tubo === selTubo.value);
+        tipo.classList.toggle('on', on);
+        tipo.disabled = n === 0 && !on;
       }
       const tuboElegido = opsTubo.find((b) => b.dataset.tubo && b.dataset.tubo === selTubo.value);
       tuboTxt.textContent = tuboElegido ? tuboElegido.dataset.nombre! : tuboBtn.dataset.todos!;
@@ -683,18 +708,16 @@ const iconos: Record<Temperatura, string> = {
       activos.hidden = nActivos === 0;
       activos.textContent = String(nActivos);
       borrar.hidden = nActivos === 0 && !q.value.trim();
-      // El contador no habla de "productos": en la portada salen 23 centrífugas (cada versión cuenta) y aquí había 22
-      // tarjetas, y parecía que faltaba una. En tarjetas, "17 series · 5 más"; en la tabla, "23 modelos"
-      const nSeries = visibles.filter((el) => el.dataset.slugs).length;
-      const nMas = visibles.length - nSeries;
-      const txt = enTabla()
-        ? cuenta(total, d.modelosUno!, d.modelosVarios!)
-        : [
-            nSeries && cuenta(nSeries, d.seriesUno!, d.seriesVarios!),
-            nMas && cuenta(nMas, nSeries ? d.masUno! : d.uno!, nSeries ? d.masVarios! : d.varios!),
-          ]
-            .filter(Boolean)
-            .join(' · ') || cuenta(0, d.uno!, d.varios!);
+      // El mismo criterio que la cabecera ("23 centrífugas"), en tarjetas y en tabla; accesorios y equipos, aparte
+      const nCent = enTabla() ? total : cuantas(visibles.filter((el) => el.dataset.slugs));
+      const nMas = enTabla() ? 0 : visibles.length - visibles.filter((el) => el.dataset.slugs).length;
+      const txt =
+        [
+          nCent && cuenta(nCent, d.centUno!, d.centVarios!),
+          nMas && cuenta(nMas, nCent ? d.masUno! : d.uno!, nCent ? d.masVarios! : d.varios!),
+        ]
+          .filter(Boolean)
+          .join(' · ') || cuenta(0, d.uno!, d.varios!);
       cuentaEl.replaceChildren(
         ...txt
           .split(/(\d+)/)
@@ -707,7 +730,7 @@ const iconos: Record<Temperatura, string> = {
         const a = document.querySelector<HTMLElement>(`.atajos [data-ir="${s.dataset.sala}"]`);
         if (!a) continue;
         a.hidden = s.hidden;
-        a.querySelector('.n')!.textContent = String(visibles.filter(de(s)).length);
+        a.querySelector('.n')!.textContent = String(cuantas(visibles.filter(de(s))));
       }
       // Lo puesto, en palabras, para la cabecera de lo que se descarga (tabla en PDF o Excel)
       salasEl.dataset.resumen = JSON.stringify(
@@ -2359,6 +2382,17 @@ const iconos: Record<Temperatura, string> = {
     .ver-res::after {
       content: ' »';
       font-weight: 300;
+    }
+  }
+  /* Teléfono: la barra pega más al 3D y Comparar es más baja, para que el primer producto asome en la primera
+     pantalla */
+  @media (max-width: 640px) {
+    .filtros {
+      --alto: 46px;
+      margin-top: 10px;
+    }
+    .ver-comparar {
+      height: 40px;
     }
   }
   @media (prefers-reduced-motion: reduce) {
