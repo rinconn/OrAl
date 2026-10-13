@@ -40,3 +40,9 @@ npm run verify   # formato + lint + astro check + build
 
 La CI de GitHub ejecuta lo mismo en cada PR. Los cambios van por rama y PR, nunca directo a `main`.
 Revisa siempre el resultado en escritorio (1440 px) y en móvil (390 px): sin scroll horizontal ni textos cortados.
+
+## Autoría en Git y GitHub
+
+Los commits y las PRs son del dueño del proyecto (`rincon!` <rincon.enriquemv@gmail.com>). Ninguna IA firma:
+sin líneas `Co-Authored-By`, sin enlaces de sesión y sin "Generated with" en commits, PRs ni comentarios, y nunca
+como autor del commit. Antes de hacer commit, `git config user.name` y `user.email` tienen que ser los del dueño.
