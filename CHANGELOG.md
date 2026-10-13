@@ -126,5 +126,7 @@ Hasta que se publique la web, todo va en "Sin publicar"; al publicar se cierra l
 
 ### Corregido
 
+- Productos: **el número de cada tipo de tubo sigue a los demás filtros**. Contaba cuántas medidas del tipo daban algún resultado, así que casi nunca cambiaba (con Refrigerada, "Fondo redondo, tapón" seguía en 10). Ahora cuenta las máquinas que lo admiten con los filtros activos, como el desplegable de aplicación (con Refrigerada, "Fondo redondo con tapón" pasa de 9 a 6).
+- Productos y fichas: **nombres de tubo con un mismo criterio** en los tres idiomas: forma, luego cierre y al final "(HS)" ("Cónico con tapón", "Cónico con tapón de rosca", "Fondo redondo con tapón (HS)", "Cónico de traza", "Extracción de sangre"). Antes salían tal cual del ERP, con comas y abreviaturas sueltas ("Cónico tapón", "Fondo redondo, tapón (hs)", "Fondo plano, tapón, (hs)").
 - Productos: **una sola elección para comparar**. Las casillas de la tabla llevaban su propia cuenta: con 2 filas marcadas, el botón Comparar de arriba seguía en 0/3 y su ventana salía vacía. Ahora tabla, tarjetas, la ventana de elegir y la barra de abajo comparten la misma elección, y el botón de arriba sube al marcar en cualquiera de ellas. En la tabla se pueden seguir marcando más de 3 para descargar; para comparar cuentan las 3 primeras.
 - Productos: la caja del presupuesto (abajo a la derecha), aun cerrada, tapaba lo que quedaba encima de su botón: no se podía pulsar el "+" de algunas filas de la tabla ni "PDF" y "Excel". Ahora solo reciben el clic su botón y su panel abierto.
