@@ -400,15 +400,125 @@ const cifras = (v: Version) => [
     transition-duration: 0.12s;
   }
 
+  /* ——— Teléfono: tarjeta compacta. Arriba, la foto a la izquierda (40 %) y al lado aplicación, nombre y frase (168 px;
+     solo crece en algún equipo de nombre largo, que no tiene versiones), con la
+     raya de la familia debajo de las dos; luego la placa de cifras y una franja de botones. La página (Centrifugas)
+     abre debajo de la raya un hueco para las versiones y pone Presupuesto y Comparar en la franja ——— */
   @media (max-width: 640px) {
-    .cuerpo {
-      padding: 18px 18px 20px;
+    .pieza {
+      --alto: 168px;
+      /* Lo que ocupan Presupuesto (y Comparar, en las centrífugas) a la izquierda de la franja de abajo */
+      --izq: 75%;
+      display: grid;
+      grid-template-columns: 40% minmax(0, 1fr);
+      grid-template-rows: minmax(var(--alto), auto) var(--hueco, 0);
+      height: auto;
     }
-    .ver {
-      padding-right: 16px;
+    .pieza.lab {
+      --izq: 42%;
+    }
+    .estudio {
+      grid-area: 1 / 1;
+      aspect-ratio: auto;
+      border-bottom-width: 4px;
+    }
+    .estudio img {
+      bottom: 12px;
+      height: calc(100% - 50px);
+      max-width: 88%;
+    }
+    .lab .estudio img {
+      height: calc(100% - 60px);
+    }
+    .estudio::after {
+      bottom: 12px;
+      filter: blur(6px);
+    }
+    .temp {
+      top: 8px;
+      left: 8px;
+      gap: 5px;
+      height: 24px;
+      padding: 0 8px 0 6px;
+      font-size: 11px;
+    }
+    .temp :global(svg) {
+      width: 13px;
+      height: 13px;
+    }
+    .cuerpo {
+      grid-area: 1 / 2;
+      min-width: 0;
+      padding: 14px 14px 10px;
+      border-bottom: 4px solid var(--fam-vivo);
+    }
+    .uso {
+      gap: 7px;
+      font-size: 12px;
+    }
+    .uso::before {
+      width: 8px;
+      height: 8px;
+    }
+    .nombre {
+      margin-top: 6px;
+      font-size: 24px;
+    }
+    .frase {
+      margin-top: 6px;
+      font-size: 15px;
+      line-height: 1.3;
+    }
+    .con-tubo {
+      grid-area: 3 / 1 / 4 / -1;
+      padding: 8px 14px;
+      font-size: 14px;
+    }
+    .placa {
+      grid-area: 4 / 1 / 5 / -1;
+      margin-top: 0;
     }
     .cifra {
-      padding-left: 18px;
+      gap: 3px;
+      padding: 10px 6px 10px 14px;
+    }
+    .cifra + .cifra {
+      padding-left: 10px;
+    }
+    .cifra small {
+      font-size: 11px;
+    }
+    .cifra b {
+      font-size: 18px;
+    }
+    .cifra.largo b {
+      font-size: 15px;
+    }
+    .cifra i {
+      font-size: 13px;
+    }
+    .placa.modelo {
+      padding: 12px 14px;
+      font-size: 16px;
+    }
+    /* Franja de abajo: en las centrífugas solo la flecha (toda la tarjeta lleva a la ficha); en los equipos, con
+       su texto, que ahí cabe */
+    .ver {
+      grid-area: 5 / 1 / 6 / -1;
+      justify-content: center;
+      height: 50px;
+      padding: 0 12px 0 var(--izq);
+      font-size: 15px;
+    }
+    .ver::before {
+      inset: 0 0 0 var(--izq);
+    }
+    .pieza:not(.lab) .ver > span:first-child {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
     }
   }
   @media (prefers-reduced-motion: reduce) {
