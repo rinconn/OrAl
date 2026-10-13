@@ -348,7 +348,7 @@ export const es = {
     comparar: {
       version: 'Versión',
       comparar: 'Comparar',
-      hasta: 'Hasta 3 modelos',
+      hasta: 'Hasta 3 centrífugas',
       elegir: 'Elige hasta 3 centrífugas',
       elegirAyuda: 'Toca las que quieras ver lado a lado.',
       buscar: 'Buscar un modelo',

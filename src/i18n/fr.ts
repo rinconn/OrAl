@@ -341,7 +341,7 @@ export const fr: Textos = {
     comparar: {
       version: 'Version',
       comparar: 'Comparer',
-      hasta: 'Jusqu’à 3 modèles',
+      hasta: 'Jusqu’à 3 centrifugeuses',
       elegir: 'Choisissez jusqu’à 3 centrifugeuses',
       elegirAyuda: 'Touchez celles que vous voulez voir côte à côte.',
       buscar: 'Rechercher un modèle',
