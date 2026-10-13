@@ -1218,3 +1218,18 @@ entera delante, si se ensancha el contenido de 1280 a 1440 px.
 - **Descartado:** poner el catálogo antes del 3D o quitar el 3D en móvil; una escena aún más baja (la máquina
   encogía); subir "Comparar" a la fila del buscador (el buscador no cabía, "Rechercher" se cortaba); quitar también
   la entrada. Decisión en [0011](decisiones/0011-movil-3d-compacto.md).
+
+## 28. Filtro de tubos: un número que se mueve y nombres con criterio
+
+- **Problema:** junto a cada tipo de tubo había un número que contaba sus medidas con algún resultado, y casi nunca
+  cambiaba: con Refrigerada activada, "Fondo redondo, tapón" seguía diciendo 10. Además los nombres venían tal cual
+  del ERP, cada uno escrito a su manera ("Cónico", "Cónico tapón", "Fondo redondo, tapón (hs)", "Fondo plano, tapón,
+  (hs)").
+- **Ahora:** el número cuenta las máquinas que admiten ese tipo con los demás filtros puestos, igual que el
+  desplegable de aplicación; un tipo sin ninguna se apaga. Los nombres siguen una regla en los tres idiomas: forma,
+  luego cierre y al final "(HS)" ("Cónico con tapón", "Fondo redondo con tapón (HS)", "Cónico de traza"). El mismo
+  nombre sale en la tabla de rotores de cada ficha.
+- **Por qué:** en toda la barra un número quiere decir lo mismo (cuántas máquinas quedan), y el distribuidor lee los
+  tipos como una lista ordenada y no como códigos de almacén.
+- **Descartado:** contar medidas (no responde a lo que se pregunta) y desarrollar "HS" en palabras: el dato no dice qué
+  significa, así que se deja como viene.
