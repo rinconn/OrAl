@@ -1,5 +1,5 @@
 ---
-// Cabecera: logo en dos líneas, menú, banderas de idioma, lupa y Contacto.
+// Cabecera: banderas de idioma y logo en dos líneas, menú, lupa y Contacto.
 // Se aparta al bajar y vuelve al subir. En móvil el menú ocupa la pantalla, se cierra con Esc
 // y mantiene el foco dentro mientras está abierto.
 import Bandera from './ui/Bandera.astro';
@@ -20,30 +20,7 @@ const actual = (href: string) => !href.startsWith('/#') && base.startsWith(href)
 
 <header class="top" id="top" data-portada={base === '/' ? '' : undefined}>
   <div class="wrap bar">
-    <a class="marca" href={ruta(lang, '/')} aria-label={t.cabecera.inicio}>
-      <img class="logo" src="/img/marca/logo-ortoalresa-2-lineas.svg" alt="orto alresa" width="132" height="44" />
-    </a>
-
-    <nav class="nav" id="nav" aria-label={t.cabecera.principal}>
-      <ul>
-        {principal.map((e) => (
-          <li>
-            <a href={ruta(lang, e.href)} aria-current={actual(e.href) ? 'page' : undefined}>
-              {t.nav[e.clave]}
-            </a>
-          </li>
-        ))}
-      </ul>
-      <div class="nav-extra">
-        <a class="btn red" href={ruta(lang, contacto.href)}>
-          {t.cabecera.contacto}
-        </a>
-        <a href={contacto.telefonoHref}>{contacto.telefono}</a>
-        <a href={`mailto:${contacto.comercial}`}>{contacto.comercial}</a>
-      </div>
-    </nav>
-
-    <div class="der">
+    <div class="izq">
       <div class="banderas" role="group" aria-label={t.cabecera.idioma}>
         {idiomas.map((i) =>
           i.codigo === lang ? (
@@ -66,6 +43,31 @@ const actual = (href: string) => !href.startsWith('/#') && base.startsWith(href)
           ),
         )}
       </div>
+      <a class="marca" href={ruta(lang, '/')} aria-label={t.cabecera.inicio}>
+        <img class="logo" src="/img/marca/logo-ortoalresa-2-lineas.svg" alt="orto alresa" width="132" height="44" />
+      </a>
+    </div>
+
+    <nav class="nav" id="nav" aria-label={t.cabecera.principal}>
+      <ul>
+        {principal.map((e) => (
+          <li>
+            <a href={ruta(lang, e.href)} aria-current={actual(e.href) ? 'page' : undefined}>
+              {t.nav[e.clave]}
+            </a>
+          </li>
+        ))}
+      </ul>
+      <div class="nav-extra">
+        <a class="btn red" href={ruta(lang, contacto.href)}>
+          {t.cabecera.contacto}
+        </a>
+        <a href={contacto.telefonoHref}>{contacto.telefono}</a>
+        <a href={`mailto:${contacto.comercial}`}>{contacto.comercial}</a>
+      </div>
+    </nav>
+
+    <div class="der">
       <Buscador />
       <a class="btn red contacto" href={ruta(lang, contacto.href)}>
         {t.cabecera.contacto}
@@ -234,8 +236,8 @@ const actual = (href: string) => !href.startsWith('/#') && base.startsWith(href)
     transform: translateY(-100%);
     box-shadow: none;
   }
-  /* A todo el ancho de la pantalla, como la cabecera de la web actual: logo pegado a la izquierda y banderas,
-     lupa y Contacto a la derecha, sin el ancho máximo del resto de la página */
+  /* A todo el ancho de la pantalla, como la cabecera de la web actual: banderas y logo a la izquierda, lupa y
+     Contacto a la derecha, sin el ancho máximo del resto de la página */
   .bar {
     display: flex;
     align-items: center;
@@ -243,6 +245,13 @@ const actual = (href: string) => !href.startsWith('/#') && base.startsWith(href)
     height: 76px;
     max-width: none;
     padding-inline: clamp(16px, 2.6vw, 48px);
+  }
+  /* Banderas pegadas a la izquierda, como en la web actual, y el logo a continuación */
+  .izq {
+    flex: none;
+    display: flex;
+    align-items: center;
+    gap: 32px;
   }
   .marca {
     flex: none;
@@ -255,7 +264,7 @@ const actual = (href: string) => !href.startsWith('/#') && base.startsWith(href)
   .nav {
     margin-left: auto;
   }
-  /* Escritorio: el mismo hueco a cada lado del menú, entre el logo y las banderas */
+  /* Escritorio: el mismo hueco a cada lado del menú, entre el logo y la lupa */
   @media (min-width: 1440px) {
     .bar {
       justify-content: space-between;
@@ -371,6 +380,9 @@ const actual = (href: string) => !href.startsWith('/#') && base.startsWith(href)
     .nav ul {
       gap: 16px;
     }
+    .izq {
+      gap: 24px;
+    }
   }
 
   @media (max-width: 1439px) {
@@ -381,7 +393,10 @@ const actual = (href: string) => !href.startsWith('/#') && base.startsWith(href)
     .logo {
       height: 36px;
     }
-    /* En móvil solo quedan las banderas a la vista; Contacto va dentro del menú */
+    /* En móvil quedan a la vista banderas, logo, lupa y menú; Contacto va dentro del menú */
+    .izq {
+      gap: 20px;
+    }
     .der {
       margin-left: auto;
       gap: 12px;
@@ -447,15 +462,18 @@ const actual = (href: string) => !href.startsWith('/#') && base.startsWith(href)
     }
   }
 
-  /* Móviles: el botón de menú se queda en icono para que quepan banderas y lupa */
+  /* Móviles: el botón de menú se queda en icono para que quepan banderas, logo y lupa */
   @media (max-width: 480px) {
     .bar {
       gap: 12px;
     }
+    .izq {
+      gap: 14px;
+    }
     .der {
       gap: 4px;
     }
-    .der .banderas {
+    .banderas {
       gap: 8px;
     }
     .bandera :global(svg) {

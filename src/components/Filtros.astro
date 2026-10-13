@@ -18,7 +18,9 @@ const { grupos, tubos } = Astro.props;
 const lang = idioma(Astro.currentLocale);
 const t = textos(lang);
 const f = t.catalogo.filtros;
+const tc = t.catalogo.comparar;
 const m = f.minimos;
+const tv = f.vista;
 const temperaturas: Temperatura[] = ['ventilada', 'refrigerada', 'calefactada'];
 const may = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 const cruz = 'M6 6l12 12M18 6 6 18';
@@ -92,6 +94,20 @@ const iconos: Record<Temperatura, string> = {
           </svg>
         </button>
       </div>
+
+      <!-- Comparar: abre una ventana con todas las centrífugas para elegir hasta 3; cuenta las elegidas -->
+      <button type="button" class="ver-comparar" aria-haspopup="dialog">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+          <path d="M4 5h6v14H4zM14 5h6v14h-6z" fill="none" stroke="currentColor" stroke-width="1.7"></path>
+        </svg>
+        <span class="vc-txt">
+          <b>{tc.comparar}</b>
+          <span>{tc.hasta}</span>
+        </span>
+        <span class="vc-n" aria-live="polite">
+          0/3
+        </span>
+      </button>
 
       <button type="button" class="abrir-panel" aria-expanded="false" aria-controls="panel-filtros">
         <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
@@ -172,7 +188,13 @@ const iconos: Record<Temperatura, string> = {
             data-todos={f.cualquierTubo}
           >
             <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
-              <path d="M9 3h6M10 3v14a2 2 0 0 0 4 0V3" fill="none" stroke="currentColor" stroke-width="1.7"></path>
+              <path
+                d="M8 3h8v3H8zM9.5 6v10.5a2.5 2.5 0 0 0 5 0V6M9.5 12h5"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.6"
+                stroke-linejoin="round"
+              ></path>
             </svg>
             <span class="tubo-txt">{f.cualquierTubo}</span>
             <svg class="flechita" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
@@ -183,11 +205,32 @@ const iconos: Record<Temperatura, string> = {
             <button type="button" class="t-op t-todos" data-tubo="" aria-pressed="true">
               {f.cualquierTubo}
             </button>
-            <div class="t-grupos">
-              {tubos.map((g) => (
+            <!-- A la izquierda los tipos en una lista como la de aplicación; a la derecha, las medidas del tipo abierto
+                 en una rejilla de casillas iguales. En móvil, las medidas se abren debajo de su tipo -->
+            <!-- Dos pasos con su rótulo: primero el tipo y luego la medida (o todas las de ese tipo) -->
+            <div class="t-pasos" aria-hidden="true">
+              <p>{f.pasoTipo}</p>
+              <p>{f.pasoMedida}</p>
+            </div>
+            <div class="t-grupos" style={`--filas: ${Math.ceil(tubos.length / 3)}`}>
+              {tubos.map((g, i) => (
                 <div class="t-grupo" role="group" aria-label={g.nombre}>
-                  <p class="grupo">{g.nombre}</p>
+                  <button type="button" class="t-tipo" aria-expanded={i === 0 ? 'true' : 'false'}>
+                    <span>{g.nombre}</span>
+                    <span class="n">{g.items.length}</span>
+                  </button>
                   <div class="t-medidas">
+                    {g.items.length > 1 && (
+                      <button
+                        type="button"
+                        class="t-op t-todas"
+                        data-tubo={`${g.items[0].v.split('|')[0]}|*`}
+                        data-nombre={g.nombre}
+                        aria-pressed="false"
+                      >
+                        {f.todasMedidas}
+                      </button>
+                    )}
                     {g.items.map((x) => (
                       <button
                         type="button"
@@ -283,6 +326,19 @@ const iconos: Record<Temperatura, string> = {
           </select>
         </label>
 
+        <!-- En móvil, descargar va al final del panel (en escritorio, junto al total) -->
+        <div class="descargar d-movil" role="group" aria-label={tv.descargar}>
+          <span class="etq-movil">{tv.descargar}</span>
+          <span class="d-botones">
+            <button type="button" data-exportar="pdf" title={tv.descargarEn('PDF')}>
+              PDF
+            </button>
+            <button type="button" data-exportar="excel" title={tv.descargarEn('Excel')}>
+              Excel
+            </button>
+          </span>
+        </div>
+
         <button type="button" class="ver-res"></button>
       </div>
 
@@ -294,6 +350,18 @@ const iconos: Record<Temperatura, string> = {
           </svg>
           <span>{f.limpiar}</span>
         </button>
+        {/* Descargar lo que dejan los filtros, igual en tarjetas (en fichas) y en tabla (la tabla con su orden y lo
+            elegido), a la derecha del total */}
+        <div class="descargar" role="group" aria-label={tv.descargar}>
+          <span class="d-botones">
+            <button type="button" data-exportar="pdf" title={tv.descargarEn('PDF')}>
+              PDF
+            </button>
+            <button type="button" data-exportar="excel" title={tv.descargarEn('Excel')}>
+              Excel
+            </button>
+          </span>
+        </div>
       </div>
     </div>
   </div>
@@ -347,8 +415,11 @@ const iconos: Record<Temperatura, string> = {
       cifras?: Record<string, { rpm: number; xg: number; cap: [number, number][] }>;
     };
     const tubosModelo = datosTubos.modelos ?? {};
+    // "tipo|*" es el tipo con cualquiera de sus medidas
+    const vale = (ts: Record<string, unknown> | undefined, v: string) =>
+      !!ts && (v.endsWith('|*') ? Object.keys(ts).some((k) => k.startsWith(v.slice(0, -1))) : !!ts[v]);
     const admite = (el: HTMLElement) =>
-      !selTubo.value || (el.dataset.slugs ?? '').split(' ').some((x) => tubosModelo[x]?.[selTubo.value]);
+      !selTubo.value || (el.dataset.slugs ?? '').split(' ').some((x) => vale(tubosModelo[x], selTubo.value));
     // Mínimos: lo escrito en cada campo, solo la cifra ("15.000" o "15 000" son 15000; los ml admiten decimales)
     const camposMin = [...form.querySelectorAll<HTMLInputElement>('.min-menu input')];
     const campo = (k: string) => camposMin.find((x) => x.name === k)!;
@@ -565,6 +636,18 @@ const iconos: Record<Temperatura, string> = {
           selTubo.value = antes;
         }
       }
+      // Cada tipo: cuántas medidas suyas quedan; el del tubo elegido, marcado; sin ninguna, apagado
+      for (const g of form.querySelectorAll<HTMLElement>('.t-grupo')) {
+        const ops = [...g.querySelectorAll<HTMLButtonElement>('.t-op')];
+        const n = ops.filter((b) => !b.disabled && !b.classList.contains('t-todas')).length;
+        const tipo = g.querySelector<HTMLButtonElement>('.t-tipo')!;
+        tipo.querySelector('.n')!.textContent = String(n);
+        tipo.classList.toggle(
+          'on',
+          ops.some((b) => b.dataset.tubo === selTubo.value),
+        );
+        tipo.disabled = n === 0;
+      }
       const tuboElegido = opsTubo.find((b) => b.dataset.tubo && b.dataset.tubo === selTubo.value);
       tuboTxt.textContent = tuboElegido ? tuboElegido.dataset.nombre! : tuboBtn.dataset.todos!;
       tuboBtn.classList.toggle('on', !!tuboElegido);
@@ -711,6 +794,12 @@ const iconos: Record<Temperatura, string> = {
       cerrarMenu();
       cerrarMin();
       tuboBtn.setAttribute('aria-expanded', String(!tubosAbierto()));
+      // Al abrir: el tipo del tubo elegido, o el primero
+      const elegido = opsTubo.find((b) => b.dataset.tubo && b.dataset.tubo === selTubo.value);
+      abrirTipo(
+        elegido?.closest('.t-grupo')?.querySelector<HTMLButtonElement>('.t-tipo') ??
+          (movil.matches ? undefined : tiposTubo[0]),
+      );
     });
     // ——— Panel de mínimos: se filtra mientras se escribe; Intro o Esc lo cierran ———
     const minAbierto = () => minBtn.getAttribute('aria-expanded') === 'true';
@@ -752,6 +841,16 @@ const iconos: Record<Temperatura, string> = {
       aplicar();
       if (!movil.matches) camposMin[0].focus();
     });
+    // Abrir un tipo enseña sus medidas (no filtra); en móvil, otro toque lo cierra
+    const tiposTubo = [...form.querySelectorAll<HTMLButtonElement>('.t-tipo')];
+    const abrirTipo = (t?: HTMLButtonElement) => {
+      for (const x of tiposTubo) x.setAttribute('aria-expanded', String(x === t));
+    };
+    for (const t of tiposTubo) {
+      t.addEventListener('click', () => {
+        abrirTipo(movil.matches && t.getAttribute('aria-expanded') === 'true' ? undefined : t);
+      });
+    }
     for (const b of opsTubo) {
       b.addEventListener('click', () => {
         selTubo.value = b.dataset.tubo!;
@@ -885,6 +984,8 @@ const iconos: Record<Temperatura, string> = {
   .filtros {
     --alto: 56px;
     --borde: #c9c9c9;
+    --hover-bg: #f3f4f5;
+    --hover-raya: #9aa2a8;
     position: relative;
     z-index: 20;
     margin-top: clamp(48px, 6vw, 88px);
@@ -1157,6 +1258,70 @@ const iconos: Record<Temperatura, string> = {
     cursor: pointer;
     transition: border-color 0.2s ease;
   }
+  /* ——— Descargar: a la derecha del total, igual en tarjetas y en tabla. PDF en rojo y Excel con borde negro, cada
+     uno con su flecha de bajar. En móvil, el de la barra se esconde con el total y sale el del final del panel ——— */
+  .d-movil {
+    display: none;
+  }
+  .fin .descargar {
+    margin-left: 8px;
+  }
+  .d-botones {
+    display: flex;
+    gap: 8px;
+  }
+  .descargar button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: var(--alto);
+    padding: 0 18px 0 14px;
+    border: 2px solid var(--ink);
+    background: #fff;
+    font: 700 16px var(--f);
+    color: var(--ink);
+    cursor: pointer;
+    transition:
+      background-color 0.2s ease,
+      border-color 0.2s ease,
+      color 0.2s ease;
+  }
+  .descargar [data-exportar='pdf'] {
+    border-color: var(--red);
+    background: var(--red);
+    color: #fff;
+  }
+  .descargar button::before {
+    content: '';
+    width: 16px;
+    height: 16px;
+    background: currentColor;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 4v11M7 10l5 5 5-5M5 20h14' fill='none' stroke='black' stroke-width='2'/%3E%3C/svg%3E")
+      center / contain no-repeat;
+  }
+  .descargar button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+  .descargar button:active:not(:disabled) {
+    scale: 0.97;
+  }
+  .descargar button:focus-visible {
+    outline: 2px solid var(--red);
+    outline-offset: 2px;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .descargar button:hover:not(:disabled) {
+      border-color: var(--ink);
+      background: var(--ink);
+      color: #fff;
+    }
+    .descargar [data-exportar='pdf']:hover:not(:disabled) {
+      border-color: var(--red-d);
+      background: var(--red-d);
+    }
+  }
   /* ——— Tu tubo: botón como el de aplicación y, al abrirlo, un panel con un título por tipo y sus medidas ——— */
   /* El panel de tubos se coloca respecto a la barra entera, para que no se salga por la derecha */
   .tubo {
@@ -1228,41 +1393,131 @@ const iconos: Record<Temperatura, string> = {
       opacity 0.18s ease,
       translate 0.25s cubic-bezier(0.23, 1, 0.32, 1);
   }
-  /* Los tipos en columnas; cada tipo entero en su columna */
+  /* Tipos en tres columnas que se leen de arriba abajo y, a la derecha, las medidas del tipo abierto */
   .t-grupos {
-    columns: 3 230px;
-    column-gap: 22px;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(300px, 1.3fr);
+    grid-template-rows: repeat(var(--filas), auto);
+    grid-auto-flow: column;
+    column-gap: 4px;
   }
   .t-grupo {
-    break-inside: avoid;
-    margin-bottom: 14px;
+    display: contents;
   }
-  .t-grupo .grupo {
-    margin: 0 0 8px;
+  .t-pasos {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(300px, 1.3fr);
+    column-gap: 4px;
+    margin: 8px 0 6px;
   }
-  .t-medidas {
+  .t-pasos p {
+    grid-column: 1 / 4;
+    margin: 0;
+    padding: 0 12px;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--ink);
+  }
+  .t-pasos p + p {
+    grid-column: 4;
+    margin-left: 14px;
+    padding: 0 16px;
+  }
+  /* "Todas las medidas" del tipo, a lo ancho, encima de sus medidas */
+  .t-todas {
+    grid-column: 1 / -1;
+    font-weight: 700;
+  }
+  .t-tipo {
     display: flex;
-    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    min-width: 0;
+    height: 40px;
+    padding: 0 12px;
+    border: 0;
+    background: none;
+    font: 400 17px var(--f);
+    color: var(--ink);
+    text-align: left;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+  }
+  .t-tipo span:first-child {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+  .t-tipo .n {
+    font-size: 16px;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+  .t-tipo[aria-expanded='true'] {
+    background: #f4f4f4;
+  }
+  .t-tipo.on {
+    font-weight: 700;
+    box-shadow: inset 3px 0 0 var(--red);
+  }
+  .t-tipo.on .n {
+    color: var(--red);
+    font-weight: 700;
+  }
+  .t-tipo:disabled {
+    opacity: 0.35;
+    cursor: default;
+  }
+  /* Medidas: casillas del mismo ancho, en columnas que cuadran */
+  .t-medidas {
+    display: none;
+    grid-column: 4;
+    grid-row: 1 / -1;
+    align-content: start;
+    grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
     gap: 6px;
+    margin-left: 14px;
+    padding: 16px;
+    background: #f4f4f4;
+  }
+  .t-tipo[aria-expanded='true'] + .t-medidas {
+    display: grid;
   }
   .t-op {
-    height: 34px;
+    height: 40px;
     padding: 0 10px;
     border: 1px solid #c9cdd1;
     background: #fff;
-    font: 400 15px var(--f);
+    font: 400 16px var(--f);
     color: var(--ink);
     font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
     cursor: pointer;
     transition:
       background-color 0.15s ease,
       border-color 0.15s ease;
   }
   .t-todos {
+    display: flex;
+    align-items: center;
     width: 100%;
-    margin-bottom: 14px;
+    height: 42px;
+    margin-bottom: 6px;
+    padding: 0 12px;
+    border: 0;
+    border-bottom: 1px solid #e6e6e6;
+    background: none;
+    font-size: 17px;
     text-align: left;
+  }
+  .t-op.t-todos[aria-pressed='true'] {
+    background: #f4f4f4;
+    color: var(--ink);
     font-weight: 700;
+    box-shadow: inset 3px 0 0 var(--red);
   }
   .t-op[aria-pressed='true'] {
     background: var(--ink);
@@ -1275,6 +1530,7 @@ const iconos: Record<Temperatura, string> = {
     cursor: default;
   }
   .t-op:focus-visible,
+  .t-tipo:focus-visible,
   .tubo-btn:focus-visible {
     outline: 2px solid var(--red);
     outline-offset: 2px;
@@ -1282,10 +1538,18 @@ const iconos: Record<Temperatura, string> = {
   @media (hover: hover) and (pointer: fine) {
     .tubo-btn:not(.on):hover {
       border-color: var(--ink);
+      background: var(--hover-bg);
+      box-shadow: inset 0 -3px 0 var(--hover-raya);
     }
     .t-op:not(:disabled):not([aria-pressed='true']):hover {
       border-color: var(--ink);
-      background: #f4f4f4;
+      background: var(--hover-bg);
+      box-shadow: inset 0 -3px 0 var(--hover-raya);
+    }
+    .t-op.t-todos:not([aria-pressed='true']):hover,
+    .t-tipo:not(:disabled):not(.on):hover {
+      background: var(--hover-bg);
+      box-shadow: inset 3px 0 0 var(--hover-raya);
     }
   }
   /* ——— Mínimos: botón como el de tubo; al abrirlo, una ficha blanca con un campo por cifra ——— */
@@ -1440,6 +1704,8 @@ const iconos: Record<Temperatura, string> = {
   @media (hover: hover) and (pointer: fine) {
     .min-btn:not(.on):hover {
       border-color: var(--ink);
+      background: var(--hover-bg);
+      box-shadow: inset 0 -3px 0 var(--hover-raya);
     }
     .min-campos input:hover:not(:focus) {
       border-color: #8c959b;
@@ -1458,6 +1724,7 @@ const iconos: Record<Temperatura, string> = {
   @media (hover: hover) and (pointer: fine) {
     .orden select:hover {
       border-color: var(--ink);
+      background-color: var(--hover-bg);
     }
   }
   .aplic-menu {
@@ -1585,6 +1852,69 @@ const iconos: Record<Temperatura, string> = {
       z-index: 1;
       border-color: var(--ink);
       color: var(--ink);
+      background: var(--hover-bg);
+      box-shadow: inset 0 -3px 0 var(--hover-raya);
+    }
+  }
+
+  /* Comparar: como los demás controles de la barra; el icono en rojo, "hasta 3 modelos" en gris y cuántas van.
+     Al pulsarlo abre la ventana para elegir las centrífugas */
+  .ver-comparar {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    gap: 10px;
+    height: var(--alto);
+    padding: 0 12px 0 14px;
+    border: 1px solid var(--osc);
+    background: #fff;
+    color: var(--ink);
+    font: 400 17px var(--f);
+    cursor: pointer;
+    transition:
+      background-color 0.2s ease,
+      border-color 0.2s ease,
+      box-shadow 0.2s ease;
+  }
+  .ver-comparar svg {
+    color: var(--red);
+  }
+  .vc-txt {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    white-space: nowrap;
+  }
+  .vc-txt b {
+    font-weight: 700;
+  }
+  .vc-txt span {
+    font-size: 14px;
+    color: var(--muted);
+  }
+  .vc-n {
+    min-width: 28px;
+    font-size: 14px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+    color: var(--muted);
+  }
+  .ver-comparar.con .vc-n {
+    color: var(--red);
+  }
+  .ver-comparar:focus-visible {
+    outline: 2px solid var(--red);
+    outline-offset: 2px;
+  }
+  .ver-comparar:active {
+    scale: 0.97;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .ver-comparar:hover {
+      border-color: var(--ink);
+      background: var(--hover-bg);
+      box-shadow: inset 0 -3px 0 var(--hover-raya);
     }
   }
 
@@ -1657,14 +1987,22 @@ const iconos: Record<Temperatura, string> = {
       border-color: var(--ink);
       color: var(--ink);
     }
+    /* Al pasar el ratón: fondo gris claro y raya gris debajo; la roja queda para lo elegido */
+    .temp:not(:disabled):not([aria-pressed='true']):hover,
+    .aplic-btn:not(.on):hover {
+      background: var(--hover-bg);
+      box-shadow: inset 0 -3px 0 var(--hover-raya);
+    }
     .temp:not(:disabled):hover svg {
       transform: scale(1.15);
     }
     .ventilada:not(:disabled):hover svg {
       transform: rotate(120deg);
     }
-    .opcion:not(:disabled):hover {
-      background: #f4f4f4;
+    /* En las listas: fondo gris y raya gris a la izquierda; la elegida, raya roja y negrita */
+    .opcion:not(:disabled):not([aria-pressed='true']):hover {
+      background: var(--hover-bg);
+      box-shadow: inset 3px 0 0 var(--hover-raya);
     }
     .borrar:hover {
       background: var(--red-d);
@@ -1714,6 +2052,15 @@ const iconos: Record<Temperatura, string> = {
     }
     .fin {
       display: none;
+    }
+    /* En móvil, Comparar ocupa su propia fila debajo del buscador */
+    .ver-comparar {
+      order: 4;
+      flex: 1 1 100%;
+      height: 46px;
+    }
+    .vc-n {
+      margin-left: auto;
     }
     .abrir-panel {
       position: relative;
@@ -1867,6 +2214,14 @@ const iconos: Record<Temperatura, string> = {
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='16' height='16'%3E%3Cpath d='M7 4v16M4 17l3 3 3-3M17 20V4M14 7l3-3 3 3' fill='none' stroke='%231a1a1a' stroke-width='1.6'/%3E%3C/svg%3E");
       color: var(--ink);
     }
+    /* Descargar, al final del panel: los dos botones a lo ancho */
+    .d-movil {
+      display: block;
+    }
+    .descargar button {
+      flex: 1;
+      height: 48px;
+    }
     .tubo-btn,
     .min-btn {
       display: none;
@@ -1899,8 +2254,55 @@ const iconos: Record<Temperatura, string> = {
       translate: none;
       visibility: visible;
     }
+    /* En móvil, una lista: cada tipo en su fila y sus medidas debajo al tocarlo */
     .t-grupos {
-      columns: auto;
+      display: block;
+      border: 1px solid var(--borde);
+    }
+    .t-grupo {
+      display: block;
+    }
+    .t-pasos {
+      display: none;
+    }
+    .t-grupo + .t-grupo {
+      border-top: 1px solid #e6e6e6;
+    }
+    .t-tipo {
+      justify-content: flex-start;
+      width: 100%;
+      height: 48px;
+    }
+    .t-tipo::after {
+      content: '';
+      flex: none;
+      width: 8px;
+      height: 8px;
+      margin: -4px 2px 0 0;
+      border: solid var(--ink);
+      border-width: 0 1.6px 1.6px 0;
+      rotate: 45deg;
+      transition: rotate 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+    }
+    .t-tipo[aria-expanded='true']::after {
+      rotate: 225deg;
+      margin-top: 4px;
+    }
+    .t-tipo .n {
+      margin-left: auto;
+    }
+    .t-medidas {
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      margin: 0;
+      padding: 4px 12px 14px;
+    }
+    .t-op {
+      height: 44px;
+    }
+    .t-todos {
+      height: 48px;
+      margin-bottom: 8px;
+      border: 1px solid var(--borde);
     }
     .aplic-menu {
       position: static;

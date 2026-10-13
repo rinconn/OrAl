@@ -1179,3 +1179,17 @@ entera delante, si se ensancha el contenido de 1280 a 1440 px.
 - **Por qué:** se ve la máquina de cerca sin salir de la ficha, se entiende su tamaño sin leer tres cifras y pedir es
   copiar y pegar el código.
 - **Descartado:** volver a las pestañas o a la barra fija (ver 25) y un zoom con lupa al pasar el ratón (tapa la foto).
+
+## 26. Comparar, pedir presupuesto y filtros más claros
+
+- **Problema:** la tabla y el botón Comparar llevaban cada uno su elección (marcabas dos filas y la ventana salía vacía),
+  la comparativa no se podía mandar ni pasar al presupuesto, el correo de presupuesto era una lista pelada, el filtro de
+  tubos mezclaba tipos y medidas en un solo desplegable y el botón Descargar cambiaba de sitio según la vista.
+- **Ahora:** una sola elección para todo; ventana de comparar con la cabecera de la casa, buscador, enlace para
+  compartir y "Añadir al presupuesto"; el correo lleva datos clave, ficha y huecos para el distribuidor, y se adjunta el
+  PDF; tubos en dos pasos (tipo y medida); Descargar siempre a la derecha del total; banderas a la izquierda como en la
+  web actual; y la cifra de velocidad ya no cuenta desde 0.
+- **Por qué:** el distribuidor compara, comparte y pide sin repetir pasos, y ventas recibe el pedido con todo lo que
+  necesita para contestar.
+- **Descartado:** un formulario de presupuesto propio (el correo ya lo tiene todo y no hace falta servidor) y la
+  animación de la cifra (distraía y retrasaba el dato).

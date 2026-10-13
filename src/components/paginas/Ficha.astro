@@ -404,7 +404,7 @@ const descripcion = m
                 <div class="escala">
                   <dt>{tf.velocidad}</dt>
                   <dd>
-                    <b data-cuenta>{numero(lang, m.rpm)}</b> <small>rpm</small>
+                    <b>{numero(lang, m.rpm)}</b> <small>rpm</small>
                   </dd>
                   <span class="regla" style={`--p: ${pct(num(m.rpm), maxRpm)}`} aria-hidden="true">
                     <i></i>
@@ -418,7 +418,7 @@ const descripcion = m
                   <div class="escala">
                     <dt>{tf.fuerza}</dt>
                     <dd>
-                      <b data-cuenta>{xg}</b> <small>xg</small>
+                      <b>{xg}</b> <small>xg</small>
                     </dd>
                     <span class="regla" style={`--p: ${pct(num(xgDe(m)), maxXg)}`} aria-hidden="true">
                       <i></i>
@@ -960,26 +960,6 @@ const descripcion = m
         p.classList.add('entra');
         io.observe(p);
       }
-    }
-  }
-
-  // Datos técnicos: velocidad y fuerza cuentan desde 0 hasta su cifra, con el mismo separador de miles
-  if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    for (const b of document.querySelectorAll<HTMLElement>('[data-cuenta]')) {
-      const final = b.textContent ?? '';
-      const total = Number(final.replace(/\D/g, ''));
-      const sep = /\d(\D)\d{3}(?!\d)/.exec(final)?.[1] ?? '';
-      if (!total) continue;
-      const poner = (n: number) => (b.textContent = String(n).replace(/\B(?=(\d{3})+(?!\d))/g, sep));
-      const ini = performance.now() + 300;
-      const paso = (ahora: number) => {
-        const x = Math.min(1, Math.max(0, (ahora - ini) / 1600));
-        poner(Math.round(total * (1 - Math.pow(1 - x, 3))));
-        if (x < 1) requestAnimationFrame(paso);
-        else b.textContent = final;
-      };
-      poner(0);
-      requestAnimationFrame(paso);
     }
   }
 
