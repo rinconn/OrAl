@@ -2339,6 +2339,17 @@ const iconos: Record<Temperatura, string> = {
       font-weight: 300;
     }
   }
+  /* Teléfono: la barra pega más al 3D y Comparar es más baja, para que el primer producto asome en la primera
+     pantalla */
+  @media (max-width: 640px) {
+    .filtros {
+      --alto: 46px;
+      margin-top: 10px;
+    }
+    .ver-comparar {
+      height: 40px;
+    }
+  }
   @media (prefers-reduced-motion: reduce) {
     .panel,
     .abierto .panel,

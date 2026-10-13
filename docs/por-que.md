@@ -1193,3 +1193,28 @@ entera delante, si se ensancha el contenido de 1280 a 1440 px.
   necesita para contestar.
 - **Descartado:** un formulario de presupuesto propio (el correo ya lo tiene todo y no hace falta servidor) y la
   animación de la cifra (distraía y retrasaba el dato).
+
+## 27. Productos en móvil: el 3D arriba y el primer producto en la primera pantalla
+
+- **Problema:** en un teléfono (390 × 844) el hero de Productos medía 1.214 px y la primera tarjeta empezaba a
+  1.748 px. El distribuidor veía el título, las cifras y la máquina, pero nada le decía que debajo estaba el catálogo:
+  tenía que bajar dos pantallas para ver un producto.
+- **Ahora** (solo hasta 640 px; en escritorio no cambia nada):
+  - El **3D sigue lo primero**, como en escritorio. Encima, el título en una línea y la entrada. El botón "Ver las 23
+    centrífugas" y las cuatro cifras se ocultan en el teléfono: el catálogo ya está a la vista y las cifras repetían
+    la entrada.
+  - La **escena es más baja** (60 % del ancho en lugar de cuadrada) y la máquina se ve igual de grande: en el lienzo
+    cuadrado lo que la limitaba era el ancho, así que solo sobraba aire. La **placa** con el nombre ("Modelo 3D ·
+    Universal · Digicen 22 · Ver ficha") y el **zoom** pasan encima de la escena, en las esquinas de arriba, como
+    en el escritorio. Los **mandos** caben en dos filas. Al abrir el **despiece**, la escena vuelve a ser cuadrada para
+    que quepan las siete etiquetas, y el zoom baja a su esquina de siempre.
+  - Entre el 3D y las tarjetas, menos aire; "Comparar" algo más baja, y la **portada de cada familia** es una banda de
+    una línea con el nombre y el número de productos (la aplicación de cada máquina ya va en su tarjeta).
+  - El título ya no se corta por arriba (el interlineado tan cerrado recortaba la "O" de "Our").
+- **Resultado:** la primera tarjeta empieza a **759 px** (antes, 1.748); en francés, 779. Sin scroll lateral en 360 y
+  390 px.
+- **Por qué:** la primera pantalla enseña a la vez lo que hace especial a la página (la máquina en 3D) y que debajo
+  hay un catálogo. Es la misma idea que en la portada: todo lo importante en una pantalla.
+- **Descartado:** poner el catálogo antes del 3D o quitar el 3D en móvil; una escena aún más baja (la máquina
+  encogía); subir "Comparar" a la fila del buscador (el buscador no cabía, "Rechercher" se cortaba); quitar también
+  la entrada. Decisión en [0011](decisiones/0011-movil-3d-compacto.md).
