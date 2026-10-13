@@ -1301,3 +1301,16 @@ entera delante, si se ensancha el contenido de 1280 a 1440 px.
 - **Descartado:** quitar el primer paso y enseñar todas las medidas a la vez (más de cien casillas) y elegir la familia
   entera como filtro (un tubo de sangre y una bolsa no van en el mismo rotor). Pera, finger, cónico de traza y
   cilindrocónico van en "Petróleo y lácteos" porque solo los admiten las Digtor 22 C.
+
+## 34. Una sola forma de clasificar los productos
+
+- **Problema:** la página se recorre por bloques (Compactas, Universales, Gran capacidad, Clínica, Industria), con sus
+  atajos arriba, pero el desplegable de aplicación agrupaba lo mismo de otra manera ("Aplicaciones generales",
+  "Aplicaciones especiales", "Más productos"). Eran dos clasificaciones a la vez y no se sabía cuál mandaba.
+- **Ahora:** el desplegable usa los mismos bloques como títulos y, dentro de cada uno, sus aplicaciones (Compactas:
+  Minicentrífuga, Pequeña y Microcentrífuga…). Accesorios y equipos de laboratorio, juntos al final en "Más productos".
+  Lácteos/Vet tiene la Vetcen en Clínica y la Lacter en Industria: sale una vez, en el primero, y su número cuenta las
+  dos.
+- **Por qué:** lo que se lee en el filtro es lo mismo que se ve al bajar, y el distribuidor aprende un solo orden.
+- **Descartado:** quitar el desplegable y filtrar solo por bloque (se pierde poder pedir solo microcentrífugas) y repetir
+  Lácteos/Vet en los dos bloques (dos botones que hacen lo mismo).
