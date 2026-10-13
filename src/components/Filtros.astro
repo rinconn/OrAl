@@ -214,10 +214,10 @@ const iconos: Record<Temperatura, string> = {
             </div>
             <div class="t-grupos" style={`--filas: ${Math.ceil(tubos.length / 3)}`}>
               {tubos.map((g, i) => (
-                <div class="t-grupo" role="group" aria-label={g.nombre}>
+                <div class="t-grupo" role="group" aria-label={g.nombre} data-tipo={`${g.items[0].v.split('|')[0]}|*`}>
                   <button type="button" class="t-tipo" aria-expanded={i === 0 ? 'true' : 'false'}>
                     <span>{g.nombre}</span>
-                    <span class="n">{g.items.length}</span>
+                    <span class="n"></span>
                   </button>
                   <div class="t-medidas">
                     {g.items.length > 1 && (
@@ -636,17 +636,19 @@ const iconos: Record<Temperatura, string> = {
           selTubo.value = antes;
         }
       }
-      // Cada tipo: cuántas medidas suyas quedan; el del tubo elegido, marcado; sin ninguna, apagado
+      // Cada tipo: cuántas máquinas lo admiten con los demás filtros (como en aplicación); el del tubo elegido,
+      // marcado; sin ninguna, apagado
       for (const g of form.querySelectorAll<HTMLElement>('.t-grupo')) {
         const ops = [...g.querySelectorAll<HTMLButtonElement>('.t-op')];
-        const n = ops.filter((b) => !b.disabled && !b.classList.contains('t-todas')).length;
+        const antes = selTubo.value;
+        selTubo.value = g.dataset.tipo!;
+        const n = fichas.filter((el) => cumple(el)).length;
+        selTubo.value = antes;
         const tipo = g.querySelector<HTMLButtonElement>('.t-tipo')!;
         tipo.querySelector('.n')!.textContent = String(n);
-        tipo.classList.toggle(
-          'on',
-          ops.some((b) => b.dataset.tubo === selTubo.value),
-        );
-        tipo.disabled = n === 0;
+        const on = ops.some((b) => b.dataset.tubo === selTubo.value);
+        tipo.classList.toggle('on', on);
+        tipo.disabled = n === 0 && !on;
       }
       const tuboElegido = opsTubo.find((b) => b.dataset.tubo && b.dataset.tubo === selTubo.value);
       tuboTxt.textContent = tuboElegido ? tuboElegido.dataset.nombre! : tuboBtn.dataset.todos!;
