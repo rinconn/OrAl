@@ -76,3 +76,7 @@ Enlaces, teléfono, idiomas ──► src/data/navegacion.ts ──► cabecera 
 
 `npm run build` genera la carpeta `dist/`, que se sube a Netlify o Cloudflare Pages. Cada PR podrá tener
 su propia vista previa pública. El dominio y el alojamiento están por decidir con la empresa.
+
+Mientras tanto, la vista previa para revisión se despliega en Cloudflare Workers: `wrangler.jsonc` (en la raíz)
+indica que se sirve `dist/` como contenido estático, con el nombre `oral`. En Cloudflare, el comando de
+compilación es `npm run build` y el de despliegue `npx wrangler deploy`. `public/_headers` sigue aplicándose.
