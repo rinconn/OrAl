@@ -5,6 +5,10 @@ Hasta que se publique la web, todo va en "Sin publicar"; al publicar se cierra l
 
 ## [Sin publicar]
 
+### Cambiado
+
+- Productos: **un solo criterio para contar**. Toda la página cuenta centrífugas, y cada versión es una (la Consul 22 y la 22 R son dos): 23. Antes la cabecera decía "23 centrífugas", la barra "17 series · 5 más", la tabla "23 modelos" y cada familia sus tarjetas ("4 productos" en Grandes, con 7 centrífugas). Ahora la barra dice "23 centrífugas · 5 más" en tarjetas y "23 centrífugas" en tabla; cada familia, sus atajos y los desplegables de aplicación y de tubo cuentan igual, Comparar pone "Hasta 3 centrífugas" y, con filtros, solo las versiones que pasan (con "Refrigerada", la tarjeta de la Consul 22 cuenta una). La entradilla y la descripción para buscadores dejan las series ("23 centrífugas, fabricadas en Daganzo…") y la descripción de la portada cambia "Más de 25 modelos" por "23 centrífugas", el dato del Catálogo 2025. Accesorios y equipos de laboratorio siguen contando uno cada uno.
+
 ### Añadido
 
 - Productos: **Pedir presupuesto** con su sobre en el botón: abre el correo con cada equipo, sus unidades, sus datos clave y el enlace a su ficha, unos huecos para empresa, país, contacto y teléfono, y a la vez descarga la lista en PDF con fotos para adjuntarla. Desde la comparativa, "Añadir al presupuesto" pasa las comparadas a la lista y la abre.

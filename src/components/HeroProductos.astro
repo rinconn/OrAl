@@ -3,7 +3,7 @@
 // un remolino de luz detrás. Mandos debajo de la máquina: acabado real o rayos X, vistas, despiece con etiquetas y un
 // recorrido por dentro pieza a pieza; zoom arriba a la derecha. La escena está en src/scripts/escena-productos.ts.
 // Sin WebGL se ve la foto de la Digicen 22 y no salen los mandos.
-import { categorias, modelos, productos, totalModelos } from '../data/productos';
+import { categorias, modelos } from '../data/productos';
 import { idioma, ruta, textos } from '../i18n';
 
 const lang = idioma(Astro.currentLocale);
@@ -67,7 +67,7 @@ const recorrido = ['PP 367', 'PC 497', 'PI 448', 'PE 494', 'PP 821', 'PC 279'];
             </i>
           </span>
         </h1>
-        <p class="lead">{t.catalogo.lead(productos.length, totalModelos)}</p>
+        <p class="lead">{t.catalogo.lead(modelos.length)}</p>
         <a class="btn-todas" href="#catalogo">
           {s.verTodas(modelos.length)}
         </a>
