@@ -63,7 +63,7 @@ export const fr: Textos = {
   portada: {
     title: 'Orto Alresa · Centrifugeuses de laboratoire fabriquées à Madrid depuis 1949',
     description:
-      'Fabricant européen de centrifugeuses de laboratoire depuis 1949. Plus de 25 modèles, livraison en une semaine et 3 ans de garantie, via des distributeurs spécialisés.',
+      'Fabricant européen de centrifugeuses de laboratoire depuis 1949. 23 centrifugeuses, livraison en une semaine et 3 ans de garantie, via des distributeurs spécialisés.',
   },
 
   hero: {
@@ -222,11 +222,11 @@ export const fr: Textos = {
 
   catalogo: {
     title: 'Produits · Centrifugeuses et équipements de laboratoire · Orto Alresa',
-    description: (series: number, modelos: number) =>
-      `Les ${series} séries de centrifugeuses Orto Alresa (${modelos} modèles), fabriquées à Daganzo (Madrid), ainsi que tamiseuse, broyeur à boulets, distillateurs et accessoires.`,
+    description: (centrifugas: number) =>
+      `Les ${centrifugas} centrifugeuses Orto Alresa, fabriquées à Daganzo (Madrid), ainsi que tamiseuse, broyeur à boulets, distillateurs et accessoires.`,
     titulo: ['Nos ', 'produits'],
-    lead: (series: number, modelos: number) =>
-      `${modelos} centrifugeuses en ${series} séries, fabriquées à Daganzo (Madrid) et toujours en stock, ainsi que des équipements de laboratoire et des accessoires.`,
+    lead: (centrifugas: number) =>
+      `${centrifugas} centrifugeuses, fabriquées à Daganzo (Madrid) et toujours en stock, ainsi que des équipements de laboratoire et des accessoires.`,
     indice: 'Familles',
     iconos: { capacidad: 'Capacité', pantalla: 'Écran', velocidad: 'Vitesse', temperatura: 'Température' },
     categorias: {
@@ -258,9 +258,8 @@ export const fr: Textos = {
       aplicacion: 'Application',
       temperatura: 'Température',
       resultados: (n: number) => (n === 1 ? '1 produit' : `${n} produits`),
-      series: (n: number) => (n === 1 ? '1 série' : `${n} séries`),
+      centrifugas: (n: number) => (n === 1 ? '1 centrifugeuse' : `${n} centrifugeuses`),
       mas: (n: number) => (n === 1 ? '1 autre' : `${n} autres`),
-      modelos: (n: number) => (n === 1 ? '1 modèle' : `${n} modèles`),
       limpiar: 'Effacer les filtres',
       vacio: 'Aucun produit ne répond à tous ces filtres.',
       boton: 'Filtres',
@@ -308,7 +307,7 @@ export const fr: Textos = {
         compTitulo: 'Comparatif de centrifugeuses',
         seleccion: 'Modèles choisis',
         todo: 'Tout le catalogue',
-        modelos: (n: number) => (n === 1 ? '1 modèle' : `${n} modèles`),
+        centrifugas: (n: number) => (n === 1 ? '1 centrifugeuse' : `${n} centrifugeuses`),
         archivo: 'centrifugeuses-orto-alresa',
         archivoComp: 'comparatif-orto-alresa',
         elegir: 'Choisir',
@@ -342,7 +341,7 @@ export const fr: Textos = {
     comparar: {
       version: 'Version',
       comparar: 'Comparer',
-      hasta: 'Jusqu’à 3 modèles',
+      hasta: 'Jusqu’à 3 centrifugeuses',
       elegir: 'Choisissez jusqu’à 3 centrifugeuses',
       elegirAyuda: 'Touchez celles que vous voulez voir côte à côte.',
       buscar: 'Rechercher un modèle',
