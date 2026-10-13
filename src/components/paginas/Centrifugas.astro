@@ -14,7 +14,6 @@ import {
   familias,
   modelos,
   productos,
-  totalModelos,
   type Categoria,
   type Familia,
   type Modelo,
@@ -58,6 +57,8 @@ const porSerie = (ms: Modelo[]): Ficha[] =>
     return { tipo: 'modelo', cat: vs[0].categoria, m: vs[0], ms: vs };
   });
 const familiaDe = (m: Modelo) => productos.find((p) => p.slug === m.serie)!.familia;
+// Cuántas centrífugas hay en unas fichas: cada versión cuenta (la Consul 22 y la 22 R son dos), como en la cabecera
+const cuantas = (fs: Ficha[]) => fs.reduce((n, x) => n + (x.tipo === 'modelo' ? x.ms.length : 1), 0);
 const lab = (c: Otro, items: ProductoLab[]): Ficha[] => items.map((p) => ({ tipo: 'lab', cat: c, p }));
 const salas: { id: string; nombre: string; color: string; fichas: Ficha[] }[] = [
   ...(Object.keys(familias) as Familia[]).map((fam) => ({
@@ -276,7 +277,7 @@ const tubos = Object.entries(porTipo)
   }));
 ---
 
-<Base title={t.catalogo.title} description={t.catalogo.description(productos.length, totalModelos)}>
+<Base title={t.catalogo.title} description={t.catalogo.description(modelos.length)}>
   <HeroProductos />
 
   <section class="catalogo" id="catalogo" aria-label={f.todoTitulo}>
@@ -295,7 +296,7 @@ const tubos = Object.entries(porTipo)
         {salas.map((s) => (
           <a href={`#sala-${s.id}`} data-ir={s.id} style={`--fam: ${s.color}`}>
             {s.nombre}
-            <span class="n">{s.fichas.length}</span>
+            <span class="n">{cuantas(s.fichas)}</span>
           </a>
         ))}
       </nav>
@@ -376,6 +377,7 @@ const tubos = Object.entries(porTipo)
               {filasTabla.map(({ m, color }) => (
                 <tr
                   style={`--fam: ${color}`}
+                  data-sala={familiaDe(m)}
                   data-cat={m.categoria}
                   data-t={m.temperatura}
                   data-slugs={m.slug}
@@ -449,7 +451,11 @@ const tubos = Object.entries(porTipo)
               {String(i + 1).padStart(2, '0')}
             </span>
             <h2 id={`sala-${s.id}`}>{s.nombre}</h2>
-            <p class="sala-n">{f.resultados(s.fichas.length)}</p>
+            <p class="sala-n">
+              {s.fichas.some((x) => x.tipo === 'lab')
+                ? f.resultados(s.fichas.length)
+                : f.centrifugas(cuantas(s.fichas))}
+            </p>
             <ul class="sala-usos">
               {[...new Set(s.fichas.map((x) => nombreCorto(x.cat)))].map((u) => (
                 <li>{u}</li>
@@ -596,6 +602,17 @@ const tubos = Object.entries(porTipo)
         </button>
       </div>
       <ul class="pres-lista"></ul>
+      <!-- Lo que el distribuidor quiere decir del pedido: su referencia y un comentario; van al correo y al PDF -->
+      <div class="pres-notas">
+        <label>
+          <span>{tp.referencia}</span>
+          <input name="pres-ref" maxlength="80" autocomplete="off" placeholder={tp.referenciaEj} />
+        </label>
+        <label>
+          <span>{tp.comentario}</span>
+          <textarea name="pres-com" rows="3" maxlength="600" placeholder={tp.comentarioEj}></textarea>
+        </label>
+      </div>
       <a class="pres-pedir" href={`mailto:${contacto.comercial}`}>
         <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
           <path
@@ -797,8 +814,8 @@ const tubos = Object.entries(porTipo)
       comp: tv.compTitulo,
       todo: tv.todo,
       seleccion: tv.seleccion,
-      uno: tv.modelos(1),
-      varios: tv.modelos(999),
+      uno: tv.centrifugas(1),
+      varios: tv.centrifugas(999),
       archivo: tv.archivo,
       archivoComp: tv.archivoComp,
       etqSeleccion: tv.etqSeleccion,
@@ -814,6 +831,9 @@ const tubos = Object.entries(porTipo)
       producto: tv.producto,
       etqUnidades: tv.etqUnidades,
       archivoPres: tv.archivoPres,
+      datosClave: tv.datosClave,
+      etqReferencia: tv.etqReferencia,
+      etqComentario: tv.etqComentario,
       fuente: tv.fuente,
       empresa: `${contacto.empresa} · ${contacto.direccion}`,
       pagina: tv.pagina,
@@ -834,6 +854,7 @@ const tubos = Object.entries(porTipo)
         misDatos: tp.misDatos,
         campos: tp.campos,
         comentarios: tp.comentarios,
+        referencia: tp.referencia,
         adjunto: tp.adjunto,
         despedida: tp.despedida,
         boton: tp.boton(999),
@@ -969,32 +990,35 @@ const tubos = Object.entries(porTipo)
       archivo: `${tx.archivoComp}-${d.archivo}`,
     };
   };
-  // La lista de presupuesto tal como está en su panel: cada producto con su foto y sus unidades
+  // La lista de presupuesto tal como está en su panel: cada producto con su foto, su versión (temperatura y cifras) y
+  // sus unidades; arriba, la referencia del distribuidor y, bajo la tabla, su comentario
   const hojaPresupuesto = (): Hoja | undefined => {
     const items = [...document.querySelectorAll<HTMLElement>('#presupuesto .pres-lista li')];
     if (!items.length) return;
     const filas = items.map((li) => {
       const n = Number(li.querySelector('output')?.textContent) || 1;
       return [
-        {
-          t: li.querySelector('span')!.textContent!.trim(),
-          img: li.querySelector('img')?.getAttribute('src') ?? undefined,
-        },
+        { t: li.dataset.nombre ?? '', img: li.querySelector('img')?.getAttribute('src') ?? undefined },
+        { t: li.dataset.datos ?? '' },
         { t: String(n), n },
       ];
     });
-    const total = filas.reduce((s, f) => s + (f[1].n ?? 0), 0);
+    const total = filas.reduce((s, f) => s + (f[2].n ?? 0), 0);
+    const nota = (k: string) =>
+      document.querySelector<HTMLInputElement>(`#presupuesto [name=${k}]`)?.value.trim() ?? '';
     const d = hoy();
     return {
       tipo: tx.tipoPres,
       titulo: tx.presTitulo,
       fecha: d.texto,
       datos: [
+        ...(nota('pres-ref') ? [[tx.etqReferencia, nota('pres-ref')] as [string, string]] : []),
         [tx.etqModelos, String(filas.length)],
         [tx.etqUnidades, String(total)],
       ],
-      cabecera: [{ t: tx.producto }, { t: tx.etqUnidades, num: true }],
+      cabecera: [{ t: tx.producto }, { t: tx.datosClave }, { t: tx.etqUnidades, num: true }],
       filas,
+      nota: nota('pres-com') ? [tx.etqComentario, nota('pres-com')] : undefined,
       archivo: `${tx.archivoPres}-${d.archivo}`,
     };
   };
@@ -2424,6 +2448,59 @@ const tubos = Object.entries(porTipo)
     }
   }
 
+  /* ——— Teléfono: la tarjeta compacta (src/components/Maquina.astro) mide 168 px de foto y nombre. Las versiones
+     cuelgan de la raya de la familia, en un hueco que solo se abre si las hay; la franja de abajo se reparte entre
+     Presupuesto, Comparar y la flecha a la ficha ——— */
+  @media (max-width: 640px) {
+    .ficha:has(.versiones) :global(.pieza) {
+      --hueco: 40px;
+    }
+    .versiones {
+      left: 2px;
+      top: calc(2px + 168px);
+      align-items: flex-start;
+    }
+    .versiones button {
+      height: 30px;
+      padding: 0 10px;
+    }
+    .versiones button[aria-pressed='true'] {
+      height: 34px;
+    }
+    .anadir,
+    .ficha :global(.paso) {
+      width: calc(42% - 2px);
+      height: 50px;
+    }
+    .anadir {
+      gap: 6px;
+      padding: 0 8px 0 14px;
+      font-size: 15px;
+    }
+    .ficha :global(.paso button) {
+      width: 40px;
+    }
+    .ficha :global(.paso output) {
+      font-size: 14px;
+    }
+    .ficha :global(.paso output b) {
+      font-size: 18px;
+    }
+    .comparar {
+      top: auto;
+      right: auto;
+      left: 42%;
+      bottom: 2px;
+      justify-content: center;
+      gap: 7px;
+      width: 33%;
+      height: 50px;
+      padding: 0 8px;
+      font-size: 13px;
+      border-right: 1px solid #b4b9bd;
+    }
+  }
+
   /* ——— Equipo a medida: una sola vez, al final del catálogo, sobre la mesa de laboratorio en oscuro ——— */
   .oem {
     display: flex;
@@ -2573,6 +2650,50 @@ const tubos = Object.entries(porTipo)
   .pres-lista :global(span) {
     font-size: 17px;
     font-weight: 700;
+  }
+  /* Debajo del nombre, la versión: temperatura y cifras, para que no haya duda de cuál se pide */
+  .pres-lista :global(small) {
+    display: block;
+    margin-top: 2px;
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 1.3;
+    color: var(--muted);
+  }
+  /* Referencia y comentario del distribuidor: campos con su etiqueta encima, esquinas rectas */
+  .pres-notas {
+    display: grid;
+    gap: 10px;
+    margin-top: 14px;
+  }
+  .pres-notas label {
+    display: grid;
+    gap: 4px;
+  }
+  .pres-notas span {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .pres-notas input,
+  .pres-notas textarea {
+    width: 100%;
+    padding: 9px 10px;
+    font: inherit;
+    font-size: 16px;
+    color: var(--ink);
+    background: #fff;
+    border: 1px solid #c4c8cc;
+    border-radius: 0;
+    resize: vertical;
+  }
+  .pres-notas input:focus-visible,
+  .pres-notas textarea:focus-visible {
+    outline: 2px solid var(--red);
+    outline-offset: -1px;
+    border-color: var(--red);
   }
   /* Unidades: − n + */
   .pres-lista :global(.pres-cant) {
