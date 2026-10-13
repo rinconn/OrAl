@@ -1259,3 +1259,17 @@ entera delante, si se ensancha el contenido de 1280 a 1440 px.
   pedido o cliente.
 - **Descartado:** un comentario por cada equipo (complica un panel pequeño; el comentario general ya cubre rotores y
   accesorios) y un formulario propio con envío (el correo ya lo tiene todo y no hace falta servidor).
+
+## 31. Productos en móvil: tarjeta compacta, con la foto al lado de los datos
+
+- **Problema:** en un teléfono cada tarjeta medía unos 640 px (casi una pantalla): la foto a todo lo ancho, el nombre,
+  las cifras y los botones uno debajo de otro. La página de productos medía unos 16.200 px y se recorría muy despacio.
+- **Ahora** (solo hasta 640 px): foto a la izquierda (40 % del ancho) y al lado aplicación, nombre y frase entera; debajo,
+  la raya de la familia, de la que cuelgan las versiones (Ventilada / Refrigerada…) solo si las hay; la placa con las
+  tres cifras, y una sola franja con "+ Presupuesto", "Comparar" y la flecha a la ficha (toda la tarjeta lleva a ella).
+  Cada centrífuga mide unos 283 px y la página, unos 10.200 px. Ningún texto se corta: a 360 px, en los tres idiomas,
+  todo cabe; solo un par de equipos de nombre largo (que no tienen versiones) crecen un poco.
+- **Por qué:** el distribuidor compara máquinas bajando la página; con tres por pantalla ve de un vistazo nombre,
+  temperatura y cifras sin perder la foto.
+- **Descartado:** quitar la foto o la frase (la foto es lo que distingue una máquina de otra y la frase dice para qué
+  sirve), dos tarjetas por fila (las cifras no cabían) y recortar la frase con "…" (textos cortados).
