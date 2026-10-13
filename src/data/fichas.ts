@@ -96,33 +96,50 @@ const tiposRotor: Record<Rotor['tipo'], Record<Idioma, string>> = {
 };
 export const tipoRotor = (lang: Idioma, tipo: Rotor['tipo']) => tiposRotor[tipo]?.[lang] ?? tipo;
 
-/** Tipos de tubo del ERP. Los nombres de marca (Cytofunnel, Cyto-Clips) se dejan como están */
-const tiposTubo: Record<string, { en: string; fr: string }> = {
-  capilares: { en: 'capillaries', fr: 'capillaires' },
-  microtubos: { en: 'microtubes', fr: 'microtubes' },
-  cónico: { en: 'conical', fr: 'conique' },
-  'extr. sangre': { en: 'blood collection', fr: 'prélèvement sanguin' },
-  'fondo redondo, tapón': { en: 'round bottom, capped', fr: 'fond rond, bouchon' },
-  'cónico tapón': { en: 'conical, capped', fr: 'conique, bouchon' },
-  'fondo redondo': { en: 'round bottom', fr: 'fond rond' },
-  'fondo redondo, tapón (hs)': { en: 'round bottom, capped (HS)', fr: 'fond rond, bouchon (HS)' },
-  'fondo plano, tapón, (hs)': { en: 'flat bottom, capped (HS)', fr: 'fond plat, bouchon (HS)' },
-  'fondo plano, tapón': { en: 'flat bottom, capped', fr: 'fond plat, bouchon' },
-  'tiras PCR': { en: 'PCR strips', fr: 'barrettes PCR' },
-  butirómetros: { en: 'butyrometers', fr: 'butyromètres' },
-  'cónico tapón rosca': { en: 'conical, screw cap', fr: 'conique, bouchon à vis' },
-  'cónico tapón a presión': { en: 'conical, snap cap', fr: 'conique, bouchon à pression' },
-  criotubos: { en: 'cryotubes', fr: 'cryotubes' },
-  'placas microtiter': { en: 'microtiter plates', fr: 'microplaques' },
-  'cultivo celular': { en: 'cell culture', fr: 'culture cellulaire' },
-  'deep well': { en: 'deep well', fr: 'deep well' },
-  hemólisis: { en: 'haemolysis', fr: 'hémolyse' },
-  'bolsas sangre, dobles': { en: 'blood bags, double', fr: 'poches de sang, doubles' },
-  cilindrocónico: { en: 'cylindro-conical', fr: 'cylindro-conique' },
-  'traza, cónico': { en: 'trace, conical', fr: 'trace, conique' },
-  finger: { en: 'finger', fr: 'finger' },
-  pera: { en: 'pear-shaped', fr: 'en poire' },
-  jeringas: { en: 'syringes', fr: 'seringues' },
+/** Tipos de tubo del ERP, con un mismo criterio en los tres idiomas: forma, luego cierre y al final "(HS)" si lo
+ * lleva el dato ("fondo redondo, tapón (hs)" → "fondo redondo con tapón (HS)"). Los nombres de marca (Cytofunnel,
+ * Cyto-Clips) se dejan como están */
+const tiposTubo: Record<string, Record<Idioma, string>> = {
+  capilares: { es: 'capilares', en: 'capillaries', fr: 'capillaires' },
+  microtubos: { es: 'microtubos', en: 'microtubes', fr: 'microtubes' },
+  cónico: { es: 'cónico', en: 'conical', fr: 'conique' },
+  'cónico tapón': { es: 'cónico con tapón', en: 'conical with cap', fr: 'conique avec bouchon' },
+  'cónico tapón rosca': {
+    es: 'cónico con tapón de rosca',
+    en: 'conical with screw cap',
+    fr: 'conique avec bouchon à vis',
+  },
+  'cónico tapón a presión': {
+    es: 'cónico con tapón a presión',
+    en: 'conical with snap cap',
+    fr: 'conique avec bouchon à pression',
+  },
+  'traza, cónico': { es: 'cónico de traza', en: 'conical trace', fr: 'conique de trace' },
+  'fondo redondo': { es: 'fondo redondo', en: 'round bottom', fr: 'fond rond' },
+  'fondo redondo, tapón': { es: 'fondo redondo con tapón', en: 'round bottom with cap', fr: 'fond rond avec bouchon' },
+  'fondo redondo, tapón (hs)': {
+    es: 'fondo redondo con tapón (HS)',
+    en: 'round bottom with cap (HS)',
+    fr: 'fond rond avec bouchon (HS)',
+  },
+  'fondo plano, tapón': { es: 'fondo plano con tapón', en: 'flat bottom with cap', fr: 'fond plat avec bouchon' },
+  'fondo plano, tapón, (hs)': {
+    es: 'fondo plano con tapón (HS)',
+    en: 'flat bottom with cap (HS)',
+    fr: 'fond plat avec bouchon (HS)',
+  },
+  'extr. sangre': { es: 'extracción de sangre', en: 'blood collection', fr: 'prélèvement sanguin' },
+  'bolsas sangre, dobles': { es: 'bolsas de sangre dobles', en: 'double blood bags', fr: 'poches de sang doubles' },
+  'tiras PCR': { es: 'tiras PCR', en: 'PCR strips', fr: 'barrettes PCR' },
+  butirómetros: { es: 'butirómetros', en: 'butyrometers', fr: 'butyromètres' },
+  criotubos: { es: 'criotubos', en: 'cryotubes', fr: 'cryotubes' },
+  'placas microtiter': { es: 'placas microtiter', en: 'microtiter plates', fr: 'microplaques' },
+  'cultivo celular': { es: 'cultivo celular', en: 'cell culture', fr: 'culture cellulaire' },
+  'deep well': { es: 'deep well', en: 'deep well', fr: 'deep well' },
+  hemólisis: { es: 'hemólisis', en: 'haemolysis', fr: 'hémolyse' },
+  cilindrocónico: { es: 'cilindrocónico', en: 'cylindro-conical', fr: 'cylindro-conique' },
+  finger: { es: 'finger', en: 'finger', fr: 'finger' },
+  pera: { es: 'pera', en: 'pear-shaped', fr: 'en poire' },
+  jeringas: { es: 'jeringas', en: 'syringes', fr: 'seringues' },
 };
-export const tipoTubo = (lang: Idioma, tipo?: string) =>
-  !tipo || lang === 'es' ? tipo : (tiposTubo[tipo]?.[lang] ?? tipo);
+export const tipoTubo = (lang: Idioma, tipo?: string) => (!tipo ? tipo : (tiposTubo[tipo]?.[lang] ?? tipo));
