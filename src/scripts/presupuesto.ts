@@ -15,6 +15,7 @@ interface DatosPresupuesto {
     misDatos: string;
     campos: string[];
     comentarios: string;
+    referencia: string;
     adjunto: string;
     despedida: string;
     boton: string;
@@ -29,6 +30,7 @@ interface DatosPresupuesto {
 }
 
 const CLAVE = 'oa-presupuesto';
+const CLAVE_NOTAS = 'oa-presupuesto-notas';
 const escapar = (s: string) =>
   s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
 const linea = (d: string) =>
@@ -82,6 +84,17 @@ export function iniciarPresupuesto() {
     }
   };
 
+  // Referencia y comentario del distribuidor: se guardan como la lista y se escriben en el correo
+  const refEl = caja.querySelector<HTMLInputElement>('[name=pres-ref]')!;
+  const comEl = caja.querySelector<HTMLTextAreaElement>('[name=pres-com]')!;
+  try {
+    const notas = JSON.parse(localStorage.getItem(CLAVE_NOTAS) ?? '{}') as { ref?: string; com?: string };
+    refEl.value = notas.ref ?? '';
+    comEl.value = notas.com ?? '';
+  } catch {
+    /* sin almacenamiento: los campos empiezan vacíos */
+  }
+
   const abierto = () => abrir.getAttribute('aria-expanded') === 'true';
   const mostrar = (si: boolean) => abrir.setAttribute('aria-expanded', String(si));
 
@@ -115,7 +128,8 @@ export function iniciarPresupuesto() {
           n > 1
             ? `<button type="button" data-menos="${s}" aria-label="${escapar(datos.textos.menos)}: ${escapar(m.nombre)}">${menosIco}</button>`
             : `<button type="button" class="borrar" data-quitar="${s}" aria-label="${quitar}" title="${quitar}">${papelera}</button>`;
-        return `<li><img src="${m.img}" alt="" width="44" height="44"><span>${escapar(m.nombre)}</span><span class="pres-cant">${menos}<output>${n}</output><button type="button" data-mas="${s}" aria-label="${escapar(datos.textos.mas)}: ${escapar(m.nombre)}">${masIco}</button></span></li>`;
+        // Debajo del nombre, sus datos (temperatura y cifras): así se ve qué versión se pide (22 o 22 R, C o C-8…)
+        return `<li data-nombre="${escapar(m.nombre)}" data-datos="${escapar(m.datos ?? '')}"><img src="${m.img}" alt="" width="44" height="44"><span>${escapar(m.nombre)}${m.datos ? `<small>${escapar(m.datos)}</small>` : ''}</span><span class="pres-cant">${menos}<output>${n}</output><button type="button" data-mas="${s}" aria-label="${escapar(datos.textos.mas)}: ${escapar(m.nombre)}">${masIco}</button></span></li>`;
       })
       .join('');
     // El correo: cada equipo con sus unidades, sus datos clave y su ficha; luego, huecos para quien lo pide
@@ -126,14 +140,19 @@ export function iniciarPresupuesto() {
         .filter(Boolean)
         .join('\n');
     });
+    const ref = refEl.value.trim();
+    const com = comEl.value.trim();
     const cuerpo = [
       tx.cuerpo,
+      ref && `${tx.referencia}: ${ref}`,
       equipos.join('\n\n'),
       tx.adjunto,
       `${tx.misDatos}\n${tx.campos.map((c) => `- ${c}: `).join('\n')}`,
-      `${tx.comentarios}\n`,
+      `${tx.comentarios}\n${com}`,
       tx.despedida,
-    ].join('\n\n');
+    ]
+      .filter(Boolean)
+      .join('\n\n');
     pedir.href = `mailto:${datos.correo}?subject=${encodeURIComponent(tx.asunto)}&body=${encodeURIComponent(cuerpo)}`;
   };
 
@@ -204,6 +223,15 @@ export function iniciarPresupuesto() {
     pintar();
     caja.querySelector<HTMLElement>(`[data-${mas ? 'mas' : 'menos'}="${s}"]`)?.focus();
   });
+  for (const el of [refEl, comEl])
+    el.addEventListener('input', () => {
+      try {
+        localStorage.setItem(CLAVE_NOTAS, JSON.stringify({ ref: refEl.value, com: comEl.value }));
+      } catch {
+        /* sin almacenamiento: valen mientras dure la página */
+      }
+      pintar();
+    });
   abrir.addEventListener('click', () => mostrar(!abierto()));
   caja.querySelector('.pres-cerrar')!.addEventListener('click', () => {
     mostrar(false);
@@ -212,6 +240,13 @@ export function iniciarPresupuesto() {
   caja.querySelector('.pres-vaciar')!.addEventListener('click', () => {
     elegidas = [];
     unidades.clear();
+    refEl.value = '';
+    comEl.value = '';
+    try {
+      localStorage.removeItem(CLAVE_NOTAS);
+    } catch {
+      /* nada que borrar */
+    }
     guardar();
     pintar();
   });

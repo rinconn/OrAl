@@ -602,6 +602,17 @@ const tubos = Object.entries(porTipo)
         </button>
       </div>
       <ul class="pres-lista"></ul>
+      <!-- Lo que el distribuidor quiere decir del pedido: su referencia y un comentario; van al correo y al PDF -->
+      <div class="pres-notas">
+        <label>
+          <span>{tp.referencia}</span>
+          <input name="pres-ref" maxlength="80" autocomplete="off" placeholder={tp.referenciaEj} />
+        </label>
+        <label>
+          <span>{tp.comentario}</span>
+          <textarea name="pres-com" rows="3" maxlength="600" placeholder={tp.comentarioEj}></textarea>
+        </label>
+      </div>
       <a class="pres-pedir" href={`mailto:${contacto.comercial}`}>
         <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
           <path
@@ -820,6 +831,9 @@ const tubos = Object.entries(porTipo)
       producto: tv.producto,
       etqUnidades: tv.etqUnidades,
       archivoPres: tv.archivoPres,
+      datosClave: tv.datosClave,
+      etqReferencia: tv.etqReferencia,
+      etqComentario: tv.etqComentario,
       fuente: tv.fuente,
       empresa: `${contacto.empresa} · ${contacto.direccion}`,
       pagina: tv.pagina,
@@ -840,6 +854,7 @@ const tubos = Object.entries(porTipo)
         misDatos: tp.misDatos,
         campos: tp.campos,
         comentarios: tp.comentarios,
+        referencia: tp.referencia,
         adjunto: tp.adjunto,
         despedida: tp.despedida,
         boton: tp.boton(999),
@@ -975,32 +990,35 @@ const tubos = Object.entries(porTipo)
       archivo: `${tx.archivoComp}-${d.archivo}`,
     };
   };
-  // La lista de presupuesto tal como está en su panel: cada producto con su foto y sus unidades
+  // La lista de presupuesto tal como está en su panel: cada producto con su foto, su versión (temperatura y cifras) y
+  // sus unidades; arriba, la referencia del distribuidor y, bajo la tabla, su comentario
   const hojaPresupuesto = (): Hoja | undefined => {
     const items = [...document.querySelectorAll<HTMLElement>('#presupuesto .pres-lista li')];
     if (!items.length) return;
     const filas = items.map((li) => {
       const n = Number(li.querySelector('output')?.textContent) || 1;
       return [
-        {
-          t: li.querySelector('span')!.textContent!.trim(),
-          img: li.querySelector('img')?.getAttribute('src') ?? undefined,
-        },
+        { t: li.dataset.nombre ?? '', img: li.querySelector('img')?.getAttribute('src') ?? undefined },
+        { t: li.dataset.datos ?? '' },
         { t: String(n), n },
       ];
     });
-    const total = filas.reduce((s, f) => s + (f[1].n ?? 0), 0);
+    const total = filas.reduce((s, f) => s + (f[2].n ?? 0), 0);
+    const nota = (k: string) =>
+      document.querySelector<HTMLInputElement>(`#presupuesto [name=${k}]`)?.value.trim() ?? '';
     const d = hoy();
     return {
       tipo: tx.tipoPres,
       titulo: tx.presTitulo,
       fecha: d.texto,
       datos: [
+        ...(nota('pres-ref') ? [[tx.etqReferencia, nota('pres-ref')] as [string, string]] : []),
         [tx.etqModelos, String(filas.length)],
         [tx.etqUnidades, String(total)],
       ],
-      cabecera: [{ t: tx.producto }, { t: tx.etqUnidades, num: true }],
+      cabecera: [{ t: tx.producto }, { t: tx.datosClave }, { t: tx.etqUnidades, num: true }],
       filas,
+      nota: nota('pres-com') ? [tx.etqComentario, nota('pres-com')] : undefined,
       archivo: `${tx.archivoPres}-${d.archivo}`,
     };
   };
@@ -2579,6 +2597,50 @@ const tubos = Object.entries(porTipo)
   .pres-lista :global(span) {
     font-size: 17px;
     font-weight: 700;
+  }
+  /* Debajo del nombre, la versión: temperatura y cifras, para que no haya duda de cuál se pide */
+  .pres-lista :global(small) {
+    display: block;
+    margin-top: 2px;
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 1.3;
+    color: var(--muted);
+  }
+  /* Referencia y comentario del distribuidor: campos con su etiqueta encima, esquinas rectas */
+  .pres-notas {
+    display: grid;
+    gap: 10px;
+    margin-top: 14px;
+  }
+  .pres-notas label {
+    display: grid;
+    gap: 4px;
+  }
+  .pres-notas span {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .pres-notas input,
+  .pres-notas textarea {
+    width: 100%;
+    padding: 9px 10px;
+    font: inherit;
+    font-size: 16px;
+    color: var(--ink);
+    background: #fff;
+    border: 1px solid #c4c8cc;
+    border-radius: 0;
+    resize: vertical;
+  }
+  .pres-notas input:focus-visible,
+  .pres-notas textarea:focus-visible {
+    outline: 2px solid var(--red);
+    outline-offset: -1px;
+    border-color: var(--red);
   }
   /* Unidades: − n + */
   .pres-lista :global(.pres-cant) {

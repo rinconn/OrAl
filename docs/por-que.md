@@ -1246,3 +1246,16 @@ entera delante, si se ensancha el contenido de 1280 a 1440 px.
   cada versión tiene su código y su precio.
 - **Descartado:** contar series (17) en todas partes: esconde versiones que se piden por separado y no cuadra con la
   tabla, que tiene una fila por versión; y mezclar "productos" con "centrífugas" en el mismo contador.
+
+## 30. Presupuesto: la versión a la vista y hueco para el distribuidor
+
+- **Problema:** en "Mi presupuesto" y en su PDF solo salía el nombre. "Digicen 22" no decía si era la ventilada o la
+  refrigerada, y no había dónde poner una referencia del pedido ni un comentario: había que escribirlo a mano en el
+  correo.
+- **Ahora:** debajo de cada nombre, su temperatura y sus cifras (en el panel y en una columna del PDF). Dos campos en el
+  panel, "Tu referencia" y "Comentario", que se escriben solos en el correo, en el PDF y en el Excel, y se guardan con
+  la lista.
+- **Por qué:** ventas recibe el pedido sin dudas sobre la versión, y el distribuidor lo puede cruzar con su propio
+  pedido o cliente.
+- **Descartado:** un comentario por cada equipo (complica un panel pequeño; el comentario general ya cubre rotores y
+  accesorios) y un formulario propio con envío (el correo ya lo tiene todo y no hace falta servidor).

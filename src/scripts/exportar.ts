@@ -23,6 +23,8 @@ export interface Hoja {
   grupos?: Grupo[];
   /** Comparativa: la leyenda del punto rojo ("El mayor de la comparación"), bajo la tabla */
   leyenda?: string;
+  /** Presupuesto: el comentario del distribuidor, con su etiqueta, bajo la tabla */
+  nota?: [string, string];
   archivo: string;
 }
 export interface Ficha {
@@ -148,7 +150,7 @@ export function excel(h: Hoja) {
     typeof v === 'number'
       ? `<c r="${ref}" s="3"><v>${v}</v></c>`
       : `<c r="${ref}" t="inlineStr" s="${s}"><is><t xml:space="preserve">${escapar(v)}</t></is></c>`;
-  const lineas = [...h.datos.map(([e, v]) => `${e}: ${v}`), h.fecha];
+  const lineas = [...h.datos.map(([e, v]) => `${e}: ${v}`), ...(h.nota ? [`${h.nota[0]}: ${h.nota[1]}`] : []), h.fecha];
   const ini = lineas.length + 3;
   const filasXml = [
     `<row r="1">${celda(h.titulo, 'A1', 1)}</row>`,
@@ -524,6 +526,31 @@ async function generar(h: Hoja, pie: Pie) {
   doc.setFontSize(6.5);
   doc.setTextColor(...GRIS);
   let yl = Math.min(fin + (h.grupos ? 0 : 6), 297 - 20);
+  // El comentario del presupuesto: etiqueta pequeña y el texto entero; si no cabe sobre el pie, en una hoja nueva
+  if (h.nota) {
+    const [e, v] = h.nota;
+    doc.setFontSize(9);
+    const lineasNota = doc.splitTextToSize(pdfTxt(v), ancho) as string[];
+    const altoNota = 6 + lineasNota.length * 4;
+    let yn = fin + 8;
+    if (yn + altoNota > 297 - 22) {
+      doc.addPage();
+      yn = M + 10;
+    }
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(6);
+    doc.setTextColor(...GRIS);
+    doc.setCharSpace(0.4);
+    doc.text(pdfTxt(e.toUpperCase()), M, yn);
+    doc.setCharSpace(0);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(...TINTA);
+    doc.text(lineasNota, M, yn + 5);
+    yl = Math.min(yn + altoNota + 2, 297 - 20);
+    doc.setFontSize(6.5);
+    doc.setTextColor(...GRIS);
+  }
   if (h.leyenda) {
     doc.setFillColor(...ROJO);
     doc.circle(M + 0.9, yl - 0.8, 0.9, 'F');
