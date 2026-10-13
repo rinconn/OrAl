@@ -1219,13 +1219,28 @@ entera delante, si se ensancha el contenido de 1280 a 1440 px.
   encogía); subir "Comparar" a la fila del buscador (el buscador no cabía, "Rechercher" se cortaba); quitar también
   la entrada. Decisión en [0011](decisiones/0011-movil-3d-compacto.md).
 
-## 28. Un solo criterio para contar las centrífugas
+## 28. Filtro de tubos: un número que se mueve y nombres con criterio
+
+- **Problema:** junto a cada tipo de tubo había un número que contaba sus medidas con algún resultado, y casi nunca
+  cambiaba: con Refrigerada activada, "Fondo redondo, tapón" seguía diciendo 10. Además los nombres venían tal cual
+  del ERP, cada uno escrito a su manera ("Cónico", "Cónico tapón", "Fondo redondo, tapón (hs)", "Fondo plano, tapón,
+  (hs)").
+- **Ahora:** el número cuenta las máquinas que admiten ese tipo con los demás filtros puestos, igual que el
+  desplegable de aplicación; un tipo sin ninguna se apaga. Los nombres siguen una regla en los tres idiomas: forma,
+  luego cierre y al final "(HS)" ("Cónico con tapón", "Fondo redondo con tapón (HS)", "Cónico de traza"). El mismo
+  nombre sale en la tabla de rotores de cada ficha.
+- **Por qué:** en toda la barra un número quiere decir lo mismo (cuántas máquinas quedan), y el distribuidor lee los
+  tipos como una lista ordenada y no como códigos de almacén.
+- **Descartado:** contar medidas (no responde a lo que se pregunta) y desarrollar "HS" en palabras: el dato no dice qué
+  significa, así que se deja como viene.
+
+## 29. Un solo criterio para contar las centrífugas
 
 - **Problema:** según dónde se mirase, la página de productos contaba cosas distintas: "23 centrífugas" en la cabecera,
   "17 series · 5 más" en la barra de filtros, "23 modelos" en la tabla y "4 productos" en una familia que enseña 7
   centrífugas. El distribuidor no sabía si eran 17, 22 o 23, y la descripción de la portada aún decía "más de 25".
 - **Ahora:** todo cuenta centrífugas y cada versión es una (22 y 22 R, C, C-U y C-8): 23, el número del Catálogo 2025.
-  La barra, las familias, sus atajos y el desplegable de aplicación cuentan igual, en tarjetas y en tabla; con filtros,
+  La barra, las familias, sus atajos y los desplegables de aplicación y de tubo cuentan igual, en tarjetas y en tabla; con filtros,
   solo las versiones que pasan. Accesorios y equipos de laboratorio van aparte ("· 5 más") y cuentan uno cada uno.
 - **Por qué:** la cifra que se lee en la cabecera es la misma que se ve al filtrar, y es la que el distribuidor pide:
   cada versión tiene su código y su precio.
