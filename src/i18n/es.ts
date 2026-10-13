@@ -71,7 +71,7 @@ export const es = {
   portada: {
     title: 'Orto Alresa · Centrífugas de laboratorio fabricadas en Madrid desde 1949',
     description:
-      'Fabricantes europeos de centrífugas de laboratorio desde 1949. Más de 25 modelos, entrega en una semana y 3 años de garantía, a través de distribuidores especializados.',
+      'Fabricantes europeos de centrífugas de laboratorio desde 1949. 23 centrífugas, entrega en una semana y 3 años de garantía, a través de distribuidores especializados.',
   },
 
   hero: {
@@ -227,11 +227,11 @@ export const es = {
 
   catalogo: {
     title: 'Productos · Centrífugas y equipos de laboratorio · Orto Alresa',
-    description: (series: number, modelos: number) =>
-      `Las ${series} series de centrífugas Orto Alresa (${modelos} modelos), fabricadas en Daganzo (Madrid), y además tamizadora, molino de bolas, destiladores y accesorios.`,
+    description: (centrifugas: number) =>
+      `Las ${centrifugas} centrífugas Orto Alresa, fabricadas en Daganzo (Madrid), y además tamizadora, molino de bolas, destiladores y accesorios.`,
     titulo: ['Nuestros ', 'productos'],
-    lead: (series: number, modelos: number) =>
-      `${modelos} centrífugas en ${series} series, fabricadas en Daganzo (Madrid) y siempre en stock, además de equipos de laboratorio y accesorios.`,
+    lead: (centrifugas: number) =>
+      `${centrifugas} centrífugas, fabricadas en Daganzo (Madrid) y siempre en stock, además de equipos de laboratorio y accesorios.`,
     indice: 'Familias',
     iconos: { capacidad: 'Capacidad', pantalla: 'Pantalla', velocidad: 'Velocidad', temperatura: 'Temperatura' },
     categorias: {
@@ -263,10 +263,9 @@ export const es = {
       aplicacion: 'Aplicación',
       temperatura: 'Temperatura',
       resultados: (n: number) => (n === 1 ? '1 producto' : `${n} productos`),
-      // El contador de la barra: en tarjetas, series de centrífugas y el resto aparte; en la tabla, modelos
-      series: (n: number) => (n === 1 ? '1 serie' : `${n} series`),
+      // Un solo criterio en toda la página: cada versión (22 y 22 R, C, C-U y C-8…) es una centrífuga
+      centrifugas: (n: number) => (n === 1 ? '1 centrífuga' : `${n} centrífugas`),
       mas: (n: number) => `${n} más`,
-      modelos: (n: number) => (n === 1 ? '1 modelo' : `${n} modelos`),
       limpiar: 'Borrar filtros',
       vacio: 'Ningún producto cumple todos estos filtros.',
       boton: 'Filtros',
@@ -314,7 +313,7 @@ export const es = {
         compTitulo: 'Comparativa de centrífugas',
         seleccion: 'Modelos elegidos',
         todo: 'Todo el catálogo',
-        modelos: (n: number) => (n === 1 ? '1 modelo' : `${n} modelos`),
+        centrifugas: (n: number) => (n === 1 ? '1 centrífuga' : `${n} centrífugas`),
         archivo: 'centrifugas-orto-alresa',
         archivoComp: 'comparativa-orto-alresa',
         elegir: 'Elegir',
@@ -333,6 +332,9 @@ export const es = {
         producto: 'Producto',
         etqUnidades: 'Unidades',
         archivoPres: 'presupuesto-orto-alresa',
+        datosClave: 'Versión y datos',
+        etqReferencia: 'Referencia',
+        etqComentario: 'Comentario',
         etqSeleccion: 'Selección',
         etqOrden: 'Orden',
         etqModelos: 'Modelos',
@@ -349,7 +351,7 @@ export const es = {
     comparar: {
       version: 'Versión',
       comparar: 'Comparar',
-      hasta: 'Hasta 3 modelos',
+      hasta: 'Hasta 3 centrífugas',
       elegir: 'Elige hasta 3 centrífugas',
       elegirAyuda: 'Toca las que quieras ver lado a lado.',
       buscar: 'Buscar un modelo',
@@ -390,6 +392,10 @@ export const es = {
       misDatos: 'Mis datos',
       campos: ['Empresa', 'País', 'Persona de contacto', 'Teléfono'],
       comentarios: 'Comentarios (plazos, rotores, accesorios…):',
+      referencia: 'Tu referencia',
+      referenciaEj: 'Pedido, cliente o proyecto',
+      comentario: 'Comentario',
+      comentarioEj: 'Plazos, rotores, accesorios…',
       adjunto: 'Te adjunto la lista en PDF.',
       despedida: 'Gracias, un saludo.',
     },
