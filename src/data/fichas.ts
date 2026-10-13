@@ -96,33 +96,76 @@ const tiposRotor: Record<Rotor['tipo'], Record<Idioma, string>> = {
 };
 export const tipoRotor = (lang: Idioma, tipo: Rotor['tipo']) => tiposRotor[tipo]?.[lang] ?? tipo;
 
-/** Tipos de tubo del ERP. Los nombres de marca (Cytofunnel, Cyto-Clips) se dejan como están */
-const tiposTubo: Record<string, { en: string; fr: string }> = {
-  capilares: { en: 'capillaries', fr: 'capillaires' },
-  microtubos: { en: 'microtubes', fr: 'microtubes' },
-  cónico: { en: 'conical', fr: 'conique' },
-  'extr. sangre': { en: 'blood collection', fr: 'prélèvement sanguin' },
-  'fondo redondo, tapón': { en: 'round bottom, capped', fr: 'fond rond, bouchon' },
-  'cónico tapón': { en: 'conical, capped', fr: 'conique, bouchon' },
-  'fondo redondo': { en: 'round bottom', fr: 'fond rond' },
-  'fondo redondo, tapón (hs)': { en: 'round bottom, capped (HS)', fr: 'fond rond, bouchon (HS)' },
-  'fondo plano, tapón, (hs)': { en: 'flat bottom, capped (HS)', fr: 'fond plat, bouchon (HS)' },
-  'fondo plano, tapón': { en: 'flat bottom, capped', fr: 'fond plat, bouchon' },
-  'tiras PCR': { en: 'PCR strips', fr: 'barrettes PCR' },
-  butirómetros: { en: 'butyrometers', fr: 'butyromètres' },
-  'cónico tapón rosca': { en: 'conical, screw cap', fr: 'conique, bouchon à vis' },
-  'cónico tapón a presión': { en: 'conical, snap cap', fr: 'conique, bouchon à pression' },
-  criotubos: { en: 'cryotubes', fr: 'cryotubes' },
-  'placas microtiter': { en: 'microtiter plates', fr: 'microplaques' },
-  'cultivo celular': { en: 'cell culture', fr: 'culture cellulaire' },
-  'deep well': { en: 'deep well', fr: 'deep well' },
-  hemólisis: { en: 'haemolysis', fr: 'hémolyse' },
-  'bolsas sangre, dobles': { en: 'blood bags, double', fr: 'poches de sang, doubles' },
-  cilindrocónico: { en: 'cylindro-conical', fr: 'cylindro-conique' },
-  'traza, cónico': { en: 'trace, conical', fr: 'trace, conique' },
-  finger: { en: 'finger', fr: 'finger' },
-  pera: { en: 'pear-shaped', fr: 'en poire' },
-  jeringas: { en: 'syringes', fr: 'seringues' },
+/** Familias de tubo para el filtro del catálogo: pocas y reconocibles, en vez de los ~30 tipos del ERP */
+export type FamiliaTubo = 'micro' | 'conicos' | 'fondo' | 'sangre' | 'placas' | 'industria' | 'citologia';
+export const familiasTubo: FamiliaTubo[] = ['micro', 'conicos', 'fondo', 'sangre', 'placas', 'industria', 'citologia'];
+
+/** Tipos de tubo del ERP con su nombre limpio en cada idioma y su familia. Los nombres de marca (Cytofunnel,
+ * Cyto-Clips) se dejan como están */
+const tiposTubo: Record<string, { es: string; en: string; fr: string; f: FamiliaTubo }> = {
+  microtubos: { es: 'microtubos', en: 'microtubes', fr: 'microtubes', f: 'micro' },
+  'tiras PCR': { es: 'tiras PCR', en: 'PCR strips', fr: 'barrettes PCR', f: 'micro' },
+  criotubos: { es: 'criotubos', en: 'cryotubes', fr: 'cryotubes', f: 'micro' },
+  capilares: { es: 'capilares', en: 'capillaries', fr: 'capillaires', f: 'micro' },
+  cónico: { es: 'cónico', en: 'conical', fr: 'conique', f: 'conicos' },
+  'cónico tapón': { es: 'cónico con tapón', en: 'conical, capped', fr: 'conique, bouchon', f: 'conicos' },
+  'cónico tapón rosca': {
+    es: 'cónico con tapón de rosca',
+    en: 'conical, screw cap',
+    fr: 'conique, bouchon à vis',
+    f: 'conicos',
+  },
+  'cónico tapón a presión': {
+    es: 'cónico con tapón a presión',
+    en: 'conical, snap cap',
+    fr: 'conique, bouchon à pression',
+    f: 'conicos',
+  },
+  'fondo redondo': { es: 'fondo redondo', en: 'round bottom', fr: 'fond rond', f: 'fondo' },
+  'fondo redondo, tapón': {
+    es: 'fondo redondo con tapón',
+    en: 'round bottom, capped',
+    fr: 'fond rond, bouchon',
+    f: 'fondo',
+  },
+  'fondo redondo, tapón (hs)': {
+    es: 'fondo redondo con tapón (HS)',
+    en: 'round bottom, capped (HS)',
+    fr: 'fond rond, bouchon (HS)',
+    f: 'fondo',
+  },
+  'fondo plano, tapón': {
+    es: 'fondo plano con tapón',
+    en: 'flat bottom, capped',
+    fr: 'fond plat, bouchon',
+    f: 'fondo',
+  },
+  'fondo plano, tapón, (hs)': {
+    es: 'fondo plano con tapón (HS)',
+    en: 'flat bottom, capped (HS)',
+    fr: 'fond plat, bouchon (HS)',
+    f: 'fondo',
+  },
+  hemólisis: { es: 'hemólisis', en: 'haemolysis', fr: 'hémolyse', f: 'fondo' },
+  'cultivo celular': { es: 'cultivo celular', en: 'cell culture', fr: 'culture cellulaire', f: 'fondo' },
+  'extr. sangre': { es: 'extracción de sangre', en: 'blood collection', fr: 'prélèvement sanguin', f: 'sangre' },
+  'bolsas sangre, dobles': {
+    es: 'bolsas de sangre dobles',
+    en: 'blood bags, double',
+    fr: 'poches de sang, doubles',
+    f: 'sangre',
+  },
+  jeringas: { es: 'jeringas', en: 'syringes', fr: 'seringues', f: 'sangre' },
+  'placas microtiter': { es: 'microplacas', en: 'microtiter plates', fr: 'microplaques', f: 'placas' },
+  'deep well': { es: 'deep well', en: 'deep well', fr: 'deep well', f: 'placas' },
+  cilindrocónico: { es: 'cilindrocónico', en: 'cylindro-conical', fr: 'cylindro-conique', f: 'industria' },
+  'traza, cónico': { es: 'cónico de trazas', en: 'trace, conical', fr: 'trace, conique', f: 'industria' },
+  finger: { es: 'finger', en: 'finger', fr: 'finger', f: 'industria' },
+  pera: { es: 'pera', en: 'pear-shaped', fr: 'en poire', f: 'industria' },
+  butirómetros: { es: 'butirómetros', en: 'butyrometers', fr: 'butyromètres', f: 'industria' },
 };
+/** Nombre limpio de un tipo de tubo ("(TM)" pasa a "™") */
 export const tipoTubo = (lang: Idioma, tipo?: string) =>
-  !tipo || lang === 'es' ? tipo : (tiposTubo[tipo]?.[lang] ?? tipo);
+  tipo && (tiposTubo[tipo]?.[lang] ?? tipo.replace(/\(TM\)/g, '™'));
+/** Familia de un tipo de tubo; los de marca para citología (Cytofunnel, Cyto-Clips) van a la suya */
+export const familiaTubo = (tipo: string): FamiliaTubo => tiposTubo[tipo]?.f ?? 'citologia';

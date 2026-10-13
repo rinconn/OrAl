@@ -269,9 +269,19 @@ export const fr: Textos = {
       cerrar: 'Fermer',
       tubo: 'Votre tube',
       cualquierTubo: 'Tous les tubes',
-      pasoTipo: '1. Type de tube',
+      pasoTipo: '1. Famille de tubes',
       pasoMedida: '2. Dimensions',
       todasMedidas: 'Toutes dimensions',
+      // Familias del filtro de tubos (src/data/fichas.ts)
+      familiasTubo: {
+        micro: 'Microtubes et PCR',
+        conicos: 'Tubes coniques',
+        fondo: 'Fond rond et plat',
+        sangre: 'Sang et plasma',
+        placas: 'Microplaques',
+        industria: 'Pétrole et produits laitiers',
+        citologia: 'Cytologie',
+      },
       // Minimums : seulement les machines qui atteignent au moins ces chiffres
       minimos: {
         boton: 'Minimums',

@@ -20,7 +20,16 @@ import {
   type Modelo,
 } from '../../data/productos';
 import { accesorios, equipos, type ProductoLab } from '../../data/laboratorio';
-import { cifra, fichaCentrifuga, medida, rotor, tipoRotor, tipoTubo } from '../../data/fichas';
+import {
+  cifra,
+  familiaTubo,
+  familiasTubo,
+  fichaCentrifuga,
+  medida,
+  rotor,
+  tipoRotor,
+  tipoTubo,
+} from '../../data/fichas';
 import { contacto } from '../../data/navegacion';
 import { idioma, numero, ruta, textoSerie, textos } from '../../i18n';
 
@@ -257,9 +266,10 @@ const grosor = (k: string) =>
     .split('|')[1]
     .split('x')
     .map((x) => parseFloat(x.replace(',', '.')) || 0);
-const tubos = Object.entries(porTipo)
+const subtipos = Object.entries(porTipo)
   .sort((a, b) => b[1].reduce((n, k) => n + cuenta[k], 0) - a[1].reduce((n, k) => n + cuenta[k], 0))
   .map(([tipo, ks]) => ({
+    familia: familiaTubo(tipo),
     nombre: may(tipoTubo(lang, tipo) ?? tipo),
     items: ks
       .sort((a, b) => grosor(a)[0] - grosor(b)[0] || grosor(a)[1] - grosor(b)[1])
@@ -274,6 +284,10 @@ const tubos = Object.entries(porTipo)
             : may(tipoTubo(lang, tipo) ?? tipo),
       })),
   }));
+// En el filtro, los tipos van dentro de unas pocas familias (microtubos, cónicos, sangre…), en un orden fijo
+const tubos = familiasTubo
+  .map((fa) => ({ nombre: t.catalogo.filtros.familiasTubo[fa], subs: subtipos.filter((s) => s.familia === fa) }))
+  .filter((fa) => fa.subs.length);
 ---
 
 <Base title={t.catalogo.title} description={t.catalogo.description(productos.length, totalModelos)}>
@@ -1107,37 +1121,24 @@ const tubos = Object.entries(porTipo)
   const salasEl = document.getElementById('salas');
   const quieto = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  // ——— Versiones de una serie: el selector cambia foto, nombre, temperatura, cifras y enlace, y lo que guardan
-  // Comparar y Presupuesto. Al pasar a refrigerada, un velo frío barre la foto; a calefactada, uno cálido. ———
-  const velos: Record<string, string> = {
-    refrigerada: 'rgba(120, 190, 255, 0.38)',
-    calefactada: 'rgba(255, 140, 60, 0.3)',
-  };
+  // ——— Versiones de una serie: el selector cambia foto, nombre, cifras y enlace, y lo que guardan Comparar y
+  // Presupuesto. Lo nuevo entra con un fundido corto ———
   const verVersion = (li: HTMLElement, i: string, animar = true) => {
     const b = li.querySelector<HTMLButtonElement>(`.versiones [data-i="${i}"]`);
     if (!b || b.getAttribute('aria-pressed') === 'true') return;
     for (const x of li.querySelectorAll<HTMLButtonElement>('.versiones button'))
       x.setAttribute('aria-pressed', String(x === b));
-    for (const el of li.querySelectorAll<HTMLElement>('[data-v]')) el.hidden = el.dataset.v !== i;
+    for (const el of li.querySelectorAll<HTMLElement>('[data-v]')) {
+      el.hidden = el.dataset.v !== i;
+      if (animar && !quieto && !el.hidden)
+        el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 180, easing: 'ease-out' });
+    }
     li.querySelector<HTMLAnchorElement>('a.pieza')!.href = b.dataset.href!;
     const comparar = li.querySelector<HTMLInputElement>('.comparar input');
     if (comparar) comparar.value = b.dataset.slug!;
     const anadir = li.querySelector<HTMLElement>('.anadir');
     if (anadir) anadir.dataset.slug = b.dataset.slug!;
     document.dispatchEvent(new Event('catalogo:version'));
-    const velo = li.querySelector<HTMLElement>('.velo');
-    const tinte = velos[b.dataset.t ?? ''];
-    if (animar && !quieto && velo && tinte) {
-      velo.style.background = tinte;
-      velo.animate(
-        [
-          { opacity: 1, clipPath: 'inset(0 100% 0 0)' },
-          { opacity: 1, clipPath: 'inset(0 0 0 0)', offset: 0.45 },
-          { opacity: 0, clipPath: 'inset(0 0 0 0)' },
-        ],
-        { duration: 900, easing: 'cubic-bezier(0.65, 0, 0.35, 1)' },
-      );
-    }
   };
   salasEl?.addEventListener('click', (e) => {
     const b = (e.target as HTMLElement).closest<HTMLButtonElement>('.versiones button');
@@ -2241,52 +2242,50 @@ const tubos = Object.entries(porTipo)
     }
   }
 
-  /* ——— Selector de versión: pestañas que salen de la raya de color de la foto. La elegida es del color de la raya
-     y parece formar parte de ella; las otras, oscuras y apagadas. Sin etiqueta "Versión" delante: con ella parecía
-     un botón más ——— */
+  /* ——— Selector de versión: un control blanco y recto abajo a la izquierda de la foto, encima de la raya de la
+     familia. La elegida, en rojo de marca; las otras, en gris. Sin etiqueta "Versión" delante ——— */
   .versiones {
-    --fam-vivo: oklch(from var(--fam) calc(l + 0.06) calc(c * 2) h);
     position: absolute;
     left: 16px;
-    top: calc(80cqw - 38px);
+    top: calc(80cqw - 50px);
     z-index: 3;
     display: flex;
-    align-items: flex-end;
-    gap: 2px;
+    gap: 3px;
+    padding: 3px;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(17, 19, 21, 0.25);
   }
   .versiones button {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    height: 28px;
+    height: 30px;
     padding: 0 12px;
     border: 0;
-    background: rgba(17, 19, 21, 0.62);
-    font: 700 13px var(--f);
-    color: rgba(255, 255, 255, 0.75);
+    background: transparent;
+    font: 700 14px var(--f);
+    color: var(--body);
     cursor: pointer;
     transition:
-      background-color 0.2s ease,
-      color 0.2s ease,
-      height 0.2s var(--sube, ease);
+      background-color 0.15s ease,
+      color 0.15s ease;
   }
   .versiones button[aria-pressed='true'] {
-    height: 32px;
-    background: var(--fam-vivo);
-    color: var(--ink);
+    background: var(--red);
+    color: #fff;
     cursor: default;
   }
   .versiones button :global(svg) {
     flex: none;
   }
   .versiones button:focus-visible {
-    outline: 2px solid #fff;
-    outline-offset: 1px;
+    outline: 2px solid var(--red);
+    outline-offset: 2px;
   }
   @media (hover: hover) and (pointer: fine) {
     .versiones button:not([aria-pressed='true']):hover {
-      background: rgba(17, 19, 21, 0.85);
-      color: #fff;
+      background: #f0f1f2;
+      color: var(--ink);
     }
   }
 
