@@ -9,15 +9,7 @@ import Paso from '../Paso.astro';
 import Filtros from '../Filtros.astro';
 import IconoTemp from '../ui/IconoTemp.astro';
 import HeroProductos from '../HeroProductos.astro';
-import {
-  categorias,
-  familias,
-  modelos,
-  productos,
-  type Categoria,
-  type Familia,
-  type Modelo,
-} from '../../data/productos';
+import { familias, modelos, productos, type Categoria, type Familia, type Modelo } from '../../data/productos';
 import { accesorios, equipos, type ProductoLab } from '../../data/laboratorio';
 import {
   cifra,
@@ -43,12 +35,6 @@ const plano = (...partes: (string | undefined)[]) =>
 
 type Otro = 'accesorios' | 'laboratorio';
 type Cat = Categoria | Otro;
-// Aplicaciones del filtro, como en la web actual: generales, especiales y otros productos
-const grupos: { nombre: string; cats: Cat[] }[] = [
-  { nombre: t.catalogo.grupos.generales, cats: [...categorias.generales] },
-  { nombre: t.catalogo.grupos.especiales, cats: [...categorias.especiales] },
-  { nombre: t.catalogo.grupos.otros, cats: ['accesorios', 'laboratorio'] },
-];
 const nombreCat = (c: Cat) =>
   c === 'accesorios'
     ? t.laboratorio.accesorios
@@ -79,6 +65,18 @@ const salas: { id: string; nombre: string; color: string; fichas: Ficha[] }[] = 
   { id: 'accesorios', nombre: t.laboratorio.accesorios, color: '#8c959b', fichas: lab('accesorios', accesorios) },
   { id: 'laboratorio', nombre: t.laboratorio.equipos, color: '#8c959b', fichas: lab('laboratorio', equipos) },
 ].filter((s) => s.fichas.length);
+// Aplicaciones del filtro, agrupadas por los mismos bloques que la página (Compactas, Universales…), cada una en el
+// primero donde sale; accesorios y equipos de laboratorio, juntos al final
+const usadas = new Set<Cat>();
+const grupos: { nombre: string; cats: Cat[] }[] = [
+  ...salas
+    .filter((s) => s.id !== 'accesorios' && s.id !== 'laboratorio')
+    .map((s) => ({
+      nombre: s.nombre,
+      cats: [...new Set(s.fichas.map((x) => x.cat))].filter((c) => !usadas.has(c) && !!usadas.add(c)),
+    })),
+  { nombre: t.catalogo.grupos.otros, cats: ['accesorios', 'laboratorio'] as Cat[] },
+].filter((g) => g.cats.length);
 const capacidad = (m: Modelo) =>
   m.capacidad === productos.find((p) => p.slug === m.serie)?.capacidad
     ? (textoSerie(lang, m.serie).capacidad ?? m.capacidad)
