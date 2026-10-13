@@ -953,4 +953,105 @@ const recorrido = ['PP 367', 'PC 497', 'PI 448', 'PE 494', 'PP 821', 'PC 279'];
       width: 100%;
     }
   }
+
+  /* Teléfono: el 3D sigue arriba, pero el bloque se compacta para que el primer producto asome en la primera
+     pantalla. El título va en una línea, la entrada se queda y sobran el botón al catálogo (está justo debajo) y las
+     cifras (repiten la entrada). La escena es más baja sin que la máquina encoja: la placa y el zoom van encima, en
+     las esquinas de arriba, y los mandos caben en dos filas */
+  @media (max-width: 640px) {
+    .hero {
+      --escena: 60vw;
+    }
+    /* Con el despiece abierto la escena vuelve a ser cuadrada: las siete etiquetas necesitan ese alto */
+    .hero:has(.despiece[aria-pressed='true']) {
+      --escena: 100vw;
+    }
+    .hero:has(.despiece[aria-pressed='true']) .escena {
+      margin-top: 24px;
+    }
+    .hero:has(.despiece[aria-pressed='true']) .placa {
+      opacity: 0;
+      pointer-events: none;
+    }
+    .hero:has(.despiece[aria-pressed='true']) .zoom {
+      bottom: calc(100% + 12px);
+      translate: none;
+    }
+    .texto {
+      position: relative;
+      z-index: 2;
+      padding-top: 20px;
+    }
+    h1 {
+      font-size: clamp(34px, 10.4vw, 44px);
+      line-height: 1;
+    }
+    h1 > span {
+      display: inline-block;
+      vertical-align: top;
+    }
+    h1 > span + span {
+      margin-left: 0.24em;
+    }
+    .lead {
+      max-width: none;
+      margin-top: 8px;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+    .btn-todas,
+    .raya,
+    .cifras {
+      display: none;
+    }
+    .escena {
+      height: var(--escena);
+      margin-top: 0;
+    }
+    .columna {
+      padding: 4px var(--gut) 14px;
+    }
+    .placa,
+    .zoom {
+      position: absolute;
+      z-index: 3;
+      bottom: calc(100% + var(--escena) - 12px);
+      translate: 0 100%;
+    }
+    .placa {
+      left: var(--gut);
+      max-width: calc(100% - 2 * var(--gut) - 130px);
+      flex-wrap: wrap;
+      gap: 0 10px;
+      margin: 0;
+      padding: 5px 12px 6px;
+    }
+    .placa .sub {
+      flex-basis: 100%;
+      font-size: 11px;
+    }
+    .placa b {
+      font-size: 20px;
+    }
+    .placa .ver {
+      font-size: 14px;
+    }
+    .zoom button {
+      width: 34px;
+      height: 34px;
+    }
+    .mandos {
+      gap: 6px;
+    }
+    .grupo button {
+      height: 32px;
+      padding: 0 10px;
+      font-size: 14px;
+    }
+    .accion {
+      height: 38px;
+      padding: 0 16px;
+      font-size: 15px;
+    }
+  }
 </style>
