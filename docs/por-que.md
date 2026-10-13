@@ -1273,3 +1273,31 @@ entera delante, si se ensancha el contenido de 1280 a 1440 px.
   temperatura y cifras sin perder la foto.
 - **Descartado:** quitar la foto o la frase (la foto es lo que distingue una máquina de otra y la frase dice para qué
   sirve), dos tarjetas por fila (las cifras no cabían) y recortar la frase con "…" (textos cortados).
+
+## 32. Selector de versión: blanco, recto y en rojo, con un fundido corto
+
+- **Problema:** las versiones (Ventilada / Refrigerada, 22 C / C-U / C-8) eran pestañas oscuras pegadas a la raya de la
+  familia, con la elegida en el color de esa familia (verde azulado, mostaza…), colores que no son de la marca. Al
+  cambiar, un velo azul o naranja barría la foto en casi un segundo, y arriba a la izquierda aparecía otra etiqueta en
+  mayúsculas ("❄ REFRIGERADA") junto a "COMPARAR". Se veía recargado y lento.
+- **Ahora:** un control blanco y recto abajo a la izquierda de la foto, encima de la raya; la versión elegida en rojo de
+  la casa y las otras en gris. Al cambiar, lo nuevo (foto, nombre, cifras) entra con un fundido de 0,18 s. Con varias
+  versiones no hay etiqueta de temperatura sobre la foto: el selector ya la dice. En móvil, el mismo control en gris
+  claro debajo de la raya.
+- **Por qué:** el rojo solo marca lo elegido, como en el resto de la web, y el cambio de versión se nota sin distraer.
+- **Descartado:** dejar el color de cada familia en la pestaña elegida (choca con el rojo de la marca) y cualquier
+  animación con dirección o color (barridos, deslizamientos): para comparar dos versiones lo importante es la rapidez.
+
+## 33. "Tu tubo": siete familias en vez de treinta tipos
+
+- **Problema:** el primer paso del filtro de tubos era una lista de unos 30 tipos tal y como vienen del ERP, en tres
+  columnas. Parecía un volcado de datos y obligaba a leerla entera para encontrar el tubo.
+- **Ahora:** primero se elige entre 7 familias (Microtubos y PCR, Tubos cónicos, Fondo redondo y plano, Sangre y
+  plasma, Microplacas, Petróleo y lácteos, Citología), cada una con cuántas centrífugas admiten alguno de sus tipos con
+  los demás filtros. Al abrir una, a la derecha salen sus tipos, cada uno con su nombre y debajo "Cualquier medida" y
+  sus medidas. El reparto vive en `src/data/fichas.ts` junto a los nombres de cada tipo.
+- **Por qué:** el distribuidor piensa en la familia de tubo que usa su cliente; con siete se elige de un vistazo y el
+  detalle (tapón, rosca, HS) queda en el segundo paso.
+- **Descartado:** quitar el primer paso y enseñar todas las medidas a la vez (más de cien casillas) y elegir la familia
+  entera como filtro (un tubo de sangre y una bolsa no van en el mismo rotor). Pera, finger, cónico de traza y
+  cilindrocónico van en "Petróleo y lácteos" porque solo los admiten las Digtor 22 C.

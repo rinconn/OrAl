@@ -96,50 +96,76 @@ const tiposRotor: Record<Rotor['tipo'], Record<Idioma, string>> = {
 };
 export const tipoRotor = (lang: Idioma, tipo: Rotor['tipo']) => tiposRotor[tipo]?.[lang] ?? tipo;
 
-/** Tipos de tubo del ERP, con un mismo criterio en los tres idiomas: forma, luego cierre y al final "(HS)" si lo
- * lleva el dato ("fondo redondo, tapón (hs)" → "fondo redondo con tapón (HS)"). Los nombres de marca (Cytofunnel,
- * Cyto-Clips) se dejan como están */
-const tiposTubo: Record<string, Record<Idioma, string>> = {
-  capilares: { es: 'capilares', en: 'capillaries', fr: 'capillaires' },
-  microtubos: { es: 'microtubos', en: 'microtubes', fr: 'microtubes' },
-  cónico: { es: 'cónico', en: 'conical', fr: 'conique' },
-  'cónico tapón': { es: 'cónico con tapón', en: 'conical with cap', fr: 'conique avec bouchon' },
+/** Familias de tubo para el filtro del catálogo: pocas y reconocibles, en vez de los ~30 tipos del ERP */
+export type FamiliaTubo = 'micro' | 'conicos' | 'fondo' | 'sangre' | 'placas' | 'industria' | 'citologia';
+export const familiasTubo: FamiliaTubo[] = ['micro', 'conicos', 'fondo', 'sangre', 'placas', 'industria', 'citologia'];
+
+/** Tipos de tubo del ERP con su familia y un mismo criterio en los tres idiomas: forma, luego cierre y al final "(HS)"
+ * si lo lleva el dato. Los nombres de marca (Cytofunnel, Cyto-Clips) se dejan como están */
+const tiposTubo: Record<string, { es: string; en: string; fr: string; f: FamiliaTubo }> = {
+  microtubos: { es: 'microtubos', en: 'microtubes', fr: 'microtubes', f: 'micro' },
+  'tiras PCR': { es: 'tiras PCR', en: 'PCR strips', fr: 'barrettes PCR', f: 'micro' },
+  criotubos: { es: 'criotubos', en: 'cryotubes', fr: 'cryotubes', f: 'micro' },
+  capilares: { es: 'capilares', en: 'capillaries', fr: 'capillaires', f: 'micro' },
+  cónico: { es: 'cónico', en: 'conical', fr: 'conique', f: 'conicos' },
+  'cónico tapón': { es: 'cónico con tapón', en: 'conical with cap', fr: 'conique avec bouchon', f: 'conicos' },
   'cónico tapón rosca': {
     es: 'cónico con tapón de rosca',
     en: 'conical with screw cap',
     fr: 'conique avec bouchon à vis',
+    f: 'conicos',
   },
   'cónico tapón a presión': {
     es: 'cónico con tapón a presión',
     en: 'conical with snap cap',
     fr: 'conique avec bouchon à pression',
+    f: 'conicos',
   },
-  'traza, cónico': { es: 'cónico de traza', en: 'conical trace', fr: 'conique de trace' },
-  'fondo redondo': { es: 'fondo redondo', en: 'round bottom', fr: 'fond rond' },
-  'fondo redondo, tapón': { es: 'fondo redondo con tapón', en: 'round bottom with cap', fr: 'fond rond avec bouchon' },
+  'fondo redondo': { es: 'fondo redondo', en: 'round bottom', fr: 'fond rond', f: 'fondo' },
+  'fondo redondo, tapón': {
+    es: 'fondo redondo con tapón',
+    en: 'round bottom with cap',
+    fr: 'fond rond avec bouchon',
+    f: 'fondo',
+  },
   'fondo redondo, tapón (hs)': {
     es: 'fondo redondo con tapón (HS)',
     en: 'round bottom with cap (HS)',
     fr: 'fond rond avec bouchon (HS)',
+    f: 'fondo',
   },
-  'fondo plano, tapón': { es: 'fondo plano con tapón', en: 'flat bottom with cap', fr: 'fond plat avec bouchon' },
+  'fondo plano, tapón': {
+    es: 'fondo plano con tapón',
+    en: 'flat bottom with cap',
+    fr: 'fond plat avec bouchon',
+    f: 'fondo',
+  },
   'fondo plano, tapón, (hs)': {
     es: 'fondo plano con tapón (HS)',
     en: 'flat bottom with cap (HS)',
     fr: 'fond plat avec bouchon (HS)',
+    f: 'fondo',
   },
-  'extr. sangre': { es: 'extracción de sangre', en: 'blood collection', fr: 'prélèvement sanguin' },
-  'bolsas sangre, dobles': { es: 'bolsas de sangre dobles', en: 'double blood bags', fr: 'poches de sang doubles' },
-  'tiras PCR': { es: 'tiras PCR', en: 'PCR strips', fr: 'barrettes PCR' },
-  butirómetros: { es: 'butirómetros', en: 'butyrometers', fr: 'butyromètres' },
-  criotubos: { es: 'criotubos', en: 'cryotubes', fr: 'cryotubes' },
-  'placas microtiter': { es: 'placas microtiter', en: 'microtiter plates', fr: 'microplaques' },
-  'cultivo celular': { es: 'cultivo celular', en: 'cell culture', fr: 'culture cellulaire' },
-  'deep well': { es: 'deep well', en: 'deep well', fr: 'deep well' },
-  hemólisis: { es: 'hemólisis', en: 'haemolysis', fr: 'hémolyse' },
-  cilindrocónico: { es: 'cilindrocónico', en: 'cylindro-conical', fr: 'cylindro-conique' },
-  finger: { es: 'finger', en: 'finger', fr: 'finger' },
-  pera: { es: 'pera', en: 'pear-shaped', fr: 'en poire' },
-  jeringas: { es: 'jeringas', en: 'syringes', fr: 'seringues' },
+  hemólisis: { es: 'hemólisis', en: 'haemolysis', fr: 'hémolyse', f: 'fondo' },
+  'cultivo celular': { es: 'cultivo celular', en: 'cell culture', fr: 'culture cellulaire', f: 'fondo' },
+  'extr. sangre': { es: 'extracción de sangre', en: 'blood collection', fr: 'prélèvement sanguin', f: 'sangre' },
+  'bolsas sangre, dobles': {
+    es: 'bolsas de sangre dobles',
+    en: 'double blood bags',
+    fr: 'poches de sang doubles',
+    f: 'sangre',
+  },
+  jeringas: { es: 'jeringas', en: 'syringes', fr: 'seringues', f: 'sangre' },
+  'placas microtiter': { es: 'microplacas', en: 'microtiter plates', fr: 'microplaques', f: 'placas' },
+  'deep well': { es: 'deep well', en: 'deep well', fr: 'deep well', f: 'placas' },
+  cilindrocónico: { es: 'cilindrocónico', en: 'cylindro-conical', fr: 'cylindro-conique', f: 'industria' },
+  'traza, cónico': { es: 'cónico de traza', en: 'conical trace', fr: 'conique de trace', f: 'industria' },
+  finger: { es: 'finger', en: 'finger', fr: 'finger', f: 'industria' },
+  pera: { es: 'pera', en: 'pear-shaped', fr: 'en poire', f: 'industria' },
+  butirómetros: { es: 'butirómetros', en: 'butyrometers', fr: 'butyromètres', f: 'industria' },
 };
-export const tipoTubo = (lang: Idioma, tipo?: string) => (!tipo ? tipo : (tiposTubo[tipo]?.[lang] ?? tipo));
+/** Nombre limpio de un tipo de tubo ("(TM)" pasa a "™") */
+export const tipoTubo = (lang: Idioma, tipo?: string) =>
+  tipo && (tiposTubo[tipo]?.[lang] ?? tipo.replace(/\(TM\)/g, '™'));
+/** Familia de un tipo de tubo; los de marca para citología (Cytofunnel, Cyto-Clips) van a la suya */
+export const familiaTubo = (tipo: string): FamiliaTubo => tiposTubo[tipo]?.f ?? 'citologia';

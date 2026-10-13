@@ -274,9 +274,19 @@ export const es = {
       cerrar: 'Cerrar',
       tubo: 'Tu tubo',
       cualquierTubo: 'Cualquier tubo',
-      pasoTipo: '1. Tipo de tubo',
+      pasoTipo: '1. Familia de tubo',
       pasoMedida: '2. Medida',
       todasMedidas: 'Cualquier medida',
+      // Familias del filtro de tubos (src/data/fichas.ts)
+      familiasTubo: {
+        micro: 'Microtubos y PCR',
+        conicos: 'Tubos cónicos',
+        fondo: 'Fondo redondo y plano',
+        sangre: 'Sangre y plasma',
+        placas: 'Microplacas',
+        industria: 'Petróleo y lácteos',
+        citologia: 'Citología',
+      },
       // Mínimos: deja solo las máquinas que llegan al menos a estas cifras
       minimos: {
         boton: 'Mínimos',
