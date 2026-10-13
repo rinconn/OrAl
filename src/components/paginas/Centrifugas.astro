@@ -1181,7 +1181,7 @@ const tubos = Object.entries(porTipo)
       const dato = tuboActual ? datoTubo(slug) : undefined;
       franja.hidden = !dato;
       if (dato)
-        franja.textContent = datosTubos.texto
+        franja.querySelector('.texto')!.textContent = datosTubos.texto
           .replace('{r}', dato[0])
           .replace('{t}', dato[1])
           .replace('{n}', String(dato[2]));
