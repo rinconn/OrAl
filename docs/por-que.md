@@ -1139,3 +1139,57 @@ entera delante, si se ensancha el contenido de 1280 a 1440 px.
 - **Descartado:** la hoja de impresión del navegador (sin descarga, con su cabecera y "atrás" fuera del catálogo),
   descargar sin vista previa y la letra condensada de la marca en el PDF (ver
   [decisión 0010](decisiones/0010-pdf-generado-con-jspdf.md)).
+
+## 25. Ficha de producto: galería, cifras frente a la gama e índice fijo
+
+- **Problema:** la foto era blanco sobre blanco, solo había una; la placa de datos era una lista larga e igual de
+  importante en cada fila; la barra de pestañas oscura escondía la información detrás de clics y quedaba pesada; y
+  "Más de…" usaba una tarjeta más pobre que la del catálogo y, con un solo modelo, dejaba media pantalla vacía.
+- **Ahora:** galería sobre la mesa de laboratorio de las tarjetas, con miniaturas de las fotos reales que hay (máquina,
+  detalle del panel, rotores) y el 3D donde existe (Digicen 22). Datos técnicos con capacidad, velocidad y fuerza en
+  grande y una barra frente a la más alta de la gama; el resto en dos columnas. Debajo, todo seguido y numerado
+  (01 Descripción, 02 Ficha técnica…) con un índice fijo que marca la sección, llena una raya de progreso y lleva
+  siempre el botón de pedir. Al final, las mismas tarjetas que el catálogo.
+- **Por qué:** el distribuidor ve la máquina como en el catálogo, sabe de un vistazo si es de las rápidas de la gama,
+  puede leer la ficha entera bajando (o saltar con el índice) sin perder qué modelo mira ni el botón de pedir.
+- **Descartado:** fotos de catálogo inventadas o generadas (no hay más fotos reales que estas), un 3D falso para las
+  máquinas sin modelo, mantener las pestañas (obligan a clicar para ver lo que el distribuidor quiere comparar) y la
+  barra fija con nombre de la primera versión (el índice la sustituye).
+
+### 25.1 Datos técnicos como un instrumento
+
+- **Problema:** la placa oscura con tres cifras y barras finas seguía siendo una tabla, pesada y sin nada propio.
+- **Ahora:** el rotor de la máquina visto desde arriba, con tantos huecos como tubos lleva su capacidad, que gira y frena
+  al cargar como la centrífuga al parar; al lado, velocidad y fuerza en una regla de 0 a la más alta de la gama, con la
+  cifra contando. La raya del color de la familia une la ficha con su tarjeta del catálogo.
+- **Por qué:** se entiende sin leer: cuántos tubos caben y si la máquina es de las rápidas de la gama. Y es de centrífugas,
+  no un adorno genérico.
+- **Descartado:** relojes de aguja (ocupan mucho y se leen peor que una regla) y animarlo en bucle (cansa; solo al
+  cargar y al pasar el ratón).
+
+### 25.2 Una ficha más trabajada: galería con mandos, medidas dibujadas y códigos que se copian
+
+- **Problema:** la ficha se veía simple: la galería solo cambiaba con las miniaturas, las fotos no se podían ver en grande,
+  las medidas eran un texto más y el código, que es lo que el distribuidor necesita para pedir, había que copiarlo a mano.
+  La raya del color de la familia bajo la galería repetía la de Datos técnicos.
+- **Ahora:** flechas con contador y botón de ampliar sobre la foto; pantalla completa con flechas, teclado y clic para
+  acercar justo donde se pulsa. En "De un vistazo", la caja de la máquina en isométrico, a escala real entre sus tres
+  medidas y con sus cotas en rojo, que se dibuja al llegar. Los códigos (CE 202…) se copian de un clic. Las secciones
+  entran suaves al bajar (sin JS o con movimiento reducido, se ven tal cual). La raya de familia queda solo en Datos técnicos.
+- **Por qué:** se ve la máquina de cerca sin salir de la ficha, se entiende su tamaño sin leer tres cifras y pedir es
+  copiar y pegar el código.
+- **Descartado:** volver a las pestañas o a la barra fija (ver 25) y un zoom con lupa al pasar el ratón (tapa la foto).
+
+## 26. Comparar, pedir presupuesto y filtros más claros
+
+- **Problema:** la tabla y el botón Comparar llevaban cada uno su elección (marcabas dos filas y la ventana salía vacía),
+  la comparativa no se podía mandar ni pasar al presupuesto, el correo de presupuesto era una lista pelada, el filtro de
+  tubos mezclaba tipos y medidas en un solo desplegable y el botón Descargar cambiaba de sitio según la vista.
+- **Ahora:** una sola elección para todo; ventana de comparar con la cabecera de la casa, buscador, enlace para
+  compartir y "Añadir al presupuesto"; el correo lleva datos clave, ficha y huecos para el distribuidor, y se adjunta el
+  PDF; tubos en dos pasos (tipo y medida); Descargar siempre a la derecha del total; banderas a la izquierda como en la
+  web actual; y la cifra de velocidad ya no cuenta desde 0.
+- **Por qué:** el distribuidor compara, comparte y pide sin repetir pasos, y ventas recibe el pedido con todo lo que
+  necesita para contestar.
+- **Descartado:** un formulario de presupuesto propio (el correo ya lo tiene todo y no hace falta servidor) y la
+  animación de la cifra (distraía y retrasaba el dato).

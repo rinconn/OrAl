@@ -119,7 +119,12 @@ const comparables = Object.fromEntries(
           rotores: web?.rotores.length ? String(web.rotores.length) : undefined,
         },
         // Para marcar el mayor de cada fila numérica
-        num: { velocidad: aNumero(m.rpm), fuerza: aNumero(xg), rotores: web?.rotores.length },
+        num: {
+          capacidad: capacidadMl(m) || undefined,
+          velocidad: aNumero(m.rpm),
+          fuerza: aNumero(xg),
+          rotores: web?.rotores.length,
+        },
       },
     ];
   }),
@@ -156,14 +161,43 @@ const maximos: Record<string, number> = {
 };
 const barra = (v: number, k: string) => (v ? `--p: ${(v / maximos[k]).toFixed(3)}` : undefined);
 
-// Lista de presupuesto: todo lo del catálogo, con su nombre y su foto
+// Lista de presupuesto: todo lo del catálogo, con su nombre y su foto y, para el correo, sus datos clave y el enlace a su
+// ficha (así ventas sabe exactamente qué versión se pide)
 const tp = t.catalogo.presupuesto;
+type Presupuestable = { nombre: string; img: string; datos?: string; url?: string };
 const presupuestables = Object.fromEntries(
   salas.flatMap((s) =>
-    s.fichas.flatMap((x) =>
+    s.fichas.flatMap<readonly [string, Presupuestable]>((x) =>
       x.tipo === 'modelo'
-        ? x.ms.map((v) => [v.slug, { nombre: v.nombre, img: v.imagen.src }] as const)
-        : [[x.p.slug, { nombre: t.laboratorio.items[x.p.slug].nombre, img: x.p.imagen.src }] as const],
+        ? x.ms.map(
+            (v) =>
+              [
+                v.slug,
+                {
+                  nombre: v.nombre,
+                  img: v.imagen.src,
+                  datos: [
+                    may(t.temperatura[v.temperatura]),
+                    capacidad(v),
+                    `${numero(lang, v.rpm)} rpm`,
+                    fuerza(v) && `${fuerza(v)} xg`,
+                  ]
+                    .filter(Boolean)
+                    .join(' · '),
+                  url: new URL(ruta(lang, `/centrifugas/${v.slug}/`), Astro.site).href,
+                },
+              ] as const,
+          )
+        : [
+            [
+              x.p.slug,
+              {
+                nombre: t.laboratorio.items[x.p.slug].nombre,
+                img: x.p.imagen.src,
+                datos: t.laboratorio.items[x.p.slug].datos,
+              },
+            ] as const,
+          ],
     ),
   ),
 );
@@ -255,8 +289,7 @@ const tubos = Object.entries(porTipo)
       grupos={grupos.map((g) => ({ nombre: g.nombre, cats: g.cats.map((c) => ({ v: c, nombre: nombreCorto(c) })) }))}
     />
 
-    <!-- Atajos: una entrada por familia, con su color, que lleva a su sección; a la derecha, descargar lo que se ve
-         (los modelos que dejan los filtros, como en la tabla) -->
+    <!-- Atajos: una entrada por familia, con su color, que lleva a su sección -->
     <div class="wrap atajos-fila">
       <nav class="atajos" aria-label={t.catalogo.atajos}>
         {salas.map((s) => (
@@ -266,18 +299,6 @@ const tubos = Object.entries(porTipo)
           </a>
         ))}
       </nav>
-      <div class="descargar" role="group" aria-label={tv.descargar}>
-        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
-          <path d="M12 4v11M7 10l5 5 5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="1.7" />
-        </svg>
-        <span class="d-etq">{tv.descargar}</span>
-        <button type="button" data-exportar="pdf" title={tv.descargarEn('PDF')}>
-          PDF
-        </button>
-        <button type="button" data-exportar="excel" title={tv.descargarEn('Excel')}>
-          Excel
-        </button>
-      </div>
     </div>
 
     <div class="wrap salas" id="salas">
@@ -316,19 +337,6 @@ const tubos = Object.entries(porTipo)
             </svg>
             {tv.invertir}
           </button>
-          {/* Descargar lo que se ve (filtros y orden incluidos) para mandárselo al cliente */}
-          <div class="descargar" role="group" aria-label={tv.descargar}>
-            <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
-              <path d="M12 4v11M7 10l5 5 5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="1.7" />
-            </svg>
-            <span class="d-etq">{tv.descargar}</span>
-            <button type="button" data-exportar="pdf" title={tv.descargarEn('PDF')}>
-              PDF
-            </button>
-            <button type="button" data-exportar="excel" title={tv.descargarEn('Excel')}>
-              Excel
-            </button>
-          </div>
         </div>
         <div class="tabla-scroll">
           <table>
@@ -589,9 +597,17 @@ const tubos = Object.entries(porTipo)
       </div>
       <ul class="pres-lista"></ul>
       <a class="pres-pedir" href={`mailto:${contacto.comercial}`}>
-        {tp.pedir}
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+          <path
+            d="M3 6h18v12H3zM3 6l9 7 9-7"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.7"
+            stroke-linejoin="round"
+          />
+        </svg>
+        <span>{tp.pedir}</span>
       </a>
-      <p class="pres-nota">{tp.nota}</p>
       {/* La lista, con sus unidades, en PDF o Excel: para el cliente o para adjuntarla al pedir presupuesto */}
       <div class="descargar" role="group" aria-label={tv.descargar}>
         <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
@@ -624,8 +640,19 @@ const tubos = Object.entries(porTipo)
   </div>
 
   <dialog class="comparador" id="comparador" aria-labelledby="comparador-tit">
+    <!-- Cabecera en carbón con el logo, como el pie de la web: se sabe de quién es la comparación -->
     <div class="comp-cab">
+      <img class="comp-logo" src="/img/marca/logo-ortoalresa-white.svg" alt="Orto Alresa" width="80" height="36" />
       <h2 id="comparador-tit">{tc.titulo}</h2>
+      <button type="button" class="cerrar-comp" aria-label={tc.cerrar}>
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+          <path d={cruz} stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path>
+        </svg>
+      </button>
+    </div>
+    <div class="comp-tabla"></div>
+    <!-- Lo que se hace con la comparación: descargarla, mandarla con un enlace o pasarla al presupuesto -->
+    <div class="comp-pie">
       <div class="descargar" role="group" aria-label={tv.descargar}>
         <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
           <path d="M12 4v11M7 10l5 5 5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="1.7" />
@@ -638,13 +665,67 @@ const tubos = Object.entries(porTipo)
           Excel
         </button>
       </div>
-      <button type="button" class="cerrar-comp" aria-label={tc.cerrar}>
+      <div class="comp-acciones">
+        <button type="button" class="comp-compartir" data-copiado={tc.copiado}>
+          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+            <path
+              d="M10 14a4 4 0 0 0 5.7 0l3.6-3.6a4 4 0 0 0-5.7-5.7L12 6.3M14 10a4 4 0 0 0-5.7 0l-3.6 3.6a4 4 0 0 0 5.7 5.7l1.6-1.6"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.7"
+              stroke-linecap="round"
+            ></path>
+          </svg>
+          <span>{tc.compartir}</span>
+        </button>
+        <button type="button" class="comp-presupuesto">
+          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+            <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+          </svg>
+          {tc.presupuesto}
+        </button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Elegir para comparar: todas las centrífugas a la vista, se marcan hasta 3 y se comparan sin bajar al catálogo.
+       Misma cabecera que la ventana de comparar: carbón con el logo -->
+  <dialog class="elegir-comp" id="elegir-comp" aria-labelledby="elegir-comp-tit">
+    <div class="ec-cab">
+      <img class="comp-logo" src="/img/marca/logo-ortoalresa-white.svg" alt="Orto Alresa" width="80" height="36" />
+      <div class="ec-tit">
+        <h2 id="elegir-comp-tit">{tc.elegir}</h2>
+        <p>{tc.elegirAyuda}</p>
+      </div>
+      <button type="button" class="ec-cerrar" aria-label={tc.cerrar}>
         <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
           <path d={cruz} stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path>
         </svg>
       </button>
     </div>
-    <div class="comp-tabla"></div>
+    <div class="ec-busca">
+      <label class="ec-buscar">
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+          <path
+            d="M10.5 18a7.5 7.5 0 1 0 0-15 7.5 7.5 0 0 0 0 15ZM16 16l5 5"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.7"
+          ></path>
+        </svg>
+        <input type="search" placeholder={tc.buscar} aria-label={tc.buscar} autocomplete="off" />
+      </label>
+    </div>
+    <ul class="ec-lista"></ul>
+    <p class="ec-ninguna" hidden>
+      {tc.ninguna}
+    </p>
+    <!-- Abajo, los tres huecos de la comparación: se llenan con la foto de cada elegida -->
+    <div class="ec-pie">
+      <ol class="ec-huecos" aria-hidden="true"></ol>
+      <p class="ec-cuenta" aria-live="polite"></p>
+      <button type="button" class="ec-comparar" data-txt={tc.abrir(999)} disabled></button>
+    </div>
   </dialog>
 
   <script
@@ -653,7 +734,14 @@ const tubos = Object.entries(porTipo)
     set:html={JSON.stringify({
       maquinas: comparables,
       filas: filasComparar,
-      textos: { quitar: tc.quitar('{n}'), maximo: tc.maximo, verFicha: tf.verFicha, mejor: tc.mejor },
+      textos: {
+        quitar: tc.quitar('{n}'),
+        maximo: tc.maximo,
+        verFicha: tf.verFicha,
+        mejor: tc.mejor,
+        tipo: tv.tipoComp,
+        fuente: tv.fuente,
+      },
     })}
   />
   <script
@@ -729,6 +817,7 @@ const tubos = Object.entries(porTipo)
       fuente: tv.fuente,
       empresa: `${contacto.empresa} · ${contacto.direccion}`,
       pagina: tv.pagina,
+      mejor: tc.mejor,
     })}
   />
   <script
@@ -741,6 +830,12 @@ const tubos = Object.entries(porTipo)
         quitar: tp.quitar('{n}'),
         asunto: tp.asunto,
         cuerpo: tp.cuerpo,
+        ficha: tp.ficha,
+        misDatos: tp.misDatos,
+        campos: tp.campos,
+        comentarios: tp.comentarios,
+        adjunto: tp.adjunto,
+        despedida: tp.despedida,
         boton: tp.boton(999),
         anadir: tp.anadir,
         quitarDeLista: tp.quitarDeLista,
@@ -761,7 +856,16 @@ const tubos = Object.entries(porTipo)
   iniciarPresupuesto();
 
   // ——— Descargar la tabla (lo filtrado, en su orden) o la comparativa, en PDF o en Excel ———
-  import { excel, hoy, iniciarVistaPdf, leerTabla, pdf, type Hoja } from '../../scripts/exportar';
+  import {
+    descargarPdf,
+    excel,
+    hoy,
+    iniciarVistaPdf,
+    leerTabla,
+    pdf,
+    type Grupo,
+    type Hoja,
+  } from '../../scripts/exportar';
   iniciarVistaPdf();
   const tx = JSON.parse(document.getElementById('datos-exportar')?.textContent ?? '{}') as Record<string, string>;
   const hojaTabla = (enTabla: boolean): Hoja | undefined => {
@@ -792,6 +896,54 @@ const tubos = Object.entries(porTipo)
       archivo: `${tx.archivo}-${d.archivo}`,
     };
   };
+  // Vista de tarjetas: el PDF como la pantalla, cada familia con sus fichas (la versión que se ve, en su orden)
+  const txt = (el?: Element | null) => (el?.textContent ?? '').replace(/\s+/g, ' ').trim();
+  const hojaTarjetas = (): Hoja | undefined => {
+    const base = hojaTabla(false);
+    if (!base) return;
+    const grupos: Grupo[] = [...document.querySelectorAll<HTMLElement>('#salas .sala')]
+      .filter((s) => !s.hidden)
+      .map((s) => ({
+        n: txt(s.querySelector('.sala-i')),
+        nombre: txt(s.querySelector('h2')),
+        color: s.style.getPropertyValue('--fam'),
+        cuenta: txt(s.querySelector('.sala-n')),
+        usos: [...s.querySelectorAll('.sala-usos li')].map(txt),
+        fichas: [...s.querySelectorAll<HTMLElement>('.piezas > .ficha')]
+          .filter((f) => !f.hidden)
+          .map((f) => {
+            const vis = (sel: string) => f.querySelector(`${sel}:not([hidden])`);
+            return {
+              img: vis('.estudio img')?.getAttribute('src') ?? undefined,
+              lab: !f.dataset.slugs,
+              temp: txt(vis('.temp')) || undefined,
+              uso: txt(f.querySelector('.uso')),
+              nombre: txt(vis('.nombre > span') ?? f.querySelector('.nombre')),
+              frase: txt(f.querySelector('.frase')) || undefined,
+              cifras: [...(vis('.placa')?.querySelectorAll('.cifra') ?? [])].map(
+                (c) => [txt(c.querySelector('small')), txt(c.querySelector('b'))] as [string, string],
+              ),
+              modelo: txt(f.querySelector('.placa.modelo')) || undefined,
+            };
+          }),
+      }))
+      .filter((g) => g.fichas.length);
+    if (!grupos.length) return;
+    // El orden, el del desplegable de los filtros (en las tarjetas no hay columnas)
+    const sel = document.querySelector<HTMLSelectElement>('select[name=o]');
+    const orden =
+      sel?.value && sel.selectedOptions[0]
+        ? `${txt(sel.selectedOptions[0])}, ${new URL(location.href).searchParams.get('dir') === 'asc' ? tx.menorCorto : tx.mayorCorto}`
+        : tx.catalogoOrden;
+    const cuenta = txt(document.querySelector('.cuenta'));
+    return {
+      ...base,
+      datos: [base.datos[0], [tx.etqOrden, orden], [tx.etqModelos, cuenta || base.datos[2][1]]],
+      cabecera: [],
+      filas: [],
+      grupos,
+    };
+  };
   const hojaComparativa = (): Hoja | undefined => {
     const tabla = document.querySelector<HTMLTableElement>('#comparador .comp-tabla table');
     if (!tabla) return;
@@ -812,6 +964,8 @@ const tubos = Object.entries(porTipo)
       ],
       cabecera,
       filas,
+      // Como en la ventana: la leyenda del punto rojo solo si alguna fila tiene un mayor
+      leyenda: filas.some((f) => f.some((c) => c.mejor)) ? tx.mejor : undefined,
       archivo: `${tx.archivoComp}-${d.archivo}`,
     };
   };
@@ -846,11 +1000,16 @@ const tubos = Object.entries(porTipo)
   };
   for (const b of document.querySelectorAll<HTMLButtonElement>('[data-exportar]')) {
     b.addEventListener('click', () => {
+      // Desde las tarjetas, el PDF sale en fichas como la pantalla; el Excel, siempre en tabla
+      const enTabla = !!document.querySelector('.catalogo')?.classList.contains('en-tabla');
+      const enTarjetas = !!b.closest('.filtros') && !enTabla && b.dataset.exportar === 'pdf';
       const h = b.closest('#comparador')
         ? hojaComparativa()
         : b.closest('#presupuesto')
           ? hojaPresupuesto()
-          : hojaTabla(!!b.closest('.tabla-vista'));
+          : enTarjetas
+            ? hojaTarjetas()
+            : hojaTabla(enTabla);
       if (!h) return;
       if (b.dataset.exportar === 'excel') excel(h);
       // El presupuesto no lleva datos técnicos: sin la línea de dónde salen
@@ -864,6 +1023,12 @@ const tubos = Object.entries(porTipo)
     });
   }
 
+  // "Pedir presupuesto" abre el correo y, a la vez, descarga la lista en PDF (con fotos) para adjuntarla
+  document.querySelector('.pres-pedir')?.addEventListener('click', () => {
+    const h = hojaPresupuesto();
+    if (h) void descargarPdf(h, { empresa: tx.empresa, web: 'ortoalresa.com', pagina: tx.pagina, fuente: '' });
+  });
+
   // Sin ningún modelo a la vista, ni tabla ni descargas: queda solo el mensaje de "sin resultados"
   // (los filtros de la dirección ya se han aplicado al cargar: se mira también al arrancar)
   const conFilas = () => {
@@ -871,10 +1036,7 @@ const tubos = Object.entries(porTipo)
     if (!tabla) return;
     const hay = [...tabla.querySelectorAll<HTMLElement>('tbody tr')].some((tr) => !tr.hidden);
     tabla.classList.toggle('sin-filas', !hay);
-    for (const b of document.querySelectorAll<HTMLButtonElement>(
-      '.tabla-estado [data-exportar], .atajos-fila [data-exportar]',
-    ))
-      b.disabled = !hay;
+    for (const b of document.querySelectorAll<HTMLButtonElement>('.filtros [data-exportar]')) b.disabled = !hay;
   };
 
   // ——— Elegir filas de la tabla para descargar solo esas: la casilla de cada fila, "todas" en la cabecera (las que
@@ -904,10 +1066,31 @@ const tubos = Object.entries(porTipo)
         n > 3 ? compararEleg.dataset.maximo! : compararEleg.dataset.txt!.replace('999', String(n));
     }
   };
-  for (const c of casillasFila) c.addEventListener('change', pintarEleccion);
+  // Lo elegido en la tabla es también lo que se compara: el botón Comparar de arriba y su ventana ven lo mismo
+  let desdeTabla = false;
+  const avisarComparador = () => {
+    desdeTabla = true;
+    const slugs = casillasFila.filter((c) => c.checked).map((c) => c.value);
+    document.dispatchEvent(new CustomEvent('comparar:poner', { detail: slugs }));
+    desdeTabla = false;
+  };
+  // Y al revés: lo que se elige en las tarjetas o en la ventana de elegir queda marcado en la tabla
+  document.addEventListener('comparar:cambio', (ev) => {
+    if (desdeTabla) return;
+    const slugs = (ev as CustomEvent<string[]>).detail;
+    for (const c of casillasFila) c.checked = slugs.includes(c.value);
+    pintarEleccion();
+  });
+  document.dispatchEvent(new Event('comparar:pedir'));
+  for (const c of casillasFila)
+    c.addEventListener('change', () => {
+      pintarEleccion();
+      avisarComparador();
+    });
   elegirTodas?.addEventListener('change', () => {
     for (const c of casillasFila) if (!c.closest('tr')!.hidden) c.checked = elegirTodas.checked;
     pintarEleccion();
+    avisarComparador();
   });
   compararEleg?.addEventListener('click', () =>
     document.dispatchEvent(new CustomEvent('comparar:abrir', { detail: elegidasVis() })),
@@ -915,6 +1098,7 @@ const tubos = Object.entries(porTipo)
   eleccion?.addEventListener('click', () => {
     for (const c of casillasFila) c.checked = false;
     pintarEleccion();
+    avisarComparador();
   });
   document.addEventListener('catalogo:filtrado', pintarEleccion);
   conFilas();
@@ -977,13 +1161,24 @@ const tubos = Object.entries(porTipo)
     texto: string;
   };
   let tuboActual = '';
+  // Con "tipo|*" (un tipo con cualquier medida), la medida de ese tipo de la que caben más
+  const datoTubo = (slug: string) => {
+    const ts = datosTubos.modelos?.[slug];
+    if (!ts) return undefined;
+    if (!tuboActual.endsWith('|*')) return ts[tuboActual];
+    const pre = tuboActual.slice(0, -1);
+    return Object.entries(ts)
+      .filter(([k]) => k.startsWith(pre))
+      .map(([, d]) => d)
+      .sort((a, b) => b[2] - a[2])[0];
+  };
   const pintarTubos = () => {
     for (const li of document.querySelectorAll<HTMLElement>('#salas .ficha[data-slugs]')) {
       const franja = li.querySelector<HTMLElement>('.con-tubo');
       if (!franja) continue;
       const activa = li.querySelector<HTMLButtonElement>('.versiones [aria-pressed="true"]');
       const slug = activa?.dataset.slug ?? li.dataset.slugs!.split(' ')[0];
-      const dato = tuboActual ? datosTubos.modelos?.[slug]?.[tuboActual] : undefined;
+      const dato = tuboActual ? datoTubo(slug) : undefined;
       franja.hidden = !dato;
       if (dato)
         franja.textContent = datosTubos.texto
@@ -1009,10 +1204,8 @@ const tubos = Object.entries(porTipo)
     if (tuboActual)
       for (const g of document.querySelectorAll<HTMLElement>('.versiones')) {
         const actual = g.querySelector<HTMLButtonElement>('[aria-pressed="true"]');
-        if (actual && datosTubos.modelos?.[actual.dataset.slug!]?.[tuboActual]) continue;
-        const otra = [...g.querySelectorAll<HTMLButtonElement>('button')].find(
-          (x) => datosTubos.modelos?.[x.dataset.slug!]?.[tuboActual],
-        );
+        if (actual && datoTubo(actual.dataset.slug!)) continue;
+        const otra = [...g.querySelectorAll<HTMLButtonElement>('button')].find((x) => datoTubo(x.dataset.slug!));
         if (otra) verVersion(g.closest<HTMLElement>('.ficha')!, otra.dataset.i!, false);
       }
     pintarTubos();
@@ -1032,25 +1225,6 @@ const tubos = Object.entries(porTipo)
     li.scrollIntoView();
   }
 
-  // ——— Las rpm aceleran como la máquina: la primera vez que se ve la tarjeta, de 0 a su velocidad con una rampa
-  // de arranque y frenada ———
-  const acelerar = (ficha: HTMLElement) => {
-    const el = ficha.querySelector<HTMLElement>('.placa:not([hidden]) .rpm .valor');
-    if (!el) return;
-    const texto = el.textContent ?? '';
-    const fin = Number(texto.replace(/\D/g, ''));
-    const sep = /\d(\D)\d/.exec(texto)?.[1] ?? '';
-    const t0 = performance.now();
-    const paso = (t: number) => {
-      const p = Math.min((t - t0) / 1300, 1);
-      const r = p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2;
-      el.textContent = String(Math.round((fin * r) / 100) * 100).replace(/\B(?=(\d{3})+(?!\d))/g, sep);
-      if (p < 1) requestAnimationFrame(paso);
-      else el.textContent = texto;
-    };
-    requestAnimationFrame(paso);
-  };
-
   // Al bajar, las máquinas entran de abajo arriba, escalonadas por fila, y las portadas se descubren
   if (salasEl && !quieto && 'IntersectionObserver' in window) {
     salasEl.classList.add('revela');
@@ -1062,7 +1236,6 @@ const tubos = Object.entries(porTipo)
             const el = e.target as HTMLElement;
             el.style.setProperty('--d', `${i * 70}ms`);
             el.classList.add('visto');
-            if (el.classList.contains('ficha')) setTimeout(() => acelerar(el), 200 + i * 70);
             io.unobserve(el);
           });
       },
@@ -1229,12 +1402,6 @@ const tubos = Object.entries(porTipo)
     }
     .tabla-estado .invertir {
       margin-left: 0;
-    }
-    .tabla-estado .descargar {
-      margin-left: auto;
-    }
-    .descargar .d-etq {
-      display: none;
     }
   }
   .invertir svg {
@@ -1800,7 +1967,7 @@ const tubos = Object.entries(porTipo)
     scroll-margin-top: 200px;
   }
 
-  /* "Comparar": arriba a la derecha del escenario; marcado, en rojo */
+  /* "Comparar": arriba a la derecha del escenario, en blanco. Marcado: borde y casilla en rojo, sin cambiar de fondo */
   .comparar {
     position: absolute;
     top: 18px;
@@ -1808,20 +1975,21 @@ const tubos = Object.entries(porTipo)
     z-index: 3;
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    height: 28px;
-    padding: 0 10px;
-    font-size: 14px;
+    gap: 9px;
+    height: 34px;
+    padding: 0 12px;
+    font-size: 15px;
     font-weight: 700;
     letter-spacing: 0.06em;
     text-transform: uppercase;
     line-height: 1;
     color: var(--ink);
     background: #fff;
+    box-shadow: inset 0 0 0 1px transparent;
     cursor: pointer;
     transition:
       color 0.18s ease,
-      background-color 0.18s ease;
+      box-shadow 0.18s ease;
   }
   .comparar input {
     position: absolute;
@@ -1837,6 +2005,11 @@ const tubos = Object.entries(porTipo)
     transition:
       background-color 0.18s ease,
       border-color 0.18s ease;
+  }
+  .comparar .caja {
+    width: 16px;
+    height: 16px;
+    border-color: #9aa0a5;
   }
   .caja::after {
     content: '';
@@ -1854,9 +2027,13 @@ const tubos = Object.entries(porTipo)
       opacity 0.16s ease,
       scale 0.2s cubic-bezier(0.23, 1, 0.32, 1);
   }
+  .comparar .caja::after {
+    left: 4.5px;
+    top: 1px;
+  }
   .comparar:has(input:checked) {
-    color: #fff;
-    background: var(--ink);
+    color: var(--red);
+    box-shadow: inset 0 0 0 1.5px var(--red);
   }
   .comparar input:checked + .caja {
     background: var(--red);
@@ -1873,11 +2050,6 @@ const tubos = Object.entries(porTipo)
   .comparar:has(input:disabled) {
     opacity: 0.4;
     cursor: not-allowed;
-  }
-  @media (hover: hover) and (pointer: fine) {
-    .comparar:hover:not(:has(input:disabled)) {
-      color: var(--ink);
-    }
   }
 
   /* Sin resultados: el mensaje claro y el botón para empezar de nuevo */
@@ -2003,9 +2175,6 @@ const tubos = Object.entries(porTipo)
     flex: 1;
     flex-wrap: wrap;
     gap: 8px;
-  }
-  .atajos-fila .descargar button {
-    height: 40px;
   }
   @media (max-width: 900px) {
     .atajos-fila {
@@ -2434,7 +2603,10 @@ const tubos = Object.entries(porTipo)
     color: var(--muted);
   }
   .pres-pedir {
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
     margin-top: 14px;
     padding: 14px 16px;
     background: var(--red);
@@ -2444,17 +2616,11 @@ const tubos = Object.entries(porTipo)
     text-align: center;
     text-decoration: none;
   }
-  .pres-pedir::after {
+  .pres-pedir span::after {
     content: ' »';
     font-weight: 300;
   }
-  .pres-nota {
-    margin: 8px 0 0;
-    font-size: 14px;
-    color: var(--muted);
-    text-align: center;
-  }
-  /* En el panel, la descarga va centrada bajo la nota, más pequeña que "Pedir presupuesto" */
+  /* En el panel, la descarga va centrada bajo el botón, más pequeña que "Pedir presupuesto" */
   .pres-panel .descargar {
     display: flex;
     justify-content: center;
@@ -2508,7 +2674,7 @@ const tubos = Object.entries(porTipo)
   }
 
   /* Los botones que se pintan desde JS no llevan el ámbito del componente */
-  :global(:where(.barra-comparar, .comparador, .presupuesto) button) {
+  :global(:where(.barra-comparar, .comparador, .elegir-comp, .presupuesto) button) {
     border: 0;
     background: none;
     font: inherit;
@@ -2527,20 +2693,19 @@ const tubos = Object.entries(porTipo)
     gap: 20px;
     width: max-content;
     max-width: calc(100% - 2 * var(--gut));
-    padding: 10px 10px 10px 16px;
-    background: rgba(21, 23, 25, 0.96);
-    -webkit-backdrop-filter: blur(12px);
-    backdrop-filter: blur(12px);
-    color: #fff;
-    box-shadow: 0 24px 60px -20px rgba(0, 0, 0, 0.55);
+    padding: 10px 10px 10px 12px;
+    background: #fff;
+    color: var(--ink);
+    border: 1px solid var(--line);
+    box-shadow: 0 24px 60px -24px rgba(17, 19, 21, 0.4);
     translate: -50% 0;
     animation: sube-barra 0.45s var(--ease);
   }
   .barra-comparar::before {
     content: '';
     position: absolute;
-    inset: 0 0 auto;
-    height: 2px;
+    inset: -1px -1px auto;
+    height: 3px;
     background: var(--red);
   }
   .elegidas {
@@ -2556,14 +2721,14 @@ const tubos = Object.entries(porTipo)
     gap: 8px;
     height: 48px;
     padding: 0 6px 0 4px;
-    background: rgba(255, 255, 255, 0.07);
+    background: var(--panel);
     animation: entra-chip 0.3s var(--ease);
   }
   .elegidas :global(img) {
     width: 40px;
     height: 40px;
     object-fit: contain;
-    background: #fff;
+    mix-blend-mode: multiply;
   }
   .elegidas :global(span) {
     font-size: 15px;
@@ -2575,11 +2740,11 @@ const tubos = Object.entries(porTipo)
     place-items: center;
     width: 28px;
     height: 28px;
-    color: var(--on-dark);
+    color: var(--muted);
   }
   .pista-otra {
     font-size: 15px;
-    color: var(--on-dark);
+    color: var(--muted);
     white-space: nowrap;
   }
   .barra-acciones {
@@ -2591,7 +2756,7 @@ const tubos = Object.entries(porTipo)
     height: 44px;
     padding: 0 14px;
     font-size: 15px;
-    color: var(--on-dark);
+    color: var(--muted);
   }
   .abrir-comparar {
     height: 44px;
@@ -2607,99 +2772,151 @@ const tubos = Object.entries(porTipo)
     font-weight: 300;
   }
   .abrir-comparar:disabled {
-    background: #4a4f53;
-    color: #a9afb3;
+    background: var(--panel);
+    color: #9aa0a5;
     cursor: default;
   }
   .barra-comparar button:focus-visible {
-    outline-color: #fff;
+    outline-color: var(--red);
   }
 
+  /* ——— Ventana de comparar: cabecera en carbón con el logo, las máquinas en columnas separadas por filetes,
+     el dato en grande y el mayor de cada fila en negrita con su punto rojo. Abajo, descargar y las acciones ——— */
   .comparador {
-    width: min(1080px, calc(100% - 2 * var(--gut)));
+    width: min(1120px, calc(100% - 2 * var(--gut)));
     max-height: calc(100% - 48px);
     padding: 0;
     border: 0;
     background: #fff;
     color: var(--ink);
-    box-shadow: 0 40px 100px -30px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 40px 100px -30px rgba(17, 19, 21, 0.55);
   }
   .comparador[open] {
+    display: flex;
+    flex-direction: column;
     animation: abre 0.4s var(--ease);
   }
   .comparador::backdrop {
-    background: rgba(21, 23, 25, 0.55);
-    -webkit-backdrop-filter: blur(4px);
-    backdrop-filter: blur(4px);
+    background: rgba(17, 19, 21, 0.55);
   }
   .comp-cab {
-    position: sticky;
-    top: 0;
-    z-index: 2;
+    position: relative;
     display: flex;
+    flex: none;
     align-items: center;
-    gap: 16px;
-    padding: 22px clamp(20px, 3vw, 36px);
-    background: #fff;
-    border-top: 3px solid var(--red);
-    border-bottom: 1px solid var(--line);
+    gap: 22px;
+    padding: 18px 14px 18px clamp(20px, 3vw, 36px);
+    background: var(--carbon);
+    color: #fff;
+  }
+  /* El rojo de la casa, en una franja corta bajo el logo */
+  .comp-cab::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: clamp(80px, 12%, 140px);
+    height: 4px;
+    background: var(--red);
+  }
+  .comp-logo {
+    flex: none;
+    width: 92px;
+    height: auto;
   }
   .comp-cab h2 {
     margin-right: auto;
-    font-size: clamp(26px, 2.6vw, 34px);
+    padding-left: 22px;
+    border-left: 1px solid var(--carbon-line);
+    font-size: clamp(24px, 2.4vw, 32px);
     font-weight: 300;
+    line-height: 1.1;
+    color: #fff;
   }
   .cerrar-comp {
     display: grid;
+    flex: none;
     place-items: center;
-    width: 44px;
-    height: 44px;
+    width: 48px;
+    height: 48px;
+    color: var(--on-dark);
+    transition: color 0.2s ease;
+  }
+  .cerrar-comp:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: -4px;
   }
   .comp-tabla {
-    overflow-x: auto;
-    padding: 0 clamp(20px, 3vw, 36px) 32px;
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+    padding: 0 clamp(20px, 3vw, 36px) 8px;
   }
   .comp-tabla :global(table) {
     width: 100%;
-    min-width: 560px;
     border-collapse: collapse;
     table-layout: fixed;
   }
   .comp-tabla :global(th),
   .comp-tabla :global(td) {
-    padding: 14px 16px;
+    padding: 15px 20px;
     text-align: left;
-    vertical-align: top;
-    border-bottom: 1px solid #ececec;
+    vertical-align: baseline;
+    border-bottom: 1px solid #e4e4e4;
     font-variant-numeric: tabular-nums;
   }
+  /* Cada máquina en su columna, separada por un filete */
+  .comp-tabla :global(:is(th, td):not(:first-child)) {
+    border-left: 1px solid #e4e4e4;
+  }
   .comp-tabla :global(tbody th) {
-    width: 190px;
-    font-size: 15px;
-    font-weight: 300;
-    color: var(--muted);
+    width: 200px;
+    padding-left: 0;
+    font-size: 16px;
+    font-weight: 400;
+    color: var(--body);
   }
   .comp-tabla :global(td) {
-    font-size: 17px;
-    font-weight: 400;
+    font-size: 19px;
+    font-weight: 300;
+    line-height: 1.3;
+  }
+  /* Aplicación y temperatura ya van bajo el nombre: en pantalla no se repiten (sí en PDF y Excel) */
+  .comp-tabla :global(tr.en-cab) {
+    display: none;
   }
   .comp-tabla :global(td.mejor) {
     font-weight: 700;
   }
-  .comp-tabla :global(td.mejor::after) {
+  .comp-tabla :global(td.mejor::after),
+  .comp-tabla :global(.comp-leyenda::before) {
     content: '';
     display: inline-block;
-    width: 6px;
-    height: 6px;
-    margin-left: 8px;
-    vertical-align: middle;
+    width: 7px;
+    height: 7px;
+    margin-left: 10px;
+    vertical-align: 0.2em;
     border-radius: 50%;
     background: var(--red);
   }
-  .comp-tabla :global(thead th) {
+  .comp-tabla :global(.comp-leyenda) {
+    display: block;
+    font-size: 15px;
+    font-weight: 400;
+    line-height: 1.3;
+    color: var(--muted);
+  }
+  .comp-tabla :global(.comp-leyenda::before) {
+    margin: 0 8px 0 0;
+  }
+  .comp-tabla :global(thead :is(td, th)) {
+    vertical-align: bottom;
     padding-top: 28px;
-    border-bottom: 0;
-    text-align: center;
+    padding-bottom: 22px;
+    border-bottom: 2px solid var(--ink);
+  }
+  .comp-tabla :global(thead td) {
+    padding-left: 0;
   }
   .comp-tabla :global(.comp-maq) {
     position: relative;
@@ -2707,37 +2924,70 @@ const tubos = Object.entries(porTipo)
   }
   .comp-tabla :global(.comp-foto) {
     position: relative;
-    z-index: 0;
     display: block;
-    aspect-ratio: 10 / 8;
+    max-width: 280px;
+    margin: 0 auto;
+    aspect-ratio: 4 / 3;
+    background: #fff;
   }
   .comp-tabla :global(.comp-foto img) {
     position: absolute;
     left: 50%;
-    bottom: 10%;
-    height: 84%;
+    bottom: 9%;
+    height: 82%;
     width: auto;
-    max-width: 90%;
+    max-width: 86%;
     object-fit: contain;
     translate: -50% 0;
   }
-  .comp-tabla :global(.comp-foto::after) {
-    content: '';
+  /* La esquina de la tabla: "Comparativa técnica", de dónde salen los datos y, al pie, la leyenda del punto rojo */
+  .comp-tabla :global(thead .comp-esquina) {
+    position: relative;
+    vertical-align: top;
+  }
+  .comp-tabla :global(.comp-esq) {
     position: absolute;
-    left: 50%;
-    bottom: 10%;
-    z-index: -1;
-    width: 72%;
-    aspect-ratio: 5.2;
-    border: 1.5px solid var(--red);
-    border-radius: 50%;
-    translate: -50% 50%;
+    inset: 28px 20px 22px 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .comp-tabla :global(.comp-esq b) {
+    display: block;
+    font-size: 24px;
+    font-weight: 700;
+    line-height: 1.1;
+  }
+  .comp-tabla :global(.comp-esq b::before) {
+    content: '';
+    display: block;
+    width: 40px;
+    height: 3px;
+    margin-bottom: 14px;
+    background: var(--red);
+  }
+  .comp-tabla :global(.comp-fuente) {
+    display: block;
+    margin-top: 10px;
+    font-size: 15px;
+    font-weight: 300;
+    line-height: 1.35;
+    color: var(--body);
   }
   .comp-tabla :global(.comp-nombre) {
     display: block;
     margin-top: 18px;
-    font-size: 24px;
+    font-size: clamp(22px, 2vw, 28px);
     font-weight: 700;
+    line-height: 1.05;
+  }
+  .comp-tabla :global(.comp-tipo) {
+    display: block;
+    margin-top: 6px;
+    font-size: 16px;
+    font-weight: 300;
+    color: var(--body);
   }
   .comp-tabla :global(.comp-quitar) {
     position: absolute;
@@ -2745,12 +2995,25 @@ const tubos = Object.entries(porTipo)
     right: 0;
     display: grid;
     place-items: center;
-    width: 36px;
-    height: 36px;
+    width: 40px;
+    height: 40px;
     color: var(--muted);
+    transition:
+      color 0.2s ease,
+      background-color 0.2s ease;
+  }
+  .comp-tabla :global(.comp-quitar:focus-visible) {
+    outline: 2px solid var(--red);
+    outline-offset: -2px;
+  }
+  .comp-tabla :global(tfoot td) {
+    padding-top: 20px;
+    padding-bottom: 24px;
+    border-bottom: 0;
   }
   .comp-tabla :global(.comp-ver) {
-    font-size: 16px;
+    display: inline-block;
+    font-size: 17px;
     font-weight: 700;
     color: var(--red);
     text-decoration: none;
@@ -2759,29 +3022,453 @@ const tubos = Object.entries(porTipo)
     content: ' »';
     font-weight: 300;
   }
-  .comp-tabla :global(tfoot td) {
-    border-bottom: 0;
-    padding-top: 22px;
+
+  .comp-pie {
+    display: flex;
+    flex: none;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px 20px;
+    padding: 16px clamp(20px, 3vw, 36px);
+    background: var(--band);
+    border-top: 1px solid var(--line);
+  }
+  .comp-acciones {
+    display: flex;
+    gap: 10px;
+  }
+  .comp-pie .comp-acciones button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 48px;
+    padding: 0 22px;
+    font-size: 16px;
+    font-weight: 700;
+    transition:
+      background-color 0.2s ease,
+      border-color 0.2s ease,
+      color 0.2s ease;
+  }
+  .comp-compartir {
+    border: 1px solid var(--ink);
+    background: #fff;
+    color: var(--ink);
+  }
+  .comp-compartir.hecho {
+    border-color: var(--red);
+    color: var(--red);
+  }
+  .comp-presupuesto {
+    background: var(--red);
+    color: #fff;
+  }
+  .comp-acciones button:focus-visible {
+    outline: 2px solid var(--red);
+    outline-offset: 2px;
+  }
+  .comp-acciones button:active {
+    scale: 0.97;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .comp-compartir:hover {
+      background: var(--panel);
+    }
+    .comp-presupuesto:hover {
+      background: var(--red-d);
+    }
+    .cerrar-comp:hover {
+      color: #fff;
+    }
+    .comp-tabla :global(.comp-quitar:hover) {
+      color: var(--red);
+      background: #fff;
+    }
+  }
+  @media (max-width: 640px) {
+    .comp-pie .descargar {
+      width: 100%;
+      justify-content: center;
+    }
+    .comp-acciones {
+      width: 100%;
+    }
+    .comp-pie .comp-acciones button {
+      flex: 1;
+      justify-content: center;
+      padding: 0 10px;
+      font-size: 15px;
+    }
+    .comp-acciones svg {
+      display: none;
+    }
+  }
+  /* ——— Elegir para comparar: cabecera carbón como la ventana de comparar, buscador en su franja, las centrífugas en
+     fichas con la foto sobre gris y, abajo, los tres huecos que se van llenando ——— */
+  .elegir-comp {
+    width: min(1120px, calc(100% - 2 * var(--gut)));
+    max-height: calc(100% - 48px);
+    padding: 0;
+    border: 0;
+    background: #fff;
+    color: var(--ink);
+    box-shadow: 0 40px 100px -30px rgba(17, 19, 21, 0.55);
+  }
+  .elegir-comp[open] {
+    display: flex;
+    flex-direction: column;
+    animation: abre 0.4s var(--ease);
+  }
+  .elegir-comp::backdrop {
+    background: rgba(17, 19, 21, 0.55);
+  }
+  .ec-cab {
+    position: relative;
+    display: flex;
+    flex: none;
+    align-items: center;
+    gap: 22px;
+    padding: 18px 14px 18px clamp(20px, 3vw, 36px);
+    background: var(--carbon);
+    color: #fff;
+  }
+  .ec-cab::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: clamp(80px, 12%, 140px);
+    height: 4px;
+    background: var(--red);
+  }
+  .ec-tit {
+    margin-right: auto;
+    padding-left: 22px;
+    border-left: 1px solid var(--carbon-line);
+  }
+  .ec-cab h2 {
+    font-size: clamp(24px, 2.4vw, 32px);
+    font-weight: 300;
+    line-height: 1.1;
+    color: #fff;
+  }
+  .ec-cab p {
+    margin-top: 4px;
+    font-size: 16px;
+    font-weight: 300;
+    color: var(--on-dark);
+  }
+  .ec-cerrar {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    color: var(--on-dark);
+    transition: color 0.2s ease;
+  }
+  .ec-cerrar:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: -4px;
+  }
+  .ec-busca {
+    flex: none;
+    padding: 18px clamp(20px, 3vw, 36px);
+    background: var(--band);
+    border-bottom: 1px solid var(--line);
+  }
+  .ec-buscar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    height: 52px;
+    padding: 0 16px;
+    border: 1px solid var(--line);
+    border-bottom: 2px solid var(--ink);
+    background: #fff;
+    color: var(--ink);
+  }
+  .ec-buscar:focus-within {
+    border-bottom-color: var(--red);
+  }
+  .ec-buscar input {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    border: 0;
+    outline: 0;
+    background: none;
+    font: 400 18px var(--f);
+    color: var(--ink);
+  }
+  .ec-lista {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 14px;
+    margin: 0;
+    padding: 24px clamp(20px, 3vw, 36px);
+    list-style: none;
+  }
+  .ec-lista :global(li[hidden]) {
+    display: none;
+  }
+  .ec-lista :global(button) {
+    position: relative;
+    display: flex;
+    align-items: stretch;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    border: 1px solid var(--line);
+    background: #fff;
+    text-align: left;
+    font-family: var(--f);
+    color: var(--ink);
+    transition:
+      border-color 0.18s ease,
+      box-shadow 0.18s ease,
+      opacity 0.18s ease;
+  }
+  /* Elegida: borde rojo y una raya roja a la izquierda */
+  .ec-lista :global(button[aria-pressed='true']) {
+    border-color: var(--red);
+    box-shadow: inset 4px 0 0 var(--red);
+  }
+  .ec-lista :global(button:disabled) {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  .ec-lista :global(button:focus-visible) {
+    outline: 2px solid var(--red);
+    outline-offset: 2px;
+  }
+  .ec-lista :global(.ec-foto) {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 96px;
+    border-right: 1px solid #ececec;
+  }
+  .ec-lista :global(.ec-foto img) {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+  }
+  .ec-lista :global(.ec-txt) {
+    display: grid;
+    align-content: center;
+    gap: 3px;
+    min-width: 0;
+    padding: 14px 44px 14px 16px;
+  }
+  .ec-lista :global(.ec-txt b) {
+    font-size: 21px;
+    line-height: 1.1;
+  }
+  .ec-lista :global(.ec-apl) {
+    font-size: 15px;
+    font-weight: 300;
+    color: var(--body);
+  }
+  .ec-lista :global(.ec-det) {
+    margin-top: 4px;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+  }
+  .ec-lista :global(.ec-marca) {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    display: grid;
+    place-items: center;
+    width: 22px;
+    height: 22px;
+    border: 1.5px solid #9aa0a5;
+    color: #fff;
+    transition:
+      background-color 0.18s ease,
+      border-color 0.18s ease;
+  }
+  .ec-lista :global(.ec-marca svg) {
+    opacity: 0;
+    scale: 0.6;
+    transition:
+      opacity 0.16s ease,
+      scale 0.2s cubic-bezier(0.23, 1, 0.32, 1);
+  }
+  .ec-lista :global(button[aria-pressed='true'] .ec-marca) {
+    background: var(--red);
+    border-color: var(--red);
+  }
+  .ec-lista :global(button[aria-pressed='true'] .ec-marca svg) {
+    opacity: 1;
+    scale: 1;
+  }
+  .ec-ninguna {
+    padding: 0 clamp(20px, 3vw, 36px) 24px;
+    font-size: 17px;
+    color: var(--muted);
+  }
+  .ec-pie {
+    display: flex;
+    flex: none;
+    align-items: center;
+    gap: 16px;
+    padding: 14px clamp(20px, 3vw, 36px);
+    background: var(--band);
+    border-top: 1px solid var(--line);
+  }
+  .ec-huecos {
+    display: flex;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .ec-huecos :global(li) {
+    display: grid;
+    place-items: center;
+    width: 52px;
+    height: 52px;
+    border: 1px dashed #b9bdc1;
+    background: #fff;
+  }
+  .ec-huecos :global(li.lleno) {
+    border: 1px solid var(--line);
+    animation: entra-chip 0.25s ease;
+  }
+  .ec-huecos :global(img) {
+    width: 44px;
+    height: 44px;
+    object-fit: contain;
+  }
+  .ec-cuenta {
+    margin-right: auto;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+  }
+  .ec-comparar {
+    height: 52px;
+    padding: 0 28px;
+    font-size: 17px;
+    font-weight: 700;
+    color: #fff;
+    background: var(--red);
+    transition: background 0.25s var(--ease);
+  }
+  .ec-comparar::after {
+    content: ' »';
+    font-weight: 300;
+  }
+  .ec-comparar:disabled {
+    background: var(--line);
+    cursor: default;
+  }
+  .ec-comparar:focus-visible {
+    outline: 2px solid var(--red);
+    outline-offset: 2px;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .ec-lista :global(button:not(:disabled):not([aria-pressed='true']):hover) {
+      border-color: var(--ink);
+    }
+    .ec-comparar:hover:not(:disabled) {
+      background: var(--red-d);
+    }
+    .ec-cerrar:hover {
+      color: #fff;
+    }
+  }
+  @media (max-width: 640px) {
+    .elegir-comp {
+      width: 100%;
+      max-width: none;
+      height: 100%;
+      max-height: none;
+      margin: 0;
+    }
+    .ec-cab {
+      gap: 14px;
+      padding: 12px 6px 12px 16px;
+    }
+    .ec-cab .comp-logo {
+      width: 62px;
+    }
+    .ec-tit {
+      padding-left: 14px;
+    }
+    .ec-cab h2 {
+      font-size: 21px;
+    }
+    .ec-cab p {
+      font-size: 14px;
+    }
+    .ec-busca {
+      padding: 12px 16px;
+    }
+    .ec-lista {
+      grid-template-columns: 1fr;
+      gap: 8px;
+      padding: 14px 16px;
+    }
+    .ec-lista :global(.ec-foto) {
+      width: 76px;
+    }
+    .ec-lista :global(.ec-foto img) {
+      width: 64px;
+      height: 64px;
+    }
+    .ec-lista :global(.ec-txt) {
+      padding: 10px 40px 10px 14px;
+    }
+    .ec-lista :global(.ec-txt b) {
+      font-size: 19px;
+    }
+    .ec-pie {
+      gap: 10px;
+      padding: 12px 16px;
+    }
+    .ec-huecos {
+      gap: 6px;
+    }
+    .ec-huecos :global(li) {
+      width: 44px;
+      height: 44px;
+    }
+    .ec-huecos :global(img) {
+      width: 36px;
+      height: 36px;
+    }
+    .ec-cuenta {
+      font-size: 15px;
+    }
+    .ec-comparar {
+      padding: 0 18px;
+    }
   }
 
   @media (hover: hover) {
     .comparar:hover:not(:has(input:checked, input:disabled)) {
-      background: #f2f2f2;
+      box-shadow: inset 0 0 0 1px var(--ink);
     }
     .abrir-comparar:hover:not(:disabled) {
       background: var(--red-d);
     }
     .vaciar:hover,
     .elegidas :global(button:hover) {
-      color: #fff;
+      color: var(--red);
     }
     .comp-tabla :global(.comp-ver:hover) {
       text-decoration: underline;
       text-underline-offset: 4px;
-    }
-    .comp-tabla :global(.comp-quitar:hover),
-    .cerrar-comp:hover {
-      color: var(--red);
     }
   }
   @keyframes sube-barra {
@@ -2835,7 +3522,7 @@ const tubos = Object.entries(porTipo)
       width: 22px;
       height: 22px;
       border-radius: 50%;
-      background: #3a3f43;
+      background: var(--ink);
       color: #fff;
     }
     .elegidas :global(button svg) {
@@ -2860,25 +3547,101 @@ const tubos = Object.entries(porTipo)
       margin: 0;
     }
     .comp-tabla :global(tbody th) {
-      position: sticky;
-      left: 0;
-      z-index: 1;
-      width: 120px;
-      background: #fff;
+      width: 150px;
     }
-    .comp-tabla :global(table) {
-      min-width: 0;
+  }
+  /* Móvil: cada dato con su nombre encima, a todo el ancho, y las máquinas debajo en columnas iguales */
+  @media (max-width: 640px) {
+    .comp-cab {
+      gap: 14px;
+      padding: 12px 6px 12px 16px;
     }
-    .comp-tabla :global(th),
-    .comp-tabla :global(td) {
-      padding: 12px 10px;
+    .comp-logo {
+      width: 62px;
     }
-    .comp-tabla :global(td) {
-      min-width: 150px;
-      font-size: 16px;
+    .comp-cab h2 {
+      padding-left: 14px;
+      font-size: 22px;
+    }
+    .comp-tabla {
+      padding: 0 16px 4px;
+    }
+    .comp-tabla :global(:is(table, thead, tbody, tfoot)) {
+      display: block;
+    }
+    .comp-tabla :global(tr) {
+      display: grid;
+      grid-template-columns: repeat(var(--n, 3), minmax(0, 1fr));
+      align-items: start;
+      column-gap: 12px;
+      border-bottom: 1px solid #e4e4e4;
+    }
+    .comp-tabla :global(:is(thead, tfoot) tr) {
+      border-bottom: 0;
+    }
+    .comp-tabla :global(tr.en-cab) {
+      display: none;
+    }
+    .comp-tabla :global(:is(th, td)),
+    .comp-tabla :global(thead :is(th, td)) {
+      padding: 0 0 14px;
+      border-bottom: 0;
+    }
+    .comp-tabla :global(:is(th, td):not(:first-child)) {
+      border-left: 0;
+    }
+    .comp-tabla :global(thead tr) {
+      border-bottom: 2px solid var(--ink);
+    }
+    .comp-tabla :global(thead td) {
+      grid-column: 1 / -1;
+      padding: 18px 0 0;
+      border-bottom: 0;
+    }
+    .comp-tabla :global(.comp-esq) {
+      position: static;
+    }
+    .comp-tabla :global(.comp-esq > span:first-child) {
+      display: none;
+    }
+    .comp-tabla :global(thead th) {
+      padding-top: 16px;
+      padding-bottom: 16px;
     }
     .comp-tabla :global(.comp-nombre) {
-      font-size: 20px;
+      margin-top: 12px;
+      font-size: 19px;
+    }
+    .comp-tabla :global(.comp-tipo) {
+      font-size: 14px;
+    }
+    .comp-tabla :global(.comp-quitar) {
+      width: 34px;
+      height: 34px;
+    }
+    .comp-tabla :global(tbody th) {
+      grid-column: 1 / -1;
+      width: auto;
+      padding: 14px 0 6px;
+      border-bottom: 0;
+      font-size: 14px;
+      color: var(--muted);
+    }
+    .comp-tabla :global(td) {
+      font-size: 16px;
+      overflow-wrap: anywhere;
+    }
+    .comp-tabla :global(td.mejor::after) {
+      margin-left: 6px;
+    }
+    .comp-tabla :global(tfoot td:first-child) {
+      display: none;
+    }
+    .comp-tabla :global(tfoot td) {
+      padding-top: 16px;
+    }
+    .comp-tabla :global(.comp-ver) {
+      font-size: 15px;
     }
   }
   @media (prefers-reduced-motion: reduce) {
