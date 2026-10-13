@@ -14,7 +14,6 @@ import {
   familias,
   modelos,
   productos,
-  totalModelos,
   type Categoria,
   type Familia,
   type Modelo,
@@ -58,6 +57,8 @@ const porSerie = (ms: Modelo[]): Ficha[] =>
     return { tipo: 'modelo', cat: vs[0].categoria, m: vs[0], ms: vs };
   });
 const familiaDe = (m: Modelo) => productos.find((p) => p.slug === m.serie)!.familia;
+// Cuántas centrífugas hay en unas fichas: cada versión cuenta (la Consul 22 y la 22 R son dos), como en la cabecera
+const cuantas = (fs: Ficha[]) => fs.reduce((n, x) => n + (x.tipo === 'modelo' ? x.ms.length : 1), 0);
 const lab = (c: Otro, items: ProductoLab[]): Ficha[] => items.map((p) => ({ tipo: 'lab', cat: c, p }));
 const salas: { id: string; nombre: string; color: string; fichas: Ficha[] }[] = [
   ...(Object.keys(familias) as Familia[]).map((fam) => ({
@@ -276,7 +277,7 @@ const tubos = Object.entries(porTipo)
   }));
 ---
 
-<Base title={t.catalogo.title} description={t.catalogo.description(productos.length, totalModelos)}>
+<Base title={t.catalogo.title} description={t.catalogo.description(modelos.length)}>
   <HeroProductos />
 
   <section class="catalogo" id="catalogo" aria-label={f.todoTitulo}>
@@ -295,7 +296,7 @@ const tubos = Object.entries(porTipo)
         {salas.map((s) => (
           <a href={`#sala-${s.id}`} data-ir={s.id} style={`--fam: ${s.color}`}>
             {s.nombre}
-            <span class="n">{s.fichas.length}</span>
+            <span class="n">{cuantas(s.fichas)}</span>
           </a>
         ))}
       </nav>
@@ -376,6 +377,7 @@ const tubos = Object.entries(porTipo)
               {filasTabla.map(({ m, color }) => (
                 <tr
                   style={`--fam: ${color}`}
+                  data-sala={familiaDe(m)}
                   data-cat={m.categoria}
                   data-t={m.temperatura}
                   data-slugs={m.slug}
@@ -449,7 +451,11 @@ const tubos = Object.entries(porTipo)
               {String(i + 1).padStart(2, '0')}
             </span>
             <h2 id={`sala-${s.id}`}>{s.nombre}</h2>
-            <p class="sala-n">{f.resultados(s.fichas.length)}</p>
+            <p class="sala-n">
+              {s.fichas.some((x) => x.tipo === 'lab')
+                ? f.resultados(s.fichas.length)
+                : f.centrifugas(cuantas(s.fichas))}
+            </p>
             <ul class="sala-usos">
               {[...new Set(s.fichas.map((x) => nombreCorto(x.cat)))].map((u) => (
                 <li>{u}</li>
@@ -797,8 +803,8 @@ const tubos = Object.entries(porTipo)
       comp: tv.compTitulo,
       todo: tv.todo,
       seleccion: tv.seleccion,
-      uno: tv.modelos(1),
-      varios: tv.modelos(999),
+      uno: tv.centrifugas(1),
+      varios: tv.centrifugas(999),
       archivo: tv.archivo,
       archivoComp: tv.archivoComp,
       etqSeleccion: tv.etqSeleccion,
