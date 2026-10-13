@@ -1193,3 +1193,16 @@ entera delante, si se ensancha el contenido de 1280 a 1440 px.
   necesita para contestar.
 - **Descartado:** un formulario de presupuesto propio (el correo ya lo tiene todo y no hace falta servidor) y la
   animación de la cifra (distraía y retrasaba el dato).
+
+## 27. Un solo criterio para contar las centrífugas
+
+- **Problema:** según dónde se mirase, la página de productos contaba cosas distintas: "23 centrífugas" en la cabecera,
+  "17 series · 5 más" en la barra de filtros, "23 modelos" en la tabla y "4 productos" en una familia que enseña 7
+  centrífugas. El distribuidor no sabía si eran 17, 22 o 23, y la descripción de la portada aún decía "más de 25".
+- **Ahora:** todo cuenta centrífugas y cada versión es una (22 y 22 R, C, C-U y C-8): 23, el número del Catálogo 2025.
+  La barra, las familias, sus atajos y el desplegable de aplicación cuentan igual, en tarjetas y en tabla; con filtros,
+  solo las versiones que pasan. Accesorios y equipos de laboratorio van aparte ("· 5 más") y cuentan uno cada uno.
+- **Por qué:** la cifra que se lee en la cabecera es la misma que se ve al filtrar, y es la que el distribuidor pide:
+  cada versión tiene su código y su precio.
+- **Descartado:** contar series (17) en todas partes: esconde versiones que se piden por separado y no cuadra con la
+  tabla, que tiene una fila por versión; y mezclar "productos" con "centrífugas" en el mismo contador.

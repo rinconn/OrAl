@@ -42,12 +42,10 @@ const iconos: Record<Temperatura, string> = {
   aria-label={f.titulo}
   data-uno={f.resultados(1)}
   data-varios={f.resultados(999)}
-  data-series-uno={f.series(1)}
-  data-series-varios={f.series(999)}
+  data-cent-uno={f.centrifugas(1)}
+  data-cent-varios={f.centrifugas(999)}
   data-mas-uno={f.mas(1)}
   data-mas-varios={f.mas(999)}
-  data-modelos-uno={f.modelos(1)}
-  data-modelos-varios={f.modelos(999)}
   data-ver-uno={f.ver(1)}
   data-ver-varios={f.ver(999)}
   hidden
@@ -543,6 +541,16 @@ const iconos: Record<Temperatura, string> = {
     const tabla = salasEl.querySelector<HTMLElement>('.tabla-vista');
     const filas = [...(tabla?.querySelectorAll<HTMLElement>('tbody tr') ?? [])];
     filas.forEach((el, i) => (el.dataset.orden = String(i)));
+    // Todos los recuentos cuentan centrífugas, cada versión una (la tarjeta de la Consul 22 con la 22 R son dos), como
+    // la cabecera; de una tarjeta, solo las versiones que pasan los filtros. Accesorios y equipos cuentan uno cada uno
+    const filaDe = new Map(filas.map((el) => [el.dataset.slugs!, el]));
+    const piezas = (el: HTMLElement, c = aplic, ts: Set<string> = elegidas) => {
+      const slugs = el.dataset.slugs?.split(' ');
+      if (!slugs) return 1;
+      return Math.max(1, slugs.filter((x) => !filaDe.has(x) || cumple(filaDe.get(x)!, c, ts)).length);
+    };
+    const cuantas = (els: HTMLElement[], c = aplic, ts: Set<string> = elegidas) =>
+      els.reduce((n, el) => n + piezas(el, c, ts), 0);
     const cabs = [...(tabla?.querySelectorAll<HTMLButtonElement>('th button[data-o]') ?? [])];
     let asc = false;
     const ordenar = (els: HTMLElement[]) => {
@@ -602,12 +610,13 @@ const iconos: Record<Temperatura, string> = {
       for (const el of filas) el.hidden = !filasVis.includes(el);
       const visibles = fichas.filter((el) => cumple(el));
       for (const el of fichas) el.hidden = !visibles.includes(el);
-      // En la tabla, el total cuenta modelos; en las tarjetas, fichas
-      const total = enTabla() ? filasVis.length : visibles.length;
+      const total = enTabla() ? filasVis.length : cuantas(visibles);
       for (const s of salas) {
-        const n = visibles.filter(de(s)).length;
-        s.hidden = n === 0;
-        s.querySelector('.sala-n')!.textContent = cuenta(n, d.uno!, d.varios!);
+        const en = visibles.filter(de(s));
+        s.hidden = en.length === 0;
+        s.querySelector('.sala-n')!.textContent = en.some((el) => !el.dataset.slugs)
+          ? cuenta(en.length, d.uno!, d.varios!)
+          : cuenta(cuantas(en), d.centUno!, d.centVarios!);
       }
 
       for (const b of temps) {
@@ -618,7 +627,10 @@ const iconos: Record<Temperatura, string> = {
       }
       for (const b of opciones) {
         const v = b.dataset.aplic!;
-        const n = fichas.filter((el) => cumple(el, v)).length;
+        const n = cuantas(
+          fichas.filter((el) => cumple(el, v)),
+          v,
+        );
         const on = aplic === v;
         b.setAttribute('aria-pressed', String(on));
         b.querySelector('.n')!.textContent = String(n);
@@ -673,18 +685,16 @@ const iconos: Record<Temperatura, string> = {
       activos.hidden = nActivos === 0;
       activos.textContent = String(nActivos);
       borrar.hidden = nActivos === 0 && !q.value.trim();
-      // El contador no habla de "productos": en la portada salen 23 centrífugas (cada versión cuenta) y aquí había 22
-      // tarjetas, y parecía que faltaba una. En tarjetas, "17 series · 5 más"; en la tabla, "23 modelos"
-      const nSeries = visibles.filter((el) => el.dataset.slugs).length;
-      const nMas = visibles.length - nSeries;
-      const txt = enTabla()
-        ? cuenta(total, d.modelosUno!, d.modelosVarios!)
-        : [
-            nSeries && cuenta(nSeries, d.seriesUno!, d.seriesVarios!),
-            nMas && cuenta(nMas, nSeries ? d.masUno! : d.uno!, nSeries ? d.masVarios! : d.varios!),
-          ]
-            .filter(Boolean)
-            .join(' · ') || cuenta(0, d.uno!, d.varios!);
+      // El mismo criterio que la cabecera ("23 centrífugas"), en tarjetas y en tabla; accesorios y equipos, aparte
+      const nCent = enTabla() ? total : cuantas(visibles.filter((el) => el.dataset.slugs));
+      const nMas = enTabla() ? 0 : visibles.length - visibles.filter((el) => el.dataset.slugs).length;
+      const txt =
+        [
+          nCent && cuenta(nCent, d.centUno!, d.centVarios!),
+          nMas && cuenta(nMas, nCent ? d.masUno! : d.uno!, nCent ? d.masVarios! : d.varios!),
+        ]
+          .filter(Boolean)
+          .join(' · ') || cuenta(0, d.uno!, d.varios!);
       cuentaEl.replaceChildren(
         ...txt
           .split(/(\d+)/)
@@ -697,7 +707,7 @@ const iconos: Record<Temperatura, string> = {
         const a = document.querySelector<HTMLElement>(`.atajos [data-ir="${s.dataset.sala}"]`);
         if (!a) continue;
         a.hidden = s.hidden;
-        a.querySelector('.n')!.textContent = String(visibles.filter(de(s)).length);
+        a.querySelector('.n')!.textContent = String(cuantas(visibles.filter(de(s))));
       }
       // Lo puesto, en palabras, para la cabecera de lo que se descarga (tabla en PDF o Excel)
       salasEl.dataset.resumen = JSON.stringify(
