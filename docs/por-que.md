@@ -1193,3 +1193,83 @@ entera delante, si se ensancha el contenido de 1280 a 1440 px.
   necesita para contestar.
 - **Descartado:** un formulario de presupuesto propio (el correo ya lo tiene todo y no hace falta servidor) y la
   animación de la cifra (distraía y retrasaba el dato).
+
+## 27. Productos en móvil: el 3D arriba y el primer producto en la primera pantalla
+
+- **Problema:** en un teléfono (390 × 844) el hero de Productos medía 1.214 px y la primera tarjeta empezaba a
+  1.748 px. El distribuidor veía el título, las cifras y la máquina, pero nada le decía que debajo estaba el catálogo:
+  tenía que bajar dos pantallas para ver un producto.
+- **Ahora** (solo hasta 640 px; en escritorio no cambia nada):
+  - El **3D sigue lo primero**, como en escritorio. Encima, el título en una línea y la entrada. El botón "Ver las 23
+    centrífugas" y las cuatro cifras se ocultan en el teléfono: el catálogo ya está a la vista y las cifras repetían
+    la entrada.
+  - La **escena es más baja** (60 % del ancho en lugar de cuadrada) y la máquina se ve igual de grande: en el lienzo
+    cuadrado lo que la limitaba era el ancho, así que solo sobraba aire. La **placa** con el nombre ("Modelo 3D ·
+    Universal · Digicen 22 · Ver ficha") y el **zoom** pasan encima de la escena, en las esquinas de arriba, como
+    en el escritorio. Los **mandos** caben en dos filas. Al abrir el **despiece**, la escena vuelve a ser cuadrada para
+    que quepan las siete etiquetas, y el zoom baja a su esquina de siempre.
+  - Entre el 3D y las tarjetas, menos aire; "Comparar" algo más baja, y la **portada de cada familia** es una banda de
+    una línea con el nombre y el número de productos (la aplicación de cada máquina ya va en su tarjeta).
+  - El título ya no se corta por arriba (el interlineado tan cerrado recortaba la "O" de "Our").
+- **Resultado:** la primera tarjeta empieza a **759 px** (antes, 1.748); en francés, 779. Sin scroll lateral en 360 y
+  390 px.
+- **Por qué:** la primera pantalla enseña a la vez lo que hace especial a la página (la máquina en 3D) y que debajo
+  hay un catálogo. Es la misma idea que en la portada: todo lo importante en una pantalla.
+- **Descartado:** poner el catálogo antes del 3D o quitar el 3D en móvil; una escena aún más baja (la máquina
+  encogía); subir "Comparar" a la fila del buscador (el buscador no cabía, "Rechercher" se cortaba); quitar también
+  la entrada. Decisión en [0011](decisiones/0011-movil-3d-compacto.md).
+
+## 28. Filtro de tubos: un número que se mueve y nombres con criterio
+
+- **Problema:** junto a cada tipo de tubo había un número que contaba sus medidas con algún resultado, y casi nunca
+  cambiaba: con Refrigerada activada, "Fondo redondo, tapón" seguía diciendo 10. Además los nombres venían tal cual
+  del ERP, cada uno escrito a su manera ("Cónico", "Cónico tapón", "Fondo redondo, tapón (hs)", "Fondo plano, tapón,
+  (hs)").
+- **Ahora:** el número cuenta las máquinas que admiten ese tipo con los demás filtros puestos, igual que el
+  desplegable de aplicación; un tipo sin ninguna se apaga. Los nombres siguen una regla en los tres idiomas: forma,
+  luego cierre y al final "(HS)" ("Cónico con tapón", "Fondo redondo con tapón (HS)", "Cónico de traza"). El mismo
+  nombre sale en la tabla de rotores de cada ficha.
+- **Por qué:** en toda la barra un número quiere decir lo mismo (cuántas máquinas quedan), y el distribuidor lee los
+  tipos como una lista ordenada y no como códigos de almacén.
+- **Descartado:** contar medidas (no responde a lo que se pregunta) y desarrollar "HS" en palabras: el dato no dice qué
+  significa, así que se deja como viene.
+
+## 29. Un solo criterio para contar las centrífugas
+
+- **Problema:** según dónde se mirase, la página de productos contaba cosas distintas: "23 centrífugas" en la cabecera,
+  "17 series · 5 más" en la barra de filtros, "23 modelos" en la tabla y "4 productos" en una familia que enseña 7
+  centrífugas. El distribuidor no sabía si eran 17, 22 o 23, y la descripción de la portada aún decía "más de 25".
+- **Ahora:** todo cuenta centrífugas y cada versión es una (22 y 22 R, C, C-U y C-8): 23, el número del Catálogo 2025.
+  La barra, las familias, sus atajos y los desplegables de aplicación y de tubo cuentan igual, en tarjetas y en tabla; con filtros,
+  solo las versiones que pasan. Accesorios y equipos de laboratorio van aparte ("· 5 más") y cuentan uno cada uno.
+- **Por qué:** la cifra que se lee en la cabecera es la misma que se ve al filtrar, y es la que el distribuidor pide:
+  cada versión tiene su código y su precio.
+- **Descartado:** contar series (17) en todas partes: esconde versiones que se piden por separado y no cuadra con la
+  tabla, que tiene una fila por versión; y mezclar "productos" con "centrífugas" en el mismo contador.
+
+## 30. Presupuesto: la versión a la vista y hueco para el distribuidor
+
+- **Problema:** en "Mi presupuesto" y en su PDF solo salía el nombre. "Digicen 22" no decía si era la ventilada o la
+  refrigerada, y no había dónde poner una referencia del pedido ni un comentario: había que escribirlo a mano en el
+  correo.
+- **Ahora:** debajo de cada nombre, su temperatura y sus cifras (en el panel y en una columna del PDF). Dos campos en el
+  panel, "Tu referencia" y "Comentario", que se escriben solos en el correo, en el PDF y en el Excel, y se guardan con
+  la lista.
+- **Por qué:** ventas recibe el pedido sin dudas sobre la versión, y el distribuidor lo puede cruzar con su propio
+  pedido o cliente.
+- **Descartado:** un comentario por cada equipo (complica un panel pequeño; el comentario general ya cubre rotores y
+  accesorios) y un formulario propio con envío (el correo ya lo tiene todo y no hace falta servidor).
+
+## 31. Productos en móvil: tarjeta compacta, con la foto al lado de los datos
+
+- **Problema:** en un teléfono cada tarjeta medía unos 640 px (casi una pantalla): la foto a todo lo ancho, el nombre,
+  las cifras y los botones uno debajo de otro. La página de productos medía unos 16.200 px y se recorría muy despacio.
+- **Ahora** (solo hasta 640 px): foto a la izquierda (40 % del ancho) y al lado aplicación, nombre y frase entera; debajo,
+  la raya de la familia, de la que cuelgan las versiones (Ventilada / Refrigerada…) solo si las hay; la placa con las
+  tres cifras, y una sola franja con "+ Presupuesto", "Comparar" y la flecha a la ficha (toda la tarjeta lleva a ella).
+  Cada centrífuga mide unos 283 px y la página, unos 10.200 px. Ningún texto se corta: a 360 px, en los tres idiomas,
+  todo cabe; solo un par de equipos de nombre largo (que no tienen versiones) crecen un poco.
+- **Por qué:** el distribuidor compara máquinas bajando la página; con tres por pantalla ve de un vistazo nombre,
+  temperatura y cifras sin perder la foto.
+- **Descartado:** quitar la foto o la frase (la foto es lo que distingue una máquina de otra y la frase dice para qué
+  sirve), dos tarjetas por fila (las cifras no cabían) y recortar la frase con "…" (textos cortados).

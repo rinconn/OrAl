@@ -63,7 +63,7 @@ export const en: Textos = {
   portada: {
     title: 'Orto Alresa · Laboratory centrifuges made in Madrid since 1949',
     description:
-      'European manufacturers of laboratory centrifuges since 1949. More than 25 models, one-week delivery and a 3-year warranty, through specialised distributors.',
+      'European manufacturers of laboratory centrifuges since 1949. 23 centrifuges, one-week delivery and a 3-year warranty, through specialised distributors.',
   },
 
   hero: {
@@ -221,11 +221,11 @@ export const en: Textos = {
 
   catalogo: {
     title: 'Products · Centrifuges and laboratory equipment · Orto Alresa',
-    description: (series: number, modelos: number) =>
-      `The ${series} Orto Alresa centrifuge series (${modelos} models), made in Daganzo (Madrid), plus sieve shaker, ball mill, water stills and accessories.`,
+    description: (centrifugas: number) =>
+      `The ${centrifugas} Orto Alresa centrifuges, made in Daganzo (Madrid), plus sieve shaker, ball mill, water stills and accessories.`,
     titulo: ['Our ', 'products'],
-    lead: (series: number, modelos: number) =>
-      `${modelos} centrifuges in ${series} series, made in Daganzo (Madrid) and always in stock, plus laboratory equipment and accessories.`,
+    lead: (centrifugas: number) =>
+      `${centrifugas} centrifuges, made in Daganzo (Madrid) and always in stock, plus laboratory equipment and accessories.`,
     indice: 'Families',
     iconos: { capacidad: 'Capacity', pantalla: 'Display', velocidad: 'Speed', temperatura: 'Temperature' },
     categorias: {
@@ -257,9 +257,8 @@ export const en: Textos = {
       aplicacion: 'Application',
       temperatura: 'Temperature',
       resultados: (n: number) => (n === 1 ? '1 product' : `${n} products`),
-      series: (n: number) => `${n} series`,
+      centrifugas: (n: number) => (n === 1 ? '1 centrifuge' : `${n} centrifuges`),
       mas: (n: number) => `${n} more`,
-      modelos: (n: number) => (n === 1 ? '1 model' : `${n} models`),
       limpiar: 'Clear filters',
       vacio: 'No product matches all these filters.',
       boton: 'Filters',
@@ -317,7 +316,7 @@ export const en: Textos = {
         compTitulo: 'Centrifuge comparison',
         seleccion: 'Selected models',
         todo: 'Full catalogue',
-        modelos: (n: number) => (n === 1 ? '1 model' : `${n} models`),
+        centrifugas: (n: number) => (n === 1 ? '1 centrifuge' : `${n} centrifuges`),
         archivo: 'orto-alresa-centrifuges',
         archivoComp: 'orto-alresa-comparison',
         elegir: 'Select',
@@ -336,6 +335,9 @@ export const en: Textos = {
         producto: 'Product',
         etqUnidades: 'Units',
         archivoPres: 'orto-alresa-quotation',
+        datosClave: 'Version and data',
+        etqReferencia: 'Reference',
+        etqComentario: 'Comment',
         etqSeleccion: 'Selection',
         etqOrden: 'Sorted by',
         etqModelos: 'Models',
@@ -351,7 +353,7 @@ export const en: Textos = {
     comparar: {
       version: 'Version',
       comparar: 'Compare',
-      hasta: 'Up to 3 models',
+      hasta: 'Up to 3 centrifuges',
       elegir: 'Pick up to 3 centrifuges',
       elegirAyuda: 'Tap the ones you want to see side by side.',
       buscar: 'Search a model',
@@ -392,6 +394,10 @@ export const en: Textos = {
       misDatos: 'My details',
       campos: ['Company', 'Country', 'Contact person', 'Phone'],
       comentarios: 'Comments (lead times, rotors, accessories…):',
+      referencia: 'Your reference',
+      referenciaEj: 'Order, customer or project',
+      comentario: 'Comment',
+      comentarioEj: 'Lead times, rotors, accessories…',
       adjunto: 'Please find the list attached as a PDF.',
       despedida: 'Thank you, kind regards.',
     },

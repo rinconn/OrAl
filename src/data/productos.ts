@@ -272,9 +272,6 @@ export const productos: Serie[] = [
   },
 ];
 
-/** Número de modelos contando cada versión (22 y 22 R, C, C-U y C-8…) */
-export const totalModelos = 23;
-
 /** Cada modelo del catálogo, con su foto entera (las de la página de productos de ortoalresa.com) */
 export interface Modelo {
   /** Para el enlace y la foto: la serie, o la serie más su versión ("consul-22-r") */
