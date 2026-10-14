@@ -1436,3 +1436,32 @@ Las familias pasan a grafito y el rojo de la marca marca dónde empieza cada una
   tamaños: 3.700 px de tira; en móvil sí se desliza), un dibujo genérico para los productos de citología sin medidas
   (parecía provisional: se enseña solo su nombre) y la animación de entrada de cada sección (con ella, una captura
   de la página completa salía en blanco).
+
+### 36.1 Segunda vuelta: menos fotos, cifras en grande, contraste y un tubo por capacidad
+
+- **Problema:** viendo la ficha montada, la galería tenía 15 fotos (la máquina y sus 13 rotores) y no se entendía
+  qué enseñaba; la tabla de la cabecera ponía todas las cifras con el mismo peso; todo era blanco sobre blanco; en
+  Compatibilidad salían 26 tamaños de «fondo redondo y plano» y los 13 rotores con sus tablas antes de elegir nada;
+  Datos técnicos era muy largo; y la barra no reaccionaba al pasar el ratón como el resto de la web.
+- **Ahora:**
+  - **Galería** solo con la máquina (foto, detalle y el 3D donde lo hay). Las fotos de los rotores, con cada rotor.
+  - **Cabecera:** velocidad, fuerza y capacidad **en grande, blancas sobre carbón**, con la raya roja de marca
+    arriba (en móvil, una debajo de otra con su nombre al lado). Debajo, la versión con el icono de su
+    temperatura y, más pequeño en dos columnas, pantalla, rotores y referencias.
+  - **Contraste:** cabecera gris claro, Compatibilidad en **carbón** (tubos blancos, líquido gris, el elegido en
+    rojo y los rotores en tarjetas blancas), Datos técnicos en blanco y Referencias en gris con la tabla en blanco.
+  - **La raya roja con destello** (`Paso.astro`, la de las secciones de la portada y del catálogo) abre cada apartado.
+  - **Barra:** como las pestañas de familia del catálogo, raya gris al pasar el ratón y roja en el apartado que se lee.
+  - **Un tubo por capacidad:** los tubos de la misma familia y capacidad son una sola opción (en la Digtor 22, de 26
+    a 18 en «fondo redondo y plano»); bajo el dibujo, la capacidad y sus medidas o «4 medidas». Al elegirla, cada
+    rotor dice cuántos caben de cada variante y con qué adaptador.
+  - **Nada de rotores hasta elegir tubo:** antes, una frase («Elige un tubo y verás qué rotores lo admiten»);
+    después, solo las tarjetas de los que lo admiten. Los 13 rotores con todas sus tablas quedan plegados al final
+    («Ver los 13 rotores con todos sus tubos»).
+  - **Datos técnicos:** la descripción cortada a siete líneas con «Leer más», y cada bloque de características
+    plegable con su número de puntos; el primero abierto en escritorio y todos cerrados en móvil.
+- **Por qué:** cada pantalla dice una cosa, y lo importante se ve primero sin leer: las tres cifras, el tubo y la
+  respuesta. El carbón separa la parte que se usa (elegir el tubo) de la que se lee.
+- **Descartado:** los rotores en la galería (15 miniaturas sin explicar qué eran), un fondo de color por apartado
+  (sería un color nuevo fuera de la marca), partir «fondo redondo y plano» en dos familias (dejaría de coincidir con
+  el filtro del catálogo) y enseñar los rotores antes de elegir tubo.
