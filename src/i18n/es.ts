@@ -495,6 +495,7 @@ export const es = {
         porTubo: '¿Qué tubo usas?',
         todos: 'Todos',
         reductor: 'Adaptador',
+        noEn: (refs: string) => `No compatible con ${refs}`,
         posiciones: 'Posiciones',
         tubo: 'Tubo',
         capacidadTubo: 'Capacidad',

@@ -1,0 +1,1797 @@
+{
+  "fuente": "CRM (Dynamics 365) y tarifa (Business Central)",
+  "consulta": "2026-10-14",
+  "fueraDeTarifa": ["RT 336"],
+  "modelos": {
+    "Unicen 21": {
+      "referencias": ["CE 126", "CE 126IVD", "CE 127", "CE 127IVD"],
+      "rotores": [
+        {
+          "codigo": "RT 163",
+          "tipo": "angular",
+          "rpm": "4200",
+          "xg": "2603",
+          "capacidad": "24 x 15 ml"
+        },
+        {
+          "codigo": "RT 167",
+          "tipo": "angular",
+          "rpm": "4200",
+          "xg": "2603",
+          "capacidad": "6 x 50 ml"
+        },
+        {
+          "codigo": "RT 173",
+          "tipo": "oscilante",
+          "rpm": "4200",
+          "xg": "2899",
+          "capacidad": "4 x 100 ml"
+        },
+        {
+          "codigo": "RT 175",
+          "tipo": "oscilante",
+          "rpm": "4200",
+          "xg": "2860",
+          "capacidad": "4 x 50 ml"
+        },
+        {
+          "codigo": "RT 177",
+          "tipo": "oscilante",
+          "rpm": "4200",
+          "xg": "2860",
+          "capacidad": "8 x 15 ml"
+        },
+        {
+          "codigo": "RT 226",
+          "tipo": "angular",
+          "rpm": "4200",
+          "xg": "1795",
+          "capacidad": "8 x 15 ml"
+        },
+        {
+          "codigo": "RT 256",
+          "tipo": "angular",
+          "rpm": "4200",
+          "xg": "2938",
+          "capacidad": "32 x 15 ml"
+        },
+        {
+          "codigo": "RT 260",
+          "tipo": "oscilante",
+          "rpm": "4200",
+          "xg": "2899",
+          "capacidad": "28 x 15 ml"
+        }
+      ]
+    },
+    "Biocen 22": {
+      "referencias": ["CE 146", "CE 146IVD", "CE 147", "CE 147IVD"],
+      "rotores": [
+        {
+          "codigo": "RT 227",
+          "tipo": "angular",
+          "rpm": "15000",
+          "xg": "20627",
+          "capacidad": "24 x 1,5-2 ml"
+        },
+        {
+          "codigo": "RT 228",
+          "tipo": "horizontal",
+          "rpm": "15000",
+          "xg": "21885"
+        },
+        {
+          "codigo": "RT 229",
+          "tipo": "angular",
+          "rpm": "15000",
+          "xg": "13835"
+        },
+        {
+          "codigo": "RT 254",
+          "tipo": "angular",
+          "rpm": "15000",
+          "xg": "21884",
+          "capacidad": "12 x 5 ml"
+        }
+      ]
+    },
+    "Biocen 22 R": {
+      "referencias": ["CE 148", "CE 148IVD", "CE 149", "CE 149IVD", "CE 247", "CE 247IVD"],
+      "rotores": [
+        {
+          "codigo": "RT 128",
+          "tipo": "horizontal",
+          "rpm": "13000",
+          "xg": "16250"
+        },
+        {
+          "codigo": "RT 222",
+          "tipo": "angular",
+          "rpm": "18100",
+          "xg": "30034",
+          "capacidad": "24 x 1,5-2 ml"
+        },
+        {
+          "codigo": "RT 223",
+          "tipo": "angular",
+          "rpm": "8000",
+          "xg": "6511",
+          "capacidad": "8 x 15 ml"
+        },
+        {
+          "codigo": "RT 224",
+          "tipo": "angular",
+          "rpm": "18100",
+          "xg": "20145"
+        },
+        {
+          "codigo": "RT 252",
+          "tipo": "angular",
+          "rpm": "18100",
+          "xg": "31865",
+          "capacidad": "12 x 5 ml"
+        }
+      ]
+    },
+    "Plasma 22": {
+      "referencias": ["CE 156", "CE 156IVD", "CE 165"],
+      "rotores": [
+        {
+          "codigo": "RT 237",
+          "tipo": "oscilante",
+          "rpm": "3000",
+          "xg": "1288"
+        }
+      ]
+    },
+    "Lacter 21": {
+      "referencias": ["CE 158", "CE 159"],
+      "rotores": [
+        {
+          "codigo": "RT 240",
+          "tipo": "angular",
+          "rpm": "1600",
+          "xg": "398"
+        },
+        {
+          "codigo": "RT 241",
+          "tipo": "angular",
+          "rpm": "1600",
+          "xg": "398"
+        }
+      ]
+    },
+    "Vetcen": {
+      "referencias": ["CE 160", "CE 177"],
+      "rotores": [
+        {
+          "codigo": "RT 126",
+          "tipo": "horizontal",
+          "rpm": "11500",
+          "xg": "12716"
+        },
+        {
+          "codigo": "RT 130",
+          "tipo": "angular",
+          "rpm": "11500",
+          "xg": "12716"
+        }
+      ]
+    },
+    "Minicen": {
+      "referencias": ["CE 182"],
+      "rotores": [
+        {
+          "codigo": "RT 255",
+          "tipo": "angular",
+          "rpm": "15000",
+          "xg": "15596",
+          "capacidad": "12 x 1,5-2 ml"
+        },
+        {
+          "codigo": "RT 263",
+          "tipo": "angular",
+          "rpm": "15000",
+          "xg": "13080"
+        }
+      ]
+    },
+    "Microcen 24": {
+      "referencias": ["CE 202", "CE 202IVD", "CE 203", "CE 203IVD"],
+      "rotores": [
+        {
+          "codigo": "RT 246",
+          "tipo": "angular",
+          "rpm": "8000",
+          "xg": "6511",
+          "capacidad": "8 x 15 ml"
+        },
+        {
+          "codigo": "RT 247",
+          "tipo": "angular",
+          "rpm": "8000",
+          "xg": "5151",
+          "capacidad": "12 x 5 ml"
+        },
+        {
+          "codigo": "RT 248",
+          "tipo": "angular",
+          "rpm": "8000",
+          "xg": "6368",
+          "capacidad": "10 x 15 ml"
+        }
+      ],
+      "noCompatibles": {
+        "RT 246": ["CE 202", "CE 203", "CE 203IVD"]
+      }
+    },
+    "Digtor 22 Col": {
+      "referencias": ["CE 204", "CE 205"],
+      "rotores": [
+        {
+          "codigo": "RT 302",
+          "tipo": "oscilante",
+          "rpm": "3000",
+          "xg": "1801"
+        }
+      ]
+    },
+    "Dilitcen 22": {
+      "referencias": ["CE 206", "CE 206IVD", "CE 207"],
+      "rotores": [
+        {
+          "codigo": "RT 265",
+          "tipo": "oscilante",
+          "rpm": "4000",
+          "xg": "3667",
+          "capacidad": "4 x 1000 ml"
+        },
+        {
+          "codigo": "RT 277",
+          "tipo": "oscilante",
+          "rpm": "3700",
+          "xg": "3122",
+          "capacidad": "4 x 750 ml"
+        },
+        {
+          "codigo": "RT 278",
+          "tipo": "oscilante",
+          "rpm": "4200",
+          "xg": "3984",
+          "capacidad": "4 x 250 ml"
+        },
+        {
+          "codigo": "RT 279",
+          "tipo": "oscilante",
+          "rpm": "3800",
+          "xg": "2583",
+          "capacidad": "104 x 5 ml"
+        },
+        {
+          "codigo": "RT 280",
+          "tipo": "angular",
+          "rpm": "6000",
+          "xg": "5997",
+          "capacidad": "8 x 50 ml"
+        },
+        {
+          "codigo": "RT 281",
+          "tipo": "angular",
+          "rpm": "5600",
+          "xg": "4838",
+          "capacidad": "4 x 100 ml"
+        },
+        {
+          "codigo": "RT 282",
+          "tipo": "angular",
+          "rpm": "4700",
+          "xg": "3779",
+          "capacidad": "4 x 250 ml"
+        },
+        {
+          "codigo": "RT 284",
+          "tipo": "oscilante",
+          "rpm": "3700",
+          "xg": "2786"
+        },
+        {
+          "codigo": "RT 287",
+          "tipo": "angular",
+          "rpm": "14300",
+          "xg": "21948",
+          "capacidad": "30 x 1,5-2 ml"
+        },
+        {
+          "codigo": "RT 292",
+          "tipo": "angular",
+          "rpm": "9000",
+          "xg": "10142",
+          "capacidad": "6 x 85 ml"
+        },
+        {
+          "codigo": "RT 297",
+          "tipo": "oscilante"
+        },
+        {
+          "codigo": "RT 299",
+          "tipo": "oscilante",
+          "rpm": "2500",
+          "xg": "1481",
+          "capacidad": "6 x 250 ml"
+        },
+        {
+          "codigo": "RT 300",
+          "tipo": "oscilante",
+          "rpm": "4000",
+          "xg": "3756",
+          "capacidad": "4 x 250 ml"
+        },
+        {
+          "codigo": "RT 301",
+          "tipo": "oscilante",
+          "rpm": "3800",
+          "xg": "2987"
+        }
+      ],
+      "noCompatibles": {
+        "RT 297": ["CE 206", "CE 206IVD"],
+        "RT 336": ["CE 207"]
+      }
+    },
+    "NCP Tech": {
+      "referencias": ["CE 209", "CE 210"],
+      "rotores": [
+        {
+          "codigo": "RT 290",
+          "tipo": "oscilante",
+          "rpm": "3000",
+          "xg": "2425",
+          "capacidad": "4 x 100 ml"
+        },
+        {
+          "codigo": "RT 295",
+          "tipo": "oscilante",
+          "rpm": "3000",
+          "xg": "2425",
+          "capacidad": "4 x 100 ml"
+        }
+      ]
+    },
+    "NCP Tech 8 tubos": {
+      "referencias": ["CE 211", "CE 212"],
+      "rotores": [
+        {
+          "codigo": "RT 290",
+          "tipo": "oscilante",
+          "rpm": "3000",
+          "xg": "2425",
+          "capacidad": "4 x 100 ml"
+        },
+        {
+          "codigo": "RT 295",
+          "tipo": "oscilante",
+          "rpm": "3000",
+          "xg": "2425",
+          "capacidad": "4 x 100 ml"
+        },
+        {
+          "codigo": "RT 296",
+          "tipo": "oscilante",
+          "rpm": "2000",
+          "xg": "1069",
+          "capacidad": "8 x 100 ml"
+        }
+      ]
+    },
+    "NCP Tech (sin calefacción)": {
+      "referencias": ["CE 213", "CE 214"],
+      "rotores": [
+        {
+          "codigo": "RT 290",
+          "tipo": "oscilante",
+          "rpm": "3000",
+          "xg": "2425",
+          "capacidad": "4 x 100 ml"
+        },
+        {
+          "codigo": "RT 295",
+          "tipo": "oscilante",
+          "rpm": "3000",
+          "xg": "2425",
+          "capacidad": "4 x 100 ml"
+        }
+      ]
+    },
+    "AURA 22 CH": {
+      "referencias": ["CE 215", "CE 216"],
+      "rotores": [
+        {
+          "codigo": "RT 290",
+          "tipo": "oscilante",
+          "rpm": "3000",
+          "xg": "2425",
+          "capacidad": "4 x 100 ml"
+        },
+        {
+          "codigo": "RT 295",
+          "tipo": "oscilante",
+          "rpm": "3000",
+          "xg": "2425",
+          "capacidad": "4 x 100 ml"
+        }
+      ]
+    },
+    "AURA 22 CH8 ASTM 6\" y 8\"": {
+      "referencias": ["CE 217"],
+      "rotores": [
+        {
+          "codigo": "RT 290",
+          "tipo": "oscilante",
+          "rpm": "3000",
+          "xg": "2425",
+          "capacidad": "4 x 100 ml"
+        },
+        {
+          "codigo": "RT 295",
+          "tipo": "oscilante",
+          "rpm": "3000",
+          "xg": "2425",
+          "capacidad": "4 x 100 ml"
+        },
+        {
+          "codigo": "RT 296",
+          "tipo": "oscilante",
+          "rpm": "2000",
+          "xg": "1069",
+          "capacidad": "8 x 100 ml"
+        }
+      ]
+    },
+    "AURA 22 CH8": {
+      "referencias": ["CE 218"],
+      "rotores": [
+        {
+          "codigo": "RT 290",
+          "tipo": "oscilante",
+          "rpm": "3000",
+          "xg": "2425",
+          "capacidad": "4 x 100 ml"
+        },
+        {
+          "codigo": "RT 295",
+          "tipo": "oscilante",
+          "rpm": "3000",
+          "xg": "2425",
+          "capacidad": "4 x 100 ml"
+        },
+        {
+          "codigo": "RT 296",
+          "tipo": "oscilante",
+          "rpm": "2000",
+          "xg": "1069",
+          "capacidad": "8 x 100 ml"
+        }
+      ]
+    },
+    "AURA 22 CU (sin calefacción)": {
+      "referencias": ["CE 219", "CE 220"],
+      "rotores": [
+        {
+          "codigo": "RT 290",
+          "tipo": "oscilante",
+          "rpm": "3000",
+          "xg": "2425",
+          "capacidad": "4 x 100 ml"
+        },
+        {
+          "codigo": "RT 295",
+          "tipo": "oscilante",
+          "rpm": "3000",
+          "xg": "2425",
+          "capacidad": "4 x 100 ml"
+        }
+      ]
+    },
+    "Dilitcen 22 R": {
+      "referencias": ["CE 221", "CE 221IVD", "CE 222", "CE 222IVD", "CE 252", "CE 252IVD"],
+      "rotores": [
+        {
+          "codigo": "RT 265",
+          "tipo": "oscilante",
+          "rpm": "4000",
+          "xg": "3667",
+          "capacidad": "4 x 1000 ml"
+        },
+        {
+          "codigo": "RT 277",
+          "tipo": "oscilante",
+          "rpm": "3700",
+          "xg": "3122",
+          "capacidad": "4 x 750 ml"
+        },
+        {
+          "codigo": "RT 278",
+          "tipo": "oscilante",
+          "rpm": "4200",
+          "xg": "3984",
+          "capacidad": "4 x 250 ml"
+        },
+        {
+          "codigo": "RT 279",
+          "tipo": "oscilante",
+          "rpm": "3800",
+          "xg": "2583",
+          "capacidad": "104 x 5 ml"
+        },
+        {
+          "codigo": "RT 280",
+          "tipo": "angular",
+          "rpm": "6000",
+          "xg": "5997",
+          "capacidad": "8 x 50 ml"
+        },
+        {
+          "codigo": "RT 281",
+          "tipo": "angular",
+          "rpm": "5600",
+          "xg": "4838",
+          "capacidad": "4 x 100 ml"
+        },
+        {
+          "codigo": "RT 282",
+          "tipo": "angular",
+          "rpm": "4700",
+          "xg": "3779",
+          "capacidad": "4 x 250 ml"
+        },
+        {
+          "codigo": "RT 283",
+          "tipo": "oscilante",
+          "rpm": "3700",
+          "xg": "3122"
+        },
+        {
+          "codigo": "RT 284",
+          "tipo": "oscilante",
+          "rpm": "3700",
+          "xg": "2786"
+        },
+        {
+          "codigo": "RT 287",
+          "tipo": "angular",
+          "rpm": "14300",
+          "xg": "21948",
+          "capacidad": "30 x 1,5-2 ml"
+        },
+        {
+          "codigo": "RT 292",
+          "tipo": "angular",
+          "rpm": "9000",
+          "xg": "10142",
+          "capacidad": "6 x 85 ml"
+        },
+        {
+          "codigo": "RT 297",
+          "tipo": "oscilante"
+        },
+        {
+          "codigo": "RT 299",
+          "tipo": "oscilante",
+          "rpm": "2500",
+          "xg": "1481",
+          "capacidad": "6 x 250 ml"
+        },
+        {
+          "codigo": "RT 300",
+          "tipo": "oscilante",
+          "rpm": "4000",
+          "xg": "3756",
+          "capacidad": "4 x 250 ml"
+        },
+        {
+          "codigo": "RT 301",
+          "tipo": "oscilante",
+          "rpm": "3800",
+          "xg": "2987"
+        },
+        {
+          "codigo": "RT 332",
+          "tipo": "oscilante",
+          "rpm": "4200",
+          "xg": "4141"
+        }
+      ],
+      "noCompatibles": {
+        "RT 332": ["CE 221IVD", "CE 222", "CE 222IVD", "CE 252", "CE 252IVD"]
+      }
+    },
+    "Bioprocen 22 R": {
+      "referencias": ["CE 223", "CE 223IVD", "CE 224", "CE 224IVD", "CE 248", "CE 248IVD"],
+      "rotores": [
+        {
+          "codigo": "RT 274",
+          "tipo": "angular",
+          "rpm": "8300",
+          "xg": "7778",
+          "capacidad": "6 x 50 ml"
+        },
+        {
+          "codigo": "RT 275",
+          "tipo": "angular",
+          "rpm": "15000",
+          "xg": "24148",
+          "capacidad": "30 x 1,5-2 ml"
+        },
+        {
+          "codigo": "RT 276",
+          "tipo": "oscilante",
+          "rpm": "4500",
+          "xg": "1947"
+        },
+        {
+          "codigo": "RT 291",
+          "tipo": "angular",
+          "rpm": "18100",
+          "xg": "31865",
+          "capacidad": "12 x 5 ml"
+        },
+        {
+          "codigo": "RT 306",
+          "tipo": "angular",
+          "rpm": "18100",
+          "xg": "20145"
+        },
+        {
+          "codigo": "RT 307",
+          "tipo": "angular",
+          "rpm": "18100",
+          "xg": "30034",
+          "capacidad": "24 x 1,5-2 ml"
+        },
+        {
+          "codigo": "RT 308",
+          "tipo": "angular",
+          "rpm": "14500",
+          "xg": "22330",
+          "capacidad": "48 x 1,5-2 ml"
+        },
+        {
+          "codigo": "RT 312",
+          "tipo": "horizontal",
+          "rpm": "13000",
+          "xg": "16250"
+        }
+      ]
+    },
+    "Consul 22": {
+      "referencias": ["CE 226", "CE 226IVD", "CE 227", "CE 227IVD"],
+      "rotores": [
+        {
+          "codigo": "RT 280",
+          "tipo": "angular",
+          "rpm": "6000",
+          "xg": "5997",
+          "capacidad": "8 x 50 ml"
+        },
+        {
+          "codigo": "RT 281",
+          "tipo": "angular",
+          "rpm": "5600",
+          "xg": "4838",
+          "capacidad": "4 x 100 ml"
+        },
+        {
+          "codigo": "RT 282",
+          "tipo": "angular",
+          "rpm": "4700",
+          "xg": "3779",
+          "capacidad": "4 x 250 ml"
+        },
+        {
+          "codigo": "RT 285",
+          "tipo": "oscilante",
+          "rpm": "4200",
+          "xg": "3609",
+          "capacidad": "4 x 250 ml"
+        },
+        {
+          "codigo": "RT 286",
+          "tipo": "oscilante",
+          "rpm": "4000",
+          "xg": "3220",
+          "capacidad": "4 x 400 ml"
+        },
+        {
+          "codigo": "RT 287",
+          "tipo": "angular",
+          "rpm": "14300",
+          "xg": "21948",
+          "capacidad": "30 x 1,5-2 ml"
+        },
+        {
+          "codigo": "RT 288",
+          "tipo": "oscilante",
+          "rpm": "3500",
+          "xg": "2041"
+        },
+        {
+          "codigo": "RT 292",
+          "tipo": "angular",
+          "rpm": "9000",
+          "xg": "10142",
+          "capacidad": "6 x 85 ml"
+        },
+        {
+          "codigo": "RT 346",
+          "tipo": "angular",
+          "rpm": "14000",
+          "xg": "22570",
+          "capacidad": "30 x 5 ml"
+        }
+      ],
+      "noCompatibles": {
+        "RT 346": ["CE 226IVD", "CE 227", "CE 227IVD"]
+      }
+    },
+    "Digtor 22": {
+      "referencias": ["CE 228", "CE 228IVD", "CE 229", "CE 229IVD"],
+      "rotores": [
+        {
+          "codigo": "RT 277",
+          "tipo": "oscilante",
+          "rpm": "3700",
+          "xg": "3122",
+          "capacidad": "4 x 750 ml"
+        },
+        {
+          "codigo": "RT 278",
+          "tipo": "oscilante",
+          "rpm": "4200",
+          "xg": "3984",
+          "capacidad": "4 x 250 ml"
+        },
+        {
+          "codigo": "RT 279",
+          "tipo": "oscilante",
+          "rpm": "3800",
+          "xg": "2583",
+          "capacidad": "104 x 5 ml"
+        },
+        {
+          "codigo": "RT 280",
+          "tipo": "angular",
+          "rpm": "6000",
+          "xg": "5997",
+          "capacidad": "8 x 50 ml"
+        },
+        {
+          "codigo": "RT 281",
+          "tipo": "angular",
+          "rpm": "5600",
+          "xg": "4838",
+          "capacidad": "4 x 100 ml"
+        },
+        {
+          "codigo": "RT 282",
+          "tipo": "angular",
+          "rpm": "4700",
+          "xg": "3779",
+          "capacidad": "4 x 250 ml"
+        },
+        {
+          "codigo": "RT 284",
+          "tipo": "oscilante",
+          "rpm": "3700",
+          "xg": "2786"
+        },
+        {
+          "codigo": "RT 287",
+          "tipo": "angular",
+          "rpm": "14300",
+          "xg": "21948",
+          "capacidad": "30 x 1,5-2 ml"
+        },
+        {
+          "codigo": "RT 292",
+          "tipo": "angular",
+          "rpm": "9000",
+          "xg": "10142",
+          "capacidad": "6 x 85 ml"
+        },
+        {
+          "codigo": "RT 297",
+          "tipo": "oscilante"
+        },
+        {
+          "codigo": "RT 299",
+          "tipo": "oscilante",
+          "rpm": "2500",
+          "xg": "1481",
+          "capacidad": "6 x 250 ml"
+        },
+        {
+          "codigo": "RT 300",
+          "tipo": "oscilante",
+          "rpm": "4000",
+          "xg": "3756",
+          "capacidad": "4 x 250 ml"
+        },
+        {
+          "codigo": "RT 301",
+          "tipo": "oscilante",
+          "rpm": "3800",
+          "xg": "2987"
+        }
+      ],
+      "noCompatibles": {
+        "RT 297": ["CE 228"]
+      }
+    },
+    "Magnus 22": {
+      "referencias": ["CE 230", "CE 230IVD", "CE 231", "CE 231IVD"],
+      "rotores": [
+        {
+          "codigo": "RT 277",
+          "tipo": "oscilante",
+          "rpm": "3700",
+          "xg": "3122",
+          "capacidad": "4 x 750 ml"
+        },
+        {
+          "codigo": "RT 278",
+          "tipo": "oscilante",
+          "rpm": "4200",
+          "xg": "3984",
+          "capacidad": "4 x 250 ml"
+        },
+        {
+          "codigo": "RT 279",
+          "tipo": "oscilante",
+          "rpm": "3800",
+          "xg": "2583",
+          "capacidad": "104 x 5 ml"
+        },
+        {
+          "codigo": "RT 280",
+          "tipo": "angular",
+          "rpm": "6000",
+          "xg": "5997",
+          "capacidad": "8 x 50 ml"
+        },
+        {
+          "codigo": "RT 281",
+          "tipo": "angular",
+          "rpm": "5600",
+          "xg": "4838",
+          "capacidad": "4 x 100 ml"
+        },
+        {
+          "codigo": "RT 282",
+          "tipo": "angular",
+          "rpm": "4700",
+          "xg": "3779",
+          "capacidad": "4 x 250 ml"
+        },
+        {
+          "codigo": "RT 284",
+          "tipo": "oscilante",
+          "rpm": "3700",
+          "xg": "2786"
+        },
+        {
+          "codigo": "RT 287",
+          "tipo": "angular",
+          "rpm": "14300",
+          "xg": "21948",
+          "capacidad": "30 x 1,5-2 ml"
+        },
+        {
+          "codigo": "RT 292",
+          "tipo": "angular",
+          "rpm": "9000",
+          "xg": "10142",
+          "capacidad": "6 x 85 ml"
+        },
+        {
+          "codigo": "RT 299",
+          "tipo": "oscilante",
+          "rpm": "2500",
+          "xg": "1481",
+          "capacidad": "6 x 250 ml"
+        },
+        {
+          "codigo": "RT 300",
+          "tipo": "oscilante",
+          "rpm": "4000",
+          "xg": "3756",
+          "capacidad": "4 x 250 ml"
+        },
+        {
+          "codigo": "RT 301",
+          "tipo": "oscilante",
+          "rpm": "3800",
+          "xg": "2987"
+        }
+      ]
+    },
+    "Consul 22 R": {
+      "referencias": ["CE 232", "CE 232IVD", "CE 233", "CE 233IVD", "CE 250", "CE 250IVD"],
+      "rotores": [
+        {
+          "codigo": "RT 280",
+          "tipo": "angular",
+          "rpm": "6000",
+          "xg": "5997",
+          "capacidad": "8 x 50 ml"
+        },
+        {
+          "codigo": "RT 281",
+          "tipo": "angular",
+          "rpm": "5600",
+          "xg": "4838",
+          "capacidad": "4 x 100 ml"
+        },
+        {
+          "codigo": "RT 282",
+          "tipo": "angular",
+          "rpm": "4700",
+          "xg": "3779",
+          "capacidad": "4 x 250 ml"
+        },
+        {
+          "codigo": "RT 285",
+          "tipo": "oscilante",
+          "rpm": "4200",
+          "xg": "3609",
+          "capacidad": "4 x 250 ml"
+        },
+        {
+          "codigo": "RT 286",
+          "tipo": "oscilante",
+          "rpm": "4000",
+          "xg": "3220",
+          "capacidad": "4 x 400 ml"
+        },
+        {
+          "codigo": "RT 287",
+          "tipo": "angular",
+          "rpm": "14300",
+          "xg": "21948",
+          "capacidad": "30 x 1,5-2 ml"
+        },
+        {
+          "codigo": "RT 288",
+          "tipo": "oscilante",
+          "rpm": "3500",
+          "xg": "2041"
+        },
+        {
+          "codigo": "RT 292",
+          "tipo": "angular",
+          "rpm": "9000",
+          "xg": "10142",
+          "capacidad": "6 x 85 ml"
+        },
+        {
+          "codigo": "RT 297",
+          "tipo": "oscilante"
+        }
+      ]
+    },
+    "Digtor 22 R": {
+      "referencias": ["CE 234", "CE 234IVD", "CE 235", "CE 235IVD", "CE 251", "CE 251IVD"],
+      "rotores": [
+        {
+          "codigo": "RT 277",
+          "tipo": "oscilante",
+          "rpm": "3700",
+          "xg": "3122",
+          "capacidad": "4 x 750 ml"
+        },
+        {
+          "codigo": "RT 278",
+          "tipo": "oscilante",
+          "rpm": "4200",
+          "xg": "3984",
+          "capacidad": "4 x 250 ml"
+        },
+        {
+          "codigo": "RT 279",
+          "tipo": "oscilante",
+          "rpm": "3800",
+          "xg": "2583",
+          "capacidad": "104 x 5 ml"
+        },
+        {
+          "codigo": "RT 280",
+          "tipo": "angular",
+          "rpm": "6000",
+          "xg": "5997",
+          "capacidad": "8 x 50 ml"
+        },
+        {
+          "codigo": "RT 281",
+          "tipo": "angular",
+          "rpm": "5600",
+          "xg": "4838",
+          "capacidad": "4 x 100 ml"
+        },
+        {
+          "codigo": "RT 282",
+          "tipo": "angular",
+          "rpm": "4700",
+          "xg": "3779",
+          "capacidad": "4 x 250 ml"
+        },
+        {
+          "codigo": "RT 283",
+          "tipo": "oscilante",
+          "rpm": "3700",
+          "xg": "3122"
+        },
+        {
+          "codigo": "RT 284",
+          "tipo": "oscilante",
+          "rpm": "3700",
+          "xg": "2786"
+        },
+        {
+          "codigo": "RT 287",
+          "tipo": "angular",
+          "rpm": "14300",
+          "xg": "21948",
+          "capacidad": "30 x 1,5-2 ml"
+        },
+        {
+          "codigo": "RT 292",
+          "tipo": "angular",
+          "rpm": "9000",
+          "xg": "10142",
+          "capacidad": "6 x 85 ml"
+        },
+        {
+          "codigo": "RT 297",
+          "tipo": "oscilante"
+        },
+        {
+          "codigo": "RT 299",
+          "tipo": "oscilante",
+          "rpm": "2500",
+          "xg": "1481",
+          "capacidad": "6 x 250 ml"
+        },
+        {
+          "codigo": "RT 300",
+          "tipo": "oscilante",
+          "rpm": "4000",
+          "xg": "3756",
+          "capacidad": "4 x 250 ml"
+        },
+        {
+          "codigo": "RT 301",
+          "tipo": "oscilante",
+          "rpm": "3800",
+          "xg": "2987"
+        },
+        {
+          "codigo": "RT 332",
+          "tipo": "oscilante",
+          "rpm": "4200",
+          "xg": "4141"
+        }
+      ],
+      "noCompatibles": {
+        "RT 332": ["CE 234IVD", "CE 235", "CE 235IVD", "CE 251", "CE 251IVD"]
+      }
+    },
+    "Magnus 22 R": {
+      "referencias": ["CE 236", "CE 236IVD", "CE 237", "CE 237IVD", "CE 253", "CE 253IVD"],
+      "rotores": [
+        {
+          "codigo": "RT 277",
+          "tipo": "oscilante",
+          "rpm": "3700",
+          "xg": "3122",
+          "capacidad": "4 x 750 ml"
+        },
+        {
+          "codigo": "RT 278",
+          "tipo": "oscilante",
+          "rpm": "4200",
+          "xg": "3984",
+          "capacidad": "4 x 250 ml"
+        },
+        {
+          "codigo": "RT 279",
+          "tipo": "oscilante",
+          "rpm": "3800",
+          "xg": "2583",
+          "capacidad": "104 x 5 ml"
+        },
+        {
+          "codigo": "RT 280",
+          "tipo": "angular",
+          "rpm": "6000",
+          "xg": "5997",
+          "capacidad": "8 x 50 ml"
+        },
+        {
+          "codigo": "RT 281",
+          "tipo": "angular",
+          "rpm": "5600",
+          "xg": "4838",
+          "capacidad": "4 x 100 ml"
+        },
+        {
+          "codigo": "RT 282",
+          "tipo": "angular",
+          "rpm": "4700",
+          "xg": "3779",
+          "capacidad": "4 x 250 ml"
+        },
+        {
+          "codigo": "RT 283",
+          "tipo": "oscilante",
+          "rpm": "3700",
+          "xg": "3122"
+        },
+        {
+          "codigo": "RT 284",
+          "tipo": "oscilante",
+          "rpm": "3700",
+          "xg": "2786"
+        },
+        {
+          "codigo": "RT 287",
+          "tipo": "angular",
+          "rpm": "14300",
+          "xg": "21948",
+          "capacidad": "30 x 1,5-2 ml"
+        },
+        {
+          "codigo": "RT 292",
+          "tipo": "angular",
+          "rpm": "9000",
+          "xg": "10142",
+          "capacidad": "6 x 85 ml"
+        },
+        {
+          "codigo": "RT 297",
+          "tipo": "oscilante"
+        },
+        {
+          "codigo": "RT 299",
+          "tipo": "oscilante",
+          "rpm": "2500",
+          "xg": "1481",
+          "capacidad": "6 x 250 ml"
+        },
+        {
+          "codigo": "RT 300",
+          "tipo": "oscilante",
+          "rpm": "4000",
+          "xg": "3756",
+          "capacidad": "4 x 250 ml"
+        },
+        {
+          "codigo": "RT 301",
+          "tipo": "oscilante",
+          "rpm": "3800",
+          "xg": "2987"
+        }
+      ]
+    },
+    "Digtor 22 C": {
+      "referencias": ["CE 238", "CE 239"],
+      "rotores": [
+        {
+          "codigo": "RT 277",
+          "tipo": "oscilante",
+          "rpm": "3700",
+          "xg": "3122",
+          "capacidad": "4 x 750 ml"
+        },
+        {
+          "codigo": "RT 289",
+          "tipo": "oscilante",
+          "rpm": "3000",
+          "xg": "2425",
+          "capacidad": "4 x 100 ml"
+        },
+        {
+          "codigo": "RT 293",
+          "tipo": "oscilante",
+          "rpm": "3000",
+          "xg": "2425",
+          "capacidad": "4 x 100 ml"
+        },
+        {
+          "codigo": "RT 299",
+          "tipo": "oscilante",
+          "rpm": "2500",
+          "xg": "1481",
+          "capacidad": "6 x 250 ml"
+        }
+      ],
+      "noCompatibles": {
+        "RT 277": ["CE 239"]
+      }
+    },
+    "Digtor 22 C-8 ASTM 6\" y 8\"": {
+      "referencias": ["CE 240"],
+      "rotores": [
+        {
+          "codigo": "RT 289",
+          "tipo": "oscilante",
+          "rpm": "3000",
+          "xg": "2425",
+          "capacidad": "4 x 100 ml"
+        },
+        {
+          "codigo": "RT 293",
+          "tipo": "oscilante",
+          "rpm": "3000",
+          "xg": "2425",
+          "capacidad": "4 x 100 ml"
+        },
+        {
+          "codigo": "RT 294",
+          "tipo": "oscilante",
+          "rpm": "2000",
+          "xg": "1069",
+          "capacidad": "8 x 100 ml"
+        },
+        {
+          "codigo": "RT 349",
+          "tipo": "oscilante",
+          "rpm": "4300",
+          "xg": "4175",
+          "capacidad": "4 x 250 ml"
+        }
+      ]
+    },
+    "Digtor 22 C-8": {
+      "referencias": ["CE 241"],
+      "rotores": [
+        {
+          "codigo": "RT 289",
+          "tipo": "oscilante",
+          "rpm": "3000",
+          "xg": "2425",
+          "capacidad": "4 x 100 ml"
+        },
+        {
+          "codigo": "RT 293",
+          "tipo": "oscilante",
+          "rpm": "3000",
+          "xg": "2425",
+          "capacidad": "4 x 100 ml"
+        },
+        {
+          "codigo": "RT 294",
+          "tipo": "oscilante",
+          "rpm": "2000",
+          "xg": "1069",
+          "capacidad": "8 x 100 ml"
+        }
+      ]
+    },
+    "Digtor 22 C-U (sin calefacción)": {
+      "referencias": ["CE 242", "CE 243"],
+      "rotores": [
+        {
+          "codigo": "RT 289",
+          "tipo": "oscilante",
+          "rpm": "3000",
+          "xg": "2425",
+          "capacidad": "4 x 100 ml"
+        },
+        {
+          "codigo": "RT 293",
+          "tipo": "oscilante",
+          "rpm": "3000",
+          "xg": "2425",
+          "capacidad": "4 x 100 ml"
+        },
+        {
+          "codigo": "RT 299",
+          "tipo": "oscilante",
+          "rpm": "2500",
+          "xg": "1481",
+          "capacidad": "6 x 250 ml"
+        }
+      ]
+    },
+    "Digicen 22": {
+      "referencias": ["CE 257", "CE 257IVD", "CE 258", "CE 258IVD"],
+      "rotores": [
+        {
+          "codigo": "RT 315",
+          "tipo": "oscilante",
+          "rpm": "5000",
+          "xg": "4108",
+          "capacidad": "28 x 15 ml"
+        },
+        {
+          "codigo": "RT 316",
+          "tipo": "oscilante",
+          "rpm": "5300",
+          "xg": "4554",
+          "capacidad": "4 x 50 ml"
+        },
+        {
+          "codigo": "RT 317",
+          "tipo": "oscilante",
+          "rpm": "5000",
+          "xg": "4109",
+          "capacidad": "4 x 100 ml"
+        },
+        {
+          "codigo": "RT 318",
+          "tipo": "oscilante",
+          "rpm": "4000",
+          "xg": "2182"
+        },
+        {
+          "codigo": "RT 319",
+          "tipo": "angular",
+          "rpm": "16500",
+          "xg": "16741"
+        },
+        {
+          "codigo": "RT 320",
+          "tipo": "angular",
+          "rpm": "16500",
+          "xg": "24959"
+        },
+        {
+          "codigo": "RT 321",
+          "tipo": "angular",
+          "rpm": "16500",
+          "xg": "26480",
+          "capacidad": "12 x 5 ml"
+        },
+        {
+          "codigo": "RT 322",
+          "tipo": "angular",
+          "rpm": "6500",
+          "xg": "5338",
+          "capacidad": "24 x 5 ml"
+        },
+        {
+          "codigo": "RT 323",
+          "tipo": "angular",
+          "rpm": "5000",
+          "xg": "3689"
+        },
+        {
+          "codigo": "RT 324",
+          "tipo": "angular",
+          "capacidad": "32 x 15 ml"
+        },
+        {
+          "codigo": "RT 325",
+          "tipo": "angular",
+          "rpm": "6000",
+          "xg": "5313",
+          "capacidad": "6 x 50 ml"
+        },
+        {
+          "codigo": "RT 326",
+          "tipo": "angular",
+          "rpm": "15000",
+          "xg": "19621"
+        },
+        {
+          "codigo": "RT 327",
+          "tipo": "angular",
+          "rpm": "13500",
+          "xg": "18746"
+        },
+        {
+          "codigo": "RT 328",
+          "tipo": "angular",
+          "rpm": "9000",
+          "xg": "9146"
+        },
+        {
+          "codigo": "RT 329",
+          "tipo": "horizontal",
+          "rpm": "13000",
+          "xg": "16250"
+        }
+      ]
+    },
+    "Digicen 22 R": {
+      "referencias": ["CE 259", "CE 259IVD", "CE 260", "CE 260IVD", "CE 265", "CE 265IVD"],
+      "rotores": [
+        {
+          "codigo": "RT 315",
+          "tipo": "oscilante",
+          "rpm": "5000",
+          "xg": "4108",
+          "capacidad": "28 x 15 ml"
+        },
+        {
+          "codigo": "RT 316",
+          "tipo": "oscilante",
+          "rpm": "5300",
+          "xg": "4554",
+          "capacidad": "4 x 50 ml"
+        },
+        {
+          "codigo": "RT 317",
+          "tipo": "oscilante",
+          "rpm": "5000",
+          "xg": "4109",
+          "capacidad": "4 x 100 ml"
+        },
+        {
+          "codigo": "RT 318",
+          "tipo": "oscilante",
+          "rpm": "4000",
+          "xg": "2182"
+        },
+        {
+          "codigo": "RT 319",
+          "tipo": "angular",
+          "rpm": "16500",
+          "xg": "16741"
+        },
+        {
+          "codigo": "RT 320",
+          "tipo": "angular",
+          "rpm": "16500",
+          "xg": "24959"
+        },
+        {
+          "codigo": "RT 321",
+          "tipo": "angular",
+          "rpm": "16500",
+          "xg": "26480",
+          "capacidad": "12 x 5 ml"
+        },
+        {
+          "codigo": "RT 322",
+          "tipo": "angular",
+          "rpm": "6500",
+          "xg": "5338",
+          "capacidad": "24 x 5 ml"
+        },
+        {
+          "codigo": "RT 323",
+          "tipo": "angular",
+          "rpm": "5000",
+          "xg": "3689"
+        },
+        {
+          "codigo": "RT 324",
+          "tipo": "angular",
+          "capacidad": "32 x 15 ml"
+        },
+        {
+          "codigo": "RT 325",
+          "tipo": "angular",
+          "rpm": "6000",
+          "xg": "5313",
+          "capacidad": "6 x 50 ml"
+        },
+        {
+          "codigo": "RT 326",
+          "tipo": "angular",
+          "rpm": "15000",
+          "xg": "19621"
+        },
+        {
+          "codigo": "RT 327",
+          "tipo": "angular",
+          "rpm": "13500",
+          "xg": "18746"
+        },
+        {
+          "codigo": "RT 328",
+          "tipo": "angular",
+          "rpm": "9000",
+          "xg": "9146"
+        },
+        {
+          "codigo": "RT 329",
+          "tipo": "horizontal",
+          "rpm": "13000",
+          "xg": "16250"
+        }
+      ]
+    },
+    "Cyto 22": {
+      "referencias": ["CE 261", "CE 261IVD", "CE 262", "CE 262IVD"],
+      "rotores": [
+        {
+          "codigo": "RT 315",
+          "tipo": "oscilante",
+          "rpm": "5000",
+          "xg": "4108",
+          "capacidad": "28 x 15 ml"
+        },
+        {
+          "codigo": "RT 316",
+          "tipo": "oscilante",
+          "rpm": "5300",
+          "xg": "4554",
+          "capacidad": "4 x 50 ml"
+        },
+        {
+          "codigo": "RT 317",
+          "tipo": "oscilante",
+          "rpm": "5000",
+          "xg": "4109",
+          "capacidad": "4 x 100 ml"
+        },
+        {
+          "codigo": "RT 318",
+          "tipo": "oscilante",
+          "rpm": "4000",
+          "xg": "2182"
+        },
+        {
+          "codigo": "RT 319",
+          "tipo": "angular",
+          "rpm": "16500",
+          "xg": "16741"
+        },
+        {
+          "codigo": "RT 320",
+          "tipo": "angular",
+          "rpm": "16500",
+          "xg": "24959"
+        },
+        {
+          "codigo": "RT 321",
+          "tipo": "angular",
+          "rpm": "16500",
+          "xg": "26480",
+          "capacidad": "12 x 5 ml"
+        },
+        {
+          "codigo": "RT 322",
+          "tipo": "angular",
+          "rpm": "6500",
+          "xg": "5338",
+          "capacidad": "24 x 5 ml"
+        },
+        {
+          "codigo": "RT 323",
+          "tipo": "angular",
+          "rpm": "5000",
+          "xg": "3689"
+        },
+        {
+          "codigo": "RT 324",
+          "tipo": "angular",
+          "capacidad": "32 x 15 ml"
+        },
+        {
+          "codigo": "RT 325",
+          "tipo": "angular",
+          "rpm": "6000",
+          "xg": "5313",
+          "capacidad": "6 x 50 ml"
+        },
+        {
+          "codigo": "RT 326",
+          "tipo": "angular",
+          "rpm": "15000",
+          "xg": "19621"
+        },
+        {
+          "codigo": "RT 327",
+          "tipo": "angular",
+          "rpm": "13500",
+          "xg": "18746"
+        },
+        {
+          "codigo": "RT 328",
+          "tipo": "angular",
+          "rpm": "9000",
+          "xg": "9146"
+        },
+        {
+          "codigo": "RT 329",
+          "tipo": "horizontal",
+          "rpm": "13000",
+          "xg": "16250"
+        },
+        {
+          "codigo": "RT 330",
+          "tipo": "oscilante",
+          "rpm": "2500",
+          "xg": "866"
+        },
+        {
+          "codigo": "RT 331",
+          "tipo": "angular",
+          "rpm": "2500",
+          "xg": "607"
+        }
+      ]
+    },
+    "Digicen 22 C": {
+      "referencias": ["CE 266", "CE 267"],
+      "rotores": [
+        {
+          "codigo": "RT 316",
+          "tipo": "oscilante",
+          "rpm": "5300",
+          "xg": "4554",
+          "capacidad": "4 x 50 ml"
+        },
+        {
+          "codigo": "RT 317",
+          "tipo": "oscilante",
+          "rpm": "5000",
+          "xg": "4109",
+          "capacidad": "4 x 100 ml"
+        },
+        {
+          "codigo": "RT 320",
+          "tipo": "angular",
+          "rpm": "16500",
+          "xg": "24959"
+        },
+        {
+          "codigo": "RT 325",
+          "tipo": "angular",
+          "rpm": "6000",
+          "xg": "5313",
+          "capacidad": "6 x 50 ml"
+        }
+      ]
+    },
+    "PTOC 8 - ASTM 6\" y 8\"": {
+      "referencias": ["CE 268"],
+      "rotores": [
+        {
+          "codigo": "RT 296",
+          "tipo": "oscilante",
+          "rpm": "2000",
+          "xg": "1069",
+          "capacidad": "8 x 100 ml"
+        }
+      ]
+    },
+    "Consul 23": {
+      "referencias": ["CE 269", "CE 269IVD", "CE 270", "CE 270IVD"],
+      "rotores": [
+        {
+          "codigo": "RT 337",
+          "tipo": "oscilante",
+          "rpm": "4200",
+          "xg": "3609",
+          "capacidad": "4 x 250 ml"
+        },
+        {
+          "codigo": "RT 338",
+          "tipo": "oscilante",
+          "rpm": "4000",
+          "xg": "3220",
+          "capacidad": "4 x 400 ml"
+        },
+        {
+          "codigo": "RT 339",
+          "tipo": "oscilante",
+          "rpm": "3500",
+          "xg": "2041"
+        },
+        {
+          "codigo": "RT 341",
+          "tipo": "angular",
+          "rpm": "6000",
+          "xg": "5997",
+          "capacidad": "8 x 50 ml"
+        },
+        {
+          "codigo": "RT 342",
+          "tipo": "angular",
+          "rpm": "5600",
+          "xg": "4838",
+          "capacidad": "4 x 100 ml"
+        },
+        {
+          "codigo": "RT 343",
+          "tipo": "angular",
+          "rpm": "4700",
+          "xg": "3779",
+          "capacidad": "4 x 250 ml"
+        },
+        {
+          "codigo": "RT 344",
+          "tipo": "angular",
+          "rpm": "9000",
+          "xg": "10142",
+          "capacidad": "6 x 85 ml"
+        },
+        {
+          "codigo": "RT 345",
+          "tipo": "angular",
+          "rpm": "14300",
+          "xg": "21948",
+          "capacidad": "30 x 1,5-2 ml"
+        }
+      ]
+    },
+    "Consul 23 R": {
+      "referencias": ["CE 271", "CE 271IVD", "CE 272", "CE 272IVD", "CE 273", "CE 273IVD"],
+      "rotores": [
+        {
+          "codigo": "RT 337",
+          "tipo": "oscilante",
+          "rpm": "4200",
+          "xg": "3609",
+          "capacidad": "4 x 250 ml"
+        },
+        {
+          "codigo": "RT 338",
+          "tipo": "oscilante",
+          "rpm": "4000",
+          "xg": "3220",
+          "capacidad": "4 x 400 ml"
+        },
+        {
+          "codigo": "RT 339",
+          "tipo": "oscilante",
+          "rpm": "3500",
+          "xg": "2041"
+        },
+        {
+          "codigo": "RT 340",
+          "tipo": "oscilante"
+        },
+        {
+          "codigo": "RT 341",
+          "tipo": "angular",
+          "rpm": "6000",
+          "xg": "5997",
+          "capacidad": "8 x 50 ml"
+        },
+        {
+          "codigo": "RT 342",
+          "tipo": "angular",
+          "rpm": "5600",
+          "xg": "4838",
+          "capacidad": "4 x 100 ml"
+        },
+        {
+          "codigo": "RT 343",
+          "tipo": "angular",
+          "rpm": "4700",
+          "xg": "3779",
+          "capacidad": "4 x 250 ml"
+        },
+        {
+          "codigo": "RT 344",
+          "tipo": "angular",
+          "rpm": "9000",
+          "xg": "10142",
+          "capacidad": "6 x 85 ml"
+        },
+        {
+          "codigo": "RT 345",
+          "tipo": "angular",
+          "rpm": "14300",
+          "xg": "21948",
+          "capacidad": "30 x 1,5-2 ml"
+        }
+      ]
+    },
+    "Cellprocen": {
+      "referencias": ["CE 274", "CE 274IVD"],
+      "rotores": [
+        {
+          "codigo": "RT 348",
+          "tipo": "oscilante",
+          "rpm": "2200",
+          "xg": "1406"
+        }
+      ]
+    }
+  }
+}

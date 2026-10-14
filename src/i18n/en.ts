@@ -485,6 +485,7 @@ export const en: Textos = {
         porTubo: 'Which tube do you use?',
         todos: 'All',
         reductor: 'Adapter',
+        noEn: (refs: string) => `Not compatible with ${refs}`,
         posiciones: 'Positions',
         tubo: 'Tube',
         capacidadTubo: 'Capacity',
