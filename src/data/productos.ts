@@ -4,13 +4,14 @@
 
 export type Temperatura = 'ventilada' | 'refrigerada' | 'calefactada';
 
-/** Familias por uso, en el orden en que se muestran. Colores suaves para no competir con el rojo de marca */
+/** Familias por uso, en el orden en que se muestran. Todas en grafito: las separa su portada (número y raya en rojo
+ * de marca, nombre); un color por familia era el único que se salía de la paleta de la marca */
 export const familias = {
-  peq: { color: '#8a7bb0' },
-  uni: { color: '#5e9487' },
-  gran: { color: '#b08a52' },
-  cli: { color: '#9c5664' },
-  ind: { color: '#7b8758' },
+  peq: { color: '#3d4247' },
+  uni: { color: '#3d4247' },
+  gran: { color: '#3d4247' },
+  cli: { color: '#3d4247' },
+  ind: { color: '#3d4247' },
 } as const;
 
 export type Familia = keyof typeof familias;

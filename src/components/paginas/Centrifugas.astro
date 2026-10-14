@@ -62,8 +62,8 @@ const salas: { id: string; nombre: string; color: string; fichas: Ficha[] }[] = 
     color: familias[fam].color as string,
     fichas: porSerie(modelos.filter((m) => familiaDe(m) === fam)),
   })),
-  { id: 'accesorios', nombre: t.laboratorio.accesorios, color: '#8c959b', fichas: lab('accesorios', accesorios) },
-  { id: 'laboratorio', nombre: t.laboratorio.equipos, color: '#8c959b', fichas: lab('laboratorio', equipos) },
+  { id: 'accesorios', nombre: t.laboratorio.accesorios, color: '#3d4247', fichas: lab('accesorios', accesorios) },
+  { id: 'laboratorio', nombre: t.laboratorio.equipos, color: '#3d4247', fichas: lab('laboratorio', equipos) },
 ].filter((s) => s.fichas.length);
 // Aplicaciones del filtro, agrupadas por los mismos bloques que la página (Compactas, Universales…), cada una en el
 // primero donde sale; accesorios y equipos de laboratorio, juntos al final
@@ -296,13 +296,8 @@ const tubos = familiasTubo
     <!-- Corte limpio con el hero: la raya roja se dibuja desde el centro, sin fundido -->
     <Paso desde="transparent" />
 
-    <!-- Filtros: panel a la vista y, al bajar, barra fina fija con lo puesto -->
-    <Filtros
-      tubos={tubos}
-      grupos={grupos.map((g) => ({ nombre: g.nombre, cats: g.cats.map((c) => ({ v: c, nombre: nombreCorto(c) })) }))}
-    />
-
-    <!-- Atajos: una entrada por familia, con su color, que lleva a su sección -->
+    <!-- Atajos: una entrada por familia, con su color, que lleva a su sección. Van encima de los filtros, como primer
+         nivel: es por donde entra un distribuidor al catálogo -->
     <div class="wrap atajos-fila">
       <nav class="atajos" aria-label={t.catalogo.atajos}>
         {salas.map((s) => (
@@ -313,6 +308,12 @@ const tubos = familiasTubo
         ))}
       </nav>
     </div>
+
+    <!-- Filtros: debajo de las familias; arriba lo que se filtra y debajo lo que sale (total, comparar, vista, descargar) -->
+    <Filtros
+      tubos={tubos}
+      grupos={grupos.map((g) => ({ nombre: g.nombre, cats: g.cats.map((c) => ({ v: c, nombre: nombreCorto(c) })) }))}
+    />
 
     <div class="wrap salas" id="salas">
       {/* Vista en tabla: todos los modelos, una fila por versión, ordenables por capacidad, velocidad o fuerza */}
@@ -1866,22 +1867,19 @@ const tubos = familiasTubo
     margin-top: clamp(72px, 7vw, 112px);
   }
 
-  /* ——— Portada de cada familia: banda a todo lo ancho sobre el rotor con tubos, en gris oscuro igual para todas, y
-     el color de la familia solo en la raya de arriba; sus textos a la izquierda y su número enorme a la derecha ——— */
+  /* ——— Portada de cada familia: una franja de una línea sobre el rotor con tubos, en gris oscuro igual para todas, con
+     la raya de arriba en rojo de marca. Delante su número en rojo, como un índice; luego el nombre y cuántas
+     hay, y a la derecha sus aplicaciones. Baja (unos 105 px) para que las tarjetas lleguen antes: antes era una
+     portada de 274 px, un tercio de cada familia ——— */
   .sala-cab {
     --tinte: #1b1d20;
     position: relative;
-    display: grid;
-    grid-template-columns: 1fr;
-    grid-template-areas:
-      'nombre'
-      'n'
-      'usos';
-    align-content: end;
-    gap: 10px;
-    min-height: clamp(220px, 19vw, 280px);
-    margin-bottom: clamp(24px, 2.6vw, 36px);
-    padding: clamp(26px, 3vw, 40px) clamp(26px, 3vw, 44px);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 6px 18px;
+    margin-bottom: clamp(20px, 2vw, 28px);
+    padding: clamp(22px, 2vw, 28px) clamp(26px, 3vw, 44px);
     overflow: hidden;
     background:
       linear-gradient(
@@ -1893,51 +1891,44 @@ const tubos = familiasTubo
       ),
       #16181a url(/img/fondos/rotor.webp) 70% var(--foto-y, 42%) / cover no-repeat;
     text-shadow: 0 1px 12px rgba(0, 0, 0, 0.35);
-    border-top: 8px solid var(--fam);
-    /* Sobre el gris oscuro, el color de la familia más vivo (más croma y algo más de luz) */
-    border-top-color: oklch(from var(--fam) calc(l + 0.06) calc(c * 2) h);
+    border-top: 8px solid var(--red);
     color: #fff;
   }
-  /* El número, enorme y translúcido, a la derecha */
+  /* El número, delante del nombre como un índice, en rojo de marca */
   .sala-i {
-    position: absolute;
-    right: clamp(20px, 3vw, 44px);
-    top: 50%;
-    font-size: clamp(130px, 14vw, 220px);
+    position: relative;
+    font-size: clamp(28px, 2.4vw, 36px);
     font-weight: 700;
-    line-height: 0.8;
-    letter-spacing: -0.04em;
-    color: rgba(255, 255, 255, 0.22);
+    line-height: 1;
+    color: var(--red);
     font-variant-numeric: tabular-nums;
-    translate: 0 -50%;
     pointer-events: none;
   }
   .sala-cab h2 {
-    grid-area: nombre;
     position: relative;
-    font-size: clamp(38px, 3.8vw, 56px);
+    font-size: clamp(32px, 2.8vw, 44px);
     font-weight: 700;
     line-height: 1;
     letter-spacing: -0.02em;
   }
   .sala-n {
-    grid-area: n;
     position: relative;
     margin: 0;
-    font-size: 18px;
+    font-size: 17px;
     font-weight: 700;
+    white-space: nowrap;
+    color: rgba(255, 255, 255, 0.85);
     font-variant-numeric: tabular-nums;
   }
+  /* Las aplicaciones, a la derecha en la misma línea */
   .sala-usos {
-    grid-area: usos;
     position: relative;
     display: flex;
     flex-wrap: wrap;
     gap: 6px 22px;
-    margin: 4px 0 0;
-    padding: 14px 0 0;
+    margin: 0 0 0 auto;
+    padding: 0;
     list-style: none;
-    border-top: 1px solid rgba(255, 255, 255, 0.4);
     font-size: 17px;
     color: rgba(255, 255, 255, 0.92);
   }
@@ -2074,6 +2065,37 @@ const tubos = familiasTubo
     opacity: 0.4;
     cursor: not-allowed;
   }
+  /* En escritorio, "Comparar" baja de la foto a la franja de abajo, como en el teléfono: Presupuesto, Comparar y
+     "Ver producto" juntos, y en la foto solo la temperatura. Se reparten hasta donde empieza "Ver producto" (--izq en
+     src/components/Maquina.astro): 34 % y 30 %; en tarjetas de menos de 460 px, todo menos la flecha (56 px) */
+  @media (min-width: 641px) {
+    .ficha:has(.comparar) .anadir,
+    .ficha:has(.comparar) :global(.paso) {
+      width: calc(34% - 2px);
+    }
+    .comparar {
+      top: auto;
+      right: auto;
+      left: 34%;
+      bottom: 2px;
+      justify-content: center;
+      width: 30%;
+      height: 56px;
+      padding: 0 8px;
+      font-size: 14px;
+      border-right: 1px solid #b4b9bd;
+    }
+    @container (max-width: 459px) {
+      .ficha:has(.comparar) .anadir,
+      .ficha:has(.comparar) :global(.paso) {
+        width: calc((100% - 56px) * 0.53 - 2px);
+      }
+      .comparar {
+        left: calc((100% - 56px) * 0.53);
+        width: calc((100% - 56px) * 0.47);
+      }
+    }
+  }
 
   /* Sin resultados: el mensaje claro y el botón para empezar de nuevo */
   .vacio {
@@ -2125,9 +2147,9 @@ const tubos = familiasTubo
       scale 0.9s cubic-bezier(0.23, 1, 0.32, 1) calc(var(--d, 0ms) + 0.3s);
   }
 
-  /* Pantalla grande: el catálogo se ensancha y pasa a cuatro columnas (tarjetas de unos 345 px, casi como con tres a
-     1280 px), así quedan menos tarjetas sueltas al final de cada familia */
-  @media (min-width: 1600px) {
+  /* Desde 1360 px el catálogo se ensancha (hasta 1560 px) y pasa a cuatro columnas: casi todas las familias tienen 4
+     productos, y con tres quedaba una tarjeta suelta en cada una. A 1440 px las tarjetas miden unos 315 px */
+  @media (min-width: 1360px) {
     .catalogo {
       --wrap: 1560px;
     }
@@ -2207,6 +2229,10 @@ const tubos = familiasTubo
       display: none;
     }
     .sala-i {
+      position: absolute;
+      right: 16px;
+      font-weight: 700;
+      color: var(--red);
       top: 50%;
       font-size: 56px;
       translate: 0 -50%;
@@ -2215,33 +2241,33 @@ const tubos = familiasTubo
       padding-top: 12px;
     }
   }
-  /* ——— Atajos a las familias: una fila de pastillas con el color de cada una ——— */
+  /* ——— Atajos a las familias: el primer nivel, encima de los filtros. Pestañas de texto sobre una línea fina, cada
+     una con su número en gris; al pasar el ratón, la raya roja de la marca
+     debajo, como en el menú de arriba ——— */
   .atajos-fila {
-    display: flex;
-    align-items: flex-start;
-    gap: 8px 24px;
-    margin-top: 20px;
+    margin-top: clamp(48px, 6vw, 88px);
   }
   .atajos {
     display: flex;
-    flex: 1;
     flex-wrap: wrap;
-    gap: 8px;
+    justify-content: center;
+    gap: 0 clamp(18px, 2.4vw, 34px);
+    border-bottom: 1px solid var(--line);
   }
-  @media (max-width: 900px) {
+  @media (max-width: 1024px) {
     .atajos-fila {
-      flex-direction: column;
+      margin-top: 32px;
     }
   }
   /* En móvil, una sola fila que se desliza de borde a borde: en varias filas las siete familias ocupaban media
      pantalla antes del primer producto */
   @media (max-width: 640px) {
     .atajos-fila {
-      align-items: stretch;
       margin-top: 10px;
     }
     .atajos {
       flex-wrap: nowrap;
+      justify-content: flex-start;
       margin-inline: calc(-1 * var(--gut));
       padding-inline: var(--gut);
       overflow-x: auto;
@@ -2260,26 +2286,21 @@ const tubos = familiasTubo
   .atajos a {
     display: inline-flex;
     align-items: center;
-    gap: 10px;
-    height: 40px;
-    padding: 0 12px 0 14px;
-    border: 1px solid #c4c8cc;
-    border-left: 4px solid var(--fam);
-    background: #fff;
-    font-size: 16px;
+    gap: 9px;
+    height: 48px;
+    margin-bottom: -1px;
+    border-bottom: 3px solid transparent;
+    font-size: 18px;
     color: var(--ink);
     text-decoration: none;
+    white-space: nowrap;
     transition:
       border-color 0.2s ease,
-      background-color 0.2s ease;
+      color 0.2s ease;
   }
   .atajos .n {
-    min-width: 22px;
-    padding: 2px 6px;
-    background: #f0f1f2;
-    font-size: 13px;
-    font-weight: 700;
-    text-align: center;
+    font-size: 14px;
+    color: var(--muted);
     font-variant-numeric: tabular-nums;
   }
   .atajos a:focus-visible {
@@ -2288,47 +2309,55 @@ const tubos = familiasTubo
   }
   @media (hover: hover) and (pointer: fine) {
     .atajos a:hover {
-      border-color: var(--ink);
-      border-left-color: var(--fam);
-      background: #f7f7f7;
+      border-bottom-color: var(--red);
     }
   }
 
-  /* ——— Selector de versión: un control blanco y recto abajo a la izquierda de la foto, encima de la raya de la
-     familia. La elegida, en rojo de marca; las otras, en gris. Sin etiqueta "Versión" delante ——— */
+  /* ——— Selector de versión: en el mismo sitio y con el mismo aspecto que la etiqueta de temperatura de las tarjetas
+     de una sola versión (arriba a la izquierda, mayúsculas en negrita), para que todas digan su temperatura igual.
+     La elegida, blanca como esa etiqueta y con su icono en color; la otra, en oscuro translúcido sobre la foto, que
+     se ve que existe sin competir. Sin rojo: el rojo queda para las acciones ——— */
   .versiones {
     position: absolute;
-    left: 16px;
-    top: calc(80cqw - 50px);
+    left: 14px;
+    top: 14px;
     z-index: 3;
     display: flex;
-    gap: 3px;
-    padding: 3px;
-    background: #fff;
-    box-shadow: 0 1px 3px rgba(17, 19, 21, 0.25);
+    box-shadow: 0 1px 2px rgba(17, 19, 21, 0.12);
   }
   .versiones button {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: 7px;
     height: 30px;
-    padding: 0 12px;
+    padding: 0 11px 0 9px;
     border: 0;
-    background: transparent;
+    background: rgba(22, 24, 26, 0.62);
     font: 700 14px var(--f);
-    color: var(--body);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: #fff;
     cursor: pointer;
     transition:
       background-color 0.15s ease,
       color 0.15s ease;
   }
   .versiones button[aria-pressed='true'] {
-    background: var(--red);
-    color: #fff;
+    background: #fff;
+    color: var(--ink);
     cursor: default;
   }
   .versiones button :global(svg) {
     flex: none;
+  }
+  .versiones button[aria-pressed='true'][data-t='ventilada'] :global(svg) {
+    color: #6f7a81;
+  }
+  .versiones button[aria-pressed='true'][data-t='refrigerada'] :global(svg) {
+    color: #2a7fc4;
+  }
+  .versiones button[aria-pressed='true'][data-t='calefactada'] :global(svg) {
+    color: var(--red);
   }
   .versiones button:focus-visible {
     outline: 2px solid var(--red);
@@ -2336,8 +2365,7 @@ const tubos = familiasTubo
   }
   @media (hover: hover) and (pointer: fine) {
     .versiones button:not([aria-pressed='true']):hover {
-      background: #f0f1f2;
-      color: var(--ink);
+      background: rgba(22, 24, 26, 0.85);
     }
   }
 
@@ -2457,11 +2485,19 @@ const tubos = familiasTubo
       left: 14px;
       top: calc(2px + 168px + 4px + 3px);
       background: #f0f1f2;
+      gap: 3px;
+      padding: 3px;
       box-shadow: none;
     }
     .versiones button {
       height: 28px;
       padding: 0 10px;
+      background: transparent;
+      color: var(--body);
+    }
+    .versiones button[aria-pressed='true'] {
+      background: #fff;
+      color: var(--ink);
     }
     .anadir,
     .ficha :global(.paso) {

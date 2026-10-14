@@ -246,10 +246,11 @@ const cifras = (v: Version) => [
     line-height: 1;
     letter-spacing: -0.01em;
   }
+  /* La frase es lo único que explica la máquina: en peso normal, que en ligera (300) la condensada quedaba muy fina */
   .frase {
     margin-top: 8px;
     font-size: 17px;
-    font-weight: 300;
+    font-weight: 400;
     line-height: 1.35;
     color: var(--body);
   }
@@ -340,15 +341,45 @@ const cifras = (v: Version) => [
     font-size: 17px;
     font-weight: 700;
   }
+  /* Tarjeta estrecha (cuatro columnas a 1360-1500 px): las cifras y sus márgenes, un punto más pequeños, para que
+     "4 × 1000 ml" o "21.948 × g" quepan en su casilla */
+  @container (max-width: 330px) {
+    .cifra {
+      padding: 12px 6px 12px 12px;
+    }
+    .cifra + .cifra {
+      padding-left: 8px;
+    }
+    .cifra small {
+      font-size: 11px;
+      letter-spacing: 0.03em;
+    }
+    .cifra b {
+      font-size: 17px;
+    }
+    .cifra.largo b {
+      font-size: 15px;
+    }
+    .cifra i {
+      font-size: 13px;
+    }
+  }
 
-  /* Franja de abajo: a la izquierda va "Presupuesto" (lo pone la página encima), a la derecha "Ver producto →" */
+  /* Franja de abajo: a la izquierda van "Presupuesto" y, en las centrífugas, "Comparar" (los pone la página encima,
+     hasta --izq); a la derecha "Ver producto →" */
+  .pieza {
+    --izq: 64%;
+  }
+  .pieza.lab {
+    --izq: 50%;
+  }
   .ver {
     display: flex;
     align-items: center;
     justify-content: flex-end;
     gap: 8px;
     height: 56px;
-    padding: 0 20px 0 calc(50% + 16px);
+    padding: 0 20px 0 calc(var(--izq) + 16px);
     border-top: 1px solid var(--borde);
     font-size: 17px;
     font-weight: 700;
@@ -361,12 +392,32 @@ const cifras = (v: Version) => [
   .ver::before {
     content: '';
     position: absolute;
-    inset: 0 0 0 50%;
+    inset: 0 0 0 var(--izq);
     z-index: -1;
     background: var(--red);
     scale: 0 1;
     transform-origin: left;
     transition: scale 0.45s var(--sube);
+  }
+  /* Tarjeta de menos de 460 px (tres o cuatro columnas): en las centrífugas "Ver producto" se queda en la flecha, en
+     una casilla de 56 px, para que quepan Presupuesto y Comparar. Solo en escritorio: el teléfono tiene su franja */
+  @media (min-width: 641px) {
+    @container (max-width: 459px) {
+      .pieza:not(.lab) {
+        --izq: calc(100% - 56px);
+      }
+      .pieza:not(.lab) .ver {
+        justify-content: center;
+        padding: 0 0 0 var(--izq);
+      }
+      .pieza:not(.lab) .ver > span:first-child {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+      }
+    }
   }
   .flecha {
     display: grid;
