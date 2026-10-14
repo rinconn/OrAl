@@ -2627,8 +2627,26 @@ const iconos: Record<Temperatura, string> = {
     .orden {
       order: 5;
     }
+    /* Los mandos de abajo llenan su celda, como los filtros de arriba, para que el fondo y la raya al pasar el
+       ratón (y la roja de lo elegido) vayan de divisor a divisor */
+    .orden select,
+    .vista button,
+    .d-botones,
+    .descargar button,
+    .descargar [data-exportar='pdf'] {
+      align-self: stretch;
+      height: auto;
+    }
+    .orden select,
+    .vista button,
+    .descargar button,
+    .descargar [data-exportar='pdf'] {
+      flex: 1;
+    }
+    .d-botones {
+      flex: 1;
+    }
     .orden select {
-      height: 40px;
       padding: 0 34px 0 10px;
       border: 0;
       background-position: right 10px center;
@@ -2638,8 +2656,7 @@ const iconos: Record<Temperatura, string> = {
       order: 6;
     }
     .vista button {
-      width: 40px;
-      height: 40px;
+      width: auto;
       border: 0;
     }
     .vista button + button {
@@ -2656,7 +2673,7 @@ const iconos: Record<Temperatura, string> = {
     }
     .descargar button,
     .descargar [data-exportar='pdf'] {
-      height: 40px;
+      justify-content: center;
       padding: 0 10px;
       border: 0;
       background: none;
@@ -2676,13 +2693,14 @@ const iconos: Record<Temperatura, string> = {
       background: none;
       text-decoration: underline;
     }
-    /* Las herramientas, todas igual al pasar el ratón: fondo gris claro, sin rojo */
+    /* Las herramientas, igual que los filtros de arriba al pasar el ratón: fondo gris claro y raya gris debajo */
     .ver-comparar:hover,
+    .orden select:hover,
     .vista button:not([aria-pressed='true']):hover,
     .descargar button:hover:not(:disabled),
     .descargar [data-exportar='pdf']:hover:not(:disabled) {
-      background: var(--hover-bg);
-      box-shadow: none;
+      background-color: var(--hover-bg);
+      box-shadow: inset 0 -3px 0 var(--hover-raya);
       color: var(--ink);
     }
   }

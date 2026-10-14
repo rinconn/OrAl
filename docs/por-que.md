@@ -1334,7 +1334,9 @@ entera delante, si se ensancha el contenido de 1280 a 1440 px.
 - **Por qué:** cada cosa tiene un nivel (por dónde entro, qué busco, qué me sale) y el rojo queda para lo elegido.
   Por eso todo lo que se puede pulsar en el catálogo (pestañas, filtros y herramientas) reacciona igual al pasar el
   ratón, en gris: si unas cosas se ponían rojas y otras grises, no se sabía qué significaba cada color, y en los
-  filtros un rojo al pasar el ratón se confundía con lo ya elegido.
+  filtros un rojo al pasar el ratón se confundía con lo ya elegido. Las herramientas de abajo llenan su casilla
+  como los filtros de arriba y hacen lo mismo (fondo gris claro y raya gris); antes eran botones más pequeños dentro
+  de la casilla, solo con fondo, y las dos filas parecían de sitios distintos.
 - **Descartado:** el rojo al pasar el ratón en todo (en los filtros no se distinguía qué estaba elegido y qué
   no), dejar el total en cifras grandes (gritaba más que los filtros), las herramientas a la derecha y el
   total a la izquierda (se leían antes los números que las acciones) y una barra fija al bajar (con 22 tarjetas en
