@@ -11,15 +11,13 @@ const t = textos(lang);
 const v = t.catalogo.visor;
 const s = t.catalogo.escena;
 const cifras = [
-  { icono: 'ico-velocidad', n: String(modelos.length), txt: t.catalogo.cifras.centrifugas },
+  { n: String(modelos.length), txt: t.catalogo.cifras.centrifugas },
   {
-    icono: 'ico-tubos',
     n: String(categorias.generales.length + categorias.especiales.length),
     txt: t.catalogo.cifras.aplicaciones,
   },
-  { icono: 'ico-seguridad', n: '1949', txt: t.catalogo.cifras.desde },
+  { n: '1949', txt: t.catalogo.cifras.desde },
   {
-    icono: 'ico-tabla',
     n: t.catalogo.cifras.stock.split(' ')[0],
     txt: t.catalogo.cifras.stock.split(' ').slice(1).join(' '),
   },
@@ -75,7 +73,6 @@ const recorrido = ['PP 367', 'PC 497', 'PI 448', 'PE 494', 'PP 821', 'PC 279'];
         <ul class="cifras">
           {cifras.map((c) => (
             <li>
-              <span class="ico" style={`--i: url(/img/iconos/${c.icono}.svg)`} aria-hidden="true" />
               <span>
                 <b>{c.n}</b>
                 <small>{c.txt}</small>
@@ -145,12 +142,27 @@ const recorrido = ['PP 367', 'PC 497', 'PI 448', 'PE 494', 'PP 821', 'PC 279'];
                 {s.rayos}
               </button>
             </div>
-            <div class="grupo" role="group" aria-label={s.vista}>
-              {(['tres', 'frente', 'lado', 'arriba'] as const).map((k) => (
-                <button type="button" data-vista={k} aria-pressed={k === 'tres' ? 'true' : 'false'}>
-                  {s.vistas[k]}
-                </button>
-              ))}
+            {/* En escritorio, las cuatro vistas en un menú propio que se abre hacia arriba (la máquina ya se gira
+                arrastrando); en móvil, los cuatro botones a la vista como siempre */}
+            <div class="vista-sel">
+              <button
+                type="button"
+                class="vista-btn"
+                aria-expanded="false"
+                aria-controls="vistas-3d"
+                data-prefijo={s.vista}
+              >
+                <span>
+                  {s.vista}: {s.vistas.tres}
+                </span>
+              </button>
+              <div class="grupo" id="vistas-3d" role="group" aria-label={s.vista}>
+                {(['tres', 'frente', 'lado', 'arriba'] as const).map((k) => (
+                  <button type="button" data-vista={k} aria-pressed={k === 'tres' ? 'true' : 'false'}>
+                    {s.vistas[k]}
+                  </button>
+                ))}
+              </div>
             </div>
             <button
               type="button"
@@ -205,7 +217,20 @@ const recorrido = ['PP 367', 'PC 497', 'PI 448', 'PE 494', 'PP 821', 'PC 279'];
     const ang = $('.ang');
     const barra = $('.carga > i');
     const vistas = $$('[data-vista]');
-    const marcar = (k: string) => vistas.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.vista === k)));
+    const menuVista = $('.vista-sel');
+    const btnVista = $<HTMLButtonElement>('.vista-btn');
+    const abrirVistas = (si: boolean) => {
+      menuVista.classList.toggle('abierto', si);
+      btnVista.setAttribute('aria-expanded', String(si));
+    };
+    // La vista marcada y, en el botón del menú, su nombre ("Vista: Lado"); al girar a mano, solo "Vista"
+    const marcar = (k: string) => {
+      vistas.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.vista === k)));
+      const b = vistas.find((x) => x.dataset.vista === k);
+      btnVista.firstElementChild!.textContent = b
+        ? `${btnVista.dataset.prefijo}: ${b.textContent!.trim()}`
+        : btnVista.dataset.prefijo!;
+    };
     hero.classList.add('cargando');
 
     import('../scripts/escena-productos')
@@ -247,8 +272,19 @@ const recorrido = ['PP 367', 'PC 497', 'PI 448', 'PE 494', 'PP 821', 'PC 279'];
           b.addEventListener('click', () => {
             escena.vista(b.dataset.vista as 'tres');
             marcar(b.dataset.vista!);
+            abrirVistas(false);
           });
         }
+        btnVista.addEventListener('click', () => abrirVistas(!menuVista.classList.contains('abierto')));
+        addEventListener('pointerdown', (ev) => {
+          if (!menuVista.contains(ev.target as Node)) abrirVistas(false);
+        });
+        addEventListener('keydown', (ev) => {
+          if (ev.key === 'Escape' && menuVista.classList.contains('abierto')) {
+            abrirVistas(false);
+            btnVista.focus();
+          }
+        });
         for (const b of $$('[data-zoom]')) b.addEventListener('click', () => escena.zoom(Number(b.dataset.zoom)));
         const despiece = $<HTMLButtonElement>('.despiece');
         despiece.addEventListener('click', () => {
@@ -393,7 +429,7 @@ const recorrido = ['PP 367', 'PC 497', 'PI 448', 'PE 494', 'PP 821', 'PC 279'];
     pointer-events: auto;
   }
 
-  /* Texto: título, entrada, botón al catálogo, raya roja y cifras con los iconos de la marca */
+  /* Texto: título, entrada, botón al catálogo, raya roja y cifras (sin iconos: las cifras se sostienen solas) */
   .texto {
     display: flex;
     flex-direction: column;
@@ -486,18 +522,12 @@ const recorrido = ['PP 367', 'PC 497', 'PI 448', 'PE 494', 'PP 821', 'PC 279'];
     display: flex;
     align-items: center;
     gap: 14px;
-  }
-  .ico {
-    flex: none;
-    width: 34px;
-    height: 30px;
-    background: var(--red);
-    -webkit-mask: var(--i) center / contain no-repeat;
-    mask: var(--i) center / contain no-repeat;
+    padding-left: 16px;
+    border-left: 1px solid rgba(255, 255, 255, 0.22);
   }
   .cifras b {
     display: block;
-    font-size: 28px;
+    font-size: 32px;
     line-height: 1;
     font-variant-numeric: tabular-nums;
   }
@@ -905,6 +935,144 @@ const recorrido = ['PP 367', 'PC 497', 'PI 448', 'PE 494', 'PP 821', 'PC 279'];
     }
   }
 
+  /* El menú de vistas solo existe en escritorio; en móvil su caja no cuenta y siguen los cuatro botones a la vista */
+  .vista-sel {
+    display: contents;
+  }
+  .vista-btn {
+    display: none;
+  }
+  /* Escritorio: los mandos en una sola barra, con divisores finos y un solo estilo de botón (antes, tres estilos en
+     dos filas). Las vistas, en un menú propio que se abre hacia arriba, oscuro como la barra (el desplegable del
+     sistema era blanco y de otra época); fuera los grados de la cámara y el zoom, que va con Ctrl + rueda o pellizco,
+     como dice la pista. El nombre de la máquina, como pie de foto, sin caja */
+  @media (min-width: 901px) {
+    .ang,
+    .zoom {
+      display: none;
+    }
+    /* Sin los grados arriba, la placa y los mandos se quedan abajo, bajo la máquina */
+    .pie {
+      margin-top: auto;
+    }
+    .mandos button {
+      white-space: nowrap;
+    }
+    .placa {
+      margin-bottom: 14px;
+      padding: 0;
+      border-left: 0;
+      background: none;
+      backdrop-filter: none;
+    }
+    .mandos {
+      flex-wrap: nowrap;
+      gap: 0;
+      background: rgba(18, 20, 22, 0.72);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      backdrop-filter: blur(8px);
+    }
+    .mandos > * + * {
+      border-left: 1px solid rgba(255, 255, 255, 0.14);
+    }
+    .grupo {
+      padding: 3px;
+      background: none;
+      border: 0;
+      backdrop-filter: none;
+    }
+    .grupo button {
+      height: 30px;
+      padding: 0 11px;
+      font-size: 14px;
+    }
+    .placa b {
+      font-size: 20px;
+    }
+    .placa .ver {
+      font-size: 14px;
+    }
+    .vista-sel {
+      display: block;
+      position: relative;
+    }
+    .vista-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      height: 36px;
+      padding: 0 12px 0 14px;
+      font-size: 14px;
+    }
+    .vista-btn::after {
+      content: '';
+      width: 6px;
+      height: 6px;
+      margin-top: -3px;
+      border: solid currentColor;
+      border-width: 0 1.5px 1.5px 0;
+      rotate: 45deg;
+      transition: rotate 0.25s var(--ease);
+    }
+    .abierto .vista-btn::after {
+      rotate: 225deg;
+      margin-top: 3px;
+    }
+    /* El panel: las cuatro vistas en columna, encima del botón, con la elegida marcada como en la barra */
+    .vista-sel .grupo {
+      position: absolute;
+      left: -1px;
+      bottom: calc(100% + 6px);
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: calc(100% + 2px);
+      background: rgba(18, 20, 22, 0.94);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      backdrop-filter: blur(8px);
+      opacity: 0;
+      translate: 0 6px;
+      visibility: hidden;
+      transition:
+        opacity 0.18s ease,
+        translate 0.25s var(--ease),
+        visibility 0s 0.25s;
+    }
+    .vista-sel.abierto .grupo {
+      opacity: 1;
+      translate: 0 0;
+      visibility: visible;
+      transition:
+        opacity 0.18s ease,
+        translate 0.25s var(--ease);
+    }
+    .vista-sel .grupo button {
+      justify-content: flex-start;
+      text-align: left;
+    }
+    .vista-sel .grupo button[aria-pressed='true'] {
+      box-shadow: inset 2px 0 0 var(--red);
+    }
+    .accion,
+    .accion.roja {
+      height: 36px;
+      padding: 0 14px;
+      font-size: 14px;
+      border: 0;
+      background: none;
+    }
+  }
+  @media (min-width: 901px) and (hover: hover) {
+    .vista-btn:hover,
+    .accion:hover {
+      color: #fff;
+      background-color: rgba(255, 255, 255, 0.08);
+    }
+    .accion.roja:hover {
+      background: var(--red);
+    }
+  }
+
   /* Móvil: el texto arriba, la máquina en medio y los mandos debajo */
   @media (max-width: 900px) {
     .hero {
@@ -928,7 +1096,7 @@ const recorrido = ['PP 367', 'PC 497', 'PI 448', 'PE 494', 'PP 821', 'PC 279'];
       font-size: 16px;
     }
     .btn-todas {
-      height: 46px;
+      height: 36px;
       margin-top: 18px;
       padding: 0 20px;
       font-size: 16px;
@@ -944,9 +1112,6 @@ const recorrido = ['PP 367', 'PC 497', 'PI 448', 'PE 494', 'PP 821', 'PC 279'];
     }
     .cifras li {
       display: block;
-    }
-    .ico {
-      display: none;
     }
     .cifras b {
       font-size: 20px;

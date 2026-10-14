@@ -379,6 +379,13 @@ const iconos: Record<Temperatura, string> = {
     </div>
   </div>
   <div class="velo" aria-hidden="true"></div>
+  <!-- Al bajar por el catálogo, un botón pequeño abajo a la izquierda que sube a las pestañas y los filtros -->
+  <button type="button" class="a-filtros" hidden>
+    <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+      <path d="M12 19V5M6 11l6-6 6 6" fill="none" stroke="currentColor" stroke-width="2"></path>
+    </svg>
+    {f.boton}
+  </button>
 </form>
 
 <script>
@@ -405,11 +412,39 @@ const iconos: Record<Temperatura, string> = {
     const quieto = matchMedia('(prefers-reduced-motion: reduce)');
     const movil = matchMedia('(max-width: 1024px)');
     const curva = 'cubic-bezier(0.23, 1, 0.32, 1)';
-    // En móvil el buscador es estrecho y la frase larga se cortaba a media palabra: allí va la corta
+    // Si el buscador es estrecho la frase larga se cortaba a media palabra: cuando no cabe entera, va la corta
     const largo = q.placeholder;
-    const ajustaTexto = () => (q.placeholder = movil.matches ? (q.dataset.corto ?? largo) : largo);
-    ajustaTexto();
-    movil.addEventListener('change', ajustaTexto);
+    const regla = document.createElement('canvas').getContext('2d');
+    const ajustaTexto = () => {
+      if (!regla) return;
+      regla.font = getComputedStyle(q).font;
+      // Con margen: la medida del canvas se queda algo corta frente a lo que pinta el campo
+      q.placeholder = regla.measureText(largo).width * 1.08 <= q.clientWidth ? largo : (q.dataset.corto ?? largo);
+    };
+    new ResizeObserver(ajustaTexto).observe(q);
+    document.fonts.ready.then(ajustaTexto);
+
+    // Escritorio: las herramientas de la franja de abajo (Comparar, Orden, Vista, Descargar) se reparten el ancho
+    // hasta un divisor de la fila de arriba (el final del buscador o, si no caben, el siguiente), para que las dos
+    // filas corten en la misma vertical
+    const franja = form.querySelector<HTMLElement>('.barra')!;
+    const herramientas = [...form.querySelectorAll<HTMLElement>('.ver-comparar, .orden, .vista, .fin .descargar')];
+    const arriba = [...form.querySelectorAll<HTMLElement>('.buscar, .temps, .aplic, .tubo, .minimos')];
+    const alinea = () => {
+      for (const h of herramientas) h.style.flexBasis = '';
+      if (movil.matches) return;
+      const x0 = franja.getBoundingClientRect().left;
+      const anchos = herramientas.map((h) => h.getBoundingClientRect().width);
+      const natural = anchos.reduce((a, b) => a + b, 0);
+      // +1: la raya de arriba es el borde izquierdo de la pieza siguiente, un píxel más allá
+      const cortes = arriba.map((p) => p.getBoundingClientRect().right - x0 + 1);
+      const hasta = cortes.find((c) => c >= natural) ?? natural;
+      const extra = (hasta - natural) / herramientas.length;
+      herramientas.forEach((h, i) => (h.style.flexBasis = `${anchos[i] + extra}px`));
+    };
+    const vigia = new ResizeObserver(alinea);
+    for (const el of [franja, ...arriba]) vigia.observe(el);
+    document.fonts.ready.then(alinea);
 
     let aplic = '';
     const elegidas = new Set<string>();
@@ -469,7 +504,7 @@ const iconos: Record<Temperatura, string> = {
       el,
       nombre: el.querySelector('.nombre')?.textContent?.trim() ?? '',
       uso: el.querySelector('.uso')?.textContent?.trim() ?? '',
-      img: el.querySelector<HTMLImageElement>('.foto img')?.getAttribute('src') ?? '',
+      img: el.querySelector<HTMLImageElement>('.estudio img')?.getAttribute('src') ?? '',
       href: el.querySelector<HTMLAnchorElement>('a.pieza')?.getAttribute('href') ?? '#',
     }));
     let marcada = -1;
@@ -956,6 +991,33 @@ const iconos: Record<Temperatura, string> = {
       });
     }
 
+    // ——— "↑ Filtros": solo con la barra ya pasada y el catálogo a la vista; sube a las pestañas y los filtros ———
+    const aFiltros = form.querySelector<HTMLButtonElement>('.a-filtros')!;
+    const destino = document.querySelector<HTMLElement>('.atajos') ?? form;
+    let marcoSubir = 0;
+    const mirarSubir = () => {
+      const pasada = form.querySelector('.barra')!.getBoundingClientRect().bottom < 0;
+      const catalogo = salasEl.getBoundingClientRect().bottom > innerHeight * 0.5;
+      aFiltros.hidden = !(pasada && catalogo);
+    };
+    addEventListener(
+      'scroll',
+      () => {
+        cancelAnimationFrame(marcoSubir);
+        marcoSubir = requestAnimationFrame(mirarSubir);
+      },
+      { passive: true },
+    );
+    mirarSubir();
+    aFiltros.addEventListener('click', () => {
+      const cabecera = document.querySelector('header')?.getBoundingClientRect().height ?? 0;
+      const y = destino.getBoundingClientRect().top + scrollY - cabecera - 16;
+      // El botón se va al llegar: el foco pasa al buscador (en móvil no, que abriría el teclado). Antes de subir: con
+      // la subida ya en marcha, mover el foco la cortaba
+      if (!movil.matches) q.focus({ preventScroll: true });
+      scrollTo({ top: y, behavior: quieto.matches ? 'auto' : 'smooth' });
+    });
+
     // ——— Móvil: los filtros suben en un panel desde abajo ———
     const abrirPanel = form.querySelector<HTMLButtonElement>('.abrir-panel')!;
     const panel = form.querySelector<HTMLElement>('.panel')!;
@@ -1020,7 +1082,8 @@ const iconos: Record<Temperatura, string> = {
     --hover-bg: #f3f4f5;
     --hover-raya: #9aa2a8;
     position: relative;
-    z-index: 20;
+    /* Por debajo de la cabecera fija (20): al bajar, los filtros pasan por detrás y no por encima */
+    z-index: 19;
     margin-top: clamp(48px, 6vw, 88px);
   }
 
@@ -2080,7 +2143,7 @@ const iconos: Record<Temperatura, string> = {
   @media (max-width: 1024px) {
     .filtros {
       --alto: 50px;
-      margin-top: 32px;
+      margin-top: 12px;
     }
     .barra {
       gap: 8px;
@@ -2393,6 +2456,289 @@ const iconos: Record<Temperatura, string> = {
     }
     .ver-comparar {
       height: 40px;
+    }
+  }
+  /* ——— Escritorio: un solo bloque debajo de las familias. Arriba, lo que se filtra, con la raya roja y divisores
+     marcados en vez de un borde por control; debajo, en una franja gris claro, lo que sale: a la
+     izquierda las herramientas (Comparar, Orden, Vista y Descargar), como texto, y a la derecha el total y Borrar ——— */
+  @media (min-width: 1025px) {
+    .filtros {
+      --sep: #a9afb4;
+      --sep-in: #c4c9cd;
+      margin-top: 20px;
+    }
+    .barra {
+      align-items: stretch;
+      gap: 0;
+      padding: 0;
+      background: none;
+      border: 0;
+      box-shadow: none;
+    }
+    /* Corte entre los dos niveles */
+    .barra::after {
+      content: '';
+      order: 3;
+      flex-basis: 100%;
+    }
+    .panel {
+      display: contents;
+    }
+
+    /* Nivel 1: buscador y filtros, cada pieza con la raya roja arriba y un divisor a la izquierda; juntas, una caja */
+    .buscar,
+    .temps,
+    .aplic,
+    .tubo,
+    .minimos {
+      order: 1;
+      height: auto;
+      background: #fff;
+      border: 0;
+      border-top: 3px solid var(--red);
+      border-bottom: 1px solid var(--sep);
+      border-left: 1px solid var(--sep);
+    }
+    .minimos {
+      border-right: 1px solid var(--sep);
+    }
+    .buscar {
+      flex: 1 1 260px;
+    }
+    .buscar:focus-within {
+      border-color: var(--red) var(--sep) var(--sep);
+      box-shadow: inset 0 -2px 0 var(--ink);
+    }
+    .temp,
+    .aplic-btn,
+    .tubo-btn,
+    .min-btn {
+      border: 0;
+    }
+    .temp + .temp {
+      margin-left: 0;
+      border-left: 1px solid var(--sep-in);
+    }
+    .temp[aria-pressed='true'] {
+      border-color: var(--sep-in);
+    }
+    /* El panel de tubos, debajo de la caja y a todo su ancho */
+    .tubo-menu {
+      top: calc(var(--alto) + 10px);
+      left: 0;
+      right: 0;
+    }
+
+    /* Nivel 2: lo que sale, en una franja gris claro pegada debajo de la caja; los dos niveles, un solo bloque */
+    .barra::before {
+      content: '';
+      position: absolute;
+      inset: calc(var(--alto) + 4px) 0 0;
+      z-index: -1;
+      background: #f7f7f7;
+      border: 1px solid var(--sep);
+      border-top: 0;
+    }
+    .fin {
+      display: contents;
+    }
+    .cuenta,
+    .borrar,
+    .ver-comparar,
+    .orden,
+    .vista,
+    .fin .descargar {
+      align-self: center;
+      margin-block: 6px;
+    }
+    .cuenta {
+      order: 8;
+      margin-left: auto;
+      margin-right: 18px;
+      font-size: 16px;
+    }
+    /* El total, una frase: la cifra en negrita del mismo tamaño que el texto */
+    .cuenta :global(b) {
+      margin: 0;
+      font-size: inherit;
+      vertical-align: baseline;
+    }
+    .borrar,
+    .borrar span {
+      position: static;
+      width: auto;
+      height: 40px;
+      overflow: visible;
+      clip-path: none;
+    }
+    .borrar {
+      order: 9;
+      margin-left: -8px;
+      margin-right: 8px;
+      padding: 0 10px;
+      background: none;
+      color: var(--red);
+    }
+    .borrar span {
+      height: auto;
+    }
+    .ver-comparar {
+      order: 4;
+      height: 40px;
+      padding: 0 10px;
+      border: 0;
+      background: none;
+    }
+    /* "Hasta 3 centrífugas" sigue para lectores de pantalla; a la vista basta con el 0/3 */
+    .vc-txt span {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+    }
+    .vc-n {
+      min-width: 0;
+    }
+    /* Cada herramienta, una celda con su contenido centrado; el divisor de la última cae bajo uno de arriba */
+    .ver-comparar,
+    .orden,
+    .vista,
+    .fin .descargar {
+      flex-grow: 0;
+      flex-shrink: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      align-self: stretch;
+      height: auto;
+      min-height: 52px;
+      margin-block: 0;
+    }
+    .orden,
+    .vista,
+    .fin .descargar {
+      border-left: 1px solid var(--sep-in);
+    }
+    .fin .descargar {
+      border-right: 1px solid var(--sep);
+      margin-left: 0;
+    }
+    .orden {
+      order: 5;
+    }
+    .orden select {
+      height: 40px;
+      padding: 0 34px 0 10px;
+      border: 0;
+      background-position: right 10px center;
+      font-size: 16px;
+    }
+    .vista {
+      order: 6;
+    }
+    .vista button {
+      width: 40px;
+      height: 40px;
+      border: 0;
+    }
+    .vista button + button {
+      margin-left: 0;
+    }
+    .vista button[aria-pressed='true'] {
+      background: none;
+    }
+    .fin .descargar {
+      order: 7;
+    }
+    .d-botones {
+      gap: 0;
+    }
+    .descargar button,
+    .descargar [data-exportar='pdf'] {
+      height: 40px;
+      padding: 0 10px;
+      border: 0;
+      background: none;
+      color: var(--ink);
+    }
+  }
+  @media (min-width: 1025px) and (hover: hover) and (pointer: fine) {
+    .temp:not(:disabled):not([aria-pressed='true']):hover,
+    .aplic-btn:not(.on):hover,
+    .buscar:not(:focus-within):hover {
+      border-color: var(--sep-in);
+    }
+    .buscar:not(:focus-within):hover {
+      border-color: var(--red) var(--sep) var(--sep);
+    }
+    .borrar:hover {
+      background: none;
+      text-decoration: underline;
+    }
+    .ver-comparar:hover,
+    .vista button:not([aria-pressed='true']):hover {
+      background: var(--hover-bg);
+      box-shadow: none;
+    }
+    .descargar button:hover:not(:disabled),
+    .descargar [data-exportar='pdf']:hover:not(:disabled) {
+      background: none;
+      color: var(--red);
+    }
+  }
+  /* ——— "↑ Filtros": fijo abajo a la izquierda (a la derecha va Presupuesto y en el centro la barra del comparador),
+     en negro y recto como los botones de la marca ——— */
+  .a-filtros {
+    position: fixed;
+    left: 20px;
+    bottom: 20px;
+    z-index: 30;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 44px;
+    padding: 0 18px 0 14px;
+    border: 0;
+    background: var(--ink);
+    box-shadow: 0 12px 30px -12px rgba(17, 19, 21, 0.5);
+    font: 700 16px var(--f);
+    color: #fff;
+    cursor: pointer;
+    animation: entra-subir 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+    transition: background-color 0.2s ease;
+  }
+  .a-filtros[hidden] {
+    display: none;
+  }
+  .a-filtros:focus-visible {
+    outline: 2px solid var(--red);
+    outline-offset: 2px;
+  }
+  .a-filtros:active {
+    scale: 0.97;
+  }
+  @keyframes entra-subir {
+    from {
+      opacity: 0;
+      translate: 0 8px;
+    }
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .a-filtros:hover {
+      background: var(--red);
+    }
+  }
+  @media (max-width: 900px) {
+    .a-filtros {
+      left: 12px;
+      bottom: 12px;
+      height: 42px;
+      font-size: 15px;
+    }
+    /* Con la barra del comparador abajo, sube como el botón de Presupuesto */
+    :global(body:has(#barra-comparar:not([hidden]))) .a-filtros {
+      bottom: 88px;
     }
   }
   @media (prefers-reduced-motion: reduce) {
