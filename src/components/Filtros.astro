@@ -469,7 +469,7 @@ const iconos: Record<Temperatura, string> = {
       el,
       nombre: el.querySelector('.nombre')?.textContent?.trim() ?? '',
       uso: el.querySelector('.uso')?.textContent?.trim() ?? '',
-      img: el.querySelector<HTMLImageElement>('.foto img')?.getAttribute('src') ?? '',
+      img: el.querySelector<HTMLImageElement>('.estudio img')?.getAttribute('src') ?? '',
       href: el.querySelector<HTMLAnchorElement>('a.pieza')?.getAttribute('href') ?? '#',
     }));
     let marcada = -1;
