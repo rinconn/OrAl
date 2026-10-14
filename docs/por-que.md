@@ -1416,7 +1416,9 @@ Las familias pasan a grafito y el rojo de la marca marca dónde empieza cada una
   - **¿Le vale a mi cliente? Compatibilidad.** Dos pasos: el **tipo de tubo** (las mismas 7 familias que el filtro
     del catálogo, solo las que admite la máquina) y su **tamaño**, con cada tubo **dibujado a escala** con sus
     medidas reales (cónico, fondo redondo, fondo plano o placa; tapón si lo lleva), en filas como una estantería y la
-    misma escala para toda la familia. El elegido se llena de rojo y quedan solo los rotores que lo admiten: «5 de 13
+    misma escala para toda la familia, **del más pequeño al más grande** (por su capacidad o, si no la da, por sus
+    medidas). Bajo cada tubo, solo su capacidad y sus medidas; el tipo (con tapón, HS…) lo dice la forma del dibujo
+    y aparece al pasar el ratón y en el lector de pantalla. El elegido se llena de rojo y quedan solo los rotores que lo admiten: «5 de 13
     rotores lo admiten» y, en cada uno, **cuántos tubos caben por ciclo** y **su adaptador** (que se copia) o «Sin
     adaptador». Cada rotor guarda su tabla completa en «Todos sus tubos», con la fila del tubo elegido marcada. Sin
     JavaScript se ven todos los rotores con sus tablas.

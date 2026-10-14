@@ -152,13 +152,30 @@ for (const r of rotores) {
   }
 }
 const kDe = (x: Tubo) => tubosFicha.get(claveTubo(x))?.k;
-// Familias con algún tubo, en el orden del filtro del catálogo; y dentro, de menor a mayor
+// Volumen de un tubo para ordenarlos: su capacidad ("7-10 ml" → 10, "1.000 ml" → 1000) o, si no la da, la que
+// sale de sus medidas
+const volumen = (x: TuboFicha) => {
+  const ml = x.capacidad
+    ?.split('-')
+    .map((v) =>
+      Number(
+        v
+          .replace(/\./g, '')
+          .replace(',', '.')
+          .replace(/[^\d.]/g, ''),
+      ),
+    )
+    .filter((v) => v > 0);
+  if (ml?.length) return Math.max(...ml);
+  return x.d && x.l ? (x.forma === 'placa' ? x.d * 86 * x.l : Math.PI * (x.d / 2) ** 2 * x.l) / 1000 : 0;
+};
+// Familias con algún tubo, en el orden del filtro del catálogo; y dentro, del más pequeño al más grande
 const familiasFicha = familiasTubo
   .map((f) => ({
     f,
     tubos: [...tubosFicha.values()]
       .filter((x) => x.fam === f)
-      .sort((a, b) => (a.d ?? 0) * (a.l ?? 0) - (b.d ?? 0) * (b.l ?? 0)),
+      .sort((a, b) => volumen(a) - volumen(b) || (a.l ?? 0) - (b.l ?? 0)),
   }))
   .filter((x) => x.tubos.length > 0);
 
@@ -200,7 +217,6 @@ const textoTubo = (x: TuboFicha) =>
   [may(tipoTubo(lang, x.tipo)!), x.capacidad && medida(lang, x.capacidad), medida(lang, x.medidas)]
     .filter(Boolean)
     .join(', ');
-const variosTipos = (tubos: TuboFicha[]) => new Set(tubos.map((x) => x.tipo)).size > 1;
 // Lo que el rotor admite: claves de tubo y familias
 const clavesRotor = (r: Rotor) => [...new Set(r.tubos.map(kDe).filter(Boolean))].join(' ');
 const familiasRotor = (r: Rotor) =>
@@ -564,7 +580,14 @@ const descripcion = m
                     {tubos.map((x) => {
                       const dib = dibujos.get(x.k);
                       return (
-                        <button type="button" class="tubo" data-k={x.k} aria-pressed="false" aria-label={textoTubo(x)}>
+                        <button
+                          type="button"
+                          class="tubo"
+                          data-k={x.k}
+                          aria-pressed="false"
+                          aria-label={textoTubo(x)}
+                          title={textoTubo(x)}
+                        >
                           {dib && (
                             <span class="tubo-dib" aria-hidden="true">
                               <svg
@@ -591,7 +614,6 @@ const descripcion = m
                           )}
                           <b>{nombreTubo(x)}</b>
                           {x.medidas && <small>{medida(lang, x.medidas)}</small>}
-                          {variosTipos(tubos) && x.capacidad && <small class="t-tipo">{tipoTubo(lang, x.tipo)}</small>}
                         </button>
                       );
                     })}
@@ -1938,10 +1960,6 @@ const descripcion = m
     line-height: 1.2;
     color: var(--muted);
     white-space: nowrap;
-  }
-  .tubo .t-tipo {
-    max-width: 120px;
-    white-space: normal;
   }
   .escala {
     margin: 10px 0 0;
