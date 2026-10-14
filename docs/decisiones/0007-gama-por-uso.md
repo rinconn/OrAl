@@ -1,6 +1,6 @@
 # 0007 · La gama se agrupa por uso, con un color por familia
 
-- **Estado:** Aceptada
+- **Estado:** Aceptada; el color por familia, sustituido por [0013](0013-familias-sin-color-propio.md)
 - **Fecha:** 2026-09-29
 
 ## Contexto
