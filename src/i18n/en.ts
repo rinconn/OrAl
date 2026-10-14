@@ -455,8 +455,6 @@ export const en: Textos = {
       volver: 'Back to the catalogue',
       verFicha: 'View details',
       verProducto: 'View product',
-      placa: 'Technical data',
-      vistazo: 'At a glance',
       capacidad: 'Max. capacity',
       velocidad: 'Max. speed',
       fuerza: 'Max. RCF',
@@ -465,25 +463,16 @@ export const en: Textos = {
       pdf: 'Download PDF catalogue',
       distribuidor: 'Order from a distributor',
       secciones: {
-        descripcion: 'Description',
-        caracteristicas: 'Specifications',
-        rotores: 'Rotors',
-        versiones: 'Versions',
-        accesorios: 'Accessories',
+        compatibilidad: 'Compatibility',
+        datos: 'Technical data',
+        referencias: 'References',
       },
       rotores: {
-        titulo: 'Compatible rotors',
-        intro: (n: number) =>
-          n === 1
-            ? '1 compatible rotor. Click it to see its tubes and adapters.'
-            : `${n} compatible rotors. Click one to see its tubes and adapters.`,
         tipo: 'Type',
         radio: 'Radius',
         angulo: 'Angle',
         tempMin: 'Min. temp. at max. speed',
         tubos: 'Tubes and adapters',
-        porTubo: 'Which tube do you use?',
-        todos: 'All',
         reductor: 'Adapter',
         noEn: (refs: string) => `Not compatible with ${refs}`,
         posiciones: 'Positions',
@@ -518,9 +507,30 @@ export const en: Textos = {
       },
       copiar: 'Copy code',
       copiado: 'Copied',
-      cotas: { an: 'w', fo: 'd', al: 'h' },
-      frenteGama: 'The bar compares with the highest in the range',
-      indice: 'On this page',
+      rotoresFila: 'Rotors',
+      tiposRotor: { angular: 'fixed-angle', horizontal: 'horizontal', oscilante: 'swing-out', y: 'and' },
+      ivd: 'also IVD',
+      pedir: 'Order',
+      leerMas: 'Read more',
+      caracteristicas: 'Features',
+      compat: {
+        intro: (n: number) =>
+          n === 1
+            ? 'Choose your tube to see whether this rotor takes it and with which adapter.'
+            : `${n} rotors. Choose your tube to see which take it, how many fit and with which adapter.`,
+        paso1: 'Tube type',
+        paso2: 'Size',
+        escala: 'Tubes drawn to scale with their real dimensions.',
+        todos: (n: number) => (n === 1 ? '1 rotor' : `All ${n} rotors`),
+        admiten: (n: number, total: number) =>
+          n === 1 ? `1 of ${total} rotors takes it` : `${n} of ${total} rotors take it`,
+        tubos: (n: string) => `${n} tubes`,
+        porCiclo: 'per run',
+        sinAdaptador: 'No adapter',
+        verTubos: (n: number) => `All its tubes (${n})`,
+        quitar: 'See all',
+      },
+      referencias: 'Each version with its code. Click a code to copy it.',
     },
   },
 

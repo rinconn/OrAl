@@ -465,8 +465,6 @@ export const es = {
       volver: 'Volver al catálogo',
       verFicha: 'Ver ficha',
       verProducto: 'Ver producto',
-      placa: 'Datos técnicos',
-      vistazo: 'De un vistazo',
       capacidad: 'Capacidad máx.',
       velocidad: 'Velocidad máx.',
       fuerza: 'Fuerza máx.',
@@ -475,25 +473,16 @@ export const es = {
       pdf: 'Descargar catálogo PDF',
       distribuidor: 'Pedir a un distribuidor',
       secciones: {
-        descripcion: 'Descripción',
-        caracteristicas: 'Ficha técnica',
-        rotores: 'Rotores',
-        versiones: 'Versiones',
-        accesorios: 'Accesorios',
+        compatibilidad: 'Compatibilidad',
+        datos: 'Datos técnicos',
+        referencias: 'Referencias',
       },
       rotores: {
-        titulo: 'Rotores compatibles',
-        intro: (n: number) =>
-          n === 1
-            ? '1 rotor compatible. Elígelo para ver sus tubos y adaptadores.'
-            : `${n} rotores compatibles. Elige uno para ver sus tubos y adaptadores.`,
         tipo: 'Tipo',
         radio: 'Radio',
         angulo: 'Ángulo',
         tempMin: 'Temp. mín. a vel. máx.',
         tubos: 'Tubos y adaptadores',
-        porTubo: '¿Qué tubo usas?',
-        todos: 'Todos',
         reductor: 'Adaptador',
         noEn: (refs: string) => `No compatible con ${refs}`,
         posiciones: 'Posiciones',
@@ -528,9 +517,30 @@ export const es = {
       },
       copiar: 'Copiar código',
       copiado: 'Copiado',
-      cotas: { an: 'an', fo: 'fo', al: 'al' },
-      frenteGama: 'La barra compara con la más alta de la gama',
-      indice: 'En esta ficha',
+      rotoresFila: 'Rotores',
+      tiposRotor: { angular: 'angulares', horizontal: 'horizontales', oscilante: 'oscilantes', y: 'y' },
+      ivd: 'también IVD',
+      pedir: 'Pedir',
+      leerMas: 'Leer más',
+      caracteristicas: 'Características',
+      compat: {
+        intro: (n: number) =>
+          n === 1
+            ? 'Elige tu tubo y verás si este rotor lo admite y con qué adaptador.'
+            : `${n} rotores. Elige tu tubo y verás cuáles lo admiten, cuántos caben y con qué adaptador.`,
+        paso1: 'Tipo de tubo',
+        paso2: 'Tamaño',
+        escala: 'Tubos dibujados a escala con sus medidas reales.',
+        todos: (n: number) => (n === 1 ? '1 rotor' : `Los ${n} rotores`),
+        admiten: (n: number, total: number) =>
+          n === 1 ? `1 de ${total} rotores lo admite` : `${n} de ${total} rotores lo admiten`,
+        tubos: (n: string) => `${n} tubos`,
+        porCiclo: 'por ciclo',
+        sinAdaptador: 'Sin adaptador',
+        verTubos: (n: number) => `Todos sus tubos (${n})`,
+        quitar: 'Ver todos',
+      },
+      referencias: 'Cada versión con su código. Pulsa un código para copiarlo.',
     },
   },
 
