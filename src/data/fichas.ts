@@ -1,7 +1,11 @@
 // Fichas de producto: lo que la web actual cuenta de cada producto (descripción, características, versiones, rotores
 // y tubos), importado con `node scripts/importar-web-actual.mjs` a web-actual.json. Aquí se le da tipo y se traducen
 // los pocos términos que el ERP de la empresa solo tiene en español (tipo de rotor y de tubo).
+// Las referencias de cada centrífuga y sus rotores (cuáles, rpm y xg) mandan los del CRM de la empresa, importados con
+// `node scripts/importar-rotores-excel.mjs` a rotores-excel.json; de la web actual se quedan la foto, el radio, el
+// ángulo y los tubos de cada rotor, y las medidas, el peso y el consumo de cada versión.
 import datos from './web-actual.json';
+import excel from './rotores-excel.json';
 import type { Idioma } from '../i18n';
 
 export interface Punto {
@@ -20,6 +24,8 @@ export interface TextosFicha {
 }
 export interface Version {
   codigo: string;
+  /** Su versión IVD ("CE 126IVD"), si la tiene */
+  ivd?: string;
   medidas?: string;
   peso?: string;
   voltaje?: string;
@@ -46,6 +52,8 @@ export interface Rotor {
   tempMin?: string;
   imagen?: string;
   tubos: Tubo[];
+  /** Referencias de la centrífuga con las que este rotor no vale */
+  noEn?: string[];
 }
 export interface FichaCentrifuga {
   nombre: string;
@@ -66,9 +74,59 @@ const d = datos as unknown as {
   laboratorio: Record<string, { textos: Record<Idioma, TextosFicha> }>;
 };
 
+// ——— Lo que manda el CRM: referencias y rotores de cada centrífuga ———
+interface ModeloExcel {
+  referencias: string[];
+  rotores: { codigo: string; tipo: Rotor['tipo']; rpm?: string; xg?: string; capacidad?: string }[];
+  noCompatibles?: Record<string, string[]>;
+}
+// El mismo modelo se escribe distinto en un sitio y otro ("Digtor 22 COL" y "Digtor 22 Col", "Digtor 22 C-U" y
+// "Digtor 22 C-U (sin calefacción)"): se comparan sin mayúsculas, signos ni paréntesis
+const clave = (s: string) =>
+  s
+    .toLowerCase()
+    .replace(/\(.*?\)/g, '')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
+const modelosExcel = new Map(
+  Object.entries((excel as unknown as { modelos: Record<string, ModeloExcel> }).modelos).map(([n, m]) => [clave(n), m]),
+);
+const rotorPorCodigo = new Map(Object.values(d.rotores).map((r) => [r.nombre.trim(), r]));
+const rotores: Record<string, Rotor> = { ...d.rotores };
+
+const centrifugas = Object.fromEntries(
+  Object.entries(d.centrifugas).map(([slug, c]) => {
+    const x = modelosExcel.get(clave(c.nombre));
+    if (!x) return [slug, c];
+    // Una versión por referencia del CRM, con su IVD al lado; las medidas, el peso… de la web actual si los tiene
+    const versiones = x.referencias
+      .filter((r) => !r.endsWith('IVD'))
+      .map((codigo) => ({
+        ...c.versiones.find((v) => v.codigo.trim() === codigo),
+        codigo,
+        ivd: x.referencias.find((r) => r === `${codigo}IVD`),
+      }));
+    // Sus rotores, con las rpm y la fuerza que da el CRM para esta centrífuga; la foto, el radio y los tubos, del rotor
+    // de la web actual. Un rotor que la web actual no tiene se queda con lo que dice el CRM (tipo, capacidad y cifras)
+    const ids = x.rotores.map((r) => {
+      const id = `${slug}:${r.codigo}`;
+      const base = rotorPorCodigo.get(r.codigo);
+      rotores[id] = {
+        ...(base ?? { nombre: r.codigo, tipo: r.tipo, capacidad: r.capacidad, tubos: [] }),
+        nombre: r.codigo,
+        ...(r.rpm && { rpm: r.rpm }),
+        ...(r.xg && { xg: r.xg }),
+        ...(x.noCompatibles?.[r.codigo] && { noEn: x.noCompatibles[r.codigo] }),
+      };
+      return id;
+    });
+    return [slug, { ...c, versiones, rotores: ids }];
+  }),
+);
+
 export const fechaImportacion = d.fecha;
-export const fichaCentrifuga = (slug: string): FichaCentrifuga | undefined => d.centrifugas[slug];
-export const rotor = (id: string): Rotor => d.rotores[id];
+export const fichaCentrifuga = (slug: string): FichaCentrifuga | undefined => centrifugas[slug];
+export const rotor = (id: string): Rotor => rotores[id];
 
 /** Productos de laboratorio y accesorios: nuestra clave → la de la web actual */
 const claveLab: Record<string, string> = { tamizadora: 'tamizadora-y-tamices' };

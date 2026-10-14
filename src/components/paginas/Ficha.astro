@@ -116,7 +116,8 @@ const numSeccion = (id: string) => String(secciones.findIndex((x) => x.id === id
 const v0 = versiones[0];
 const voltajes = [...new Set(versiones.map((v) => v.voltaje).filter(Boolean))].join(' / ');
 const frecuencias = [...new Set(versiones.map((v) => v.frecuencia).filter(Boolean))].join(' / ');
-const codigos = versiones.map((v) => v.codigo);
+// Cada referencia y, detrás, su versión IVD si la tiene
+const codigos = versiones.flatMap((v) => [v.codigo, ...(v.ivd ? [v.ivd] : [])]);
 // Medidas dibujadas: la caja de la máquina en isométrico, a escala, con sus tres cotas
 const cotas = v0?.medidas?.split(/x/i).map((s) => Number(s.trim()));
 type P3 = [number, number, number];
@@ -674,11 +675,14 @@ const descripcion = m
                         <div>
                           <p class="r-tipo">{tipoRotor(lang, r.tipo)}</p>
                           <h3>{r.nombre}</h3>
+                          {r.noEn && <p class="r-no">{tf.rotores.noEn(r.noEn.join(', '))}</p>}
                           <dl class="r-cifras">
-                            <div>
-                              <dt>{tf.capacidad}</dt>
-                              <dd>{medida(lang, r.capacidad)}</dd>
-                            </div>
+                            {r.capacidad && (
+                              <div>
+                                <dt>{tf.capacidad}</dt>
+                                <dd>{medida(lang, r.capacidad)}</dd>
+                              </div>
+                            )}
                             <div>
                               <dt>{tf.velocidad}</dt>
                               <dd>{cifra(lang, r.rpm)} rpm</dd>
@@ -774,6 +778,17 @@ const descripcion = m
                           >
                             {v.codigo}
                           </button>
+                          {v.ivd && (
+                            <button
+                              type="button"
+                              class="copiar"
+                              data-copiar={v.ivd}
+                              data-pista={tf.copiar}
+                              data-hecho={tf.copiado}
+                            >
+                              {v.ivd}
+                            </button>
+                          )}
                         </th>
                         {columnas.map((k) => (
                           <td>{valor(k, v[k])}</td>
@@ -2411,6 +2426,16 @@ const descripcion = m
     font-size: 40px;
     font-weight: 700;
     line-height: 1;
+  }
+  /* Las referencias con las que este rotor no vale, para no pedir uno que no encaja */
+  .r-no {
+    margin: -6px 0 14px;
+    font-size: 15px;
+    color: var(--muted);
+  }
+  /* La referencia IVD, al lado de la suya en la tabla de versiones */
+  .versiones .copiar + .copiar {
+    margin-left: 12px;
   }
   .r-cifras {
     display: grid;
