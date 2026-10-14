@@ -456,8 +456,6 @@ export const fr: Textos = {
       volver: 'Retour au catalogue',
       verFicha: 'Voir la fiche',
       verProducto: 'Voir le produit',
-      placa: 'Données techniques',
-      vistazo: 'En un coup d’œil',
       capacidad: 'Capacité max.',
       velocidad: 'Vitesse max.',
       fuerza: 'Force max.',
@@ -466,25 +464,16 @@ export const fr: Textos = {
       pdf: 'Télécharger le catalogue PDF',
       distribuidor: 'Commander à un distributeur',
       secciones: {
-        descripcion: 'Description',
-        caracteristicas: 'Fiche technique',
-        rotores: 'Rotors',
-        versiones: 'Versions',
-        accesorios: 'Accessoires',
+        compatibilidad: 'Compatibilité',
+        datos: 'Données techniques',
+        referencias: 'Références',
       },
       rotores: {
-        titulo: 'Rotors compatibles',
-        intro: (n: number) =>
-          n === 1
-            ? '1 rotor compatible. Cliquez dessus pour voir ses tubes et adaptateurs.'
-            : `${n} rotors compatibles. Cliquez sur l’un d’eux pour voir ses tubes et adaptateurs.`,
         tipo: 'Type',
         radio: 'Rayon',
         angulo: 'Angle',
         tempMin: 'Temp. min. à vitesse max.',
         tubos: 'Tubes et adaptateurs',
-        porTubo: 'Quel tube utilisez-vous ?',
-        todos: 'Tous',
         reductor: 'Adaptateur',
         noEn: (refs: string) => `Non compatible avec ${refs}`,
         posiciones: 'Positions',
@@ -519,9 +508,30 @@ export const fr: Textos = {
       },
       copiar: 'Copier la référence',
       copiado: 'Copié',
-      cotas: { an: 'l', fo: 'p', al: 'h' },
-      frenteGama: 'La barre compare avec la plus élevée de la gamme',
-      indice: 'Sur cette page',
+      rotoresFila: 'Rotors',
+      tiposRotor: { angular: 'angulaires', horizontal: 'horizontaux', oscilante: 'oscillants', y: 'et' },
+      ivd: 'aussi IVD',
+      pedir: 'Commander',
+      leerMas: 'Lire la suite',
+      caracteristicas: 'Caractéristiques',
+      compat: {
+        intro: (n: number) =>
+          n === 1
+            ? 'Choisissez votre tube pour voir si ce rotor l’accepte et avec quel adaptateur.'
+            : `${n} rotors. Choisissez votre tube pour voir lesquels l’acceptent, combien en tiennent et avec quel adaptateur.`,
+        paso1: 'Type de tube',
+        paso2: 'Taille',
+        escala: 'Tubes dessinés à l’échelle avec leurs dimensions réelles.',
+        todos: (n: number) => (n === 1 ? '1 rotor' : `Les ${n} rotors`),
+        admiten: (n: number, total: number) =>
+          n === 1 ? `1 rotor sur ${total} l’accepte` : `${n} rotors sur ${total} l’acceptent`,
+        tubos: (n: string) => `${n} tubes`,
+        porCiclo: 'par cycle',
+        sinAdaptador: 'Sans adaptateur',
+        verTubos: (n: number) => `Tous ses tubes (${n})`,
+        quitar: 'Voir tout',
+      },
+      referencias: 'Chaque version avec sa référence. Cliquez sur une référence pour la copier.',
     },
   },
 
