@@ -1396,3 +1396,41 @@ Las familias pasan a grafito y el rojo de la marca marca dónde empieza cada una
 - **Por qué:** resuelve el único caso real (estar abajo y querer cambiar algo) sin ocupar sitio.
 - **Descartado:** una barra fija con pestañas y filtros (ocupa altura siempre, se suma a la cabecera y en móvil roba
   pantalla, para un catálogo de 22 tarjetas).
+
+## 36. Ficha de producto: tres preguntas, una estructura para todas
+
+- **Problema:** la ficha lo enseñaba todo a la vez y con el mismo peso: galería, un panel con el rotor que giraba y
+  reglas frente a la gama, la caja de medidas en isométrico, una descripción larga, las características, una fila de
+  hasta 19 botones de tipo de tubo, la lista de rotores con su tabla de adaptadores (que se cortaba por la derecha),
+  versiones y accesorios, con un índice lateral. Cada pieza estaba bien hecha, pero juntas saturaban y no se veía qué
+  era lo importante.
+- **Ahora:** la ficha contesta, en orden, las tres preguntas con las que llega el distribuidor, y es la misma
+  plantilla para las 28 fichas en los tres idiomas:
+  - **¿Qué máquina es?** La galería de siempre y, al lado, el nombre, su frase y una **tabla corta**: velocidad,
+    fuerza, capacidad, rotores (cuántos y de qué tipo), pantalla, temperatura y referencias. La versión va en la
+    fila de temperatura (la elegida en negro, cada una con el punto de su color); en la Digtor 22 C, que tiene tres
+    versiones de la misma temperatura, en su propia fila. Las referencias se copian de un clic. Debajo, «Pedir a un
+    distribuidor» y el catálogo PDF, del mismo ancho. En los equipos de laboratorio, sus tres datos y su código.
+  - **Barra fija** con el nombre, los apartados (marca el que se lee) y «Pedir». Baja con la cabecera de la web
+    cuando esta aparece.
+  - **¿Le vale a mi cliente? Compatibilidad.** Dos pasos: el **tipo de tubo** (las mismas 7 familias que el filtro
+    del catálogo, solo las que admite la máquina) y su **tamaño**, con cada tubo **dibujado a escala** con sus
+    medidas reales (cónico, fondo redondo, fondo plano o placa; tapón si lo lleva), en filas como una estantería y la
+    misma escala para toda la familia. El elegido se llena de rojo y quedan solo los rotores que lo admiten: «5 de 13
+    rotores lo admiten» y, en cada uno, **cuántos tubos caben por ciclo** y **su adaptador** (que se copia) o «Sin
+    adaptador». Cada rotor guarda su tabla completa en «Todos sus tubos», con la fila del tubo elegido marcada. Sin
+    JavaScript se ven todos los rotores con sus tablas.
+  - **¿Cómo lo pido? Datos técnicos y Referencias.** La descripción con el primer párrafo a la vista y el resto tras
+    «Leer más», y las características en dos columnas. Después, la tabla de versiones (códigos que se copian,
+    medidas, peso, voltaje y consumo) y los accesorios.
+- **Por qué:** el distribuidor llega con un tubo en la mano («¿qué rotor me vale para tubos de 15 ml?»). Antes lo
+  contestaba una tabla de 50 filas; ahora se elige el tubo y la página contesta con un número y un código. El
+  dibujo a escala dice más que «16 × 132 mm» y es de centrífugas, no un adorno. Todo sale de los datos que ya había
+  (web actual y CRM), nada inventado.
+- **Descartado:** el panel del rotor girando y las reglas frente a la gama (25.1; vistosos, pero repetían tres cifras
+  que la tabla ya da), la caja de medidas en isométrico (25.2; las medidas están en Referencias), el índice lateral
+  (25; la barra fija hace lo mismo sin quitar ancho), pestañas que esconden apartados (25; la barra lleva a cada uno
+  pero todo sigue en la página), los tubos en una sola tira que se desliza en escritorio (en la Digtor 22 son 26
+  tamaños: 3.700 px de tira; en móvil sí se desliza), un dibujo genérico para los productos de citología sin medidas
+  (parecía provisional: se enseña solo su nombre) y la animación de entrada de cada sección (con ella, una captura
+  de la página completa salía en blanco).
