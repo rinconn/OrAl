@@ -1324,7 +1324,7 @@ entera delante, si se ensancha el contenido de 1280 a 1440 px.
   acción secundaria. Las familias, que son por donde entra un distribuidor, iban debajo como etiquetas, y el total
   («23 centrífugas · 5 más») se veía en cifras grandes metidas entre botones.
 - **Ahora:** tres capas que se leen de arriba abajo. Primero las **familias como pestañas**, centradas, con su
-  número en gris y la raya roja al pasar el ratón, como el menú. Debajo, **un solo bloque**: arriba lo que se filtra
+  número en gris y una raya gris al pasar el ratón. Debajo, **un solo bloque**: arriba lo que se filtra
   (buscador, temperatura, aplicación, tubo y mínimos), con la raya roja y divisores marcados en vez de un borde por
   control; abajo, en una franja gris claro pegada, lo que sale: Comparar, Orden, Vista y PDF/Excel como texto a la
   izquierda, y el total, en una frase del mismo tamaño que el resto, con «Borrar filtros» a la derecha. Las casillas
@@ -1332,7 +1332,11 @@ entera delante, si se ensancha el contenido de 1280 a 1440 px.
   siguiente), así que las dos filas cortan en la misma vertical. Si la frase del buscador no cabe entera, pone
   «Buscar». En móvil no cambia: buscador y botón de filtros.
 - **Por qué:** cada cosa tiene un nivel (por dónde entro, qué busco, qué me sale) y el rojo queda para lo elegido.
-- **Descartado:** dejar el total en cifras grandes (gritaba más que los filtros), las herramientas a la derecha y el
+  Por eso todo lo que se puede pulsar en el catálogo (pestañas, filtros y herramientas) reacciona igual al pasar el
+  ratón, en gris: si unas cosas se ponían rojas y otras grises, no se sabía qué significaba cada color, y en los
+  filtros un rojo al pasar el ratón se confundía con lo ya elegido.
+- **Descartado:** el rojo al pasar el ratón en todo (en los filtros no se distinguía qué estaba elegido y qué
+  no), dejar el total en cifras grandes (gritaba más que los filtros), las herramientas a la derecha y el
   total a la izquierda (se leían antes los números que las acciones) y una barra fija al bajar (con 22 tarjetas en
   unas 6,5 pantallas no compensa la altura que ocupa; ver 35.6).
 

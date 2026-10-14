@@ -2676,15 +2676,14 @@ const iconos: Record<Temperatura, string> = {
       background: none;
       text-decoration: underline;
     }
+    /* Las herramientas, todas igual al pasar el ratón: fondo gris claro, sin rojo */
     .ver-comparar:hover,
-    .vista button:not([aria-pressed='true']):hover {
-      background: var(--hover-bg);
-      box-shadow: none;
-    }
+    .vista button:not([aria-pressed='true']):hover,
     .descargar button:hover:not(:disabled),
     .descargar [data-exportar='pdf']:hover:not(:disabled) {
-      background: none;
-      color: var(--red);
+      background: var(--hover-bg);
+      box-shadow: none;
+      color: var(--ink);
     }
   }
   /* ——— "↑ Filtros": fijo abajo a la izquierda (a la derecha va Presupuesto y en el centro la barra del comparador),
