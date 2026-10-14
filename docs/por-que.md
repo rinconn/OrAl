@@ -1314,3 +1314,79 @@ entera delante, si se ensancha el contenido de 1280 a 1440 px.
 - **Por qué:** lo que se lee en el filtro es lo mismo que se ve al bajar, y el distribuidor aprende un solo orden.
 - **Descartado:** quitar el desplegable y filtrar solo por bloque (se pierde poder pedir solo microcentrífugas) y repetir
   Lácteos/Vet en los dos bloques (dos botones que hacen lo mismo).
+
+## 35. Página de productos: un catálogo ordenado y sin ruido
+
+### 35.1 Familias arriba, filtros en un bloque y lo que sale debajo
+
+- **Problema:** la barra de filtros era una caja con unos 15 controles, cada uno con su propio borde, en dos filas
+  que no cuadraban (la segunda acababa a dos tercios). El botón más llamativo de la pantalla era «PDF» en rojo, una
+  acción secundaria. Las familias, que son por donde entra un distribuidor, iban debajo como etiquetas, y el total
+  («23 centrífugas · 5 más») se veía en cifras grandes metidas entre botones.
+- **Ahora:** tres capas que se leen de arriba abajo. Primero las **familias como pestañas**, centradas, con su
+  número en gris y la raya roja al pasar el ratón, como el menú. Debajo, **un solo bloque**: arriba lo que se filtra
+  (buscador, temperatura, aplicación, tubo y mínimos), con la raya roja y divisores marcados en vez de un borde por
+  control; abajo, en una franja gris claro pegada, lo que sale: Comparar, Orden, Vista y PDF/Excel como texto a la
+  izquierda, y el total, en una frase del mismo tamaño que el resto, con «Borrar filtros» a la derecha. Las casillas
+  de abajo se reparten el ancho hasta un divisor de la fila de arriba (el final del buscador o, si no caben, el
+  siguiente), así que las dos filas cortan en la misma vertical. Si la frase del buscador no cabe entera, pone
+  «Buscar». En móvil no cambia: buscador y botón de filtros.
+- **Por qué:** cada cosa tiene un nivel (por dónde entro, qué busco, qué me sale) y el rojo queda para lo elegido.
+- **Descartado:** dejar el total en cifras grandes (gritaba más que los filtros), las herramientas a la derecha y el
+  total a la izquierda (se leían antes los números que las acciones) y una barra fija al bajar (con 22 tarjetas en
+  unas 6,5 pantallas no compensa la altura que ocupa; ver 35.6).
+
+### 35.2 Cuatro columnas y portadas de familia en una línea
+
+- **Problema:** con tres columnas, Compactas, Gran capacidad y Clínica (4 tarjetas cada una) dejaban una tarjeta sola
+  y un hueco al lado. Cada familia empezaba con una portada de 274 px con foto y un número gigante: un tercio de lo
+  que ocupaba la familia, siete veces en la página.
+- **Ahora:** desde 1360 px el catálogo se ensancha (hasta 1560 px) y pasa a **cuatro columnas**; en tarjetas de menos
+  de 330 px las cifras y sus márgenes bajan un punto para que «4 × 1000 ml» o «21.948 × g» quepan. Cada familia
+  empieza con una **franja de 106 px**: su número en rojo (01, 02…), el nombre, cuántas hay y, a la derecha, sus
+  aplicaciones, sobre la misma foto del rotor. A 1440 px, la franja y sus cuatro tarjetas caben en una pantalla.
+- **Por qué:** el distribuidor ve la familia entera de un vistazo y la página mide unos 1.200 px menos.
+- **Descartado:** dejar la portada grande solo en la primera familia (incoherente) y cuatro columnas sin ajustar las
+  cifras (a 1360 px se montaban).
+
+### 35.3 La tarjeta: temperatura en un sitio, Comparar en el pie
+
+- **Problema:** la temperatura salía arriba a la izquierda en las máquinas de una versión y abajo, con otra letra y en
+  rojo relleno, en las de dos (el selector Ventilada / Refrigerada). «Comparar» iba como casilla sobre la foto en
+  escritorio y en el pie en móvil. La frase de cada máquina, en letra ligera, se leía floja.
+- **Ahora:** la temperatura va **siempre arriba a la izquierda** y con el mismo aspecto; con dos versiones, la elegida
+  es blanca como la etiqueta normal y la otra, oscura translúcida (en móvil, en gris bajo la foto). El pie es igual
+  en escritorio y en móvil: **+ Presupuesto │ ☐ Comparar │ →**; en tarjetas de 460 px o más, la flecha lleva su
+  texto «Ver producto». La frase pasa de peso 300 a 400, con el mismo color y tamaño.
+- **Por qué:** de un vistazo todas las tarjetas dicen su temperatura igual y las tres acciones están juntas; la foto
+  queda limpia.
+- **Descartado:** el selector en rojo (el rojo es para las acciones) y oscurecer el color de la frase (ya tenía buen
+  contraste; lo que fallaba era el grosor).
+
+### 35.4 Sin color por familia
+
+Las familias pasan a grafito y el rojo de la marca marca dónde empieza cada una. Decisión
+[0013](decisiones/0013-familias-sin-color-propio.md).
+
+### 35.5 Hero: los mandos del 3D en una barra
+
+- **Problema:** doce controles en cuatro sitios y con tres estilos: los grados de la cámara («AZ 041° · EL 22°») y el
+  zoom arriba a la derecha; el nombre en una cartela; Real / Rayos X, cuatro vistas y Despiece en una fila, y
+  «Recorrido por dentro» suelto en otra. Las cifras de la izquierda llevaban iconos genéricos.
+- **Ahora (escritorio):** el nombre de la máquina como pie de foto y debajo **una sola barra** de 36 px con divisores:
+  Real │ Rayos X │ Vista: 3/4 ▾ │ Despiece │ Recorrido por dentro. Las vistas, en un **menú propio** oscuro que se
+  abre hacia arriba. Fuera los grados y los botones de zoom: el zoom sigue con Ctrl + rueda o pellizco, como dice la
+  pista. Las cifras (23, 9, 1949, Siempre) van sin icono, más grandes y con una línea fina. En móvil, los mandos de
+  siempre.
+- **Por qué:** lo que impresiona (Despiece, Recorrido) queda claro y lo técnico desaparece.
+- **Descartado:** el desplegable del sistema (lo dibuja el navegador, blanco y de otra época, y además el clic llegaba
+  a la escena 3D y reiniciaba la vista).
+
+### 35.6 «↑ Filtros» al bajar
+
+- **Ahora:** al pasar la barra de filtros y mientras se ve el catálogo, abajo a la izquierda sale un botón negro
+  «↑ Filtros» que sube a las pestañas y los filtros (en escritorio, con el cursor ya en el buscador). A la derecha va
+  Presupuesto y en el centro la barra del comparador; en móvil sube si sale esa barra.
+- **Por qué:** resuelve el único caso real (estar abajo y querer cambiar algo) sin ocupar sitio.
+- **Descartado:** una barra fija con pestañas y filtros (ocupa altura siempre, se suma a la cabecera y en móvil roba
+  pantalla, para un catálogo de 22 tarjetas).
