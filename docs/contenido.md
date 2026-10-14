@@ -7,19 +7,23 @@
 1. **Catálogo General 2025 (ES)**: edición de marzo de 2025, 61 páginas. Es la fuente principal
    de especificaciones.
 2. **ortoalresa.com**: la web actual, para lo que no está en el catálogo (servicio técnico, noticias, descargas).
-3. **La empresa**, por escrito, para todo lo demás.
+3. **El CRM de la empresa** (Excel «Rotores por centrífuga», de Dynamics 365 y la tarifa de Business Central): las
+   referencias de cada centrífuga y qué rotores admite, con sus rpm y xg. Manda sobre la web actual
+   ([decisión 0012](decisiones/0012-rotores-y-referencias-del-crm.md)).
+4. **La empresa**, por escrito, para todo lo demás.
 
 Si un dato falta, **se deja fuera y se pide**. No se completa "con lo que suele ser". Las frases de marca
 se usan literalmente (ver `sistema-diseno/catalogo/CONTENIDO-MARCA.md`).
 
 ## Contradicciones de la web actual y cómo se resuelven
 
-| Dato              | Web actual                              | Web nueva                                       | Fuente        |
-| ----------------- | --------------------------------------- | ----------------------------------------------- | ------------- |
-| Garantía          | 3 años en portada, "2 años" en Empresa  | **3 años**                                      | Catálogo 2025 |
-| Antigüedad        | "Más de 70 años" y "75 años"            | **Desde 1949** (sin contar años, así no caduca) | Catálogo 2025 |
-| Menú "Guías"      | Enlace roto (404)                       | Integrado en Elegir centrífuga                  | —             |
-| wp.ortoalresa.com | Indexado en Google con títulos internos | Redirigido o desindexado al publicar            | —             |
+| Dato               | Web actual                                  | Web nueva                                          | Fuente              |
+| ------------------ | ------------------------------------------- | -------------------------------------------------- | ------------------- |
+| Garantía           | 3 años en portada, "2 años" en Empresa      | **3 años**                                         | Catálogo 2025       |
+| Antigüedad         | "Más de 70 años" y "75 años"                | **Desde 1949** (sin contar años, así no caduca)    | Catálogo 2025       |
+| Menú "Guías"       | Enlace roto (404)                           | Integrado en Elegir centrífuga                     | —                   |
+| Unicen 21, rotores | 4.500 rpm en la ficha, 4.200 en el catálogo | **4.200 rpm**, con la fuerza de cada rotor del CRM | CRM y Catálogo 2025 |
+| wp.ortoalresa.com  | Indexado en Google con títulos internos     | Redirigido o desindexado al publicar               | —                   |
 
 ## Gama
 
