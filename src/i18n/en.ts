@@ -493,6 +493,7 @@ export const en: Textos = {
         consumo: 'Power',
         zMax: 'Max. Z',
         calefaccion: 'Heating',
+        sinDatos: 'Data on request',
       },
       accesorios: 'Accessories for this model',
       mas: 'More',
