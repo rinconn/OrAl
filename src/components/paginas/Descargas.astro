@@ -273,7 +273,9 @@ const js = {
     <div class="v-qr" data-v-qr></div>
     <div class="v-txt">
       <span class="eyebrow" data-v-eyebrow></span>
-      <h2 id="v-titulo" data-v-titulo></h2>
+      <h2 id="v-titulo" data-v-titulo>
+        {d.packTitulo}
+      </h2>
       <p data-v-texto></p>
       <ul class="v-lista" data-v-lista hidden></ul>
       <div class="v-acc">
@@ -283,7 +285,7 @@ const js = {
         <button type="button" class="btn ghost" data-v-share hidden>
           {d.enviar}
         </button>
-        <a class="btn ghost" data-v-correo hidden>
+        <a class="btn ghost" href="mailto:" data-v-correo hidden>
           {d.correo}
         </a>
         <button type="button" class="btn ghost" data-v-descargar>
