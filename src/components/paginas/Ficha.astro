@@ -945,7 +945,7 @@ const descripcion = m
                           )}
                         </th>
                         {columnas.map((k) => (
-                          <td>{valor(k, v[k])}</td>
+                          <td data-k={tf.versiones[k]}>{valor(k, v[k])}</td>
                         ))}
                       </tr>
                     ))}
@@ -2699,6 +2699,56 @@ const descripcion = m
   }
   .versiones tbody th .copiar + .copiar {
     margin-left: 14px;
+  }
+  /* En móvil, una tarjeta por versión: los códigos arriba y debajo sus datos en dos columnas, cada uno con su nombre.
+     Así se ve todo sin deslizar la tabla hacia un lado */
+  @media (max-width: 760px) {
+    .versiones,
+    .versiones tbody,
+    .versiones tr {
+      display: block;
+    }
+    .versiones thead {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+    }
+    .versiones tr {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px 16px;
+      padding: 16px 0 18px;
+      border-bottom: 1px solid var(--line);
+    }
+    .versiones tr:first-child {
+      border-top: 2px solid var(--ink);
+    }
+    .versiones tbody th,
+    .versiones td {
+      padding: 0;
+      white-space: normal;
+      border: 0;
+    }
+    .versiones tbody th {
+      grid-column: 1 / -1;
+    }
+    /* Las medidas son el dato más largo: ocupan dos columnas */
+    .versiones td:first-of-type {
+      grid-column: span 2;
+    }
+    .versiones td {
+      font-size: 16px;
+    }
+    .versiones td::before {
+      content: attr(data-k);
+      display: block;
+      margin-bottom: 2px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--body);
+    }
   }
   /* Tablas de equipos y accesorios, tal como las da la web actual: celdas unidas y los textos largos en varias
      líneas para que la tabla no se salga */
