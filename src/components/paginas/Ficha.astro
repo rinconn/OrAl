@@ -1288,20 +1288,29 @@ const descripcion = m
   }
 
   // Códigos: un clic los copia (para el pedido). "Copiado" sale en el sitio de "Copiar", sin mover nada, y se anuncia
+  // Solo un aviso a la vez: al copiar otro código, el "Copiado" anterior se quita en el momento
+  const reponer = new Map<HTMLButtonElement, () => void>();
   for (const b of document.querySelectorAll<HTMLButtonElement>('[data-copiar]')) {
     const aviso = b.parentElement?.querySelector<HTMLElement>('.aviso-copia');
     const pista = b.dataset.pista;
+    let espera = 0;
+    const quitar = () => {
+      clearTimeout(espera);
+      b.classList.remove('hecho');
+      if (pista) b.dataset.pista = pista;
+      if (aviso) aviso.textContent = '';
+      reponer.delete(b);
+    };
     b.addEventListener('click', async () => {
       try {
         await navigator.clipboard.writeText(b.dataset.copiar!);
+        for (const [otro, fn] of reponer) if (otro !== b) fn();
+        clearTimeout(espera);
         b.classList.add('hecho');
         if (pista) b.dataset.pista = b.dataset.hecho;
         if (aviso) aviso.textContent = `${b.dataset.copiar} · ${aviso.dataset.hecho}`;
-        setTimeout(() => {
-          b.classList.remove('hecho');
-          if (pista) b.dataset.pista = pista;
-          if (aviso) aviso.textContent = '';
-        }, 1800);
+        reponer.set(b, quitar);
+        espera = window.setTimeout(quitar, 1800);
       } catch {
         /* sin portapapeles, se queda como texto seleccionable */
       }
@@ -3189,6 +3198,10 @@ const descripcion = m
   .copiar[data-pista]:is(:hover, :focus-visible, .hecho)::after {
     opacity: 1;
     translate: -50% 0;
+  }
+  /* Si el puntero está sobre otro código de la misma celda, solo se ve el aviso de ese */
+  :has(> .copiar:hover) > .copiar[data-pista]:not(:hover)::after {
+    opacity: 0;
   }
   .copiar.hecho::after {
     background: var(--t-ventilada);
