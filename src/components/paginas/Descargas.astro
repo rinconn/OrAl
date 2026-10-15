@@ -1,0 +1,1262 @@
+---
+// Descargas: el folleto en PDF de cada centrífuga y equipo de laboratorio, y los logos de la marca. Cada folleto se
+// descarga, se copia su enlace o se enseña con un QR para abrirlo en el móvil; varios se juntan en un pack que se
+// comparte con un solo enlace (y su QR). La búsqueda, la familia, el idioma y el pack van en la dirección.
+import Base from '../../layouts/Base.astro';
+import Bandera from '../ui/Bandera.astro';
+import IconoTemp from '../ui/IconoTemp.astro';
+import { familias, modelos, productos, type Familia, type Temperatura } from '../../data/productos';
+import { equipos } from '../../data/laboratorio';
+import { fichaCentrifuga } from '../../data/fichas';
+import { idioma, idiomas, ruta, textos, type Idioma } from '../../i18n';
+
+const lang = idioma(Astro.currentLocale);
+const t = textos(lang);
+const d = t.descargas;
+
+const plano = (...partes: (string | undefined)[]) =>
+  partes.filter(Boolean).join(' ').normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
+
+type Doc = {
+  id: string;
+  nombre: string;
+  fam: Familia | 'lab';
+  temp?: Temperatura;
+  img: string;
+  ficha: string;
+  pdf: Record<Idioma, string>;
+};
+
+// Centrífugas: el folleto de la web actual, en español e inglés (el francés enlaza el inglés)
+const docs: Doc[] = [
+  ...modelos.flatMap((m): Doc[] => {
+    const pdf = fichaCentrifuga(m.slug)?.pdf;
+    if (!pdf) return [];
+    return [
+      {
+        id: m.slug,
+        nombre: m.nombre,
+        fam: productos.find((p) => p.slug === m.serie)!.familia,
+        temp: m.temperatura,
+        img: m.imagen.src,
+        ficha: ruta(lang, `/centrifugas/${m.slug}/`),
+        pdf,
+      },
+    ];
+  }),
+  // Equipos de laboratorio: un solo PDF, en español
+  ...equipos.flatMap((e): Doc[] =>
+    e.pdf
+      ? [
+          {
+            id: e.slug,
+            nombre: t.laboratorio.items[e.slug].nombre,
+            fam: 'lab',
+            img: e.imagen.src,
+            ficha: ruta(lang, `/centrifugas/${e.slug}/`),
+            pdf: { es: e.pdf, en: e.pdf, fr: e.pdf },
+          },
+        ]
+      : [],
+  ),
+];
+
+// Idioma en que está de verdad el PDF que se abre al elegir cada idioma (si no hay folleto en ese idioma, se abre el
+// inglés o, si tampoco, el español)
+const idiomaReal = (x: Doc, l: Idioma): Idioma =>
+  l === 'es' || x.pdf[l] === x.pdf.es ? 'es' : l === 'fr' && x.pdf.fr === x.pdf.en ? 'en' : l;
+
+const filtros: { id: Familia | 'lab'; nombre: string }[] = [
+  ...(Object.keys(familias) as Familia[]).map((f) => ({ id: f, nombre: t.familias[f] })),
+  { id: 'lab' as const, nombre: d.laboratorio },
+].filter((f) => docs.some((x) => x.fam === f.id));
+
+const logos = [
+  { id: 'color', src: '/img/marca/logo-ortoalresa-color.svg', oscuro: false },
+  { id: 'horizontal', src: '/img/marca/logo-ortoalresa-color-horizontal.svg', oscuro: false },
+  { id: 'lineas', src: '/img/marca/logo-ortoalresa-2-lineas.svg', oscuro: false },
+  { id: 'oscuro', src: '/img/marca/logo-ortoalresa-oscuro.svg', oscuro: true },
+  { id: 'blanco', src: '/img/marca/logo-ortoalresa-white.svg', oscuro: true },
+] as const;
+
+// Textos que necesita el script
+const js = {
+  lang,
+  total: [d.total(1), d.total(2).replace('2', '#')],
+  pack: [d.pack(1), d.pack(2).replace('2', '#')],
+  compartido: [d.compartido(1), d.compartido(2).replace('2', '#')],
+  copiar: d.copiar,
+  copiado: d.copiado,
+  anadir: d.anadir,
+  enPack: d.enPack,
+  asunto: d.asunto,
+};
+---
+
+<Base title={d.title} description={d.description}>
+  <section class="desc-cab">
+    <div class="wrap">
+      <span class="eyebrow">{d.eyebrow}</span>
+      <h1>
+        {d.titulo} <b>{d.tituloB}</b>
+      </h1>
+      <p class="entradilla">{d.entradilla}</p>
+    </div>
+  </section>
+
+  <div class="barra-desc" data-barra>
+    <div class="wrap barra-in">
+      <label class="busca">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="10.5" cy="10.5" r="6.5"></circle>
+          <path d="m15.5 15.5 5 5"></path>
+        </svg>
+        <span class="sr">{d.buscar}</span>
+        <input type="search" placeholder={d.buscar} autocomplete="off" data-q />
+      </label>
+      <div class="fams" role="group" aria-label={d.eyebrow}>
+        <button type="button" class="fam" aria-pressed="true" data-fam="">
+          {d.todos} <span data-n>{docs.length}</span>
+        </button>
+        {filtros.map((f) => (
+          <button type="button" class="fam" aria-pressed="false" data-fam={f.id}>
+            {f.nombre} <span data-n>{docs.filter((x) => x.fam === f.id).length}</span>
+          </button>
+        ))}
+      </div>
+      <div class="langs" role="radiogroup" aria-label={d.idioma}>
+        {idiomas.map((l) => (
+          <button
+            type="button"
+            class="lang"
+            role="radio"
+            aria-checked={l.codigo === lang ? 'true' : 'false'}
+            data-lang={l.codigo}
+            title={l.nombre}
+          >
+            <Bandera codigo={l.codigo} />
+            {l.codigo.toUpperCase()}
+          </button>
+        ))}
+      </div>
+    </div>
+  </div>
+
+  <section class="desc-lista">
+    <div class="wrap">
+      <div class="compartido" data-compartido hidden>
+        <p data-compartido-txt></p>
+        <button type="button" class="arrow" data-ver-todos>
+          {d.verTodos}
+        </button>
+      </div>
+      <p class="cuenta" aria-live="polite" data-cuenta>
+        {d.total(docs.length)}
+      </p>
+      <ul class="docs">
+        {docs.map((x) => (
+          <li
+            class="doc"
+            data-id={x.id}
+            data-fam={x.fam}
+            data-texto={plano(x.nombre, x.fam === 'lab' ? d.laboratorio : t.familias[x.fam])}
+            data-es={x.pdf.es}
+            data-en={x.pdf.en}
+            data-fr={x.pdf.fr}
+            data-real-es={idiomaReal(x, 'es')}
+            data-real-en={idiomaReal(x, 'en')}
+            data-real-fr={idiomaReal(x, 'fr')}
+            data-nombre={x.nombre}
+          >
+            <a class="doc-foto" href={x.ficha} tabindex="-1" aria-hidden="true">
+              <img src={x.img} alt="" width="320" height="320" loading="lazy" decoding="async" />
+            </a>
+            <button type="button" class="doc-pack" aria-pressed="false" data-pack title={d.anadir}>
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path class="mas" d="M12 5v14M5 12h14" />
+                <path class="ok" d="m5 12.5 4.5 4.5L19 7.5" />
+              </svg>
+              <span class="sr">{d.anadir}</span>
+            </button>
+            <div class="doc-txt">
+              <a class="doc-nombre" href={x.ficha}>
+                {x.nombre}
+              </a>
+              <p class="doc-meta">
+                {x.temp && <IconoTemp t={x.temp} size={14} />}
+                {x.fam === 'lab' ? d.laboratorio : t.familias[x.fam]}
+                {x.temp && <> · {t.temperatura[x.temp]}</>}
+              </p>
+              <p class="doc-aviso" data-aviso data-es={d.solo.es} data-en={d.solo.en} hidden />
+            </div>
+            <div class="doc-acc">
+              <a
+                class="acc acc-pdf"
+                href={x.pdf[lang]}
+                target="_blank"
+                rel="noopener"
+                data-pdf
+                title={d.descargarLargo}
+              >
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M12 4v11m-4.5-4.5L12 15l4.5-4.5M5 19.5h14" />
+                </svg>
+                {d.descargar} <span data-lang-pdf>{idiomaReal(x, lang).toUpperCase()}</span>
+              </a>
+              <button type="button" class="acc" data-qr title={d.qr}>
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h2v2h-2zM18 18h2v2h-2zM14 18h2M18 14h2" />
+                </svg>
+                <span class="sr">{d.qr}</span>
+              </button>
+              <button type="button" class="acc" data-copiar title={d.copiar}>
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M10 14a4 4 0 0 0 5.66 0l3-3a4 4 0 0 0-5.66-5.66l-1 1M14 10a4 4 0 0 0-5.66 0l-3 3a4 4 0 0 0 5.66 5.66l1-1" />
+                </svg>
+                <span class="sr">{d.copiar}</span>
+              </button>
+            </div>
+          </li>
+        ))}
+      </ul>
+      <div class="vacio" data-vacio hidden>
+        <p>{d.ninguno}</p>
+        <button type="button" class="arrow" data-borrar>
+          {d.borrar}
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <section class="desc-marca">
+    <div class="wrap">
+      <h2>{d.marca}</h2>
+      <p>{d.marcaTexto}</p>
+      <ul class="logos">
+        {logos.map((l) => (
+          <li>
+            <a class:list={['logo', { oscuro: l.oscuro }]} href={l.src} download>
+              <span class="logo-img">
+                <img src={l.src} alt="" loading="lazy" />
+              </span>
+              <span class="logo-pie">
+                {d.logos[l.id]}
+                <b>SVG</b>
+              </span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  <div class="pack-barra" data-pack-barra hidden>
+    <div class="wrap pack-in">
+      <ul class="pack-minis" data-pack-minis></ul>
+      <p data-pack-txt></p>
+      <button type="button" class="pack-vaciar" data-vaciar>
+        {d.vaciar}
+      </button>
+      <button type="button" class="btn red" data-compartir>
+        {d.compartir}
+      </button>
+    </div>
+  </div>
+
+  <dialog class="ventana" data-ventana aria-labelledby="v-titulo">
+    <button type="button" class="v-cerrar" data-cerrar>
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M6 6l12 12M18 6 6 18"></path>
+      </svg>
+      <span class="sr">{d.cerrar}</span>
+    </button>
+    <div class="v-qr" data-v-qr></div>
+    <div class="v-txt">
+      <span class="eyebrow" data-v-eyebrow></span>
+      <h2 id="v-titulo" data-v-titulo></h2>
+      <p data-v-texto></p>
+      <ul class="v-lista" data-v-lista hidden></ul>
+      <div class="v-acc">
+        <button type="button" class="btn red" data-v-copiar>
+          {d.copiar}
+        </button>
+        <button type="button" class="btn ghost" data-v-share hidden>
+          {d.enviar}
+        </button>
+        <a class="btn ghost" data-v-correo hidden>
+          {d.correo}
+        </a>
+        <button type="button" class="btn ghost" data-v-descargar>
+          {d.qrDescargar}
+        </button>
+      </div>
+    </div>
+  </dialog>
+
+  <div class="sr" aria-live="polite" data-anuncio></div>
+  <script is:inline type="application/json" id="desc-txt" set:html={JSON.stringify(js)} />
+  <template
+    id="desc-qr-txt"
+    data-titulo={d.qrTitulo}
+    data-texto={d.qrTexto}
+    data-pack={d.packTitulo}
+    data-pack-texto={d.packTexto}
+  ></template>
+</Base>
+
+<script>
+  type Lang = 'es' | 'en' | 'fr';
+  const txt = JSON.parse(document.getElementById('desc-txt')!.textContent!) as {
+    lang: Lang;
+    total: [string, string];
+    pack: [string, string];
+    compartido: [string, string];
+    copiar: string;
+    copiado: string;
+    anadir: string;
+    enPack: string;
+    asunto: string;
+  };
+  const plural = ([uno, varios]: [string, string], n: number) => (n === 1 ? uno : varios.replace('#', String(n)));
+  const plano = (s: string) => s.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
+  const $ = <T extends Element = HTMLElement>(sel: string, root: ParentNode = document) => root.querySelector<T>(sel)!;
+
+  const docs = [...document.querySelectorAll<HTMLElement>('.doc')];
+  const q = $<HTMLInputElement>('[data-q]');
+  const famBtns = [...document.querySelectorAll<HTMLButtonElement>('[data-fam]')].filter((b) => b.tagName === 'BUTTON');
+  const langBtns = [...document.querySelectorAll<HTMLButtonElement>('[data-lang]')];
+  const cuenta = $('[data-cuenta]');
+  const vacio = $('[data-vacio]');
+  const anuncio = $('[data-anuncio]');
+  const compartido = $('[data-compartido]');
+
+  const url = new URL(location.href);
+  const PACK = 'oral-pack';
+  let fam = url.searchParams.get('familia') ?? '';
+  let lang = (url.searchParams.get('idioma') as Lang) || txt.lang;
+  let soloPack: string[] | null = url.searchParams.get('pack')?.split(',').filter(Boolean) ?? null;
+  let pack: string[] = [];
+  try {
+    pack = JSON.parse(localStorage.getItem(PACK) ?? '[]');
+  } catch {
+    /* sin almacenamiento, el pack dura lo que la visita */
+  }
+  q.value = url.searchParams.get('q') ?? '';
+
+  const pdfDe = (el: HTMLElement) => el.dataset[lang]!;
+  const nombreDe = (id: string) => docs.find((x) => x.dataset.id === id)?.dataset.nombre ?? id;
+
+  const guardarUrl = () => {
+    const u = new URL(location.href);
+    const set = (k: string, v: string) => (v ? u.searchParams.set(k, v) : u.searchParams.delete(k));
+    set('q', q.value.trim());
+    set('familia', fam);
+    set('idioma', lang === txt.lang ? '' : lang);
+    set('pack', soloPack?.join(',') ?? '');
+    history.replaceState(null, '', u);
+  };
+
+  const pintar = () => {
+    const busca = plano(q.value.trim());
+    let n = 0;
+    for (const el of docs) {
+      const ver =
+        (!soloPack || soloPack.includes(el.dataset.id!)) &&
+        (!fam || el.dataset.fam === fam) &&
+        (!busca || busca.split(/\s+/).every((p) => el.dataset.texto!.includes(p)));
+      el.hidden = !ver;
+      if (ver) n++;
+      const a = $<HTMLAnchorElement>('[data-pdf]', el);
+      a.href = pdfDe(el);
+      const real = el.dataset[`real${lang[0].toUpperCase()}${lang[1]}` as 'realEs'] as Lang;
+      $('[data-lang-pdf]', el).textContent = real.toUpperCase();
+      const aviso = $('[data-aviso]', el);
+      aviso.hidden = real === lang;
+      aviso.textContent = real === lang ? '' : aviso.dataset[real as 'es' | 'en']!;
+    }
+    cuenta.textContent = plural(txt.total, n);
+    // Cada familia dice cuántos folletos le quedan con la búsqueda escrita
+    for (const b of famBtns) {
+      const k = b.dataset.fam;
+      $('[data-n]', b).textContent = String(
+        docs.filter(
+          (el) =>
+            (!soloPack || soloPack.includes(el.dataset.id!)) &&
+            (!k || el.dataset.fam === k) &&
+            (!busca || busca.split(/\s+/).every((p) => el.dataset.texto!.includes(p))),
+        ).length,
+      );
+    }
+    vacio.hidden = n > 0;
+    for (const b of famBtns) b.setAttribute('aria-pressed', String(b.dataset.fam === fam));
+    for (const b of langBtns) b.setAttribute('aria-checked', String(b.dataset.lang === lang));
+    compartido.hidden = !soloPack;
+    if (soloPack) $('[data-compartido-txt]').textContent = plural(txt.compartido, soloPack.length);
+    guardarUrl();
+  };
+
+  // ——— Pack ———
+  const barra = $('[data-pack-barra]');
+  const pintarPack = () => {
+    try {
+      localStorage.setItem(PACK, JSON.stringify(pack));
+    } catch {
+      /* nada */
+    }
+    for (const el of docs) {
+      const dentro = pack.includes(el.dataset.id!);
+      const b = $<HTMLButtonElement>('[data-pack]', el);
+      b.setAttribute('aria-pressed', String(dentro));
+      b.title = dentro ? txt.enPack : txt.anadir;
+      el.classList.toggle('en-pack', dentro);
+    }
+    barra.hidden = pack.length === 0;
+    document.body.classList.toggle('con-pack', pack.length > 0);
+    $('[data-pack-txt]').textContent = plural(txt.pack, pack.length);
+    $('[data-pack-minis]').replaceChildren(
+      ...pack.slice(-5).map((id) => {
+        const li = document.createElement('li');
+        const img = docs.find((x) => x.dataset.id === id)?.querySelector('img');
+        if (img) li.append(Object.assign(new Image(), { src: img.src, alt: '' }));
+        return li;
+      }),
+    );
+  };
+
+  // ——— Ventana: QR de un folleto o del pack ———
+  const ventana = $<HTMLDialogElement>('[data-ventana]');
+  const tq = $<HTMLTemplateElement>('#desc-qr-txt').dataset;
+  let enlace = '';
+  let archivo = 'qr';
+  const copiar = async (texto: string, boton?: HTMLElement) => {
+    try {
+      await navigator.clipboard.writeText(texto);
+      anuncio.textContent = txt.copiado;
+      if (boton) {
+        boton.classList.add('hecho');
+        const antes = boton.title;
+        boton.title = txt.copiado;
+        if (boton.dataset.vCopiar !== undefined) boton.textContent = txt.copiado;
+        setTimeout(() => {
+          boton.classList.remove('hecho');
+          boton.title = antes;
+          if (boton.dataset.vCopiar !== undefined) boton.textContent = txt.copiar;
+        }, 1800);
+      }
+    } catch {
+      /* sin portapapeles */
+    }
+  };
+  const abrir = async (o: {
+    enlace: string;
+    eyebrow: string;
+    titulo: string;
+    texto: string;
+    lista?: string[];
+    archivo: string;
+    pack?: boolean;
+  }) => {
+    enlace = o.enlace;
+    archivo = o.archivo;
+    const { renderSVG } = await import('uqr');
+    $('[data-v-qr]', ventana).innerHTML = renderSVG(enlace, {
+      ecc: 'M',
+      border: 2,
+      pixelSize: 8,
+      blackColor: '#1a1a1a',
+    });
+    $('[data-v-eyebrow]', ventana).textContent = o.eyebrow;
+    $('[data-v-titulo]', ventana).textContent = o.titulo;
+    $('[data-v-texto]', ventana).textContent = o.texto;
+    const lista = $('[data-v-lista]', ventana);
+    lista.hidden = !o.lista;
+    lista.replaceChildren(
+      ...(o.lista ?? []).map((n) => Object.assign(document.createElement('li'), { textContent: n })),
+    );
+    const share = $<HTMLButtonElement>('[data-v-share]', ventana);
+    share.hidden = !o.pack || !('share' in navigator);
+    const correo = $<HTMLAnchorElement>('[data-v-correo]', ventana);
+    correo.hidden = !o.pack;
+    if (o.pack) {
+      const cuerpo = [
+        ...pack.map((id) => `${nombreDe(id)}: ${pdfDe(docs.find((x) => x.dataset.id === id)!)}`),
+        '',
+        enlace,
+      ].join('\n');
+      correo.href = `mailto:?subject=${encodeURIComponent(txt.asunto)}&body=${encodeURIComponent(cuerpo)}`;
+    }
+    ventana.showModal();
+  };
+
+  // ——— Eventos ———
+  q.addEventListener('input', pintar);
+  // «/» lleva al buscador, como en muchas webs de documentación
+  document.addEventListener('keydown', (e) => {
+    if (e.key === '/' && !ventana.open && !(e.target as HTMLElement).closest('input, textarea, select')) {
+      e.preventDefault();
+      q.focus();
+    }
+  });
+  for (const b of famBtns)
+    b.addEventListener('click', () => {
+      fam = b.dataset.fam!;
+      pintar();
+    });
+  for (const b of langBtns)
+    b.addEventListener('click', () => {
+      lang = b.dataset.lang as Lang;
+      pintar();
+    });
+  $('[data-borrar]').addEventListener('click', () => {
+    q.value = '';
+    fam = '';
+    pintar();
+    q.focus();
+  });
+  $('[data-ver-todos]').addEventListener('click', () => {
+    soloPack = null;
+    pintar();
+  });
+
+  for (const el of docs) {
+    const id = el.dataset.id!;
+    $('[data-pack]', el).addEventListener('click', () => {
+      pack = pack.includes(id) ? pack.filter((x) => x !== id) : [...pack, id];
+      pintarPack();
+    });
+    $('[data-copiar]', el).addEventListener('click', (e) => copiar(pdfDe(el), e.currentTarget as HTMLElement));
+    $('[data-qr]', el).addEventListener('click', () =>
+      abrir({
+        enlace: pdfDe(el),
+        eyebrow: `PDF · ${$('[data-lang-pdf]', el).textContent}`,
+        titulo: el.dataset.nombre!,
+        texto: tq.texto!,
+        archivo: `qr-${id}-${lang}`,
+      }),
+    );
+  }
+
+  $('[data-vaciar]').addEventListener('click', () => {
+    pack = [];
+    pintarPack();
+  });
+  $('[data-compartir]').addEventListener('click', () => {
+    const u = new URL(location.pathname, location.origin);
+    u.searchParams.set('pack', pack.join(','));
+    if (lang !== txt.lang) u.searchParams.set('idioma', lang);
+    abrir({
+      enlace: u.href,
+      eyebrow: plural(txt.pack, pack.length),
+      titulo: tq.pack!,
+      texto: tq.packTexto!,
+      lista: pack.map(nombreDe),
+      archivo: 'qr-pack-orto-alresa',
+      pack: true,
+    });
+  });
+
+  $('[data-cerrar]', ventana).addEventListener('click', () => ventana.close());
+  ventana.addEventListener('click', (e) => e.target === ventana && ventana.close());
+  $('[data-v-copiar]', ventana).addEventListener('click', (e) => copiar(enlace, e.currentTarget as HTMLElement));
+  $('[data-v-share]', ventana).addEventListener('click', () =>
+    navigator.share({ title: txt.asunto, text: pack.map(nombreDe).join(', '), url: enlace }).catch(() => {}),
+  );
+  $('[data-v-descargar]', ventana).addEventListener('click', () => {
+    const svg = $('[data-v-qr] svg', ventana).outerHTML;
+    const a = Object.assign(document.createElement('a'), {
+      href: URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml' })),
+      download: `${archivo}.svg`,
+    });
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  });
+
+  pintar();
+  pintarPack();
+</script>
+
+<style>
+  .sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  svg {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.6;
+    stroke-linecap: square;
+  }
+
+  /* ——— Cabecera ——— */
+  .desc-cab {
+    padding: clamp(48px, 7vw, 104px) 0 clamp(28px, 4vw, 48px);
+  }
+  .desc-cab h1 {
+    margin: 18px 0 0;
+    font-size: var(--t-titulo);
+    font-weight: 300;
+    line-height: 0.95;
+    letter-spacing: -0.01em;
+  }
+  .desc-cab h1 b {
+    font-weight: 700;
+    color: var(--red);
+  }
+  .entradilla {
+    max-width: 62ch;
+    margin: 22px 0 0;
+    font-size: var(--t-sub);
+    line-height: 1.45;
+    color: var(--body);
+  }
+
+  /* ——— Barra: buscar, familia e idioma ——— */
+  .barra-desc {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: rgba(255, 255, 255, 0.96);
+    backdrop-filter: blur(8px);
+    border-block: 1px solid var(--line);
+  }
+  .barra-in {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 18px;
+    padding-block: 12px;
+  }
+  .busca {
+    position: relative;
+    flex: 0 1 260px;
+  }
+  .busca svg {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    width: 18px;
+    height: 18px;
+    translate: 0 -50%;
+    color: var(--muted);
+  }
+  .busca input {
+    width: 100%;
+    height: 42px;
+    padding: 0 12px 0 40px;
+    font: inherit;
+    font-size: 16px;
+    color: var(--ink);
+    background: var(--band);
+    border: 1px solid transparent;
+    border-radius: 0;
+    transition:
+      border-color var(--dur-1) var(--ease),
+      background var(--dur-1) var(--ease);
+  }
+  .busca input:hover {
+    background: var(--panel);
+  }
+  .busca input:focus {
+    outline: none;
+    background: var(--white);
+    border-color: var(--ink);
+  }
+  .fams {
+    display: flex;
+    flex: 1 1 auto;
+    gap: 4px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .fam,
+  .lang {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    height: 38px;
+    padding: 0 12px;
+    font: inherit;
+    font-size: 15px;
+    white-space: nowrap;
+    color: var(--body);
+    background: none;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition:
+      color var(--dur-1) var(--ease),
+      background var(--dur-1) var(--ease),
+      border-color var(--dur-1) var(--ease);
+  }
+  .fam span {
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .fam:hover,
+  .lang:hover {
+    color: var(--ink);
+    background: var(--band);
+  }
+  .fam[aria-pressed='true'] {
+    color: var(--white);
+    background: var(--ink);
+  }
+  .fam[aria-pressed='true'] span {
+    color: var(--on-dark);
+  }
+  .langs {
+    display: flex;
+    margin-left: auto;
+    border: 1px solid var(--line);
+  }
+  .lang {
+    height: 36px;
+    padding: 0 10px;
+    font-size: 14px;
+    font-weight: 700;
+  }
+  .lang :global(svg) {
+    width: 18px;
+    height: 12px;
+    stroke: none;
+  }
+  .lang[aria-checked='true'] {
+    color: var(--ink);
+    background: var(--panel);
+    box-shadow: inset 0 -2px var(--red);
+  }
+  .fam:focus-visible,
+  .lang:focus-visible,
+  .acc:focus-visible,
+  .doc-pack:focus-visible,
+  .logo:focus-visible {
+    outline: var(--foco);
+    outline-offset: 2px;
+  }
+
+  /* ——— Lista de folletos ——— */
+  .desc-lista {
+    padding: 28px 0 clamp(64px, 8vw, 112px);
+  }
+  .cuenta {
+    margin: 0 0 18px;
+    font-size: 15px;
+    color: var(--muted);
+  }
+  .compartido[hidden] {
+    display: none;
+  }
+  .compartido {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px 24px;
+    margin-bottom: 20px;
+    padding: 16px 20px;
+    background: var(--band);
+    box-shadow: inset 3px 0 var(--red);
+  }
+  .compartido p {
+    margin: 0;
+    font-size: 19px;
+    font-weight: 700;
+  }
+  .compartido button,
+  .vacio button {
+    padding: 0;
+    font: inherit;
+    font-weight: 700;
+    background: none;
+    border: 0;
+    cursor: pointer;
+  }
+  .docs {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 16px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .doc {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    background: var(--white);
+    border: 1px solid var(--line);
+    transition:
+      border-color var(--dur-2) var(--ease),
+      box-shadow var(--dur-2) var(--ease),
+      translate var(--dur-2) var(--ease-out);
+  }
+  .doc[hidden] {
+    display: none;
+  }
+  .doc:hover {
+    border-color: transparent;
+    box-shadow: var(--sombra-suave);
+    translate: 0 -3px;
+  }
+  .doc.en-pack {
+    border-color: var(--ink);
+    box-shadow: inset 0 0 0 1px var(--ink);
+  }
+  .doc-foto {
+    display: grid;
+    place-items: center;
+    aspect-ratio: 4 / 3;
+    background: var(--esc-estudio);
+    overflow: hidden;
+  }
+  .doc-foto img {
+    width: 72%;
+    height: 88%;
+    object-fit: contain;
+    mix-blend-mode: multiply;
+    transition: scale var(--dur-3) var(--ease-out);
+  }
+  .doc:hover .doc-foto img {
+    scale: 1.05;
+  }
+  .doc-pack {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    color: var(--ink);
+    background: var(--white);
+    border: 1px solid var(--line);
+    cursor: pointer;
+    transition:
+      color var(--dur-1) var(--ease),
+      background var(--dur-1) var(--ease),
+      border-color var(--dur-1) var(--ease);
+  }
+  .doc-pack svg {
+    width: 20px;
+    height: 20px;
+    stroke-width: 1.8;
+  }
+  .doc-pack .ok,
+  .doc-pack[aria-pressed='true'] .mas {
+    display: none;
+  }
+  .doc-pack[aria-pressed='true'] .ok {
+    display: block;
+  }
+  .doc-pack:hover {
+    border-color: var(--ink);
+  }
+  .doc-pack[aria-pressed='true'] {
+    color: var(--white);
+    background: var(--red);
+    border-color: var(--red);
+  }
+  .doc-txt {
+    flex: 1;
+    padding: 16px 18px 12px;
+  }
+  .doc-nombre {
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.1;
+    color: var(--ink);
+    text-decoration: none;
+  }
+  .doc-nombre:hover {
+    color: var(--red);
+  }
+  .doc-meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 6px 0 0;
+    font-size: 15px;
+    color: var(--muted);
+  }
+  .doc-aviso {
+    margin: 8px 0 0;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--t-calefactada);
+  }
+  .doc-acc {
+    display: flex;
+    border-top: 1px solid var(--line);
+  }
+  .acc {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 52px;
+    height: 48px;
+    padding: 0;
+    font: inherit;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--ink);
+    text-decoration: none;
+    background: none;
+    border: 0;
+    border-left: 1px solid var(--line);
+    cursor: pointer;
+    transition:
+      color var(--dur-1) var(--ease),
+      background var(--dur-1) var(--ease);
+  }
+  .acc svg {
+    width: 20px;
+    height: 20px;
+  }
+  .acc-pdf {
+    flex: 1;
+    justify-content: flex-start;
+    padding-left: 18px;
+    border-left: 0;
+  }
+  .acc-pdf span {
+    font-weight: 300;
+    color: var(--muted);
+  }
+  .acc:hover {
+    background: var(--band);
+  }
+  .acc-pdf:hover {
+    color: var(--white);
+    background: var(--red);
+  }
+  .acc-pdf:hover span {
+    color: inherit;
+  }
+  .acc.hecho {
+    color: var(--white);
+    background: var(--t-ventilada);
+  }
+  .vacio {
+    padding: 48px 0;
+    font-size: 19px;
+  }
+
+  /* ——— Logos ——— */
+  .desc-marca {
+    padding: clamp(56px, 7vw, 96px) 0;
+    background: var(--band);
+    border-top: 1px solid var(--line);
+  }
+  .desc-marca h2 {
+    margin: 0;
+    font-size: clamp(30px, 3.4vw, 44px);
+    font-weight: 700;
+  }
+  .desc-marca > .wrap > p {
+    margin: 10px 0 28px;
+    font-size: 18px;
+    color: var(--body);
+  }
+  .logos {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .logo {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    color: var(--ink);
+    text-decoration: none;
+    background: var(--white);
+    border: 1px solid var(--line);
+    transition:
+      border-color var(--dur-2) var(--ease),
+      box-shadow var(--dur-2) var(--ease);
+  }
+  .logo:hover {
+    border-color: transparent;
+    box-shadow: var(--sombra-suave);
+  }
+  .logo-img {
+    display: grid;
+    flex: 1;
+    place-items: center;
+    min-height: 130px;
+    padding: 24px;
+  }
+  .logo-img img {
+    max-width: 100%;
+    max-height: 64px;
+  }
+  .logo.oscuro .logo-img {
+    background: var(--carbon);
+  }
+  .logo-pie {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 12px 16px;
+    font-size: 15px;
+    border-top: 1px solid var(--line);
+  }
+  .logo-pie b {
+    color: var(--muted);
+  }
+  .logo:hover .logo-pie b {
+    color: var(--red);
+  }
+
+  /* ——— Barra del pack ——— */
+  .pack-barra {
+    position: fixed;
+    inset: auto 0 0;
+    z-index: 30;
+    color: var(--white);
+    background: var(--carbon);
+    box-shadow: 0 -14px 40px -20px rgba(0, 0, 0, 0.5);
+    animation: sube var(--dur-3) var(--ease-out);
+  }
+  .pack-barra[hidden] {
+    display: none;
+  }
+  @keyframes sube {
+    from {
+      translate: 0 100%;
+    }
+  }
+  :global(body.con-pack) {
+    padding-bottom: 76px;
+  }
+  .pack-in {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    min-height: 72px;
+  }
+  .pack-minis {
+    display: flex;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .pack-minis :global(li) {
+    width: 44px;
+    height: 44px;
+    margin-left: -10px;
+    background: var(--esc-estudio);
+    border: 2px solid var(--carbon);
+  }
+  .pack-minis :global(li:first-child) {
+    margin-left: 0;
+  }
+  .pack-minis :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    mix-blend-mode: multiply;
+  }
+  .pack-in p {
+    flex: 1;
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+  }
+  .pack-vaciar {
+    padding: 8px;
+    font: inherit;
+    font-size: 15px;
+    color: var(--on-dark);
+    background: none;
+    border: 0;
+    cursor: pointer;
+  }
+  .pack-vaciar:hover {
+    color: var(--white);
+    text-decoration: underline;
+  }
+
+  /* ——— Ventana del QR ——— */
+  .ventana {
+    width: min(760px, calc(100% - 32px));
+    max-height: calc(100% - 32px);
+    padding: 0;
+    color: var(--ink);
+    border: 0;
+    box-shadow: var(--sombra-tarjeta);
+  }
+  .ventana[open] {
+    display: grid;
+    grid-template-columns: minmax(0, 300px) 1fr;
+    animation: aparece var(--dur-2) var(--ease-out);
+  }
+  .ventana::backdrop {
+    background: rgba(21, 23, 25, 0.6);
+    backdrop-filter: blur(3px);
+  }
+  @keyframes aparece {
+    from {
+      opacity: 0;
+      translate: 0 12px;
+    }
+  }
+  .v-cerrar {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    color: var(--ink);
+    background: none;
+    border: 0;
+    cursor: pointer;
+  }
+  .v-cerrar svg {
+    width: 22px;
+    height: 22px;
+  }
+  .v-cerrar:hover {
+    color: var(--red);
+  }
+  .v-qr {
+    display: grid;
+    place-items: center;
+    padding: 28px;
+    background: var(--esc-estudio);
+  }
+  .v-qr :global(svg) {
+    width: 100%;
+    max-width: 240px;
+    height: auto;
+    stroke: none;
+    box-shadow: 0 0 0 1px var(--line);
+  }
+  .v-txt {
+    padding: 36px 32px 32px;
+  }
+  .v-txt h2 {
+    margin: 14px 0 0;
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1.05;
+  }
+  .v-txt > p {
+    margin: 12px 0 0;
+    font-size: 17px;
+    line-height: 1.5;
+    color: var(--body);
+  }
+  .v-lista {
+    margin: 14px 0 0;
+    padding-left: 1.1em;
+    font-size: 16px;
+    columns: 2;
+  }
+  .v-lista :global(li::marker) {
+    color: var(--red);
+  }
+  .v-acc {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 24px;
+  }
+  .v-acc [hidden] {
+    display: none;
+  }
+
+  @media (max-width: 760px) {
+    .barra-in {
+      gap: 8px;
+      padding-block: 10px;
+    }
+    .busca {
+      flex: 1 1 calc(100% - 150px);
+    }
+    .langs {
+      margin-left: 0;
+    }
+    .lang :global(svg) {
+      display: none;
+    }
+    .fams {
+      order: 3;
+      flex-basis: 100%;
+      margin-inline: calc(-1 * var(--gut));
+      padding-inline: var(--gut);
+    }
+    .docs {
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .doc-txt {
+      padding: 12px 12px 10px;
+    }
+    .doc-nombre {
+      font-size: 18px;
+    }
+    .doc-meta {
+      font-size: 13px;
+    }
+    .doc-pack {
+      top: 6px;
+      right: 6px;
+      width: 34px;
+      height: 34px;
+    }
+    .acc {
+      width: 44px;
+      height: 44px;
+    }
+    .acc-pdf {
+      padding-left: 12px;
+      font-size: 14px;
+    }
+    .ventana[open] {
+      grid-template-columns: 1fr;
+    }
+    .v-qr {
+      padding: 24px 24px 16px;
+    }
+    .v-qr :global(svg) {
+      max-width: 200px;
+    }
+    .v-txt {
+      padding: 20px 20px 24px;
+    }
+    .v-txt h2 {
+      font-size: 26px;
+    }
+    .pack-in {
+      gap: 10px;
+    }
+    .pack-minis,
+    .pack-vaciar {
+      display: none;
+    }
+    .pack-in p {
+      font-size: 16px;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .doc,
+    .doc-foto img,
+    .pack-barra,
+    .ventana[open] {
+      transition: none;
+      animation: none;
+    }
+  }
+</style>
