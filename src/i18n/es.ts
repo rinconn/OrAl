@@ -504,6 +504,8 @@ export const es = {
         zMax: 'Z máx.',
         calefaccion: 'Calefacción',
         sinDatos: 'Datos bajo consulta',
+        codigoIvd: 'Código IVD',
+        notaIvd: 'IVD: versión conforme al Reglamento europeo de diagnóstico in vitro (UE) 2017/746.',
       },
       accesorios: 'Accesorios para este modelo',
       mas: 'Más de',

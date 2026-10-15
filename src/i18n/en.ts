@@ -494,6 +494,9 @@ export const en: Textos = {
         zMax: 'Max. Z',
         calefaccion: 'Heating',
         sinDatos: 'Data on request',
+        codigoIvd: 'IVD code',
+        notaIvd:
+          'IVD: version compliant with the European In Vitro Diagnostic Medical Devices Regulation (EU) 2017/746.',
       },
       accesorios: 'Accessories for this model',
       mas: 'More',

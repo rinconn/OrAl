@@ -914,6 +914,7 @@ const descripcion = m
                   <thead>
                     <tr>
                       <th scope="col">{tf.versiones.codigo}</th>
+                      {conIvd && <th scope="col">{tf.versiones.codigoIvd}</th>}
                       {columnas.map((k) => (
                         <th scope="col">{tf.versiones[k]}</th>
                       ))}
@@ -932,20 +933,28 @@ const descripcion = m
                           >
                             {v.codigo}
                           </button>
-                          {v.ivd && (
-                            <button
-                              type="button"
-                              class="copiar"
-                              data-copiar={v.ivd}
-                              data-pista={tf.copiar}
-                              data-hecho={tf.copiado}
-                            >
-                              {v.ivd}
-                            </button>
-                          )}
                         </th>
+                        {conIvd && (
+                          <td class="ivd">
+                            {v.ivd && (
+                              <button
+                                type="button"
+                                class="copiar"
+                                data-copiar={v.ivd}
+                                data-pista={tf.copiar}
+                                data-hecho={tf.copiado}
+                              >
+                                {v.ivd}
+                              </button>
+                            )}
+                          </td>
+                        )}
                         {columnas.some((k) => v[k]) ? (
-                          columnas.map((k) => <td data-k={tf.versiones[k]}>{valor(k, v[k])}</td>)
+                          columnas.map((k) => (
+                            <td class={`c-${k}`} data-k={tf.versiones[k]}>
+                              {valor(k, v[k])}
+                            </td>
+                          ))
                         ) : (
                           <td class="sin-datos" colspan={columnas.length}>
                             {tf.versiones.sinDatos}
@@ -955,6 +964,7 @@ const descripcion = m
                     ))}
                   </tbody>
                 </table>
+                {conIvd && <p class="ref-nota">{tf.versiones.notaIvd}</p>}
               </div>
             )}
             {refBloques.map((b) => (
@@ -2698,11 +2708,10 @@ const descripcion = m
   }
 
   /* ——— Referencias: la tabla de versiones y los accesorios ——— */
-  .versiones tbody th {
+  .versiones tbody th,
+  .versiones td.ivd {
     font-size: 17px;
-  }
-  .versiones tbody th .copiar + .copiar {
-    margin-left: 14px;
+    font-weight: 700;
   }
   /* En móvil, una tarjeta por versión: los códigos arriba y debajo sus datos en dos columnas, cada uno con su nombre.
      Así se ve todo sin deslizar la tabla hacia un lado */
@@ -2735,11 +2744,12 @@ const descripcion = m
       white-space: normal;
       border: 0;
     }
-    .versiones tbody th {
-      grid-column: 1 / -1;
+    /* Arriba, los dos códigos; las medidas, el dato más largo, ocupan dos columnas */
+    .versiones td.ivd {
+      grid-column: span 2;
+      font-size: 17px;
     }
-    /* Las medidas son el dato más largo: ocupan dos columnas */
-    .versiones td:first-of-type {
+    .versiones td.c-medidas {
       grid-column: span 2;
     }
     .versiones td.sin-datos {
@@ -2748,13 +2758,21 @@ const descripcion = m
     .versiones td {
       font-size: 16px;
     }
-    .versiones td::before {
+    .versiones td[data-k]::before {
       content: attr(data-k);
       display: block;
       margin-bottom: 2px;
       font-size: 13px;
       font-weight: 700;
       color: var(--body);
+    }
+  }
+  .versiones + .ref-nota {
+    padding-inline: 14px;
+  }
+  @media (max-width: 760px) {
+    .versiones + .ref-nota {
+      padding-inline: 0;
     }
   }
   /* Una versión sin datos publicados: una frase en vez de una fila de rayas */
