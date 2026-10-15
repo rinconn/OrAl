@@ -1436,3 +1436,59 @@ Las familias pasan a grafito y el rojo de la marca marca dónde empieza cada una
   tamaños: 3.700 px de tira; en móvil sí se desliza), un dibujo genérico para los productos de citología sin medidas
   (parecía provisional: se enseña solo su nombre) y la animación de entrada de cada sección (con ella, una captura
   de la página completa salía en blanco).
+
+## 37. Compatibilidad: un desplegable para el tubo y los rotores en una tabla limpia
+
+- **Problema:** el bloque de §36 pedía dos pasos (tipo de tubo y luego tamaño) antes de enseñar nada: al llegar se
+  veía un recuadro grande sin respuesta, con un título de 56 px que repetía la pestaña y media pantalla vacía a la
+  derecha. En la Digtor 22 eran hasta 26 tamaños de golpe y el bloque medía 2.590 px de alto. Y había que saber de
+  antemano si el tubo del cliente era «fondo plano con tapón (HS)» o «fondo redondo». Una primera versión de este
+  cambio (30 botones de capacidades, rotores en dos columnas con cuatro cifras seguidas y un dibujo diminuto del
+  tubo) cabía en una pantalla, pero se veía todo apretado y pequeño, con números por todas partes.
+- **Ahora:**
+  - **Desde el primer momento se ven los rotores**, en una tabla de una columna con cabecera: Rotor (foto, nombre
+    y tipo), Capacidad máx., Velocidad máx. y Fuerza máx., cada cifra en su columna, y a la derecha «Sus 50 tubos»,
+    que abre su tabla completa.
+  - **Un desplegable grande, «Capacidad del tubo»**, en vez de una fila de botones: todas las capacidades que admite
+    algún rotor, de menor a mayor, y al final lo que el catálogo da sin capacidad (microplacas, deep well, hemólisis,
+    capilares). La capacidad es lo que pone en la caja del tubo; nadie tiene que saber cómo llama el catálogo a su
+    tipo. En el móvil abre el selector del teléfono.
+  - **La respuesta, en la misma tabla**: las columnas pasan a Tubo, Caben y Adaptador. Quedan solo los rotores que
+    lo admiten, cada uno con su tubo y medidas, **«24 tubos»** en grande y el código del adaptador (**RE 526**), que
+    se copia de un clic, o «Sin adaptador». Arriba, «6 de 13 rotores admiten tubos de 0,2 ml» (se anuncia al lector
+    de pantalla) y «Ver todos los rotores».
+  - **Segundo desplegable, opcional: el tipo.** Solo aparece si a esa capacidad le corresponden varios tipos (en
+    15 ml, cónico con tapón, fondo redondo con tapón y extracción de sangre) y deja solo el del cliente.
+  - El desplegable elegido se marca en rojo; al pasar el ratón, gris. En móvil, sin cabecera: cada rotor en su
+    bloque con el nombre de cada cifra encima y «Adaptador» delante del código. Botones de 44 px como mínimo.
+  - Sin JavaScript se ven todos los rotores con sus cifras y sus tablas.
+- **Por qué:** contesta a la única pregunta del distribuidor («mi cliente usa este tubo: ¿qué rotor, cuántos y qué
+  adaptador?») con una elección y una tabla que se lee de un vistazo, porque cada número está debajo de su nombre.
+  Menos cosas a la vez y más grandes: lo que se gana en calma compensa la altura.
+- **Altura:** sin elegir nada, el bloque mide 1.441 px en la Digtor 22 (13 rotores), 529 px en la Minicen y 1.744 px
+  en la Cyto 22 (17 rotores); con un tubo elegido quedan solo los rotores que lo admiten (874 px en la Digtor 22 con
+  0,2 ml). Se dejó así a propósito: meterlo en 800 px obligaba a volver a apretarlo.
+- **Comprobado** en las 84 fichas (28 × 3 idiomas) a 1440 y 390 px con Chromium sin ventana: sin scroll horizontal
+  (tampoco con cada opción elegida), sin errores de JavaScript y sin botones de menos de 44 px en móvil; 4.482
+  opciones de los desplegables probadas, y cada una deja al menos un rotor con su respuesta.
+- **Descartado:** una fila de botones con todas las capacidades (hasta 30 números seguidos), los rotores en dos
+  columnas con sus cifras en una línea (apretado y pequeño), el dibujo del tubo a escala en la respuesta (a 0,2 ml
+  era un punto), una tabla cruzada capacidad × rotor (densa, y en móvil se desliza de lado), elegir rotor a rotor
+  (contesta al revés: para encontrar un tubo hay que mirar los 13) y los dos pasos de §36.
+
+## 38. Datos técnicos: la descripción arriba y los bloques en tres columnas
+
+- **Problema:** la descripción iba en una columna estrecha a la izquierda y las características, apiladas en la otra
+  (Características, Funcionamiento, Seguridad, Normas…, una debajo de otra). Debajo de la descripción quedaban unos
+  1.000 px en blanco, y el título medía 56 px. En la Digtor 22 la sección medía 1.737 px; en móvil, 3.175.
+- **Ahora:** título del mismo tamaño que el de Compatibilidad; la descripción arriba, a todo el ancho (con «Leer
+  más» como antes), y debajo los bloques repartidos en tres columnas que se equilibran solas (dos en tableta). Todo
+  se ve sin pulsar nada: 1.313 px en la Digtor 22. Las listas largas de los equipos de laboratorio (versiones y
+  accesorios) pueden pasar a la columna siguiente. En móvil, cada bloque se pliega con su número de puntos al lado
+  y empieza abierto solo Características; si hay «Leer más», el primer párrafo se corta a 6 líneas: 1.643 px en la
+  Digtor 22. Sin JavaScript se ve todo abierto.
+- **Pendiente (dato de origen):** en la tamizadora, el molino, los destiladores y el GRS, las tablas de «Versiones»
+  llegan de la web actual aplanadas en una lista (cabeceras y valores sueltos). No se reconstruyen a mano para no
+  inventar a qué fila va cada cifra; hay que reimportarlas como tabla.
+- **Descartado:** pestañas por bloque (esconden lo que el distribuidor quiere comparar de un vistazo) y dejar la
+  descripción al lado (es lo que dejaba el hueco en blanco).
