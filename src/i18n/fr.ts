@@ -494,6 +494,7 @@ export const fr: Textos = {
         consumo: 'Consommation',
         zMax: 'Z max.',
         calefaccion: 'Chauffage',
+        sinDatos: 'Données sur demande',
       },
       accesorios: 'Accessoires pour ce modèle',
       mas: 'Plus de',

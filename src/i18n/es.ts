@@ -503,6 +503,7 @@ export const es = {
         consumo: 'Consumo',
         zMax: 'Z máx.',
         calefaccion: 'Calefacción',
+        sinDatos: 'Datos bajo consulta',
       },
       accesorios: 'Accesorios para este modelo',
       mas: 'Más de',

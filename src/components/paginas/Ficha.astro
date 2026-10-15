@@ -944,9 +944,13 @@ const descripcion = m
                             </button>
                           )}
                         </th>
-                        {columnas.map((k) => (
-                          <td data-k={tf.versiones[k]}>{valor(k, v[k])}</td>
-                        ))}
+                        {columnas.some((k) => v[k]) ? (
+                          columnas.map((k) => <td data-k={tf.versiones[k]}>{valor(k, v[k])}</td>)
+                        ) : (
+                          <td class="sin-datos" colspan={columnas.length}>
+                            {tf.versiones.sinDatos}
+                          </td>
+                        )}
                       </tr>
                     ))}
                   </tbody>
@@ -2738,6 +2742,9 @@ const descripcion = m
     .versiones td:first-of-type {
       grid-column: span 2;
     }
+    .versiones td.sin-datos {
+      grid-column: 1 / -1;
+    }
     .versiones td {
       font-size: 16px;
     }
@@ -2749,6 +2756,10 @@ const descripcion = m
       font-weight: 700;
       color: var(--body);
     }
+  }
+  /* Una versión sin datos publicados: una frase en vez de una fila de rayas */
+  .versiones .sin-datos {
+    color: var(--muted);
   }
   /* Tablas de equipos y accesorios, tal como las da la web actual: celdas unidas y los textos largos en varias
      líneas para que la tabla no se salga */
