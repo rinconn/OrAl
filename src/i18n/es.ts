@@ -472,6 +472,8 @@ export const es = {
       version: 'Versión',
       pdf: 'Descargar catálogo PDF',
       distribuidor: 'Pedir a un distribuidor',
+      gama: 'Gama Orto Alresa',
+      supera: 'Por encima de {n} de los {total} modelos',
       secciones: {
         compatibilidad: 'Compatibilidad',
         datos: 'Datos técnicos',
@@ -522,23 +524,34 @@ export const es = {
       ivd: 'también IVD',
       pedir: 'Pedir',
       leerMas: 'Leer más',
+      verTodo: 'Ver los {n}',
+      verMenos: 'Ver menos',
       caracteristicas: 'Características',
+      normas: 'Normas y directivas comunitarias',
       compat: {
-        intro: (n: number) =>
+        titulo: '¿Qué rotor admite el tubo de tu cliente?',
+        intro: (n: number): string =>
           n === 1
-            ? 'Elige tu tubo y verás si este rotor lo admite y con qué adaptador.'
-            : `${n} rotores. Elige tu tubo y verás cuáles lo admiten, cuántos caben y con qué adaptador.`,
-        paso1: 'Tipo de tubo',
-        paso2: 'Tamaño',
-        escala: 'Tubos dibujados a escala con sus medidas reales.',
-        todos: (n: number) => (n === 1 ? '1 rotor' : `Los ${n} rotores`),
-        admiten: (n: number, total: number) =>
-          n === 1 ? `1 de ${total} rotores lo admite` : `${n} de ${total} rotores lo admiten`,
-        tubos: (n: string) => `${n} tubos`,
-        porCiclo: 'por ciclo',
+            ? 'Elige la capacidad de su tubo y verás si este rotor lo admite, cuántos caben y qué adaptador pedir.'
+            : 'Elige la capacidad de su tubo y verás qué rotores lo admiten, cuántos caben y qué adaptador pedir.',
+        capacidad: 'Capacidad del tubo',
+        elige: 'Elige',
+        rotor: 'Rotor',
+        caben: 'Caben',
+        tuboDe: (c: string) => `tubos de ${c}`,
+        tipo: 'Tipo de tubo',
+        todosTipos: 'Todos los tipos',
+        todos: (n: number) => (n === 1 ? '1 rotor.' : `${n} rotores.`),
+        admiten: (n: number, total: number, tubo: string) =>
+          total === 1
+            ? `Este rotor admite ${tubo}`
+            : n === 1
+              ? `1 de ${total} rotores admite ${tubo}`
+              : `${n} de ${total} rotores admiten ${tubo}`,
+        ud: 'tubos',
         sinAdaptador: 'Sin adaptador',
-        verTubos: (n: number) => `Todos sus tubos (${n})`,
-        quitar: 'Ver todos',
+        verTubos: (n: number) => (n === 1 ? 'Su tubo' : `Sus ${n} tubos`),
+        quitar: 'Ver todos los rotores',
       },
       referencias: 'Cada versión con su código. Pulsa un código para copiarlo.',
     },
