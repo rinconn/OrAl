@@ -18,16 +18,12 @@ import { familias, modelos, productos, type Modelo } from '../../data/productos'
 import { accesorios, equipos, type ProductoLab } from '../../data/laboratorio';
 import {
   cifra,
-  familiaTubo,
-  familiasTubo,
   fichaCentrifuga,
   fichaLab,
   medida,
   rotor,
   tipoRotor,
   tipoTubo,
-  type FamiliaTubo,
-  type Rotor,
   type TextosFicha,
   type Tubo,
 } from '../../data/fichas';
@@ -102,61 +98,15 @@ const tiposTexto = tiposDeRotor
 // Referencias: el código de cada versión; las IVD, en la tabla de Referencias
 const conIvd = versiones.some((v) => v.ivd);
 
-// ——— Compatibilidad: los tubos que admite alguno de sus rotores, uno por tipo y medida ———
-type Forma = 'conico' | 'redondo' | 'plano' | 'placa';
-interface TuboFicha {
-  k: string;
-  tipo: string;
-  fam: FamiliaTubo;
-  medidas?: string;
-  capacidad?: string;
-  /** Medidas en mm: diámetro y largo (en placas, ancho y alto) */
-  d?: number;
-  l?: number;
-  forma: Forma;
-  tapon: boolean;
-}
-const claveTubo = (x: Tubo) => `${x.tipo ?? ''}|${x.medidas ?? ''}|${x.capacidad ?? ''}`;
-// "16x132 mm" → [16, 132]; "36-38x195-203 mm" → [38, 203]; "128x86x22 mm" (placa) → [128, 86, 22]
-const mm = (s?: string) => {
-  const n = s
-    ?.replace(/max\.?/i, '')
-    .replace(/mm/i, '')
-    .split(/x/i)
-    .map((x) => Math.max(...x.split('-').map((v) => Number(v.trim().replace(',', '.')))));
-  return n && n.length >= 2 && n.every((v) => v > 0) ? n : undefined;
-};
-const tubosFicha = new Map<string, TuboFicha>();
-for (const r of rotores) {
-  for (const x of r.tubos) {
-    if (!x.tipo || tubosFicha.has(claveTubo(x))) continue;
-    const n = mm(x.medidas);
-    const placa = n?.length === 3;
-    tubosFicha.set(claveTubo(x), {
-      k: `t${tubosFicha.size}`,
-      tipo: x.tipo,
-      fam: familiaTubo(x.tipo),
-      medidas: x.medidas,
-      capacidad: x.capacidad,
-      d: n?.[0],
-      l: placa ? n[2] : n?.[1],
-      forma: placa
-        ? 'placa'
-        : /cónico|microtubos|tiras|traza|cilindro|finger/i.test(x.tipo)
-          ? 'conico'
-          : /plano/i.test(x.tipo)
-            ? 'plano'
-            : 'redondo',
-      tapon: /tapón|microtubos|criotubos|tiras/i.test(x.tipo),
-    });
-  }
-}
-const kDe = (x: Tubo) => tubosFicha.get(claveTubo(x))?.k;
-// Volumen de un tubo para ordenarlos: su capacidad ("7-10 ml" → 10, "1.000 ml" → 1000) o, si no la da, la que
-// sale de sus medidas
-const volumen = (x: TuboFicha) => {
-  const ml = x.capacidad
-    ?.split('-')
+// ——— Compatibilidad: el distribuidor elige la capacidad del tubo de su cliente y cada rotor que lo admite dice cuántos
+// caben y qué adaptador lleva. Las opciones son las capacidades que admite algún rotor, de menor a mayor; lo que no la
+// tiene en el catálogo (microplacas, hemólisis, capilares…) va al final con su nombre
+// Opción de un tubo: su capacidad ("80 ml-85 ml" → "80-85 ml") o, si el catálogo no la da, su tipo
+const opcionDe = (x: Tubo) => (x.capacidad ? `c:${x.capacidad.replace(/\s*ml\s*-\s*/i, '-')}` : `t:${x.tipo}`);
+// "1,5-2,2 ml" → [1.5, 2.2], "1.000 ml" → [1000]: se ordena por la menor y luego por la mayor
+const mls = (c: string) =>
+  c
+    .split('-')
     .map((v) =>
       Number(
         v
@@ -166,63 +116,50 @@ const volumen = (x: TuboFicha) => {
       ),
     )
     .filter((v) => v > 0);
-  if (ml?.length) return Math.max(...ml);
-  return x.d && x.l ? (x.forma === 'placa' ? x.d * 86 * x.l : Math.PI * (x.d / 2) ** 2 * x.l) / 1000 : 0;
-};
-// Familias con algún tubo, en el orden del filtro del catálogo; y dentro, del más pequeño al más grande
-const familiasFicha = familiasTubo
-  .map((f) => ({
-    f,
-    tubos: [...tubosFicha.values()]
-      .filter((x) => x.fam === f)
-      .sort((a, b) => volumen(a) - volumen(b) || (a.l ?? 0) - (b.l ?? 0)),
-  }))
-  .filter((x) => x.tubos.length > 0);
-
-// Dibujo de cada tubo a escala: la misma escala para toda su familia, para que se comparen entre sí, con el más
-// largo a 150 px de alto y el más ancho a 150 px como mucho
-const ALTO = 150;
-const dibujos = new Map<string, { w: number; h: number; cuerpo: string; tapon?: string; nivel: number }>();
-for (const { tubos } of familiasFicha) {
-  const conMedida = tubos.filter((x) => x.d && x.l);
-  if (!conMedida.length) continue;
-  const k = Math.min(ALTO / Math.max(...conMedida.map((x) => x.l!)), 150 / Math.max(...conMedida.map((x) => x.d!)));
-  for (const x of conMedida) {
-    const w = Math.max(4, x.d! * k);
-    const h = Math.max(12, x.l! * k);
-    const c = x.tapon ? Math.min(14, Math.max(3, h * 0.08)) : 0;
-    const f = (v: number) => v.toFixed(1);
-    let cuerpo: string;
-    if (x.forma === 'redondo') {
-      const r = Math.min(w / 2, h - c);
-      cuerpo = `M0 ${f(c)}V${f(h - r)}A${f(w / 2)} ${f(r)} 0 0 0 ${f(w)} ${f(h - r)}V${f(c)}Z`;
-    } else if (x.forma === 'conico') {
-      const cono = Math.min(w * 0.9, (h - c) * 0.38);
-      const punta = w * 0.14;
-      cuerpo = `M0 ${f(c)}V${f(h - cono)}L${f(w / 2 - punta)} ${f(h)}H${f(w / 2 + punta)}L${f(w)} ${f(h - cono)}V${f(c)}Z`;
-    } else if (x.forma === 'plano') {
-      const r = Math.min(5, w * 0.1);
-      cuerpo = `M0 ${f(c)}V${f(h - r)}Q0 ${f(h)} ${f(r)} ${f(h)}H${f(w - r)}Q${f(w)} ${f(h)} ${f(w)} ${f(h - r)}V${f(c)}Z`;
-    } else {
-      cuerpo = `M0 ${f(c)}H${f(w)}V${f(h)}H0Z`;
+interface Opcion {
+  id: string;
+  /** Lo que dice el desplegable: "15 ml" o, sin capacidad, el nombre del tipo ("Microplacas") */
+  nombre: string;
+  /** Lo que se busca, para las frases: "tubos de 15 ml" */
+  que: string;
+  /** Los tipos de tubo de esa capacidad (tipo del ERP, nombre y su frase). Si hay más de uno, un segundo
+   * desplegable (opcional) deja solo el del cliente */
+  tipos: { clave: string; nombre: string; frase: string }[];
+  /** Frase del recuento, ya hecha: "7 de 13 rotores admiten tubos de 15 ml" */
+  frase: string;
+  orden: number[];
+}
+const opciones = new Map<string, Opcion>();
+for (const r of rotores) {
+  for (const x of r.tubos) {
+    if (!x.tipo) continue;
+    const id = opcionDe(x);
+    let o = opciones.get(id);
+    if (!o) {
+      const c = id.slice(2);
+      const n = rotores.filter((y) => y.tubos.some((z) => z.tipo && opcionDe(z) === id)).length;
+      const que = x.capacidad ? tc.tuboDe(medida(lang, c)!) : tipoTubo(lang, x.tipo)!;
+      o = {
+        id,
+        nombre: x.capacidad ? medida(lang, c)! : may(tipoTubo(lang, x.tipo)!),
+        que,
+        tipos: [],
+        frase: tc.admiten(n, rotores.length, que),
+        orden: x.capacidad ? mls(c) : [Infinity],
+      };
+      opciones.set(id, o);
     }
-    const tapon = c ? `M${f(-w * 0.06)} 0H${f(w * 1.06)}V${f(c)}H${f(-w * 0.06)}Z` : undefined;
-    dibujos.set(x.k, { w, h, cuerpo, tapon, nivel: c + (h - c) * (x.forma === 'placa' ? 0.25 : 0.42) });
+    if (o.tipos.some((t) => t.clave === x.tipo)) continue;
+    const nombre = tipoTubo(lang, x.tipo)!;
+    const n = rotores.filter((y) => y.tubos.some((z) => z.tipo === x.tipo && opcionDe(z) === id)).length;
+    o.tipos.push({ clave: x.tipo, nombre, frase: tc.admiten(n, rotores.length, `${o.que} (${nombre})`) });
   }
 }
-// Alto del dibujo más alto de cada familia: todos los de esa familia se apoyan en la misma línea
-const altoFamilia = (tubos: TuboFicha[]) => Math.ceil(Math.max(0, ...tubos.map((x) => dibujos.get(x.k)?.h ?? 0)) + 6);
-const nombreTubo = (x: TuboFicha) => x.capacidad ?? may(tipoTubo(lang, x.tipo)!);
-const textoTubo = (x: TuboFicha) =>
-  [may(tipoTubo(lang, x.tipo)!), x.capacidad && medida(lang, x.capacidad), medida(lang, x.medidas)]
-    .filter(Boolean)
-    .join(', ');
-// Lo que el rotor admite: claves de tubo y familias
-const clavesRotor = (r: Rotor) => [...new Set(r.tubos.map(kDe).filter(Boolean))].join(' ');
-const familiasRotor = (r: Rotor) =>
-  [...new Set(r.tubos.map((x) => x.tipo && familiaTubo(x.tipo)).filter(Boolean))].join(' ');
-// Frases del recuento, ya hechas para cada número (el script solo elige)
-const admiten = Array.from({ length: rotores.length + 1 }, (_, i) => tc.admiten(i, rotores.length));
+const listaOpciones = [...opciones.values()].sort(
+  (a, b) =>
+    a.orden[0] - b.orden[0] || (a.orden.at(-1) ?? 0) - (b.orden.at(-1) ?? 0) || a.nombre.localeCompare(b.nombre, lang),
+);
+const conTipos = listaOpciones.filter((o) => o.tipos.length > 1);
 
 // ——— Referencias: columnas de la tabla de versiones, solo las que tienen algún dato ———
 const columnas = (['medidas', 'peso', 'voltaje', 'frecuencia', 'consumo', 'zMax', 'calefaccion'] as const).filter((k) =>
@@ -241,15 +178,64 @@ const valor = (k: (typeof columnas)[number], v?: string) =>
   v ? (k === 'medidas' ? v.replace(/x/g, ' × ') : v) + unidades[k] : '—';
 
 // Datos técnicos: el primer párrafo a la vista y el resto tras "Leer más"
-const [entrada, ...restoTexto] = txt?.descripcion ?? [];
+// Los párrafos seguidos que empiezan por "• " son una lista (las funciones del GRS)
+const [entrada, ...restoLineas] = (txt?.descripcion ?? []).filter((d) => d.trim());
+const restoTexto = restoLineas.reduce<(string | string[])[]>((acc, d) => {
+  const li = d.match(/^•\s*(.*)/s)?.[1];
+  const ult = acc.at(-1);
+  if (li === undefined) acc.push(d);
+  else if (Array.isArray(ult)) ult.push(li);
+  else acc.push([li]);
+  return acc;
+}, []);
+type BloqueFicha = NonNullable<typeof txt>['bloques'][number];
+// Los bloques con tablas o fotos (versiones, referencias, accesorios) van en Referencias, como tablas de verdad
+const esReferencia = (b: BloqueFicha) => Boolean(b.tablas?.length || b.imagenes?.length);
+const refBloques = txt?.bloques.filter(esReferencia) ?? [];
+// Cada bloque va en su tarjeta; los de normas (solo líneas sin viñeta) quedan fuera, como una línea de texto bajo
+// las tarjetas. Una tarjeta sin ningún punto con texto no se enseña
+const esNormas = (b: BloqueFicha) =>
+  !esReferencia(b) && b.puntos.length > 0 && b.puntos.every((pt) => !pt.punto && !pt.sub);
+const tarjetas =
+  txt?.bloques.filter(
+    (b) => !esReferencia(b) && !esNormas(b) && b.puntos.some((pt) => pt.t.trim() || pt.sub?.length),
+  ) ?? [];
+// Normas y directivas: en un bloque ("Directivas: …" / "Normas: …") o en uno por cada una (el GRS)
+const bloquesNormas = txt?.bloques.filter(esNormas) ?? [];
+const normas = bloquesNormas.length && {
+  titulo: bloquesNormas.length > 1 ? tf.normas : bloquesNormas[0].titulo,
+  filas: bloquesNormas.flatMap((b) =>
+    b.puntos.map((pt) => {
+      const [k, v] = pt.t.split(/:\s*(.*)/s);
+      const lista = (s: string) =>
+        s
+          .replace(/\.$/, '')
+          .split(/\s*,\s*/)
+          .filter(Boolean);
+      return v ? { k, v: lista(v) } : { k: bloquesNormas.length > 1 ? b.titulo : '', v: lista(pt.t) };
+    }),
+  ),
+};
+const VISIBLES = 4;
+const cuenta = (b: (typeof tarjetas)[number]) => b.puntos.filter((pt) => pt.punto || pt.sub).length;
+// Datos técnicos solo si hay algo que enseñar: texto, alguna tarjeta o las normas
+const hayDatos = Boolean(entrada || tarjetas.length || normas);
+// En las tablas de la web actual, los códigos ("CP 007", "PI 226") se copian con un clic, como en las versiones
+const esCodigo = (s: string) => /^[A-Z]{2,3} ?\d{3}[A-Z]*$/.test(s);
+// El bloque que se llama como el apartado ("Referencias") no repite el título
+const tituloRef = (b: BloqueFicha) =>
+  b.titulo.toLowerCase() === tf.secciones.referencias.toLowerCase() ? '' : b.titulo;
 
 const apartados = [
   rotores.length && { id: 'compatibilidad', nombre: tf.secciones.compatibilidad },
-  (txt?.descripcion.length || txt?.bloques.length) && { id: 'datos', nombre: tf.secciones.datos },
-  (versiones.length || deAccesorios.length) && { id: 'referencias', nombre: tf.secciones.referencias },
+  hayDatos && { id: 'datos', nombre: tf.secciones.datos },
+  (versiones.length || deAccesorios.length || refBloques.length) && {
+    id: 'referencias',
+    nombre: tf.secciones.referencias,
+  },
 ].filter(Boolean) as { id: string; nombre: string }[];
 
-// Al final, más de la misma aplicación; si son menos de tres, se completa con la misma temperatura y luego el resto
+// Al final, un carrusel: primero los de la misma aplicación y luego los de la misma temperatura y el resto, hasta nueve
 const mismos = m
   ? modelos.filter((x) => x.categoria === m.categoria && x.slug !== m.slug)
   : (esAccesorio ? accesorios : equipos).filter((x) => x.slug !== p!.slug);
@@ -258,9 +244,104 @@ const otros = m
       .filter((x) => x.categoria !== m.categoria)
       .sort((a, b) => Number(b.temperatura === m.temperatura) - Number(a.temperatura === m.temperatura))
   : [];
-const completa = mismos.length < 3 && otros.length > 0;
-const tres = [...mismos, ...(completa ? otros : [])].slice(0, 3);
+const tres = [...mismos, ...otros].slice(0, 9);
+const completa = tres.length > mismos.length;
 const colorDe = (x: Modelo) => familias[productos.find((s) => s.slug === x.serie)!.familia].color as string;
+
+// Cifras de la cabecera: lo que decide la compra; la temperatura, aquí salvo que se elija como versión
+// ——— Cifras dentro de la gama: velocidad, fuerza y capacidad, cada una con una barra que dice dónde queda este
+// modelo entre la más pequeña y la más grande del catálogo (fuerza y capacidad, en escala logarítmica, porque van de
+// unos pocos ml a litros) ———
+const aNum = (s?: string | number) =>
+  typeof s === 'number'
+    ? s
+    : Number(
+        String(s ?? '')
+          .replace(/\./g, '')
+          .replace(',', '.'),
+      );
+// "12 × 2 ml" → 24; "4 x 750 ml" → 3000; si no se puede leer, NaN y la cifra va sin barra
+const mlTotal = (c: string) => {
+  const r = c.match(/(\d+)\s*[x×]\s*([\d.,]+)\s*ml/i);
+  return r ? Number(r[1]) * aNum(r[2]) : NaN;
+};
+const fmt = (n: number) =>
+  numero(lang, new Intl.NumberFormat('es-ES', { maximumFractionDigits: 1, useGrouping: 'always' }).format(n));
+// ——— Franja técnica: las cifras que deciden la compra, en una línea. Cada una puede llevar su contexto (a cuántos
+// modelos del catálogo supera, su posición en la gama de 0 a 1 y entre qué cifras va) ———
+interface Contexto {
+  supera: string;
+  gama: string;
+  p: number;
+}
+interface Cifra {
+  k: string;
+  ico?: string;
+  v: string;
+  u?: string;
+  ctx?: Contexto;
+  extra?: string;
+}
+const contextoDe = (valor: (x: Modelo) => number, u: string, log: boolean): Contexto | undefined => {
+  if (!m) return undefined;
+  const ns = modelos.map(valor).filter((n) => Number.isFinite(n) && n > 0);
+  const yo = valor(m);
+  if (!Number.isFinite(yo) || yo <= 0 || ns.length < 2) return undefined;
+  const [min, max] = [Math.min(...ns), Math.max(...ns)];
+  const f = log ? Math.log : (z: number) => z;
+  return {
+    // Si no supera a ninguno, la frase no dice nada: queda la microbarra y la gama
+    supera: ns.some((n) => n < yo)
+      ? tf.supera.replace('{n}', String(ns.filter((n) => n < yo).length)).replace('{total}', String(ns.length))
+      : '',
+    gama: `${tf.gama}: ${fmt(min)} – ${fmt(max)}${u}`,
+    p: (f(yo) - f(min)) / (f(max) - f(min) || 1),
+  };
+};
+const cifras: Cifra[] = m
+  ? [
+      {
+        k: tf.velocidad,
+        ico: 'ficha-velocidad',
+        v: numero(lang, m.rpm),
+        u: 'rpm',
+        ctx: contextoDe((x) => aNum(x.rpm), ' rpm', false),
+      },
+      ...(fuerzaDe(m)
+        ? [
+            {
+              k: tf.fuerza,
+              ico: 'ficha-velocidad',
+              v: fuerzaDe(m)!,
+              u: 'xg',
+              ctx: contextoDe((x) => aNum(xgDe(x)), ' xg', true),
+            },
+          ]
+        : []),
+      {
+        k: tf.capacidad,
+        ico: 'ficha-capacidad',
+        v: capacidadDe(m),
+        ctx: contextoDe((x) => mlTotal(x.capacidad), ' ml', true),
+      },
+      ...(rotores.length > 0
+        ? [
+            {
+              k: tf.rotoresFila,
+              ico: 'rotor-add',
+              v: String(rotores.length),
+              u: tiposTexto,
+              extra: rotores.map((r) => r.nombre).join(' · '),
+            },
+          ]
+        : []),
+      { k: tf.pantalla, ico: 'ficha-pantalla', v: m.pantalla },
+    ]
+  : // Equipos y accesorios: sus datos tal como los da el catálogo, y su código
+    [
+      ...t.laboratorio.items[p!.slug].datos.split(' · ').map((v) => ({ k: '', v })),
+      { k: tf.versiones.codigo, v: p!.modelo },
+    ];
 
 const titulo = `${nombre} · ${cat} · Orto Alresa`;
 const descripcion = m
@@ -281,240 +362,237 @@ const descripcion = m
         <span aria-current="page">{nombre}</span>
       </nav>
 
-      <!-- Galería: una vista grande y sus miniaturas debajo. Sin JS se ve la primera -->
-      <div class="galeria">
-        <div class="escena">
-          {vistas.map((v, i) => (
-            <div class="vista" data-tipo={v.tipo} id={`vista-${i}`} hidden={i > 0} role="tabpanel">
-              {v.tipo === '3d' ? (
-                <Visor3D />
-              ) : v.tipo === 'maquina' ? (
-                <>
-                  <img
-                    src={v.src}
-                    alt={nombre}
-                    width={imagen.ancho}
-                    height={imagen.alto}
-                    fetchpriority={i === 0 ? 'high' : undefined}
-                    loading={i === 0 ? undefined : 'lazy'}
-                  />
-                  {m && (
-                    <span class:list={['temp', m.temperatura]}>
-                      <IconoTemp t={m.temperatura} size={16} />
-                      {t.temperatura[m.temperatura]}
-                    </span>
-                  )}
-                </>
-              ) : (
-                <>
-                  <img src={v.src} alt={`${nombre} · ${v.nombre}`} width="720" height="720" loading="lazy" />
-                  <span class="pie-vista">{v.nombre}</span>
-                </>
-              )}
-            </div>
-          ))}
+      <!-- Escaparate: un escenario a sangre con la máquina a la derecha, la tarjeta en un panel oscuro a la izquierda y,
+      abajo, la franja técnica en la misma rejilla. El fondo cambia de tono según la vista -->
+      <div class="escaparate" data-vista={vistas[0]?.tipo ?? 'maquina'}>
+        <!-- Galería: una vista grande y sus miniaturas en una tira vertical. Sin JS se ve la primera; en móvil se desliza -->
+        <div class="galeria">
+          <div class="escena">
+            {vistas.map((v, i) => (
+              <div
+                class="vista"
+                data-tipo={v.tipo}
+                id={`vista-${i}`}
+                hidden={i > 0}
+                role="tabpanel"
+                aria-label={v.tipo === 'maquina' ? nombre : v.nombre}
+              >
+                {v.tipo === '3d' ? (
+                  <Visor3D />
+                ) : v.tipo === 'maquina' ? (
+                  <span class="pieza">
+                    <span class="contacto" aria-hidden="true"></span>
+                    <img
+                      src={v.src}
+                      alt={nombre}
+                      width={imagen.ancho}
+                      height={imagen.alto}
+                      fetchpriority={i === 0 ? 'high' : undefined}
+                      loading={i === 0 ? undefined : 'lazy'}
+                    />
+                  </span>
+                ) : (
+                  <>
+                    <img src={v.src} alt={`${nombre} · ${v.nombre}`} width="720" height="720" loading="lazy" />
+                    <span class="pie-vista">{v.nombre}</span>
+                  </>
+                )}
+              </div>
+            ))}
+          </div>
           <button type="button" class="ampliar" aria-label={tg.ampliar}>
             <svg viewBox="0 0 20 20" aria-hidden="true">
               <path d="M2 7V2h5M13 2h5v5M18 13v5h-5M7 18H2v-5" />
             </svg>
           </button>
+          <!-- Pantalla completa: las fotos grandes sobre negro, con flechas, y clic para acercar donde se pulsa -->
+          <dialog class="visor-foto" aria-label={nombre}>
+            <figure>
+              <img src="" alt="" />
+              <figcaption>
+                <b></b>
+                <span class="lb-cuenta"></span>
+                <span class="lb-pista">{tg.zoom}</span>
+              </figcaption>
+            </figure>
+            <button type="button" class="lb-paso" data-paso="-1" aria-label={tg.anterior}>
+              <svg viewBox="0 0 20 20" aria-hidden="true">
+                <path d="M12.5 4 6.5 10l6 6" />
+              </svg>
+            </button>
+            <button type="button" class="lb-paso" data-paso="1" aria-label={tg.siguiente}>
+              <svg viewBox="0 0 20 20" aria-hidden="true">
+                <path d="m7.5 4 6 6-6 6" />
+              </svg>
+            </button>
+            <button type="button" class="lb-cerrar" aria-label={tg.cerrar}>
+              <svg viewBox="0 0 20 20" aria-hidden="true">
+                <path d="m4 4 12 12M16 4 4 16" />
+              </svg>
+            </button>
+          </dialog>
           {vistas.length > 1 && (
-            <div class="mandos">
-              <button type="button" class="paso" data-paso="-1" aria-label={tg.anterior}>
-                <svg viewBox="0 0 20 20" aria-hidden="true">
-                  <path d="M12.5 4 6.5 10l6 6" />
-                </svg>
-              </button>
-              <span class="cuenta" aria-hidden="true">
-                <b>01</b>
-                <span>/ {String(vistas.length).padStart(2, '0')}</span>
-              </span>
-              <button type="button" class="paso" data-paso="1" aria-label={tg.siguiente}>
-                <svg viewBox="0 0 20 20" aria-hidden="true">
-                  <path d="m7.5 4 6 6-6 6" />
-                </svg>
-              </button>
-            </div>
-          )}
-        </div>
-        <!-- Pantalla completa: las fotos grandes sobre negro, con flechas, y clic para acercar donde se pulsa -->
-        <dialog class="visor-foto" aria-label={nombre}>
-          <figure>
-            <img src="" alt="" />
-            <figcaption>
-              <b></b>
-              <span class="lb-cuenta"></span>
-              <span class="lb-pista">{tg.zoom}</span>
-            </figcaption>
-          </figure>
-          <button type="button" class="lb-paso" data-paso="-1" aria-label={tg.anterior}>
-            <svg viewBox="0 0 20 20" aria-hidden="true">
-              <path d="M12.5 4 6.5 10l6 6" />
-            </svg>
-          </button>
-          <button type="button" class="lb-paso" data-paso="1" aria-label={tg.siguiente}>
-            <svg viewBox="0 0 20 20" aria-hidden="true">
-              <path d="m7.5 4 6 6-6 6" />
-            </svg>
-          </button>
-          <button type="button" class="lb-cerrar" aria-label={tg.cerrar}>
-            <svg viewBox="0 0 20 20" aria-hidden="true">
-              <path d="m4 4 12 12M16 4 4 16" />
-            </svg>
-          </button>
-        </dialog>
-        {vistas.length > 1 && (
-          <div class="miniaturas" role="tablist" aria-label={nombre}>
-            {vistas.map((v, i) => (
-              <button
-                type="button"
-                role="tab"
-                class="mini"
-                data-tipo={v.tipo}
-                data-vista={`vista-${i}`}
-                aria-controls={`vista-${i}`}
-                aria-selected={i === 0 ? 'true' : 'false'}
-                tabindex={i === 0 ? 0 : -1}
-              >
-                <span class="mini-foto">
-                  {v.tipo === '3d' ? <b>3D</b> : <img src={v.src} alt="" width="120" height="100" decoding="async" />}
-                </span>
-                <span class="mini-nombre">{v.nombre}</span>
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
-
-      <div class="datos">
-        <p class="cat">{cat}</p>
-        <h1>{nombre}</h1>
-        <p class="frase">{frase}</p>
-
-        <!-- Lo que decide la compra, en una tabla corta: qué es cada dato a la izquierda y la cifra a la derecha -->
-        {m ? (
-          <dl class="spec">
-            <div>
-              <dt>{tf.velocidad}</dt>
-              <dd>
-                <b>{numero(lang, m.rpm)}</b> <small>rpm</small>
-              </dd>
-            </div>
-            {fuerzaDe(m) && (
-              <div>
-                <dt>{tf.fuerza}</dt>
-                <dd>
-                  <b>{fuerzaDe(m)}</b> <small>xg</small>
-                </dd>
-              </div>
-            )}
-            <div>
-              <dt>{tf.capacidad}</dt>
-              <dd>
-                <b>{capacidadDe(m)}</b>
-              </dd>
-            </div>
-            {rotores.length > 0 && (
-              <div>
-                <dt>{tf.rotoresFila}</dt>
-                <dd>
-                  <b>{rotores.length}</b> <small>{tiposTexto}</small>
-                </dd>
-              </div>
-            )}
-            <div>
-              <dt>{tf.pantalla}</dt>
-              <dd>
-                <b>{m.pantalla}</b>
-              </dd>
-            </div>
-            {hermanos.length > 1 && !versionPorTemp && (
-              <div>
-                <dt>{tf.version}</dt>
-                <dd>
-                  <ul class="version">
-                    {hermanos.map((x) => (
-                      <li>
-                        <a
-                          href={ruta(lang, `/centrifugas/${x.slug}/`)}
-                          aria-current={x.slug === m.slug ? 'page' : undefined}
-                        >
-                          {etiquetaVersion(x)}
-                        </a>
-                      </li>
-                    ))}
-                  </ul>
-                </dd>
-              </div>
-            )}
-            <div>
-              <dt>{t.catalogo.iconos.temperatura}</dt>
-              <dd>
-                {versionPorTemp ? (
-                  <ul class="version">
-                    {hermanos.map((x) => (
-                      <li>
-                        <a
-                          href={ruta(lang, `/centrifugas/${x.slug}/`)}
-                          aria-current={x.slug === m.slug ? 'page' : undefined}
-                          data-t={x.temperatura}
-                        >
-                          <i aria-hidden="true"></i>
-                          {etiquetaVersion(x)}
-                        </a>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <span class="temp-fila" data-t={m.temperatura}>
-                    <IconoTemp t={m.temperatura} />
-                    <b>{may(t.temperatura[m.temperatura])}</b>
+            <div class="miniaturas" role="tablist" aria-label={nombre} aria-orientation="vertical" style="--sel: 0">
+              <span class="mini-raya" aria-hidden="true"></span>
+              {vistas.map((v, i) => (
+                <button
+                  type="button"
+                  role="tab"
+                  class="mini"
+                  data-tipo={v.tipo}
+                  data-vista={`vista-${i}`}
+                  aria-controls={`vista-${i}`}
+                  aria-selected={i === 0 ? 'true' : 'false'}
+                  tabindex={i === 0 ? 0 : -1}
+                >
+                  <span class="mini-foto">
+                    {v.tipo === '3d' ? <b>3D</b> : <img src={v.src} alt="" width="120" height="100" decoding="async" />}
                   </span>
-                )}
-              </dd>
+                  <span class="mini-nombre">{v.nombre}</span>
+                </button>
+              ))}
             </div>
-            {versiones.length > 0 && (
-              <div>
-                <dt>{tf.secciones.referencias}</dt>
-                <dd class="codigos">
-                  {versiones.map((v) => (
-                    <button
-                      type="button"
-                      class="copiar"
-                      data-copiar={v.codigo}
-                      data-pista={tf.copiar}
-                      data-hecho={tf.copiado}
-                    >
-                      {v.codigo}
-                    </button>
-                  ))}
-                  {conIvd && <small>{tf.ivd}</small>}
-                </dd>
-              </div>
-            )}
-          </dl>
-        ) : (
-          <ul class="spec lineas">
-            {t.laboratorio.items[p!.slug].datos.split(' · ').map((x) => (
-              <li>{x}</li>
-            ))}
-            <li>
-              <span>{tf.versiones.codigo}</span>
-              {p!.modelo}
-            </li>
-          </ul>
-        )}
-
-        <div class="botones">
-          <a class="btn red" href={pedir}>
-            {tf.distribuidor}
-          </a>
-          {pdf && (
-            <a class="btn ghost" href={pdf} target="_blank" rel="noopener">
-              {tf.pdf}
-            </a>
           )}
         </div>
+
+        <!-- Tarjeta: panel oscuro sólido (contraste asegurado sobre cualquier vista). Categoría, nombre, frase, temperatura
+        y referencia, y el pedido -->
+        <div class="datos">
+          <p class="cat">{cat}</p>
+          <h1>{nombre}</h1>
+          <p class="frase">{frase}</p>
+
+          <div class="botones">
+            <a class="btn red" href={pedir}>
+              {tf.distribuidor}
+            </a>
+            {pdf && (
+              <a class="btn ghost" href={pdf} target="_blank" rel="noopener">
+                {tf.pdf}
+              </a>
+            )}
+          </div>
+
+          {m && (
+            <dl class="meta">
+              {!versionPorTemp && (
+                <div>
+                  <dt>{t.catalogo.iconos.temperatura}</dt>
+                  <dd class="ico-temp" data-t={m.temperatura}>
+                    <IconoTemp t={m.temperatura} size={18} />
+                    <b>{may(t.temperatura[m.temperatura])}</b>
+                  </dd>
+                </div>
+              )}
+              {hermanos.length > 1 && (
+                <div>
+                  <dt>{versionPorTemp ? t.catalogo.iconos.temperatura : tf.version}</dt>
+                  <dd>
+                    <ul class="version">
+                      {hermanos.map((x) => (
+                        <li>
+                          <a
+                            href={ruta(lang, `/centrifugas/${x.slug}/`)}
+                            aria-current={x.slug === m.slug ? 'page' : undefined}
+                            data-t={versionPorTemp ? x.temperatura : undefined}
+                          >
+                            {versionPorTemp && <IconoTemp t={x.temperatura} size={14} />}
+                            {etiquetaVersion(x)}
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  </dd>
+                </div>
+              )}
+              {versiones.length > 0 && (
+                <div>
+                  <dt>{tf.secciones.referencias}</dt>
+                  <dd class="codigos">
+                    {versiones.map((v) => (
+                      <button type="button" class="copiar" data-copiar={v.codigo}>
+                        <span class="cod">{v.codigo}</span>
+                        <span class="copia-estado" aria-hidden="true">
+                          <span class="c-copiar">
+                            <svg viewBox="0 0 16 16" aria-hidden="true">
+                              <path d="M5.5 5.5h8v8h-8zM10.5 5.5v-3h-8v8h3" />
+                            </svg>
+                            {tf.copiar}
+                          </span>
+                          <span class="c-hecho">
+                            <svg viewBox="0 0 16 16" aria-hidden="true">
+                              <path d="m3 8.5 3.2 3L13 4.5" />
+                            </svg>
+                            {tf.copiado}
+                          </span>
+                        </span>
+                        <span class="sr">{tf.copiar}</span>
+                      </button>
+                    ))}
+                    {conIvd && <small>{tf.ivd}</small>}
+                    <span class="sr aviso-copia" role="status" aria-live="polite" data-hecho={tf.copiado}></span>
+                  </dd>
+                </div>
+              )}
+            </dl>
+          )}
+        </div>
+
+        <!-- Franja técnica: las cifras en una línea, con divisores finos. Cada una se enfoca y anuncia su contexto -->
+        {cifras.length > 0 && (
+          <dl class="franja" style={`--n: ${cifras.length}`}>
+            {cifras.map((x, i) => (
+              <div class:list={['cifra', { codigos: !m && x.k === tf.versiones.codigo }]} style={`--i: ${i}`}>
+                <span class="marea" aria-hidden="true">
+                  <i>
+                    <b />
+                    <b />
+                    <b />
+                  </i>
+                </span>
+                {x.k && (
+                  <dt>
+                    {x.ico && <i class="ico" style={`--ico: url(/img/iconos/${x.ico}.svg)`} aria-hidden="true" />}
+                    {x.k}
+                  </dt>
+                )}
+                <dd>
+                  {/* Con contexto, la cifra es un botón: se enfoca con el teclado (o se toca) y anuncia su contexto */}
+                  {x.ctx || x.extra ? (
+                    <button type="button" class="valor" aria-describedby={`ctx-${i}`}>
+                      <b>{x.v}</b>
+                      {x.u && <small>{x.u}</small>}
+                    </button>
+                  ) : (
+                    <span class="valor">
+                      <b>{x.v}</b>
+                      {x.u && <small>{x.u}</small>}
+                    </span>
+                  )}
+                  {(x.ctx || x.extra) && (
+                    <span
+                      class="ctx"
+                      id={`ctx-${i}`}
+                      role="tooltip"
+                      style={x.ctx ? `--p: ${x.ctx.p.toFixed(3)}` : undefined}
+                    >
+                      {x.ctx && (
+                        <>
+                          {x.ctx.supera && <b>{x.ctx.supera}</b>}
+                          <span class="micro" aria-hidden="true">
+                            <i></i>
+                          </span>
+                          <span>{x.ctx.gama}</span>
+                        </>
+                      )}
+                      {x.extra && <b>{x.extra}</b>}
+                    </span>
+                  )}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        )}
       </div>
     </div>
   </section>
@@ -543,162 +621,127 @@ const descripcion = m
       {rotores.length > 0 && (
         <section class="apartado compat" id="compatibilidad" aria-labelledby="t-compat">
           <div class="wrap">
-            <header class="ap-cab">
-              <h2 id="t-compat">{tf.secciones.compatibilidad}</h2>
+            <header class="cp-cab">
+              <h2 id="t-compat">{tc.titulo}</h2>
               <p>{tc.intro(rotores.length)}</p>
             </header>
 
             <div class="elegir" hidden>
-              <div class="paso-tubo">
-                <p class="paso-t">
-                  <span>1</span>
-                  {tc.paso1}
-                </p>
-                <div class="familias" role="group" aria-label={tc.paso1}>
-                  {familiasFicha.map(({ f }) => (
-                    <button type="button" class="chip" data-fam={f} aria-pressed="false">
-                      {t.catalogo.filtros.familiasTubo[f]}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div class="paso-tubo paso-tam" hidden>
-                <p class="paso-t">
-                  <span>2</span>
-                  {tc.paso2}
-                </p>
-                {familiasFicha.map(({ f, tubos }) => (
-                  <div
-                    class="tubos"
-                    style={`--alto: ${altoFamilia(tubos)}px`}
-                    data-fam={f}
-                    role="group"
-                    aria-label={`${tc.paso2}: ${t.catalogo.filtros.familiasTubo[f]}`}
-                    hidden
-                  >
-                    {tubos.map((x) => {
-                      const dib = dibujos.get(x.k);
-                      return (
-                        <button
-                          type="button"
-                          class="tubo"
-                          data-k={x.k}
-                          aria-pressed="false"
-                          aria-label={textoTubo(x)}
-                          title={textoTubo(x)}
-                        >
-                          {dib && (
-                            <span class="tubo-dib" aria-hidden="true">
-                              <svg
-                                width={(dib.w * 1.12 + 4).toFixed(0)}
-                                height={(dib.h + 4).toFixed(0)}
-                                viewBox={`${(-dib.w * 0.06 - 2).toFixed(1)} -2 ${(dib.w * 1.12 + 4).toFixed(1)} ${(dib.h + 4).toFixed(1)}`}
-                              >
-                                <clipPath id={`c-${x.k}`}>
-                                  <path d={dib.cuerpo} />
-                                </clipPath>
-                                <path class="t-cuerpo" d={dib.cuerpo} />
-                                <rect
-                                  class="t-liquido"
-                                  clip-path={`url(#c-${x.k})`}
-                                  x="0"
-                                  y={dib.nivel.toFixed(1)}
-                                  width={dib.w.toFixed(1)}
-                                  height={(dib.h - dib.nivel).toFixed(1)}
-                                />
-                                <path class="t-borde" d={dib.cuerpo} />
-                                {dib.tapon && <path class="t-tapon" d={dib.tapon} />}
-                              </svg>
-                            </span>
-                          )}
-                          <b>{nombreTubo(x)}</b>
-                          {x.medidas && <small>{medida(lang, x.medidas)}</small>}
-                        </button>
-                      );
-                    })}
-                  </div>
-                ))}
-                {familiasFicha
-                  .filter(({ tubos }) => tubos.some((x) => dibujos.has(x.k)))
-                  .map(({ f }) => (
-                    <p class="escala" data-fam={f} hidden>
-                      {tc.escala}
-                    </p>
-                  ))}
-              </div>
-            </div>
-
-            <div class="resultado">
-              <p
-                class="recuento"
-                aria-live="polite"
-                data-admiten={JSON.stringify(admiten)}
-                data-todos={tc.todos(rotores.length)}
-              >
-                <span>{tc.todos(rotores.length)}</span>
-                <button type="button" class="quitar arrow" hidden>
+              <label class="campo">
+                <span>{tc.capacidad}</span>
+                <span class="sel">
+                  <select class="sel-cap">
+                    <option value="">{tc.elige}</option>
+                    {listaOpciones.map((o) => (
+                      <option
+                        value={o.id}
+                        data-frase={o.frase}
+                        data-tipos={
+                          o.tipos.length > 1
+                            ? JSON.stringify(o.tipos.map((x) => [x.clave, may(x.nombre), x.frase]))
+                            : undefined
+                        }
+                      >
+                        {o.nombre}
+                      </option>
+                    ))}
+                  </select>
+                </span>
+              </label>
+              {conTipos.length > 0 && (
+                <label class="campo campo-tipo" hidden>
+                  <span>{tc.tipo}</span>
+                  <span class="sel">
+                    <select class="sel-tipo" data-todos={tc.todosTipos} />
+                  </span>
+                </label>
+              )}
+              <p class="estado">
+                <span class="aviso" aria-live="polite" data-todos={tc.todos(rotores.length)}>
+                  {tc.todos(rotores.length)}
+                </span>
+                <button type="button" class="quitar" hidden>
                   {tc.quitar}
                 </button>
               </p>
+            </div>
+
+            <div>
+              <div class="cp-th" aria-hidden="true">
+                <span>{tc.rotor}</span>
+                <span class="th-cifras">
+                  <span>{tf.capacidad}</span>
+                  <span>{tf.velocidad}</span>
+                  <span>{tf.fuerza}</span>
+                </span>
+                <span class="th-encaja">
+                  <span>{tf.rotores.tubo}</span>
+                  <span>{tc.caben}</span>
+                  <span>{tf.rotores.reductor}</span>
+                </span>
+              </div>
               <ul class="rotores">
                 {rotores.map((r) => (
-                  <li class="rc" data-ks={clavesRotor(r)} data-fams={familiasRotor(r)}>
-                    <div class="rc-fila">
+                  <li class="rc" data-nombre={r.nombre}>
+                    <div class="rc-rotor">
                       <span class="rc-foto">
                         {r.imagen && (
                           <img src={r.imagen} alt="" width="480" height="480" loading="lazy" decoding="async" />
                         )}
                       </span>
-                      <div class="rc-nombre">
-                        <p class="rc-tipo">{tipoRotor(lang, r.tipo)}</p>
+                      <div>
                         <h3>{r.nombre}</h3>
+                        <p class="rc-tipo">{tipoRotor(lang, r.tipo)}</p>
                         {r.noEn && <p class="rc-no">{tf.rotores.noEn(r.noEn.join(', '))}</p>}
                       </div>
-                      <div class="rc-cabe">
-                        <p class="rc-base">
-                          <b>{medida(lang, r.capacidad) ?? '—'}</b>
-                          <span>{tf.capacidad}</span>
-                        </p>
-                        <ul class="rc-encaja" hidden>
-                          {r.tubos.map((x) => (
-                            <li data-k={kDe(x)} hidden>
-                              <span class="cuantos">
-                                <b>{tc.tubos(x.posiciones ?? '—')}</b>
-                                <span>{tc.porCiclo}</span>
+                    </div>
+                    <dl class="rc-cifras">
+                      <div>
+                        <dt>{tf.capacidad}</dt>
+                        <dd>{medida(lang, r.capacidad) ?? '—'}</dd>
+                      </div>
+                      <div>
+                        <dt>{tf.velocidad}</dt>
+                        <dd>{r.rpm ? `${cifra(lang, r.rpm)} rpm` : '—'}</dd>
+                      </div>
+                      <div>
+                        <dt>{tf.fuerza}</dt>
+                        <dd>{r.xg ? `${cifra(lang, r.xg)} xg` : '—'}</dd>
+                      </div>
+                    </dl>
+                    {r.tubos.length > 0 && (
+                      <ul class="encaja" hidden>
+                        {r.tubos
+                          .filter((x) => x.tipo)
+                          .map((x) => (
+                            <li data-op={opcionDe(x)} data-tipo={x.tipo} hidden>
+                              <span class="en-que">
+                                {may(tipoTubo(lang, x.tipo)!)}
+                                {x.medidas && <small>{medida(lang, x.medidas)}</small>}
                               </span>
-                              {x.reductor ? (
-                                <button
-                                  type="button"
-                                  class="copiar adaptador"
-                                  data-copiar={x.reductor}
-                                  data-pista={tf.copiar}
-                                  data-hecho={tf.copiado}
-                                >
-                                  {tf.rotores.reductor} {x.reductor}
-                                </button>
-                              ) : (
-                                <em>{tc.sinAdaptador}</em>
-                              )}
+                              <span class="en-n">
+                                <b>{x.posiciones ?? '—'}</b> {tc.ud}
+                              </span>
+                              <span class="en-ad">
+                                <span class="en-et">{tf.rotores.reductor}</span>
+                                {x.reductor ? (
+                                  <button
+                                    type="button"
+                                    class="copiar adaptador"
+                                    data-copiar={x.reductor}
+                                    data-pista={tf.copiar}
+                                    data-hecho={tf.copiado}
+                                  >
+                                    {x.reductor}
+                                  </button>
+                                ) : (
+                                  <em>{tc.sinAdaptador}</em>
+                                )}
+                              </span>
                             </li>
                           ))}
-                        </ul>
-                      </div>
-                      <dl class="rc-cifras">
-                        <div>
-                          <dt>{tf.velocidad}</dt>
-                          <dd>
-                            {cifra(lang, r.rpm)} <small>rpm</small>
-                          </dd>
-                        </div>
-                        <div>
-                          <dt>{tf.fuerza}</dt>
-                          <dd>
-                            {cifra(lang, r.xg)} <small>xg</small>
-                          </dd>
-                        </div>
-                      </dl>
-                    </div>
+                      </ul>
+                    )}
                     {r.tubos.length > 0 && (
                       <details class="rc-tabla">
                         <summary>{tc.verTubos(r.tubos.length)}</summary>
@@ -715,7 +758,7 @@ const descripcion = m
                             </thead>
                             <tbody>
                               {r.tubos.map((tb) => (
-                                <tr data-k={kDe(tb)}>
+                                <tr data-op={tb.tipo && opcionDe(tb)} data-tipo={tb.tipo}>
                                   <td class="num">{tb.posiciones}</td>
                                   <td>{may(tipoTubo(lang, tb.tipo) ?? '—')}</td>
                                   <td>{medida(lang, tb.capacidad) ?? '—'}</td>
@@ -755,10 +798,10 @@ const descripcion = m
         </section>
       )}
 
-      {txt?.descripcion.length || txt?.bloques.length ? (
-        <section class="apartado" id="datos" aria-labelledby="t-datos">
-          <div class="wrap datos-in">
-            <header class="ap-cab">
+      {hayDatos ? (
+        <section class="apartado datos" id="datos" aria-labelledby="t-datos">
+          <div class="wrap">
+            <header class="cp-cab">
               <h2 id="t-datos">{tf.secciones.datos}</h2>
             </header>
             {entrada && (
@@ -767,19 +810,43 @@ const descripcion = m
                 {restoTexto.length > 0 && (
                   <details class="leer">
                     <summary>{tf.leerMas}</summary>
-                    {restoTexto.map((d) => (
-                      <p>{d}</p>
-                    ))}
+                    {restoTexto.map((d) =>
+                      Array.isArray(d) ? (
+                        <ul class="t-lista">
+                          {d.map((li) => (
+                            <li>{li}</li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p>{d}</p>
+                      ),
+                    )}
+                    {txt?.video && (
+                      <div class="video">
+                        <iframe
+                          src={`https://www.youtube-nocookie.com/embed/${txt.video}`}
+                          title={nombre}
+                          loading="lazy"
+                          allow="accelerometer; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+                          allowfullscreen
+                        ></iframe>
+                      </div>
+                    )}
                   </details>
                 )}
               </div>
             )}
-            {txt?.bloques.length ? (
+            {tarjetas.length ? (
               <div class="bloques">
-                {txt.bloques.map((b) => (
-                  <article>
-                    <h3>{b.titulo || tf.caracteristicas}</h3>
-                    <ul>
+                {tarjetas.map((b, i) => (
+                  <article class="bloque" style={`--i: ${i}`} data-visibles={VISIBLES}>
+                    <span class="b-marco" aria-hidden="true"></span>
+                    <header class="b-cab">
+                      <span class="b-num">{String(i + 1).padStart(2, '0')}</span>
+                      <h3>{b.titulo || tf.caracteristicas}</h3>
+                      {cuenta(b) > 0 && <span class="b-n">{cuenta(b)}</span>}
+                    </header>
+                    <ul class="b-lista">
                       {b.puntos.map((pt) =>
                         pt.punto || pt.sub ? (
                           <li>
@@ -797,15 +864,44 @@ const descripcion = m
                         ),
                       )}
                     </ul>
+                    {b.puntos.length > VISIBLES && (
+                      <button
+                        type="button"
+                        class="b-mas"
+                        aria-expanded="false"
+                        hidden
+                        data-mas={tf.verTodo.replace('{n}', String(cuenta(b) || b.puntos.length))}
+                        data-menos={tf.verMenos}
+                      >
+                        <span>{tf.verTodo.replace('{n}', String(cuenta(b) || b.puntos.length))}</span>
+                      </button>
+                    )}
                   </article>
                 ))}
+              </div>
+            ) : null}
+            {normas ? (
+              <div class="normas">
+                <h3>{normas.titulo}</h3>
+                <dl>
+                  {normas.filas.map((f) => (
+                    <div class="n-fila">
+                      {f.k && <dt>{f.k}</dt>}
+                      <dd>
+                        {f.v.map((v) => (
+                          <span class="n-cod">{v}</span>
+                        ))}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
               </div>
             ) : null}
           </div>
         </section>
       ) : null}
 
-      {(versiones.length > 0 || deAccesorios.length > 0) && (
+      {(versiones.length > 0 || deAccesorios.length > 0 || refBloques.length > 0) && (
         <section class="apartado" id="referencias" aria-labelledby="t-refs">
           <div class="wrap">
             <header class="ap-cab">
@@ -857,6 +953,71 @@ const descripcion = m
                 </table>
               </div>
             )}
+            {refBloques.map((b) => (
+              <div class="ref-bloque">
+                {tituloRef(b) && <h3>{tituloRef(b)}</h3>}
+                {b.tablas?.map((tb) => (
+                  <div class="tabla-scroll">
+                    <table class="versiones ref-tabla">
+                      <thead>
+                        {tb.cabecera.map((fila) => (
+                          <tr>
+                            {fila.map((c) => (
+                              <th scope="col" colspan={c.span}>
+                                {c.t}
+                              </th>
+                            ))}
+                          </tr>
+                        ))}
+                      </thead>
+                      <tbody>
+                        {tb.filas.map((fila) => (
+                          <tr>
+                            {fila.map((c) => (
+                              <td colspan={c.span}>
+                                {esCodigo(c.t) ? (
+                                  <button
+                                    type="button"
+                                    class="copiar"
+                                    data-copiar={c.t}
+                                    data-pista={tf.copiar}
+                                    data-hecho={tf.copiado}
+                                  >
+                                    {c.t}
+                                  </button>
+                                ) : (
+                                  c.t
+                                )}
+                              </td>
+                            ))}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ))}
+                {b.puntos.map((pt) =>
+                  pt.punto ? (
+                    <p class="ref-nota">{pt.t}</p>
+                  ) : b.puntos.length > 1 && pt === b.puntos[0] && pt.t.length < 60 ? (
+                    <h4>{pt.t}</h4>
+                  ) : (
+                    <p class="ref-nota">{pt.t}</p>
+                  ),
+                )}
+                {b.imagenes?.map((im) => (
+                  <img
+                    class="ref-foto"
+                    src={im.src}
+                    alt={im.alt || b.titulo}
+                    width={im.ancho}
+                    height={im.alto}
+                    loading="lazy"
+                    decoding="async"
+                  />
+                ))}
+              </div>
+            ))}
             {deAccesorios.length > 0 && (
               <div class="accesorios">
                 <h3>{tf.accesorios}</h3>
@@ -876,76 +1037,212 @@ const descripcion = m
   )}
 
   {tres.length > 0 && (
-    <section class="mas">
+    <section class="mas raya">
       <div class="wrap">
         <div class="cabeza">
           <h2>
             {completa ? tf.otras[0] : tf.mas} <b>{completa ? tf.otras[1] : cat}</b>
           </h2>
-          <a class="arrow" href={ruta(lang, `/centrifugas/?c=${catClave}`)}>
-            {tf.volver}
-          </a>
+          <div class="cabeza-der">
+            <a class="arrow" href={ruta(lang, `/centrifugas/?c=${catClave}`)}>
+              {tf.volver}
+            </a>
+          </div>
         </div>
-        <ul class="rejilla">
-          {tres.map((x) => (
-            <li>
-              {'rpm' in x ? (
-                <Maquina
-                  versiones={[{ m: x, capacidad: capacidadDe(x), fuerza: fuerzaDe(x) }]}
-                  uso={t.catalogo.categorias[x.categoria]}
-                  frase={textoSerie(lang, x.serie).frase}
-                  color={colorDe(x)}
-                />
-              ) : (
-                <Maquina lab={x} uso={cat} frase={t.laboratorio.items[x.slug].frase} color="#8c959b" />
-              )}
-            </li>
-          ))}
-        </ul>
+        <div class="carrusel">
+          <ul class="rejilla pista">
+            {tres.map((x) => (
+              <li>
+                {'rpm' in x ? (
+                  <Maquina
+                    versiones={[{ m: x, capacidad: capacidadDe(x), fuerza: fuerzaDe(x) }]}
+                    uso={t.catalogo.categorias[x.categoria]}
+                    frase={textoSerie(lang, x.serie).frase}
+                    color={colorDe(x)}
+                  />
+                ) : (
+                  <Maquina lab={x} uso={cat} frase={t.laboratorio.items[x.slug].frase} color="#8c959b" />
+                )}
+                <button
+                  type="button"
+                  class="pres"
+                  data-slug={x.slug}
+                  aria-pressed="false"
+                  aria-label={`${t.catalogo.presupuesto.anadir}: ${'rpm' in x ? x.nombre : t.laboratorio.items[x.slug].nombre}`}
+                >
+                  <svg class="pres-mas" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                    <path d="M12 5v14M5 12h14" />
+                  </svg>
+                  <svg class="pres-si" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                    <path d="m5 12.5 4.5 4.5L19 7.5" />
+                  </svg>
+                  {t.catalogo.presupuesto.corto}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
     </section>
   )}
 </Base>
 
 <script>
-  // Galería: cada miniatura enseña su vista; las flechas (del escenario o del teclado) pasan de una a otra
+  // Galería: cada miniatura enseña su vista (flechas del teclado en la tira); el fondo del escaparate cambia de tono
+  // con ella y el indicador rojo se desliza a la elegida. En móvil las vistas van en fila y se deslizan con imán
+  const escaparate = document.querySelector<HTMLElement>('.escaparate');
   const escena = document.querySelector<HTMLElement>('.escena');
+  const tira = document.querySelector<HTMLElement>('.miniaturas');
   const minis = [...document.querySelectorAll<HTMLButtonElement>('.miniaturas .mini')];
   const vistas = [...document.querySelectorAll<HTMLElement>('.escena .vista')];
-  const cuenta = document.querySelector<HTMLElement>('.cuenta b');
   const dos = (n: number) => String(n).padStart(2, '0');
+  const deslizar = matchMedia('(max-width: 760px)');
+  const quieto = matchMedia('(prefers-reduced-motion: reduce)');
   let iVista = 0;
-  const verVista = (i: number) => {
+  const verVista = (i: number, desdeScroll = false) => {
     iVista = (i + vistas.length) % vistas.length;
-    vistas.forEach((v, j) => (v.hidden = j !== iVista));
+    vistas.forEach((v, j) => (v.hidden = !deslizar.matches && j !== iVista));
     minis.forEach((x, j) => {
       x.setAttribute('aria-selected', String(j === iVista));
       x.tabIndex = j === iVista ? 0 : -1;
     });
-    // La miniatura elegida, a la vista en su tira (sin mover la página)
-    const mi = minis[iVista];
-    if (mi) {
-      const tira = mi.parentElement!;
-      if (mi.offsetLeft < tira.scrollLeft || mi.offsetLeft + mi.offsetWidth > tira.scrollLeft + tira.clientWidth) {
-        tira.scrollTo({ left: mi.offsetLeft - 8, behavior: 'smooth' });
-      }
+    tira?.style.setProperty('--sel', String(iVista));
+    escaparate?.setAttribute('data-vista', vistas[iVista].dataset.tipo!);
+    if (deslizar.matches && escena && !desdeScroll) {
+      escena.scrollTo({ left: iVista * escena.clientWidth, behavior: quieto.matches ? 'auto' : 'smooth' });
     }
-    if (cuenta) cuenta.textContent = dos(iVista + 1);
-    escena?.setAttribute('data-vista', vistas[iVista].dataset.tipo!);
   };
   minis.forEach((b, i) => {
     b.addEventListener('click', () => verVista(i));
     b.addEventListener('keydown', (e) => {
-      const j = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+      const j = ['ArrowDown', 'ArrowRight'].includes(e.key) ? 1 : ['ArrowUp', 'ArrowLeft'].includes(e.key) ? -1 : 0;
       if (!j) return;
+      e.preventDefault();
       verVista(i + j);
       minis[iVista].focus();
     });
   });
-  for (const b of document.querySelectorAll<HTMLButtonElement>('.mandos .paso')) {
-    b.addEventListener('click', () => verVista(iVista + Number(b.dataset.paso)));
+  // Al deslizar, la vista que queda centrada pasa a ser la elegida
+  let tScroll = 0;
+  escena?.addEventListener(
+    'scroll',
+    () => {
+      if (!deslizar.matches) return;
+      clearTimeout(tScroll);
+      tScroll = window.setTimeout(() => {
+        const i = Math.round(escena.scrollLeft / escena.clientWidth);
+        if (i !== iVista) verVista(i, true);
+      }, 90);
+    },
+    { passive: true },
+  );
+  deslizar.addEventListener('change', () => verVista(iVista));
+  if (vistas.length) verVista(0, true);
+
+  // Parallax: la máquina se mueve hasta 6 px con el ratón. Solo con ratón y sin movimiento reducido
+  const pieza = document.querySelector<HTMLElement>('.pieza');
+  if (escaparate && pieza && matchMedia('(pointer: fine)').matches && !quieto.matches) {
+    escaparate.addEventListener('pointermove', (e) => {
+      const r = escaparate.getBoundingClientRect();
+      const x = ((e.clientX - r.left) / r.width - 0.5) * 2;
+      const y = ((e.clientY - r.top) / r.height - 0.5) * 2;
+      pieza.style.setProperty('--px', `${(-x * 6).toFixed(1)}px`);
+      pieza.style.setProperty('--py', `${(-y * 4).toFixed(1)}px`);
+    });
+    escaparate.addEventListener('pointerleave', () => {
+      pieza.style.setProperty('--px', '0px');
+      pieza.style.setProperty('--py', '0px');
+    });
   }
-  if (vistas.length) verVista(0);
+
+  // Pompas, entrada: la primera vez que se ven, el rojo las recorre de una en una (pompa, puente, pompa...) y al llegar
+  // a la última se vacían todas a la vez. Una sola vez; con movimiento reducido, nada
+  const pompas = [...document.querySelectorAll<HTMLElement>('.franja .cifra')];
+  const franja = document.querySelector('.franja');
+  if (franja && pompas.length > 1 && !quieto.matches) {
+    // Una pompa tarda 0,75 s en llenarse (rápido al principio, más lento al final). Cuando su nivel llega al tubo (30 %),
+    // el líquido sale por él, lo cruza en 0,25 s y empieza a llenar la siguiente. Al llenarse la última, un respiro y se
+    // vacían todas, de la última a la primera, acelerando. Cada pompa chapotea a su manera (amplitud, ritmo y amortiguado)
+    const LLENADO = 0.75;
+    const TUBO = 0.25;
+    const UMBRAL = 0.3;
+    const RESPIRO = 0.45;
+    const VACIADO = 1.2;
+    const corrientes = [
+      { a: 7, w: 9, tau: 0.6, t: '1.2s', h: '12px', dir: 'normal' },
+      { a: -5, w: 12, tau: 0.5, t: '1.7s', h: '9px', dir: 'reverse' },
+      { a: 8, w: 7.5, tau: 0.75, t: '1s', h: '14px', dir: 'normal' },
+      { a: -6, w: 10.5, tau: 0.55, t: '1.5s', h: '10px', dir: 'reverse' },
+      { a: 6, w: 8.5, tau: 0.65, t: '1.3s', h: '13px', dir: 'normal' },
+    ];
+    const liquidos = pompas.map((c) => c.querySelector<HTMLElement>('.marea i')!);
+    const recorrido = () => {
+      const n = pompas.length;
+      const inicio: (number | null)[] = pompas.map((_, k) => (k === 0 ? 0 : null));
+      const tubo: (number | null)[] = pompas.map(() => null);
+      let vaciado: number | null = null;
+      pompas.forEach((c, k) => {
+        const co = corrientes[k % corrientes.length];
+        c.style.setProperty('--ola-t', co.t);
+        c.style.setProperty('--ola-h', co.h);
+        c.style.setProperty('--ola-dir', co.dir);
+        c.classList.add('activa');
+      });
+      const chapoteo = (k: number, dt: number) => {
+        const co = corrientes[k % corrientes.length];
+        return dt < 0 ? 0 : co.a * Math.exp(-dt / co.tau) * Math.sin(co.w * dt);
+      };
+      const t0 = performance.now();
+      const paso = (ahora: number) => {
+        const t = (ahora - t0) / 1000;
+        let fin = true;
+        pompas.forEach((c, k) => {
+          const s = inicio[k];
+          let nivel = 0;
+          if (s !== null) {
+            const x = Math.min(1, (t - s) / LLENADO);
+            nivel = 1 - (1 - x) ** 1.7;
+            if (k < n - 1 && tubo[k] === null && nivel >= UMBRAL) tubo[k] = t;
+            if (k === n - 1 && x >= 1 && vaciado === null) vaciado = t + RESPIRO;
+          }
+          let giro = s === null ? 0 : chapoteo(k, t - s);
+          let resto = 1;
+          if (vaciado !== null) {
+            const v = Math.min(1, Math.max(0, (t - vaciado - (n - 1 - k) * 0.12) / VACIADO));
+            resto = 1 - v ** 1.5;
+            giro += chapoteo(k, t - vaciado) * 0.6;
+            if (v < 1) fin = false;
+          } else fin = false;
+          nivel *= resto;
+          liquidos[k].style.transform =
+            `translateY(${((1 - nivel) * 114 + 6).toFixed(2)}cqh) rotate(${giro.toFixed(2)}deg)`;
+          c.classList.toggle('llena', nivel > 0.15);
+          // El tubo de la izquierda de esta pompa: lleno según avanza el líquido de la anterior
+          const tk = tubo[k - 1];
+          if (k > 0) {
+            let p = tk === null ? 0 : Math.min(1, (t - tk) / TUBO);
+            if (p >= 1 && inicio[k] === null) inicio[k] = t;
+            p *= resto;
+            c.style.setProperty('--tubo', p.toFixed(3));
+          }
+        });
+        if (!fin) requestAnimationFrame(paso);
+        else
+          pompas.forEach((c, k) => {
+            c.classList.remove('activa', 'llena');
+            c.style.removeProperty('--tubo');
+            liquidos[k].style.removeProperty('transform');
+          });
+      };
+      requestAnimationFrame(paso);
+    };
+    const vigia = new IntersectionObserver(([e]) => {
+      if (!e.isIntersecting) return;
+      vigia.disconnect();
+      setTimeout(recorrido, 700);
+    });
+    vigia.observe(franja);
+  }
 
   // Pantalla completa: solo las fotos (el 3D tiene su propio visor). Clic en la foto para acercar donde se pulsa
   const visor = document.querySelector<HTMLDialogElement>('.visor-foto');
@@ -970,7 +1267,7 @@ const descripcion = m
       verFoto(i);
       visor.showModal();
     };
-    escena.querySelector('.ampliar')!.addEventListener('click', abrir);
+    document.querySelector('.ampliar')?.addEventListener('click', abrir);
     for (const f of fotos) f.querySelector('img')!.addEventListener('click', abrir);
     for (const b of visor.querySelectorAll<HTMLButtonElement>('.lb-paso')) {
       b.hidden = fotos.length < 2;
@@ -990,87 +1287,282 @@ const descripcion = m
     });
   }
 
-  // Códigos: un clic los copia (para el pedido) y avisa sin moverse de sitio
+  // Códigos: un clic los copia (para el pedido). "Copiado" sale en el sitio de "Copiar", sin mover nada, y se anuncia
   for (const b of document.querySelectorAll<HTMLButtonElement>('[data-copiar]')) {
-    const pista = b.dataset.pista!;
+    const aviso = b.parentElement?.querySelector<HTMLElement>('.aviso-copia');
+    const pista = b.dataset.pista;
     b.addEventListener('click', async () => {
       try {
         await navigator.clipboard.writeText(b.dataset.copiar!);
-        b.dataset.pista = b.dataset.hecho;
         b.classList.add('hecho');
+        if (pista) b.dataset.pista = b.dataset.hecho;
+        if (aviso) aviso.textContent = `${b.dataset.copiar} · ${aviso.dataset.hecho}`;
         setTimeout(() => {
-          b.dataset.pista = pista;
           b.classList.remove('hecho');
-        }, 1600);
+          if (pista) b.dataset.pista = pista;
+          if (aviso) aviso.textContent = '';
+        }, 1800);
       } catch {
         /* sin portapapeles, se queda como texto seleccionable */
       }
     });
   }
 
-  // Compatibilidad: 1, tipo de tubo; 2, su tamaño. Quedan los rotores que lo admiten y, en cada uno, cuántos tubos
-  // caben y con qué adaptador. Pulsar otra vez lo elegido lo quita. Sin JS se ven todos los rotores con sus tablas
+  // Compatibilidad: se elige la capacidad del tubo y quedan los rotores que lo admiten, cada uno con cuántos caben y
+  // su adaptador. Si a esa capacidad le corresponden varios tipos de tubo, un segundo desplegable (opcional) deja solo
+  // el del cliente. Sin JS se ven todos los rotores con sus cifras y sus tablas
   const compat = document.querySelector<HTMLElement>('.compat');
   if (compat) {
     const elegir = compat.querySelector<HTMLElement>('.elegir')!;
-    const pasoTam = compat.querySelector<HTMLElement>('.paso-tam')!;
-    const chips = [...compat.querySelectorAll<HTMLButtonElement>('.chip')];
-    const grupos = [...compat.querySelectorAll<HTMLElement>('.paso-tam [data-fam]')];
-    const tubos = [...compat.querySelectorAll<HTMLButtonElement>('.tubo')];
+    const selCap = compat.querySelector<HTMLSelectElement>('.sel-cap')!;
+    const campoTipo = compat.querySelector<HTMLElement>('.campo-tipo');
+    const selTipo = compat.querySelector<HTMLSelectElement>('.sel-tipo');
     const tarjetas = [...compat.querySelectorAll<HTMLElement>('.rc')];
-    const recuento = compat.querySelector<HTMLElement>('.recuento')!;
-    const frase = recuento.querySelector('span')!;
-    const quitar = recuento.querySelector<HTMLButtonElement>('.quitar')!;
-    const frases = JSON.parse(recuento.dataset.admiten!) as string[];
-    let fam = '';
-    let k = '';
+    const aviso = compat.querySelector<HTMLElement>('.aviso')!;
+    const quitar = compat.querySelector<HTMLButtonElement>('.quitar')!;
     elegir.hidden = false;
-    const pintar = () => {
-      for (const c of chips) c.setAttribute('aria-pressed', String(c.dataset.fam === fam));
-      pasoTam.hidden = !fam;
-      for (const g of grupos) g.hidden = g.dataset.fam !== fam;
-      for (const x of tubos) x.setAttribute('aria-pressed', String(x.dataset.k === k));
-      let n = 0;
-      for (const r of tarjetas) {
-        const ve = !fam || (k ? r.dataset.ks!.split(' ').includes(k) : r.dataset.fams!.split(' ').includes(fam));
-        r.hidden = !ve;
-        if (ve) n++;
-        const encaja = r.querySelector<HTMLElement>('.rc-encaja')!;
-        encaja.hidden = !k;
-        r.querySelector<HTMLElement>('.rc-base')!.hidden = !!k;
-        for (const li of encaja.querySelectorAll<HTMLElement>('li')) li.hidden = li.dataset.k !== k;
-        for (const tr of r.querySelectorAll<HTMLElement>('tr[data-k]'))
-          tr.classList.toggle('marcada', !!k && tr.dataset.k === k);
+    // Los tipos de la capacidad elegida, en su desplegable ("Todos los tipos" primero)
+    const ponerTipos = () => {
+      if (!campoTipo || !selTipo) return;
+      const datos = selCap.selectedOptions[0]?.dataset.tipos;
+      campoTipo.hidden = !datos;
+      selTipo.replaceChildren();
+      if (!datos) return;
+      selTipo.add(new Option(selTipo.dataset.todos!, ''));
+      for (const [clave, nombre, frase] of JSON.parse(datos) as string[][]) {
+        const o = new Option(nombre, clave);
+        o.dataset.frase = frase;
+        selTipo.add(o);
       }
-      frase.textContent = fam ? frases[n] : recuento.dataset.todos!;
-      quitar.hidden = !fam;
-      compat.dataset.estado = k ? 'tubo' : fam ? 'familia' : '';
     };
-    for (const c of chips) {
-      c.addEventListener('click', () => {
-        fam = fam === c.dataset.fam ? '' : c.dataset.fam!;
-        k = '';
-        pintar();
-      });
-    }
-    for (const x of tubos) {
-      x.addEventListener('click', () => {
-        k = k === x.dataset.k ? '' : x.dataset.k!;
-        pintar();
-      });
-    }
-    quitar.addEventListener('click', () => {
-      fam = '';
-      k = '';
+    const pintar = () => {
+      const op = selCap.value;
+      const tipo = (campoTipo && !campoTipo.hidden && selTipo?.value) || '';
+      const vale = (x: HTMLElement) => x.dataset.op === op && (!tipo || x.dataset.tipo === tipo);
+      for (const r of tarjetas) {
+        const lineas = [...r.querySelectorAll<HTMLElement>('.encaja li')];
+        r.hidden = !!op && !lineas.some(vale);
+        const encaja = r.querySelector<HTMLElement>('.encaja');
+        if (encaja) encaja.hidden = !op || r.hidden;
+        for (const li of lineas) li.hidden = !vale(li);
+        for (const tr of r.querySelectorAll<HTMLElement>('tr[data-op]'))
+          tr.classList.toggle('marcada', !!op && vale(tr));
+      }
+      compat.dataset.estado = op ? 'tubo' : '';
+      aviso.textContent =
+        (tipo && selTipo?.selectedOptions[0]?.dataset.frase) ||
+        selCap.selectedOptions[0]?.dataset.frase ||
+        aviso.dataset.todos!;
+      quitar.hidden = !op;
+    };
+    selCap.addEventListener('change', () => {
+      ponerTipos();
       pintar();
     });
+    selTipo?.addEventListener('change', pintar);
+    // "Ver todos los rotores" vuelve al principio y deja el foco en el desplegable
+    quitar.addEventListener('click', () => {
+      selCap.value = '';
+      ponerTipos();
+      pintar();
+      selCap.focus();
+    });
+    // Si el navegador recuerda lo elegido al volver a la página, se respeta
+    ponerTipos();
     pintar();
   }
 
-  // Barra: marca el apartado que se está leyendo
+  // Datos técnicos: cada tarjeta enseña sus primeros puntos; «Ver los N» abre todas a la vez, con altura animada, para
+  // que la fila siga igual de alta. Al mover el ratón por encima, la tarjeta se inclina un poco hacia él y un brillo la
+  // sigue. Las tarjetas entran escalonadas al llegar a la vista. Sin JS, todo abierto y a la vista
+  const bloques = [...document.querySelectorAll<HTMLElement>('.bloque')];
+  if (bloques.length) {
+    const plegables = bloques.filter((b) => b.querySelector('.b-mas'));
+    const lista = (b: HTMLElement) => b.querySelector<HTMLElement>('.b-lista')!;
+    const corte = (b: HTMLElement) => {
+      const lis = b.querySelectorAll<HTMLElement>(':scope > .b-lista > li');
+      const ult = lis[Number(b.dataset.visibles) - 1];
+      return ult ? ult.offsetTop + ult.offsetHeight : 0;
+    };
+    let abiertas = false;
+    const medir = () => {
+      if (!abiertas) for (const b of plegables) lista(b).style.height = `${corte(b)}px`;
+    };
+    const alternar = (origen: HTMLElement) => {
+      abiertas = !abiertas;
+      for (const b of plegables) {
+        const ul = lista(b);
+        const boton = b.querySelector<HTMLButtonElement>('.b-mas')!;
+        ul.style.height = `${ul.offsetHeight}px`;
+        b.classList.toggle('abierta', abiertas);
+        boton.setAttribute('aria-expanded', String(abiertas));
+        boton.querySelector('span')!.textContent = abiertas ? boton.dataset.menos! : boton.dataset.mas!;
+        requestAnimationFrame(() => (ul.style.height = `${abiertas ? ul.scrollHeight : corte(b)}px`));
+        if (abiertas)
+          ul.addEventListener('transitionend', () => abiertas && (ul.style.height = 'auto'), { once: true });
+      }
+      if (!abiertas && origen.getBoundingClientRect().top < 80)
+        origen.scrollIntoView({ block: 'start', behavior: 'smooth' });
+    };
+    for (const b of plegables) {
+      b.classList.add('plegable');
+      const boton = b.querySelector<HTMLButtonElement>('.b-mas')!;
+      boton.hidden = false;
+      boton.addEventListener('click', () => alternar(b));
+    }
+    medir();
+    addEventListener('resize', medir, { passive: true });
+    document.fonts?.ready.then(medir);
+
+    const todas = [...document.querySelectorAll<HTMLElement>('#datos .bloque')];
+    if (matchMedia('(hover: hover) and (prefers-reduced-motion: no-preference)').matches) {
+      for (const b of todas) {
+        b.addEventListener('pointermove', (e) => {
+          const r = b.getBoundingClientRect();
+          const x = (e.clientX - r.left) / r.width;
+          const y = (e.clientY - r.top) / r.height;
+          b.style.setProperty('--mx', `${(x * 100).toFixed(1)}%`);
+          b.style.setProperty('--my', `${(y * 100).toFixed(1)}%`);
+          b.style.setProperty('--rx', `${((x - 0.5) * 5).toFixed(2)}deg`);
+          b.style.setProperty('--ry', `${((0.5 - y) * 5).toFixed(2)}deg`);
+        });
+        b.addEventListener('pointerleave', () => {
+          b.style.setProperty('--rx', '0deg');
+          b.style.setProperty('--ry', '0deg');
+        });
+      }
+    }
+
+    const sec = document.querySelector<HTMLElement>('#datos');
+    if (sec && 'IntersectionObserver' in window) {
+      sec.classList.add('entra');
+      const io = new IntersectionObserver(
+        (es) => {
+          for (const e of es)
+            if (e.isIntersecting) {
+              e.target.classList.add('dentro');
+              io.unobserve(e.target);
+            }
+        },
+        { rootMargin: '0px 0px -12% 0px' },
+      );
+      todas.forEach((b) => io.observe(b));
+    }
+  }
+
+  // Carrusel de «Otras centrífugas»: una cinta que pasa sola, despacio y sin fin (las tarjetas se duplican detrás para
+  // empalmar). Con el ratón encima frena suave hasta pararse y al salir vuelve a coger velocidad; con el foco dentro,
+  // fuera de la vista o con la pestaña oculta, se para. Con movimiento reducido no corre: se desliza a mano
+  const mas = document.querySelector<HTMLElement>('.mas');
+  const ventana = mas?.querySelector<HTMLElement>('.carrusel');
+  const pista = ventana?.querySelector<HTMLElement>('.pista');
+  if (mas && ventana && pista && pista.children.length > 3 && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    const originales = [...pista.children] as HTMLElement[];
+    for (const li of originales) {
+      const copia = li.cloneNode(true) as HTMLElement;
+      copia.setAttribute('aria-hidden', 'true');
+      copia.querySelectorAll('a, button').forEach((x) => x.setAttribute('tabindex', '-1'));
+      pista.append(copia);
+    }
+    mas.classList.add('cinta');
+    const VELOCIDAD = 38; // px por segundo
+    let x = 0;
+    let v = VELOCIDAD;
+    let meta = VELOCIDAD;
+    let antes = 0;
+    let vuelta = 0;
+    let visible = false;
+    let foco = false;
+    // Lo que mide una vuelta: del principio de la primera tarjeta al de su copia
+    const medir = () =>
+      (vuelta = (pista.children[originales.length] as HTMLElement).offsetLeft - originales[0].offsetLeft);
+    medir();
+    addEventListener('resize', medir, { passive: true });
+    let id = 0;
+    const paso = (t: number) => {
+      const dt = antes ? Math.min(0.05, (t - antes) / 1000) : 0;
+      antes = t;
+      v += (meta - v) * Math.min(1, dt * 4);
+      x = (x + v * dt) % vuelta;
+      pista.style.transform = `translate3d(${-x}px, 0, 0)`;
+      id = requestAnimationFrame(paso);
+    };
+    const estado = () => {
+      const corre = visible && !foco && !document.hidden;
+      if (corre && !id) {
+        antes = 0;
+        id = requestAnimationFrame(paso);
+      } else if (!corre && id) {
+        cancelAnimationFrame(id);
+        id = 0;
+      }
+    };
+    ventana.addEventListener('pointerenter', () => (meta = 0));
+    ventana.addEventListener('pointerleave', () => (meta = VELOCIDAD));
+    ventana.addEventListener('focusin', () => ((foco = true), estado()));
+    ventana.addEventListener('focusout', () => ((foco = false), estado()));
+    document.addEventListener('visibilitychange', estado);
+    new IntersectionObserver(([e]) => ((visible = e.isIntersecting), estado())).observe(ventana);
+  }
+  // El título de la sección se marca con su barra roja al llegar a la vista
+  if (mas && 'IntersectionObserver' in window) {
+    new IntersectionObserver(([e]) => mas.classList.toggle('actual', e.isIntersecting), {
+      rootMargin: '0px 0px -30% 0px',
+    }).observe(mas);
+  }
+
+  // «+ Presupuesto» en las tarjetas del carrusel: la misma lista que el catálogo (en el navegador), una unidad
+  const CLAVE_PRES = 'oa-presupuesto';
+  const leerPres = (): [string, number][] => {
+    try {
+      return (JSON.parse(localStorage.getItem(CLAVE_PRES) ?? '[]') as (string | [string, number])[]).map((x) =>
+        typeof x === 'string' ? [x, 1] : x,
+      );
+    } catch {
+      return [];
+    }
+  };
+  const botonesPres = [...document.querySelectorAll<HTMLButtonElement>('.mas .pres')];
+  const pintarPres = () => {
+    const hay = new Set(leerPres().map(([s]) => s));
+    for (const b of botonesPres) b.setAttribute('aria-pressed', String(hay.has(b.dataset.slug!)));
+  };
+  for (const b of botonesPres)
+    b.addEventListener('click', () => {
+      const lista = leerPres();
+      const s = b.dataset.slug!;
+      const i = lista.findIndex(([x]) => x === s);
+      if (i >= 0) lista.splice(i, 1);
+      else lista.push([s, 1]);
+      try {
+        localStorage.setItem(CLAVE_PRES, JSON.stringify(lista));
+      } catch {
+        /* sin almacenamiento: no se guarda */
+      }
+      pintarPres();
+    });
+  pintarPres();
+  addEventListener('storage', (e) => e.key === CLAVE_PRES && pintarPres());
+
+  // El título de la sección se marca con su barra roja al llegar a la vista
+  if (mas && 'IntersectionObserver' in window) {
+    new IntersectionObserver(([e]) => mas.classList.toggle('actual', e.isIntersecting), {
+      rootMargin: '0px 0px -30% 0px',
+    }).observe(mas);
+  }
+
+  // Barra: marca el apartado que se está leyendo. El nombre y "Pedir" entran cuando el escaparate sale de la vista
   const barra = document.querySelector<HTMLElement>('.barra');
   if (barra) {
-    const enlaces = [...barra.querySelectorAll<HTMLAnchorElement>('ul a')];
+    if (escaparate) {
+      new IntersectionObserver(([e]) => barra.classList.toggle('esc-visible', e.isIntersecting), {
+        rootMargin: '-80px 0px 0px 0px',
+      }).observe(escaparate);
+    }
+    // Solo los enlaces a apartados de esta página («Pedir» lleva a la portada)
+    const enlaces = [...barra.querySelectorAll<HTMLAnchorElement>('ul a')].filter((a) =>
+      document.getElementById(a.hash.slice(1)),
+    );
     const apartados = enlaces.map((a) => document.getElementById(a.hash.slice(1))!);
     let actual = '';
     const marcar = () => {
@@ -1080,6 +1572,7 @@ const descripcion = m
       const id = s?.id ?? '';
       if (id === actual) return;
       actual = id;
+      for (const x of apartados) x.classList.toggle('actual', x.id === id);
       for (const a of enlaces) {
         if (a.hash === `#${id}`) a.setAttribute('aria-current', 'true');
         else a.removeAttribute('aria-current');
@@ -1095,8 +1588,38 @@ const descripcion = m
   /* ——— Cabecera clara: la galería a la izquierda y los datos con su tabla a la derecha ——— */
   .cabecera {
     --c: var(--t-ventilada);
-    background: var(--band);
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    background: var(--esc-estudio);
     border-bottom: 1px solid var(--line);
+  }
+  /* Fondo: una foto del laboratorio, desenfocada (la máquina manda) y bajo un velo blanco. El velo es más denso a la
+     izquierda, donde va el texto, y deja ver algo más de foto abajo, donde van las pompas; detrás de la máquina, luz
+     blanca. El blanco juega más que el negro */
+  .cabecera::before,
+  .cabecera::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+  }
+  .cabecera::before {
+    inset: -24px;
+    background: url(/img/fotos/ficha-fondo.webp) center 60% / cover no-repeat;
+    filter: blur(4px);
+  }
+  .cabecera::after {
+    background:
+      radial-gradient(ellipse 40% 50% at 70% 38%, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0) 72%),
+      linear-gradient(
+        90deg,
+        rgba(246, 246, 244, 0.88) 0%,
+        rgba(246, 246, 244, 0.7) 45%,
+        rgba(246, 246, 244, 0.58) 100%
+      ),
+      linear-gradient(180deg, rgba(246, 246, 244, 0.5) 0%, rgba(246, 246, 244, 0) 65%);
   }
   .cabecera[data-t='refrigerada'] {
     --c: var(--t-refrigerada);
@@ -1108,13 +1631,7 @@ const descripcion = m
     --c: var(--red);
   }
   .cabecera-in {
-    display: grid;
-    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
-    grid-template-areas:
-      'migas migas'
-      'foto datos';
-    gap: 16px clamp(32px, 5vw, 72px);
-    padding-block: 24px clamp(40px, 5vw, 64px);
+    padding-block: var(--sp-5) clamp(48px, 6vw, 80px);
   }
   .migas {
     grid-area: migas;
@@ -1136,19 +1653,6 @@ const descripcion = m
     color: var(--ink);
   }
 
-  /* ——— Galería: la máquina sobre la mesa de laboratorio del catálogo; detalle y rotores, sobre blanco ——— */
-  .galeria {
-    grid-area: foto;
-    align-self: start;
-    min-width: 0;
-  }
-  .escena {
-    position: relative;
-    aspect-ratio: 5 / 4;
-    min-height: 420px;
-    overflow: hidden;
-    background: var(--carbon);
-  }
   .vista:not([data-tipo='3d']) img {
     cursor: zoom-in;
   }
@@ -1324,407 +1828,6 @@ const descripcion = m
     top: 16px;
     right: 24px;
   }
-  .vista {
-    position: absolute;
-    inset: 0;
-    display: grid;
-    place-items: center;
-  }
-  .vista[hidden] {
-    display: none;
-  }
-  .vista[data-tipo='maquina'] {
-    background: #2b2e31 url(/img/fondos/mesa-tarjeta.webp) center / cover no-repeat;
-  }
-  /* Sombra de apoyo bajo la máquina, como en las tarjetas */
-  .vista[data-tipo='maquina']::after {
-    content: '';
-    position: absolute;
-    left: 50%;
-    bottom: 12%;
-    width: 56%;
-    height: 7%;
-    border-radius: 50%;
-    background: rgba(0, 0, 0, 0.6);
-    filter: blur(12px);
-    translate: -50% 50%;
-  }
-  .vista[data-tipo='maquina'] img {
-    position: absolute;
-    left: 50%;
-    bottom: 10%;
-    z-index: 1;
-    width: auto;
-    height: 80%;
-    max-width: 84%;
-    object-fit: contain;
-    object-position: bottom;
-    translate: -50% 0;
-  }
-  .vista[data-tipo='detalle'],
-  .vista[data-tipo='rotor'] {
-    background: #fff;
-  }
-  .vista[data-tipo='detalle'] img,
-  .vista[data-tipo='rotor'] img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    padding: 6%;
-  }
-  .vista[data-tipo='detalle'] img {
-    padding: 0;
-    object-fit: cover;
-    object-position: top;
-  }
-  .vista[data-tipo='3d'] {
-    display: flex;
-    padding: 18px 22px;
-    color: #fff;
-  }
-  .vista[data-tipo='3d'] > :global(.visor) {
-    flex: 1;
-    min-height: 0;
-  }
-  @media (prefers-reduced-motion: no-preference) {
-    .vista:not([hidden]) {
-      animation: aparece 0.4s var(--ease);
-    }
-  }
-  .temp {
-    position: absolute;
-    top: 16px;
-    left: 16px;
-    z-index: 2;
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    height: 32px;
-    padding: 0 12px 0 10px;
-    background: #fff;
-    font-size: 14px;
-    font-weight: 700;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    color: var(--ink);
-  }
-  .temp :global(svg) {
-    color: var(--c);
-  }
-  .pie-vista {
-    position: absolute;
-    left: 16px;
-    bottom: 16px;
-    padding: 6px 12px;
-    background: var(--ink);
-    font-size: 15px;
-    font-weight: 700;
-    color: #fff;
-  }
-
-  /* Miniaturas: la elegida, con la raya roja debajo */
-  .miniaturas {
-    position: relative;
-    display: flex;
-    gap: 10px;
-    margin-top: 12px;
-    padding-bottom: 4px;
-    overflow-x: auto;
-    scrollbar-width: thin;
-  }
-  .mini {
-    flex: 0 0 96px;
-    display: grid;
-    gap: 6px;
-    padding: 0;
-    border: 0;
-    background: none;
-    font: inherit;
-    text-align: left;
-    color: var(--body);
-    cursor: pointer;
-  }
-  .mini-foto {
-    position: relative;
-    display: grid;
-    place-items: center;
-    height: 76px;
-    overflow: hidden;
-    background: #fff;
-    border: 1px solid var(--line);
-    transition: border-color 0.2s var(--ease);
-  }
-  .mini-foto::after {
-    content: '';
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    height: 3px;
-    background: var(--red);
-    transform: scaleX(0);
-    transition: transform 0.3s var(--ease);
-  }
-  .mini[data-tipo='maquina'] .mini-foto {
-    background: #2b2e31 url(/img/fondos/mesa-tarjeta.webp) center / cover;
-  }
-  .mini[data-tipo='3d'] .mini-foto {
-    background: var(--carbon);
-  }
-  .mini-foto img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    padding: 6px;
-  }
-  .mini[data-tipo='detalle'] .mini-foto img {
-    padding: 0;
-    object-fit: cover;
-    object-position: top;
-  }
-  .mini-foto b {
-    font-size: 26px;
-    letter-spacing: 0.02em;
-    color: #fff;
-  }
-  .mini-nombre {
-    overflow: hidden;
-    font-size: 14px;
-    line-height: 1.2;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-  }
-  .mini:hover .mini-foto {
-    border-color: var(--ink);
-  }
-  .mini[aria-selected='true'] .mini-foto {
-    border-color: var(--ink);
-  }
-  .mini[aria-selected='true'] .mini-foto::after {
-    transform: scaleX(1);
-  }
-  .mini[aria-selected='true'] .mini-nombre {
-    font-weight: 700;
-    color: var(--ink);
-  }
-  .mini:focus-visible {
-    outline: 2px solid var(--red);
-    outline-offset: 2px;
-  }
-
-  .datos {
-    grid-area: datos;
-    align-self: start;
-    min-width: 0;
-  }
-  .cat {
-    margin: 0;
-    font-size: 14px;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--red);
-  }
-  h1 {
-    margin-top: 6px;
-    font-size: clamp(48px, 5.4vw, 80px);
-    font-weight: 700;
-    line-height: 0.95;
-    letter-spacing: -0.015em;
-  }
-  .frase {
-    margin-top: 14px;
-    max-width: 44ch;
-    font-size: var(--t-sub);
-    line-height: 1.35;
-    color: var(--body);
-  }
-
-  /* ——— Tabla de la cabecera: qué es cada dato a la izquierda y la cifra a la derecha, una fila por dato ——— */
-  .spec {
-    margin: 28px 0 0;
-    border-top: 2px solid var(--ink);
-  }
-  .spec > div {
-    display: grid;
-    grid-template-columns: minmax(120px, 0.7fr) minmax(0, 1.3fr);
-    align-items: center;
-    gap: 16px;
-    min-height: 52px;
-    padding-block: 8px;
-    border-bottom: 1px solid var(--line);
-  }
-  .spec dt {
-    font-size: 17px;
-    color: var(--body);
-  }
-  .spec dd {
-    margin: 0;
-    font-size: 18px;
-    color: var(--ink);
-  }
-  .spec dd b {
-    font-weight: 700;
-  }
-  .spec dd small {
-    font-size: 14px;
-    color: var(--body);
-  }
-  .spec.lineas {
-    padding: 0;
-    list-style: none;
-  }
-  .spec.lineas li {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    min-height: 52px;
-    padding-block: 8px;
-    border-bottom: 1px solid var(--line);
-    font-size: 18px;
-    font-weight: 700;
-  }
-  .spec.lineas li span {
-    font-weight: 300;
-    color: var(--body);
-  }
-  .temp-fila {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-  }
-  .temp-fila[data-t='ventilada'] :global(svg) {
-    color: var(--t-ventilada);
-  }
-  .temp-fila[data-t='refrigerada'] :global(svg) {
-    color: var(--t-refrigerada);
-  }
-  .temp-fila[data-t='calefactada'] :global(svg) {
-    color: var(--t-calefactada);
-  }
-
-  /* Versión: botones pegados; la elegida en negro, con el punto del color de su temperatura */
-  .version {
-    display: inline-flex;
-    flex-wrap: wrap;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-    border: 1px solid var(--ink);
-  }
-  .version li + li {
-    border-left: 1px solid var(--ink);
-  }
-  .version a {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    min-height: 38px;
-    padding: 6px 14px;
-    font-size: 16px;
-    font-weight: 700;
-    color: var(--ink);
-    text-decoration: none;
-    transition: background 0.2s var(--ease);
-  }
-  .version a:hover {
-    background: var(--panel);
-  }
-  .version a[aria-current] {
-    color: #fff;
-    background: var(--ink);
-  }
-  .version i {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--t-ventilada);
-  }
-  .version a[data-t='refrigerada'] i {
-    background: var(--t-refrigerada);
-  }
-  .version a[data-t='calefactada'] i {
-    background: var(--t-calefactada);
-  }
-  .version a[aria-current] i {
-    box-shadow: 0 0 0 2px var(--ink);
-    filter: brightness(1.35);
-  }
-  .codigos {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    gap: 4px 14px;
-    font-weight: 700;
-  }
-  .codigos small {
-    font-weight: 300;
-  }
-
-  .botones {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 12px;
-    margin-top: 28px;
-  }
-  .botones .btn {
-    justify-content: center;
-    min-height: 52px;
-  }
-  .btn.ghost {
-    color: var(--ink);
-    background: #fff;
-  }
-  .btn.ghost:hover {
-    background: var(--panel);
-  }
-
-  .copiar {
-    position: relative;
-    padding: 0;
-    border: 0;
-    background: none;
-    font: inherit;
-    color: inherit;
-    text-decoration: underline dotted 1px;
-    text-underline-offset: 4px;
-    text-decoration-color: var(--steel);
-    cursor: copy;
-    transition: color 0.2s var(--ease);
-  }
-  .copiar:hover {
-    color: var(--red);
-    text-decoration-color: currentColor;
-  }
-  .copiar::after {
-    content: attr(data-pista);
-    position: absolute;
-    left: 50%;
-    bottom: calc(100% + 8px);
-    z-index: 5;
-    padding: 5px 9px;
-    font-size: 13px;
-    font-weight: 700;
-    white-space: nowrap;
-    color: #fff;
-    background: var(--ink);
-    opacity: 0;
-    pointer-events: none;
-    translate: -50% 4px;
-    transition:
-      opacity 0.18s var(--ease),
-      translate 0.18s var(--ease);
-  }
-  .copiar:hover::after,
-  .copiar:focus-visible::after,
-  .copiar.hecho::after {
-    opacity: 1;
-    translate: -50% 0;
-  }
-  .copiar.hecho::after {
-    background: var(--t-ventilada);
-  }
-
   /* ——— Barra fija: nombre, apartados y Pedir. Baja con la cabecera de la web cuando esta se ve ——— */
   .barra {
     position: sticky;
@@ -1825,333 +1928,353 @@ const descripcion = m
     color: var(--body);
   }
 
-  /* ——— Compatibilidad: elegir el tubo, y debajo los rotores que lo admiten ——— */
+  /* ——— Compatibilidad: un desplegable para el tubo y los rotores en una tabla limpia ———
+     Pocas cosas a la vez y grandes: cada cifra en su columna, con su nombre en la cabecera */
   .compat {
-    background: var(--band);
+    --hover-bg: #f3f4f5;
+    /* Columnas de la tabla: rotor │ cifras o respuesta │ hueco para «Sus N tubos» */
+    --cp-cols: minmax(240px, 1fr) minmax(0, 2.4fr) 150px;
+    padding-block: clamp(40px, 4vw, 64px);
   }
+  .cp-cab {
+    margin-bottom: 24px;
+  }
+  .cp-cab h2 {
+    margin: 0;
+    font-size: clamp(28px, 2.6vw, 38px);
+    font-weight: 700;
+    line-height: 1.1;
+  }
+  /* El apartado que se está leyendo: una barra roja junto al título, en el margen, que crece al llegar */
+  .cp-cab h2,
+  .ap-cab h2 {
+    position: relative;
+  }
+  .cp-cab h2::before,
+  .ap-cab h2::before {
+    content: '';
+    position: absolute;
+    top: 0.12em;
+    bottom: 0.12em;
+    left: calc(-1 * clamp(10px, 1.4vw, 22px));
+    width: 4px;
+    background: var(--red);
+    transform: scaleY(0);
+    transform-origin: top;
+    transition: transform var(--dur-4) var(--ease-out);
+  }
+  .actual .cp-cab h2::before,
+  .actual .ap-cab h2::before {
+    transform: scaleY(1);
+  }
+  .cp-cab p {
+    max-width: 100ch;
+    margin: 8px 0 0;
+    font-size: 19px;
+    line-height: 1.4;
+    color: var(--body);
+  }
+
+  /* Desplegables: grandes, rectos, con «»» de la marca; el elegido se marca en rojo */
   .elegir {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: 28px;
-    padding: clamp(20px, 3vw, 36px);
-    background: #fff;
-    border: 1px solid var(--line);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 16px 24px;
+    margin-bottom: 32px;
   }
   .elegir[hidden],
-  .paso-tam[hidden],
-  .tubos[hidden],
-  .escala[hidden] {
-    display: none;
-  }
-  .paso-t {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin: 0 0 14px;
-    font-size: 20px;
-    font-weight: 700;
-  }
-  .paso-t span {
-    display: grid;
-    place-items: center;
-    width: 26px;
-    height: 26px;
-    font-size: 14px;
-    color: #fff;
-    background: var(--red);
-  }
-  .familias {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-  .chip {
-    min-height: 44px;
-    padding: 8px 16px;
-    border: 1px solid var(--ink);
-    background: #fff;
-    font: 400 17px/1.2 var(--f);
-    color: var(--ink);
-    cursor: pointer;
-    transition:
-      background 0.2s var(--ease),
-      color 0.2s var(--ease);
-  }
-  .chip:hover {
-    background: var(--panel);
-  }
-  .chip[aria-pressed='true'] {
-    font-weight: 700;
-    color: #fff;
-    background: var(--ink);
-  }
-
-  /* Tubos a escala, todos apoyados en la misma línea; el elegido se llena de rojo */
-  /* En escritorio, en filas como una estantería (cada fila con su línea de apoyo); en móvil, una tira que se desliza */
-  .tubos {
-    display: flex;
-    flex-wrap: wrap;
-    row-gap: 18px;
-  }
-  .tubo {
-    flex: none;
-    display: grid;
-    justify-items: center;
-    align-content: start;
-    gap: 2px;
-    min-width: 88px;
-    padding: 14px 10px 10px;
-    border: 0;
-    border-bottom: 1px solid var(--ink);
-    background: none;
-    font: inherit;
-    color: var(--ink);
-    text-align: center;
-    cursor: pointer;
-    transition:
-      background 0.2s var(--ease),
-      border-color 0.2s var(--ease);
-  }
-  .tubo:hover {
-    background: var(--panel);
-  }
-  .tubo[aria-pressed='true'] {
-    background: var(--panel);
-    box-shadow: inset 0 -3px var(--red);
-  }
-  .tubo-dib {
-    display: grid;
-    place-items: end center;
-    height: var(--alto, 156px);
-    margin-bottom: 10px;
-  }
-  .tubo-dib svg {
-    overflow: visible;
-  }
-  .t-cuerpo {
-    fill: #fff;
-  }
-  .t-liquido {
-    fill: #c9cdd1;
-    transition: fill 0.3s var(--ease);
-  }
-  .t-borde {
-    fill: none;
-    stroke: var(--ink);
-    stroke-width: 1.5;
-    vector-effect: non-scaling-stroke;
-  }
-  .t-tapon {
-    fill: var(--ink);
-  }
-  .tubo:hover .t-liquido {
-    fill: #a9aeb3;
-  }
-  .tubo[aria-pressed='true'] .t-liquido {
-    fill: var(--red);
-  }
-  .tubo b {
-    font-size: 17px;
-    line-height: 1.15;
-    white-space: nowrap;
-  }
-  .tubo small {
-    font-size: 13px;
-    line-height: 1.2;
-    color: var(--muted);
-    white-space: nowrap;
-  }
-  .escala {
-    margin: 10px 0 0;
-    font-size: 14px;
-    color: var(--muted);
-  }
-
-  /* Rotores: una fila por rotor; con un tubo elegido, la cifra grande dice cuántos caben */
-  .resultado {
-    margin-top: clamp(28px, 3vw, 40px);
-  }
-  .recuento {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    gap: 8px 20px;
-    margin: 0 0 14px;
-    font-size: 20px;
-    font-weight: 700;
-  }
+  .campo[hidden],
   .quitar[hidden] {
     display: none;
   }
-  .quitar {
-    padding: 0;
-    border: 0;
-    background: none;
+  .campo {
+    display: grid;
+    gap: 6px;
+  }
+  .campo > span:first-child {
+    font-size: 15px;
+    color: var(--muted);
+  }
+  .sel {
+    position: relative;
+    display: block;
+  }
+  .sel::after {
+    content: '»';
+    position: absolute;
+    top: 50%;
+    right: 18px;
+    font-size: 26px;
+    line-height: 1;
+    color: var(--red);
+    pointer-events: none;
+    translate: 0 -55%;
+    rotate: 90deg;
+  }
+  .sel select {
+    min-width: 220px;
+    height: 56px;
+    padding: 0 48px 0 16px;
     font: inherit;
-    font-size: 16px;
+    font-size: 20px;
     color: var(--ink);
+    background: #fff;
+    border: 1px solid var(--ink);
+    border-radius: 0;
+    appearance: none;
     cursor: pointer;
+    transition: background 0.15s var(--ease);
+  }
+  .sel-tipo {
+    min-width: 300px;
+  }
+  .sel select:hover {
+    background: var(--hover-bg);
+  }
+  .sel select:focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 2px;
+  }
+  .compat[data-estado='tubo'] .sel-cap {
+    font-weight: 700;
+    border-color: var(--red);
+    box-shadow: inset 0 0 0 1px var(--red);
+  }
+  .estado {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0 20px;
+    min-height: 56px;
+    margin: 0;
+  }
+  .aviso {
+    font-size: 19px;
+    font-weight: 700;
+  }
+  .quitar {
+    min-height: 44px;
+    padding: 0 2px;
+    font: inherit;
+    font-size: 17px;
+    color: var(--body);
+    background: none;
+    border: 0;
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    text-decoration-color: var(--steel);
+    cursor: pointer;
+  }
+  .quitar:hover {
+    color: var(--ink);
+    text-decoration-color: currentColor;
+  }
+
+  /* La tabla: cabecera con el nombre de cada columna y una fila por rotor */
+  .cp-th,
+  .rc {
+    display: grid;
+    grid-template-columns: var(--cp-cols);
+    column-gap: 32px;
+  }
+  .cp-th {
+    padding-bottom: 10px;
+    font-size: 15px;
+    color: var(--muted);
+    border-bottom: 2px solid var(--ink);
+  }
+  .th-cifras,
+  .rc-cifras {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 24px;
+  }
+  .th-encaja,
+  .encaja li {
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr);
+    gap: 24px;
+    align-items: center;
+  }
+  .th-encaja,
+  .compat[data-estado='tubo'] .th-cifras,
+  .compat[data-estado='tubo'] .rc-cifras {
+    display: none;
+  }
+  .compat[data-estado='tubo'] .th-encaja {
+    display: grid;
   }
   .rotores {
     margin: 0;
     padding: 0;
     list-style: none;
-    background: #fff;
-    border: 1px solid var(--line);
   }
-  .rc + .rc {
-    border-top: 1px solid var(--line);
+  .rc {
+    position: relative;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--line);
   }
   .rc[hidden] {
     display: none;
   }
-  .rc-fila {
+  .rc-rotor {
     display: grid;
-    grid-template-columns: 88px minmax(0, 1fr) minmax(0, 1.25fr) minmax(0, 1fr);
+    grid-template-columns: 56px minmax(0, 1fr);
+    gap: 16px;
     align-items: center;
-    gap: 24px;
-    padding: 14px 24px 14px 14px;
+    align-self: start;
   }
   .rc-foto {
-    display: grid;
-    place-items: center;
-    width: 88px;
-    height: 88px;
+    width: 56px;
+    height: 56px;
+    background: var(--panel);
   }
   .rc-foto img {
     width: 100%;
     height: 100%;
     object-fit: contain;
-  }
-  .rc-tipo {
-    margin: 0;
-    font-size: 13px;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--red);
+    mix-blend-mode: multiply;
   }
   .rc h3 {
-    margin: 2px 0 0;
-    font-size: 26px;
+    margin: 0;
+    font-size: 22px;
     font-weight: 700;
-    line-height: 1.05;
+    line-height: 1.1;
+  }
+  .rc-tipo {
+    margin: 3px 0 0;
+    font-size: 16px;
+    color: var(--body);
   }
   .rc-no {
-    margin: 4px 0 0;
+    margin: 3px 0 0;
     font-size: 14px;
     color: var(--muted);
   }
-  .rc-encaja li {
-    display: grid;
-    justify-items: start;
-    gap: 2px;
-  }
-  .rc-base,
-  .cuantos {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    gap: 2px 10px;
+  .rc-cifras {
     margin: 0;
   }
-  .rc-base[hidden],
-  .rc-encaja[hidden],
-  .rc-encaja li[hidden] {
-    display: none;
+  .rc-cifras dt {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
   }
-  .rc-base b,
-  .rc-encaja b {
-    font-size: 22px;
-    font-weight: 700;
+  .rc-cifras dd {
+    margin: 0;
+    font-size: 19px;
+    font-variant-numeric: tabular-nums;
   }
-  .rc-base span,
-  .cuantos span {
-    font-size: 15px;
-    color: var(--body);
-  }
-  .rc-encaja {
-    display: grid;
-    gap: 6px;
+
+  /* La respuesta: una línea por tubo que encaja (casi siempre una) */
+  .encaja {
     margin: 0;
     padding: 0;
     list-style: none;
   }
-  .rc-encaja b {
-    color: var(--red);
+  .encaja[hidden],
+  .encaja li[hidden] {
+    display: none;
   }
-  .rc-encaja .adaptador,
-  .rc-encaja em {
-    font-size: 15px;
-    font-style: normal;
-    font-weight: 700;
+  .encaja li {
+    min-height: 56px;
   }
-  .rc-encaja em {
-    font-weight: 400;
-    color: var(--body);
+  .encaja li:not([hidden]) ~ li:not([hidden]) {
+    border-top: 1px solid var(--line);
   }
-  .rc-cifras {
-    display: flex;
-    gap: 24px;
-    margin: 0;
-  }
-  .rc-cifras dt {
-    font-size: 13px;
-    color: var(--muted);
-  }
-  .rc-cifras dd {
-    margin: 0;
+  .en-que {
     font-size: 18px;
-    font-weight: 700;
+    line-height: 1.25;
+  }
+  .en-que small {
+    display: block;
+    margin-top: 2px;
+    font-size: 15px;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+  .en-n {
+    font-size: 17px;
+    color: var(--body);
     white-space: nowrap;
   }
-  .rc-cifras small {
-    font-size: 13px;
-    font-weight: 400;
+  .en-n b {
+    margin-right: 4px;
+    font-size: 32px;
+    line-height: 1;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+  }
+  .encaja .adaptador {
+    min-height: 48px;
+    padding: 0 18px;
+    font-size: 20px;
+    font-weight: 700;
+    white-space: nowrap;
+    text-decoration: none;
+    background: #fff;
+    border: 1px solid var(--ink);
+    transition: background 0.15s var(--ease);
+  }
+  .encaja .adaptador:hover {
+    color: var(--ink);
+    background: var(--hover-bg);
+  }
+  /* «Adaptador» ya lo dice la cabecera; en móvil, sin cabecera, va delante del código */
+  .en-et {
+    display: none;
+  }
+  .encaja em {
+    font-size: 17px;
+    font-style: normal;
     color: var(--body);
   }
+
+  /* «Sus N tubos»: en la columna de la derecha; su tabla se abre debajo, a todo el ancho */
   .rc-tabla {
-    padding: 0 24px 0 126px;
+    grid-column: 1 / -1;
   }
   .rc-tabla summary {
-    display: inline-flex;
+    position: absolute;
+    top: 12px;
+    right: 0;
+    display: flex;
     align-items: center;
     gap: 8px;
-    margin-bottom: 14px;
-    font-size: 15px;
-    font-weight: 700;
-    cursor: pointer;
+    min-height: 56px;
+    padding-left: 8px;
+    font-size: 17px;
+    white-space: nowrap;
     list-style: none;
+    cursor: pointer;
   }
   .rc-tabla summary::-webkit-details-marker {
     display: none;
   }
   .rc-tabla summary::after {
-    content: '';
-    width: 7px;
-    height: 7px;
-    border-right: 2px solid var(--red);
-    border-bottom: 2px solid var(--red);
-    rotate: 45deg;
-    translate: 0 -2px;
-    transition: rotate 0.2s var(--ease);
+    content: '»';
+    color: var(--red);
+    transition: transform 0.2s var(--ease);
   }
   .rc-tabla[open] summary::after {
-    rotate: 225deg;
-    translate: 0 2px;
+    transform: rotate(90deg);
   }
   .rc-tabla summary:hover {
-    color: var(--red);
+    color: var(--muted);
   }
   .rc-tabla[open] {
-    padding-bottom: 20px;
+    padding: 16px 0 6px;
   }
   .rc-mas {
     display: flex;
     flex-wrap: wrap;
-    gap: 6px 24px;
-    margin: 12px 0 0;
-    font-size: 15px;
+    gap: 4px 24px;
+    margin: 10px 0 0;
+    font-size: 16px;
     color: var(--body);
   }
   .rc-mas b {
@@ -2190,30 +2313,28 @@ const descripcion = m
     box-shadow: inset 3px 0 var(--red);
   }
 
-  /* ——— Datos técnicos: la descripción a la izquierda y las características a la derecha ——— */
-  .datos-in {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr);
-    gap: 0 clamp(32px, 5vw, 80px);
-  }
-  .datos-in .ap-cab {
-    grid-column: 1 / -1;
+  /* ——— Datos técnicos: la descripción arriba, a todo el ancho, y debajo los bloques repartidos en columnas ———
+     Las columnas se equilibran solas, así no queda hueco en blanco y todo se ve sin pulsar nada */
+  .datos {
+    padding-block: clamp(40px, 4vw, 64px);
   }
   .texto {
-    align-self: start;
+    max-width: 100ch;
     font-size: 18px;
     line-height: 1.6;
     color: var(--body);
   }
   .entrada {
     margin: 0;
-    font-size: 20px;
+    font-size: 19px;
     line-height: 1.55;
     color: var(--ink);
   }
   .leer summary {
     display: inline-flex;
-    margin-top: 14px;
+    align-items: center;
+    min-height: 44px;
+    margin-top: 4px;
     font-weight: 700;
     color: var(--ink);
     cursor: pointer;
@@ -2227,63 +2348,349 @@ const descripcion = m
     margin-left: 6px;
     color: var(--red);
   }
+  .leer summary:hover {
+    color: var(--muted);
+  }
   .leer[open] summary {
     display: none;
   }
   .leer p {
     margin: 14px 0 0;
   }
+  /* Tarjetas: una por bloque, todas igual de anchas y de altas. Cada una es una placa técnica: marcas de encuadre en
+     dos esquinas y una cifra grande hueca. Al pasar el ratón, las marcas dibujan el marco entero en rojo, la cifra se
+     llena de abajo arriba, la placa se inclina un poco hacia el puntero y un brillo leve lo sigue */
   .bloques {
     display: grid;
-    gap: 32px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: clamp(16px, 1.6vw, 24px);
+    align-items: stretch;
+    margin-top: clamp(32px, 3vw, 44px);
   }
-  .bloques h3 {
-    margin: 0 0 6px;
-    padding-bottom: 10px;
-    font-size: 20px;
-    font-weight: 700;
+  .bloque {
+    --rx: 0deg;
+    --ry: 0deg;
+    --lift: 0px;
+    position: relative;
+    isolation: isolate;
+    display: flex;
+    flex-direction: column;
+    padding: 26px 26px 10px;
+    background: var(--white);
+    border: 1px solid var(--line);
+    transform: perspective(1100px) rotateX(var(--ry)) rotateY(var(--rx)) translateY(var(--lift));
+    transition:
+      transform var(--dur-3) var(--ease-out),
+      box-shadow var(--dur-3) var(--ease-out),
+      border-color var(--dur-2) var(--ease);
+  }
+  /* El brillo: sigue al puntero, apenas un tinte rojo */
+  .bloque::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: radial-gradient(380px circle at var(--mx, 50%) var(--my, 0%), rgba(221, 4, 10, 0.035), transparent 60%);
+    opacity: 0;
+    transition: opacity var(--dur-3) var(--ease);
+    pointer-events: none;
+  }
+  .bloque:hover {
+    --lift: -6px;
+    border-color: transparent;
+    box-shadow: 0 30px 60px -34px rgba(21, 23, 25, 0.45);
+  }
+  .bloque:hover::after {
+    opacity: 1;
+  }
+  /* Marcas de encuadre: arriba a la izquierda y abajo a la derecha. Al pasar, cada una recorre su mitad del marco:
+     primero a lo ancho y luego a lo alto */
+  .b-marco {
+    position: absolute;
+    inset: -1px;
+    pointer-events: none;
+  }
+  .b-marco::before,
+  .b-marco::after {
+    content: '';
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    border: 0 solid var(--ink);
+    transition:
+      width var(--dur-3) var(--ease-out) var(--dur-2),
+      height var(--dur-3) var(--ease-out),
+      border-color var(--dur-2) var(--ease);
+  }
+  .b-marco::before {
+    top: 0;
+    left: 0;
+    border-top-width: 2px;
+    border-left-width: 2px;
+  }
+  .b-marco::after {
+    right: 0;
+    bottom: 0;
+    border-right-width: 2px;
+    border-bottom-width: 2px;
+  }
+  .bloque:hover .b-marco::before,
+  .bloque:hover .b-marco::after {
+    width: 100%;
+    height: 100%;
+    border-color: var(--red);
+    transition:
+      width var(--dur-3) var(--ease-out),
+      height var(--dur-3) var(--ease-out) var(--dur-2),
+      border-color var(--dur-2) var(--ease);
+  }
+  .b-cab {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: end;
+    gap: 6px 12px;
+    padding-bottom: 16px;
     border-bottom: 2px solid var(--ink);
   }
-  .bloques ul {
+  /* La cifra: hueca, con el filo gris; al pasar se llena de rojo desde abajo */
+  .b-num {
+    grid-column: 1 / -1;
+    justify-self: start;
+    font-size: 54px;
+    font-weight: 700;
+    line-height: 0.9;
+    letter-spacing: -0.02em;
+    color: transparent;
+    -webkit-text-stroke: 1px var(--steel);
+    background: linear-gradient(var(--red), var(--red)) 0 100% / 100% 0% no-repeat;
+    -webkit-background-clip: text;
+    background-clip: text;
+    transition:
+      background-size var(--dur-4) var(--ease-out),
+      -webkit-text-stroke-color var(--dur-2) var(--ease);
+  }
+  .bloque:hover .b-num {
+    -webkit-text-stroke-color: var(--red);
+    background-size: 100% 100%;
+  }
+  .bloque h3 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.15;
+  }
+  .b-n {
+    min-width: 30px;
+    padding: 3px 8px;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.2;
+    text-align: center;
+    color: var(--ink);
+    border: 1px solid var(--line);
+    transition:
+      background var(--dur-2) var(--ease),
+      border-color var(--dur-2) var(--ease),
+      color var(--dur-2) var(--ease);
+  }
+  .bloque:hover .b-n {
+    color: var(--white);
+    background: var(--ink);
+    border-color: var(--ink);
+  }
+  .b-lista {
+    position: relative;
     margin: 0;
     padding: 0;
     list-style: none;
-    columns: 2;
-    column-gap: 32px;
   }
-  .bloques li {
-    break-inside: avoid;
-    padding: 9px 0 9px 18px;
+  .plegable .b-lista {
+    overflow: hidden;
+    transition: height var(--dur-3) var(--ease-out);
+  }
+  /* Cortada, la lista se funde con el fondo para que se note que sigue */
+  .plegable:not(.abierta) .b-lista::after {
+    content: '';
+    position: absolute;
+    inset: auto 0 0;
+    height: 40px;
+    background: linear-gradient(rgba(255, 255, 255, 0), var(--white));
+    pointer-events: none;
+  }
+  .bloque li {
     position: relative;
+    padding: 9px 0 9px 20px;
     font-size: 16px;
     line-height: 1.45;
     color: var(--body);
     border-bottom: 1px solid #eceef0;
+    transition:
+      color var(--dur-1) var(--ease),
+      transform var(--dur-2) var(--ease-out);
   }
-  .bloques li::before {
+  .b-lista > li:last-child {
+    border-bottom: 0;
+  }
+  .bloque li::before {
     content: '';
     position: absolute;
     left: 0;
-    top: 0.95em;
+    top: 1.05em;
     width: 8px;
     height: 2px;
     background: var(--red);
+    transition: width var(--dur-2) var(--ease-out);
   }
-  .bloques li ul {
-    columns: 1;
+  .b-lista > li:hover {
+    color: var(--ink);
+    transform: translateX(4px);
+  }
+  .b-lista > li:hover::before {
+    width: 13px;
+  }
+  .bloque li ul {
     margin-top: 4px;
+    padding: 0;
+    list-style: none;
   }
-  .bloques li li {
-    border: 0;
+  .bloque li li {
     padding-block: 3px;
+    font-size: 15px;
+    border: 0;
   }
-  .bloques .sub-titulo {
+  .bloque li li::before {
+    width: 5px;
+    background: var(--steel);
+  }
+  .bloque .sub-titulo {
     padding-left: 0;
     font-weight: 700;
     color: var(--ink);
   }
-  .bloques .sub-titulo::before {
+  .bloque .sub-titulo::before {
     display: none;
+  }
+  /* «Ver los N» siempre al pie, así quedan alineados en las tres */
+  .b-mas {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    align-self: flex-start;
+    min-height: 44px;
+    margin-top: auto;
+    padding: 6px 0 0;
+    font: inherit;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--ink);
+    background: none;
+    border: 0;
+    cursor: pointer;
+  }
+  .b-mas[hidden] {
+    display: none;
+  }
+  .b-mas span {
+    background: linear-gradient(var(--red), var(--red)) 0 100% / 0% 2px no-repeat;
+    transition: background-size var(--dur-2) var(--ease-out);
+  }
+  .b-mas:hover span {
+    background-size: 100% 2px;
+  }
+  .b-mas::after {
+    content: '»';
+    color: var(--red);
+    transition: transform var(--dur-2) var(--ease-out);
+  }
+  .b-mas:hover::after {
+    transform: translateX(4px);
+  }
+  .abierta .b-mas::after {
+    transform: rotate(-90deg);
+  }
+  .b-mas:focus-visible {
+    outline: var(--foco);
+    outline-offset: 2px;
+  }
+
+  /* Normas: no se leen, se comprueban. Una línea discreta bajo las tarjetas, sin caja: el título y cada grupo con sus
+     códigos seguidos, separados por una barra roja fina */
+  .normas {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: baseline;
+    gap: 8px clamp(20px, 2.4vw, 36px);
+    margin-top: clamp(24px, 2.4vw, 32px);
+    padding-top: 16px;
+    font-size: 15px;
+    line-height: 1.5;
+    color: var(--muted);
+    border-top: 1px solid var(--line);
+  }
+  .normas h3 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--ink);
+  }
+  .normas dl {
+    display: grid;
+    gap: 4px;
+    margin: 0;
+  }
+  .n-fila {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0 10px;
+  }
+  .normas dt {
+    min-width: 13em;
+    font-size: 13px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .normas dd {
+    display: flex;
+    flex-wrap: wrap;
+    margin: 0;
+    color: var(--body);
+    font-variant-numeric: tabular-nums;
+  }
+  .n-cod:not(:last-child)::after {
+    content: '/';
+    margin-inline: 7px;
+    color: var(--red);
+  }
+
+  /* Entrada: las tarjetas suben escalonadas al llegar a la vista */
+  @media (prefers-reduced-motion: no-preference) {
+    .entra .bloque {
+      opacity: 0;
+      translate: 0 28px;
+      transition:
+        opacity var(--dur-4) var(--ease-out) calc(var(--i, 0) * 100ms),
+        translate var(--dur-4) var(--ease-out) calc(var(--i, 0) * 100ms),
+        transform var(--dur-3) var(--ease-out),
+        box-shadow var(--dur-3) var(--ease-out),
+        border-color var(--dur-2) var(--ease);
+    }
+    .entra .bloque.dentro {
+      opacity: 1;
+      translate: 0 0;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .bloque,
+    .b-marco::before,
+    .b-marco::after,
+    .b-num,
+    .plegable .b-lista {
+      transition: none;
+    }
+    .bloque:hover {
+      --lift: 0px;
+    }
   }
 
   /* ——— Referencias: la tabla de versiones y los accesorios ——— */
@@ -2292,6 +2699,70 @@ const descripcion = m
   }
   .versiones tbody th .copiar + .copiar {
     margin-left: 14px;
+  }
+  /* Tablas de equipos y accesorios, tal como las da la web actual: celdas unidas y los textos largos en varias
+     líneas para que la tabla no se salga */
+  .ref-bloque + .ref-bloque,
+  .tabla-scroll + .ref-bloque {
+    margin-top: clamp(40px, 5vw, 64px);
+  }
+  .ref-bloque h3 {
+    margin: 0 0 20px;
+    font-size: 24px;
+    font-weight: 700;
+  }
+  .ref-bloque h4 {
+    margin: 28px 0 0;
+    font-size: 19px;
+    font-weight: 700;
+  }
+  .ref-tabla + .ref-tabla,
+  .ref-bloque .tabla-scroll + .tabla-scroll {
+    margin-top: 28px;
+  }
+  .ref-tabla thead th:empty {
+    border-bottom-color: var(--line);
+  }
+  .ref-tabla td {
+    min-width: 5ch;
+    white-space: normal;
+  }
+  .ref-tabla td:has(.copiar) {
+    font-size: 17px;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .ref-nota {
+    max-width: 100ch;
+    margin: 14px 0 0;
+    font-size: 16px;
+    line-height: 1.55;
+    color: var(--body);
+  }
+  .ref-foto {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    margin-top: 24px;
+  }
+  .t-lista {
+    margin: 14px 0 0;
+    padding-left: 1.2em;
+  }
+  .t-lista li::marker {
+    color: var(--red);
+  }
+  .video {
+    max-width: 720px;
+    margin-top: 20px;
+    aspect-ratio: 16 / 9;
+    background: var(--band);
+  }
+  .video iframe {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border: 0;
   }
   .accesorios {
     margin-top: clamp(40px, 5vw, 64px);
@@ -2306,7 +2777,6 @@ const descripcion = m
   .mas {
     padding-block: clamp(56px, 7vw, 96px);
     background: var(--band);
-    border-top: 1px solid var(--line);
   }
   .cabeza {
     display: flex;
@@ -2337,6 +2807,132 @@ const descripcion = m
     grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   }
 
+  /* Barra roja junto al título, como en los apartados, que crece cuando la sección llega a la vista */
+  .cabeza h2 {
+    position: relative;
+  }
+  .cabeza h2::before {
+    content: '';
+    position: absolute;
+    top: 0.08em;
+    bottom: 0.08em;
+    left: calc(-1 * clamp(10px, 1.4vw, 22px));
+    width: 4px;
+    background: var(--red);
+    transform: scaleY(0);
+    transform-origin: top;
+    transition: transform var(--dur-4) var(--ease-out);
+  }
+  .mas.actual .cabeza h2::before {
+    transform: scaleY(1);
+  }
+  .cabeza-der {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+
+  /* Carrusel: tres a la vista. Sin JS o con movimiento reducido, se desliza a mano y encaja en cada tarjeta; con JS
+     es una cinta que pasa sola (ver .cinta más abajo) */
+  .mas .pista {
+    --car-gap: 24px;
+    position: relative;
+    grid-template-columns: none;
+    grid-auto-flow: column;
+    grid-auto-columns: calc((100% - 2 * var(--car-gap)) / 3);
+    gap: var(--car-gap);
+    margin-block: -10px -30px;
+    padding-block: 10px 30px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+  .mas .pista::-webkit-scrollbar {
+    display: none;
+  }
+  .mas .pista > li {
+    scroll-snap-align: start;
+  }
+  /* Como en el catálogo: «+ Presupuesto» a la izquierda de «Ver producto», en la misma franja. Se guarda en la misma
+     lista que el catálogo; añadida, pasa a «✓ Presupuesto» sobre gris y otro clic la quita */
+  .mas :global(.pieza) {
+    --izq: 50%;
+  }
+  .mas .pista > li {
+    position: relative;
+  }
+  .pres {
+    position: absolute;
+    left: 1px;
+    bottom: 1px;
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    width: calc(50% - 1px);
+    height: 56px;
+    padding: 0 16px 0 20px;
+    font: 700 16px var(--f);
+    color: var(--ink);
+    background: var(--white);
+    border: 0;
+    border-right: 1px solid #b4b9bd;
+    cursor: pointer;
+    transition: background-color var(--dur-2) var(--ease);
+  }
+  .pres svg {
+    flex: none;
+    fill: none;
+    stroke: var(--red);
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transition: rotate var(--dur-2) var(--ease-out);
+  }
+  .pres-si,
+  .pres[aria-pressed='true'] .pres-mas {
+    display: none;
+  }
+  .pres[aria-pressed='true'] .pres-si {
+    display: block;
+  }
+  .pres[aria-pressed='true'] {
+    background: #f3f4f5;
+  }
+  .pres:hover {
+    background: #f3f4f5;
+  }
+  .pres:hover .pres-mas {
+    rotate: 90deg;
+  }
+  .pres:focus-visible {
+    outline: var(--foco);
+    outline-offset: -2px;
+  }
+  .pres:active {
+    scale: 0.97;
+  }
+  .mas :global(.ver) {
+    white-space: nowrap;
+  }
+  /* La cinta: la ventana recorta a lo ancho (con hueco arriba y abajo para que la tarjeta suba y su sombra no se
+     corte) y la lista corre dentro sin barra ni encaje */
+  .carrusel {
+    margin-block: -12px -36px;
+    padding-block: 12px 36px;
+  }
+  .cinta .carrusel {
+    overflow: hidden;
+  }
+  .cinta .pista {
+    margin-block: 0;
+    padding-block: 0;
+    overflow: visible;
+    scroll-snap-type: none;
+    will-change: transform;
+  }
+
   @keyframes aparece {
     from {
       opacity: 0;
@@ -2345,28 +2941,87 @@ const descripcion = m
   }
 
   @media (max-width: 1100px) {
-    .rc-fila {
-      grid-template-columns: 72px minmax(0, 1fr) minmax(0, 1.3fr);
+    .compat {
+      --cp-cols: minmax(190px, 1fr) minmax(0, 2.4fr) 130px;
     }
-    .rc-foto {
-      width: 72px;
-      height: 72px;
+    .cp-th,
+    .rc {
+      column-gap: 20px;
+    }
+  }
+  /* Compatibilidad en móvil: sin cabecera; cada rotor en su bloque, con el nombre de cada cifra encima */
+  @media (max-width: 760px) {
+    .elegir {
+      display: grid;
+      gap: 14px;
+    }
+    .sel select {
+      width: 100%;
+      min-width: 0;
+    }
+    .estado {
+      min-height: 0;
+    }
+    .cp-th {
+      display: none;
+    }
+    .rotores {
+      border-top: 2px solid var(--ink);
+    }
+    .rc {
+      display: block;
+      padding: 16px 0;
+    }
+    .rc-rotor {
+      padding-right: 112px;
     }
     .rc-cifras {
-      grid-column: 2 / -1;
+      gap: 12px;
+      margin-top: 14px;
     }
-    .rc-tabla {
-      padding-left: 110px;
+    .rc-cifras dt {
+      position: static;
+      width: auto;
+      height: auto;
+      overflow: visible;
+      clip-path: none;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .rc-cifras dd {
+      font-size: 17px;
+    }
+    .rc-tabla summary {
+      top: 14px;
+      font-size: 16px;
+    }
+    .encaja {
+      margin-top: 12px;
+    }
+    .encaja li {
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px 16px;
+      padding: 12px 0;
+    }
+    .en-que {
+      grid-column: 1 / -1;
+    }
+    .en-ad {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      justify-self: end;
+    }
+    .en-et {
+      display: inline;
+      font-size: 15px;
+      color: var(--muted);
+    }
+    .en-ad:has(em) .en-et {
+      display: none;
     }
   }
   @media (max-width: 1000px) {
-    .cabecera-in {
-      grid-template-columns: minmax(0, 1fr);
-      grid-template-areas: 'migas' 'foto' 'datos';
-    }
-    .escena {
-      min-height: 0;
-    }
     .vista[data-tipo='3d'] {
       position: relative;
     }
@@ -2376,14 +3031,14 @@ const descripcion = m
     .escena:has(.vista[data-tipo='3d']:not([hidden])) {
       aspect-ratio: auto;
     }
-    .datos-in {
-      grid-template-columns: minmax(0, 1fr);
-    }
     .bloques {
-      margin-top: 36px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
     }
     .rejilla {
       grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .mas .pista {
+      grid-auto-columns: calc((100% - var(--car-gap)) / 2);
     }
   }
   @media (max-width: 760px) {
@@ -2411,32 +3066,31 @@ const descripcion = m
       flex: none;
       padding: 10px 14px;
     }
-    .rc-fila {
-      grid-template-columns: 64px minmax(0, 1fr);
-      gap: 10px 16px;
-      padding: 14px 16px 14px 12px;
+    /* Datos técnicos en móvil: una columna de tarjetas */
+    /* Si hay «Leer más», el primer párrafo también se corta (a 6 líneas) y se abre con el mismo botón */
+    .texto:has(.leer:not([open])) .entrada {
+      display: -webkit-box;
+      overflow: hidden;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 6;
+      line-clamp: 6;
     }
-    .rc-foto {
-      width: 64px;
-      height: 64px;
+    .bloques {
+      grid-template-columns: 1fr;
+      gap: 14px;
+      margin-top: 24px;
     }
-    .rc-cabe,
-    .rc-cifras {
-      grid-column: 2;
+    .bloque {
+      padding: 20px 18px 6px;
     }
-    .rc-tabla {
-      padding: 0 16px 0 92px;
+    .bloque:hover {
+      transform: none;
     }
-    .rc-tabla[open] {
-      padding-left: 16px;
+    .normas {
+      grid-template-columns: 1fr;
     }
-    .bloques ul {
-      columns: 1;
-    }
-    .tubos {
-      flex-wrap: nowrap;
-      overflow-x: auto;
-      scrollbar-width: thin;
+    .normas dt {
+      min-width: 0;
     }
   }
   @media (max-width: 640px) {
@@ -2452,6 +3106,9 @@ const descripcion = m
     }
     .lb-pista {
       display: none;
+    }
+    .meta > div {
+      grid-template-columns: 96px minmax(0, 1fr);
     }
     .spec > div {
       grid-template-columns: minmax(104px, 0.8fr) minmax(0, 1.2fr);
@@ -2469,25 +3126,1088 @@ const descripcion = m
     .botones {
       grid-template-columns: minmax(0, 1fr);
     }
-    .elegir {
-      margin-inline: calc(var(--gut) * -1);
-      padding-inline: var(--gut);
-      border-inline: 0;
-    }
-    .rotores {
-      margin-inline: calc(var(--gut) * -1);
-      border-inline: 0;
-    }
     .rejilla {
       grid-template-columns: minmax(0, 1fr);
+    }
+    .mas .pista {
+      --car-gap: 14px;
+      grid-auto-columns: 86%;
+    }
+    /* En el teléfono la franja mide 50 px, como en el catálogo */
+    .pres {
+      height: 50px;
+      gap: 6px;
+      padding: 0 8px 0 14px;
+      font-size: 15px;
     }
   }
   @media (prefers-reduced-motion: reduce) {
     .vista,
-    .t-liquido,
     .barra {
       transition: none;
       animation: none;
+    }
+  }
+
+  /* Códigos en las tablas: un clic los copia; el aviso sale encima sin mover nada */
+  .copiar {
+    position: relative;
+    padding: 0;
+    border: 0;
+    background: none;
+    font: inherit;
+    color: inherit;
+    text-decoration: underline dotted 1px;
+    text-underline-offset: 4px;
+    text-decoration-color: var(--steel);
+    cursor: copy;
+    transition: color var(--dur-1) var(--ease);
+  }
+  .copiar:hover {
+    color: var(--red);
+    text-decoration-color: currentColor;
+  }
+  .copiar[data-pista]::after {
+    content: attr(data-pista);
+    position: absolute;
+    left: 50%;
+    bottom: calc(100% + 8px);
+    z-index: 5;
+    padding: 5px 9px;
+    font-size: 13px;
+    font-weight: 700;
+    white-space: nowrap;
+    color: #fff;
+    background: var(--ink);
+    opacity: 0;
+    pointer-events: none;
+    translate: -50% 4px;
+    transition:
+      opacity 0.18s var(--ease),
+      translate 0.18s var(--ease);
+  }
+  .copiar[data-pista]:is(:hover, :focus-visible, .hecho)::after {
+    opacity: 1;
+    translate: -50% 0;
+  }
+  .copiar.hecho::after {
+    background: var(--t-ventilada);
+  }
+
+  /* ════════ Escaparate de la ficha ════════
+     Estudio claro y composición centrada: arriba el nombre y el pedido, en medio la máquina flotando sobre el suelo
+     del estudio y abajo las cifras en una línea tipográfica, sin cajas. Todo sale de los tokens de global.css */
+  .sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .escaparate {
+    --pad: clamp(var(--sp-5), 3vw, var(--sp-7));
+    --mini: 68px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: var(--sp-3);
+    padding: clamp(var(--sp-5), 3vw, var(--sp-7)) 0 0;
+  }
+
+  /* ——— Arriba: categoría, nombre, frase y pedido, centrados ——— */
+  /* La tarjeta no es una caja: sus piezas se ordenan con el resto (nombre y pedido arriba, temperatura y referencia
+     al final, bajo las cifras) */
+  .escaparate {
+    text-align: center;
+  }
+  .escaparate > .datos {
+    display: contents;
+  }
+  .datos > .cat,
+  .datos > h1,
+  .datos > .frase,
+  .datos > .botones {
+    order: -1;
+  }
+  .franja {
+    order: 1;
+  }
+  .datos > .meta {
+    order: -1;
+  }
+  .datos .cat {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--red);
+  }
+  .datos h1 {
+    margin-top: var(--sp-2);
+    font-size: clamp(56px, 6.6vw, 108px);
+    font-weight: 700;
+    line-height: 0.86;
+    letter-spacing: -0.03em;
+    color: var(--ink);
+    overflow-wrap: anywhere;
+  }
+  .datos .frase {
+    margin-top: var(--sp-4);
+    max-width: 60ch;
+    font-size: var(--t-sub);
+    line-height: 1.3;
+    color: var(--body);
+    text-wrap: balance;
+  }
+  .botones {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--sp-2);
+    margin-top: var(--sp-5);
+  }
+  /* Como los del inicio: los dos con su » que avanza; al rojo le cruza un destello y el blanco se rellena de
+     izquierda a derecha */
+  .botones .btn {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+    justify-content: center;
+    min-height: 52px;
+    padding: var(--sp-2) var(--sp-5);
+    text-align: center;
+    transition:
+      background var(--dur-1) var(--ease-out),
+      color var(--dur-1) var(--ease-out),
+      border-color var(--dur-1) var(--ease-out),
+      translate var(--dur-2) var(--ease-out),
+      box-shadow var(--dur-2) var(--ease-out);
+  }
+  .botones .btn::after {
+    content: '»';
+    font-size: 20px;
+    line-height: 0;
+    transition: translate var(--dur-2) var(--ease-out);
+  }
+  .botones .btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+  }
+  .botones .btn.red::before {
+    background: linear-gradient(105deg, transparent 30%, rgba(255, 255, 255, 0.35) 50%, transparent 70%);
+    translate: -110% 0;
+  }
+  .datos .btn.ghost {
+    color: var(--ink);
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(0, 0, 0, 0.45);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+  }
+  .datos .btn.ghost::before {
+    background: #fff;
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.4s var(--ease-out);
+  }
+  @media (hover: hover) {
+    .botones .btn:hover {
+      translate: 0 -2px;
+      box-shadow: var(--sombra-suave);
+    }
+    .botones .btn:hover::after {
+      translate: 6px 0;
+    }
+    .botones .btn.red:hover::before {
+      translate: 110% 0;
+      transition: translate 0.7s var(--ease-out);
+    }
+    .datos .btn.ghost:hover {
+      border-color: #fff;
+    }
+    .datos .btn.ghost:hover::before {
+      transform: scaleX(1);
+    }
+  }
+  .botones .btn:active {
+    translate: 0;
+    box-shadow: none;
+  }
+  .datos .btn:focus-visible {
+    outline: var(--foco);
+    outline-offset: 2px;
+  }
+  /* Temperatura, versión y referencia: una línea discreta bajo los botones */
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--sp-1) var(--sp-5);
+    width: 100%;
+    max-width: 1080px;
+    margin: var(--sp-4) 0 0;
+    padding: 0;
+  }
+  .meta > div {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-3);
+    min-height: 44px;
+  }
+  .meta dt {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .meta dd {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--sp-2) var(--sp-3);
+    margin: 0;
+    font-size: 16px;
+    color: var(--ink);
+  }
+  .ico-temp :global(svg) {
+    flex: none;
+  }
+  .ico-temp[data-t='ventilada'] :global(svg) {
+    color: var(--t-ventilada);
+  }
+  .ico-temp[data-t='refrigerada'] :global(svg) {
+    color: var(--t-refrigerada);
+  }
+  .ico-temp[data-t='calefactada'] :global(svg) {
+    color: var(--t-calefactada);
+  }
+  .version {
+    display: inline-flex;
+    flex-wrap: wrap;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border: 1px solid var(--line);
+  }
+  .version li + li {
+    border-left: 1px solid var(--line);
+  }
+  .version a {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-2);
+    min-height: 44px;
+    padding: 0 var(--sp-3);
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--ink);
+    text-decoration: none;
+    transition: background var(--dur-1) var(--ease-out);
+  }
+  .version a:hover {
+    background: #fff;
+  }
+  .version a[aria-current] {
+    color: #fff;
+    background: var(--ink);
+  }
+  .version a:focus-visible {
+    outline: var(--foco);
+    outline-offset: 2px;
+  }
+  /* Referencia: el código y su botón de copiar; "Copiado" sale en el mismo hueco, sin mover nada */
+  .codigos small {
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .datos .copiar {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-2);
+    min-height: 44px;
+    padding: 0;
+    border: 0;
+    background: none;
+    font: inherit;
+    color: var(--ink);
+    text-decoration: none;
+    cursor: copy;
+  }
+  .cod {
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    font-variant-numeric: tabular-nums;
+  }
+  .copia-estado {
+    display: grid;
+  }
+  .copia-estado > span {
+    grid-area: 1 / 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 0;
+    font-size: 13px;
+    font-weight: 700;
+    transition:
+      opacity var(--dur-2) var(--ease-out),
+      border-color var(--dur-2) var(--ease-out),
+      color var(--dur-2) var(--ease-out);
+  }
+  .copia-estado svg {
+    width: 14px;
+    height: 14px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.5;
+  }
+  .c-copiar {
+    color: var(--muted);
+  }
+  .c-hecho {
+    color: var(--t-ventilada);
+    opacity: 0;
+  }
+  .datos .copiar:hover .c-copiar {
+    color: var(--red);
+  }
+  .datos .copiar.hecho .c-copiar {
+    opacity: 0;
+  }
+  .datos .copiar.hecho .c-hecho {
+    opacity: 1;
+  }
+  .datos .copiar:focus-visible {
+    outline: var(--foco);
+    outline-offset: 4px;
+  }
+
+  /* ——— En medio: la máquina en el estudio ——— */
+  .galeria {
+    position: relative;
+    width: 100%;
+    height: clamp(320px, 45vh, 520px);
+    margin-top: var(--sp-4);
+  }
+  .escena {
+    position: absolute;
+    inset: 0 0 calc(var(--mini) + var(--sp-4));
+  }
+  .galeria .vista {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+  }
+  .galeria .vista[hidden] {
+    display: none;
+  }
+  /* La máquina, apoyada en el suelo del estudio con una sombra de contacto que mide lo que ella */
+  .pieza {
+    position: absolute;
+    left: 50%;
+    bottom: 5%;
+    z-index: 1;
+    height: 95%;
+    max-width: 90%;
+    translate: calc(-50% + var(--px, 0px)) var(--py, 0px);
+    transition: translate var(--dur-2) var(--ease-out);
+  }
+  .pieza img {
+    position: relative;
+    z-index: 1;
+    width: auto;
+    height: 100%;
+    max-width: 100%;
+    object-fit: contain;
+    object-position: bottom;
+  }
+  .contacto {
+    position: absolute;
+    left: 8%;
+    right: 8%;
+    bottom: -6px;
+    height: 10px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.3);
+    filter: blur(6px);
+  }
+  .contacto::after {
+    content: '';
+    position: absolute;
+    inset: -8px 4%;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.07);
+    filter: blur(14px);
+  }
+  .vista:not([data-tipo='3d']) img {
+    cursor: zoom-in;
+  }
+  /* Detalle y rotores: en el mismo estudio, sin recuadro (el blanco de su foto se funde con el fondo) */
+  .vista[data-tipo='detalle'] img,
+  .vista[data-tipo='rotor'] img {
+    width: auto;
+    height: 100%;
+    max-width: 100%;
+    object-fit: contain;
+    mix-blend-mode: multiply;
+  }
+  .galeria .vista[data-tipo='3d'] {
+    display: flex;
+    max-width: 900px;
+    margin-inline: auto;
+    padding: var(--sp-4);
+    color: #fff;
+    background: var(--carbon);
+  }
+  .vista[data-tipo='3d'] > :global(.visor) {
+    flex: 1;
+    min-height: 0;
+  }
+  .pie-vista {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    z-index: 2;
+    translate: -50% 0;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .galeria .ampliar {
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 3;
+    width: 48px;
+    height: 48px;
+    color: var(--ink);
+    background: #fff;
+  }
+  .galeria .ampliar:hover {
+    color: #fff;
+    background: var(--red);
+  }
+  .escaparate[data-vista='3d'] .ampliar {
+    visibility: hidden;
+  }
+
+  /* Miniaturas: una fila centrada bajo la máquina; el indicador rojo se desliza a la elegida (--sel lo pone el script) */
+  .miniaturas {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    z-index: 3;
+    display: flex;
+    gap: var(--sp-2);
+    padding-bottom: 6px;
+    translate: -50% 0;
+  }
+  .mini-raya {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: var(--mini);
+    height: 2px;
+    background: var(--red);
+    translate: calc(var(--sel) * (var(--mini) + var(--sp-2))) 0;
+    transition: translate var(--dur-3) var(--ease-out);
+  }
+  .mini {
+    position: relative;
+    flex: none;
+    width: var(--mini);
+    height: var(--mini);
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+  }
+  .mini-foto {
+    display: grid;
+    place-items: center;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #fff;
+    border: 1px solid var(--line);
+    opacity: 0.6;
+    transition:
+      opacity var(--dur-2) var(--ease-out),
+      translate var(--dur-2) var(--ease-out),
+      border-color var(--dur-2) var(--ease-out);
+  }
+  .mini:hover .mini-foto {
+    translate: 0 -3px;
+    border-color: var(--ink);
+  }
+  .mini[aria-selected='true'] .mini-foto {
+    border-color: var(--ink);
+  }
+  .mini[data-tipo='3d'] .mini-foto {
+    background: var(--carbon);
+  }
+  .mini-foto img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: var(--sp-1);
+  }
+  .mini[data-tipo='detalle'] .mini-foto img {
+    padding: 0;
+    object-fit: cover;
+  }
+  .mini-foto b {
+    font-size: 16px;
+    color: #fff;
+  }
+  .mini-nombre {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .mini:hover .mini-foto,
+  .mini[aria-selected='true'] .mini-foto {
+    opacity: 1;
+  }
+  .mini:focus-visible {
+    outline: var(--foco);
+    outline-offset: 2px;
+  }
+
+  /* ——— Las cifras como pompas unidas: cristal claro sobre la parte más oscura del estudio, enlazadas por un puente que
+     se estrecha en el centro, como dos gotas que se tocan. Icono original grande arriba, cifra en medio y nombre
+     debajo. Al pasar por encima, un neón rojo suave las rodea ——— */
+  .franja {
+    --d: clamp(116px, 9.6vw, 140px);
+    --puente: clamp(18px, 2vw, 30px);
+    --marea-1: rgba(250, 40, 46, 0.46);
+    --marea-2: rgba(200, 0, 8, 0.64);
+    --marea-tubo: rgba(226, 18, 26, 0.54);
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: auto;
+    align-items: center;
+    justify-self: center;
+    gap: var(--puente);
+    width: fit-content;
+    max-width: 100%;
+    margin: var(--sp-6) auto 0;
+    padding: var(--sp-3) 0 var(--sp-2);
+    isolation: isolate;
+  }
+  .cifra {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    width: var(--d);
+    height: var(--d);
+    padding: 10px 8px;
+    text-align: center;
+    /* El cristal y el líquido los pinta .marea; aquí, el filo y la sombra. Círculo, o cápsula si se estira */
+    border-radius: calc(var(--d) / 2);
+    box-shadow:
+      inset 0 1px 0 #fff,
+      inset 0 0 0 1px rgba(255, 255, 255, 0.8),
+      0 1px 2px rgba(0, 0, 0, 0.08),
+      0 14px 28px -16px rgba(0, 0, 0, 0.35);
+    transition: box-shadow var(--dur-3) var(--ease-out);
+  }
+  /* Los códigos de un equipo ("DA 005 · DA 006 · DA 007") no se parten: la pompa se estira en cápsula */
+  .cifra.codigos {
+    width: auto;
+    min-width: var(--d);
+    padding-inline: 22px;
+  }
+  .cifra.codigos .valor b {
+    white-space: nowrap;
+  }
+  .cifra.llena {
+    box-shadow:
+      inset 0 1px 0 #fff,
+      inset 0 0 0 1px rgba(221, 4, 10, 0.35),
+      0 1px 2px rgba(0, 0, 0, 0.08),
+      0 14px 28px -16px rgba(0, 0, 0, 0.35);
+  }
+  /* El puente: un tubo con dos mordiscos elípticos arriba y abajo; entra 8 px en cada pompa, donde la pompa ya es más
+     alta que él, así la unión no se ve. El líquido lo recorre de izquierda a derecha (--tubo, de 0 a 1, lo pone el
+     script) */
+  .cifra + .cifra::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: calc(100% - 8px);
+    z-index: -2;
+    width: calc(var(--puente) + 16px);
+    height: calc(var(--d) * 0.46);
+    background:
+      linear-gradient(var(--marea-tubo), var(--marea-tubo)) left / calc(var(--tubo, 0) * 100%) 100% no-repeat,
+      #f4f4f2;
+    translate: 0 -50%;
+    -webkit-mask:
+      radial-gradient(50% 72% at 50% 0, transparent 97%, #000 100%) top / 100% 50.5% no-repeat,
+      radial-gradient(50% 72% at 50% 100%, transparent 97%, #000 100%) bottom / 100% 50.5% no-repeat;
+    mask:
+      radial-gradient(50% 72% at 50% 0, transparent 97%, #000 100%) top / 100% 50.5% no-repeat,
+      radial-gradient(50% 72% at 50% 100%, transparent 97%, #000 100%) bottom / 100% 50.5% no-repeat;
+  }
+  /* El líquido: más ancho y alto que la pompa para poder inclinarse (chapoteo) sin que se vean sus esquinas. El script
+     lo sube y lo inclina; la superficie son dos olas que corren en sentidos opuestos, y dentro suben burbujas. Cada
+     pompa lleva su propia corriente (velocidad, altura y sentido de las olas) */
+  /* El cristal de la pompa (más claro arriba a la izquierda, donde da la luz) con el líquido dentro, recortado al
+     círculo. Va por encima de los tubos: así cada tubo nace y muere detrás del cristal, sin costuras */
+  .marea {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: linear-gradient(155deg, #fff 0%, #f6f6f4 55%, #ececea 100%);
+    clip-path: inset(0 round calc(var(--d) / 2));
+    container-type: size;
+    pointer-events: none;
+  }
+  .marea i {
+    position: absolute;
+    top: 0;
+    left: -40%;
+    width: 180%;
+    height: 150%;
+    background: linear-gradient(var(--marea-1), var(--marea-2) 60%);
+    box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.5);
+    transform: translateY(120cqh);
+    transform-origin: 50% 0;
+  }
+  .marea i::before,
+  .marea i::after {
+    content: '';
+    position: absolute;
+    bottom: calc(100% - 1px);
+    left: 0;
+    width: calc(100% + 64px);
+    height: var(--ola-h, 12px);
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 12' preserveAspectRatio='none'%3E%3Cpath d='M0 6Q16 0 32 6T64 6V12H0Z' fill='rgb(250,40,46)' fill-opacity='.46'/%3E%3C/svg%3E")
+      repeat-x 0 0 / 64px 100%;
+  }
+  .marea i::after {
+    height: calc(var(--ola-h, 12px) * 0.7);
+    opacity: 0.6;
+  }
+  .marea b {
+    position: absolute;
+    top: 0;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.7);
+    opacity: 0;
+  }
+  .marea b:nth-child(1) {
+    left: 42%;
+    --bt: 0.9s;
+    --bx: 5px;
+  }
+  .marea b:nth-child(2) {
+    left: 51%;
+    width: 3px;
+    height: 3px;
+    --bt: 1.2s;
+    --bd: 0.35s;
+    --bx: -4px;
+  }
+  .marea b:nth-child(3) {
+    left: 57%;
+    width: 4px;
+    height: 4px;
+    --bt: 1s;
+    --bd: 0.6s;
+    --bx: 3px;
+  }
+  .cifra.activa .marea i::before {
+    animation: ola var(--ola-t, 1.4s) linear infinite var(--ola-dir, normal);
+  }
+  .cifra.activa .marea i::after {
+    animation: ola calc(var(--ola-t, 1.4s) * 1.7) linear infinite reverse;
+  }
+  .cifra.activa .marea b {
+    animation: burbuja var(--bt) var(--bd, 0s) ease-in infinite;
+  }
+  @keyframes ola {
+    to {
+      translate: -64px 0;
+    }
+  }
+  /* Las burbujas nacen en el fondo de la pompa y suben hasta la superficie */
+  @keyframes burbuja {
+    0% {
+      opacity: 0;
+      transform: translate(0, 100cqh);
+    }
+    20% {
+      opacity: 0.9;
+    }
+    100% {
+      opacity: 0;
+      transform: translate(var(--bx), 12cqh);
+    }
+  }
+  .cifra:is(:hover, :has(:focus-visible)) {
+    box-shadow:
+      inset 0 1px 0 #fff,
+      inset 0 0 0 1px rgba(255, 70, 74, 0.55),
+      0 0 12px rgba(255, 40, 40, 0.22),
+      0 14px 28px -16px rgba(0, 0, 0, 0.35);
+  }
+  /* Icono arriba, cifra en medio y nombre debajo: el dt se deshace para que su icono y su texto se ordenen aparte */
+  .cifra dt {
+    display: contents;
+    font-size: 10.5px;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--body);
+  }
+  .ico {
+    flex: none;
+    order: -2;
+    width: 40px;
+    height: 30px;
+    margin-bottom: 2px;
+    background: var(--ink);
+    mask: var(--ico) center / contain no-repeat;
+    transition: background var(--dur-2) var(--ease-out);
+  }
+  .cifra:is(:hover, :has(:focus-visible)) .ico {
+    background: var(--red);
+  }
+  .cifra dd {
+    order: -1;
+    margin: 0;
+  }
+  /* La cifra y su unidad; si no caben en el círculo (códigos de accesorios), se parten en líneas equilibradas */
+  .valor {
+    display: inline-flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: baseline;
+    gap: 0 3px;
+    text-wrap: balance;
+  }
+  button.valor {
+    padding: 0;
+    border: 0;
+    background: none;
+    font: inherit;
+    color: inherit;
+    cursor: default;
+  }
+  button.valor:focus-visible {
+    outline: none;
+  }
+  .valor b {
+    font-size: clamp(21px, 1.85vw, 27px);
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.015em;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink);
+  }
+  .valor small {
+    font-size: 12px;
+    font-weight: 300;
+    color: var(--muted);
+  }
+  /* Equipos y accesorios: datos en texto, sin nombre */
+  .cifra:not(:has(dt)) .valor {
+    white-space: normal;
+  }
+  .cifra:not(:has(dt)) .valor b {
+    font-size: 17px;
+    line-height: 1.2;
+    letter-spacing: 0;
+    text-wrap: balance;
+  }
+  /* Contexto: encima de la pompa, en blanco con sombra, sin mover nada */
+  .ctx {
+    position: absolute;
+    left: 50%;
+    bottom: calc(100% + var(--sp-2));
+    z-index: 5;
+    display: grid;
+    gap: 6px;
+    width: 250px;
+    padding: var(--sp-3) var(--sp-4);
+    font-size: 13px;
+    line-height: 1.35;
+    text-align: left;
+    white-space: normal;
+    color: var(--body);
+    background: #fff;
+    box-shadow: var(--sombra-flota);
+    opacity: 0;
+    visibility: hidden;
+    translate: -50% 6px;
+    pointer-events: none;
+    transition:
+      opacity var(--dur-2) var(--ease-out),
+      translate var(--dur-2) var(--ease-out),
+      visibility var(--dur-2);
+  }
+  .ctx b {
+    font-weight: 700;
+    color: var(--ink);
+  }
+  .micro {
+    position: relative;
+    height: 3px;
+    margin: 4px 0 2px;
+    background: var(--line);
+  }
+  .micro i {
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: calc(var(--p) * 100%);
+    background: var(--red);
+  }
+  .micro i::after {
+    content: '';
+    position: absolute;
+    top: -3px;
+    right: -1px;
+    width: 2px;
+    height: 9px;
+    background: var(--ink);
+  }
+  .cifra:is(:hover, :has(:focus-visible)) .ctx {
+    opacity: 1;
+    visibility: visible;
+    translate: -50% 0;
+  }
+
+  /* ——— Entrada (menos de 900 ms): el nombre sube, la máquina pasa de desenfocada a nítida y de 0.96 a 1, las cifras
+     detrás. Con movimiento reducido, nada ——— */
+  @media (prefers-reduced-motion: no-preference) {
+    .datos > * {
+      animation: sube var(--dur-3) var(--ease-out) both;
+    }
+    .vista[data-tipo='maquina'] .pieza img {
+      animation: enfoca var(--dur-4) 80ms var(--ease-out) both;
+    }
+    .cifra {
+      animation: pompa var(--dur-3) calc(250ms + var(--i) * 70ms) var(--ease-out) backwards;
+    }
+    .cifra + .cifra::before {
+      animation: une var(--dur-3) calc(450ms + var(--i) * 70ms) var(--ease-out) backwards;
+    }
+  }
+  @keyframes enfoca {
+    from {
+      opacity: 0;
+      filter: blur(10px);
+      scale: 0.96;
+    }
+  }
+  @keyframes pompa {
+    from {
+      opacity: 0;
+      scale: 0.6;
+    }
+    60% {
+      opacity: 1;
+      scale: 1.04;
+    }
+  }
+  @keyframes une {
+    from {
+      scale: 0 1;
+    }
+  }
+  @keyframes sube {
+    from {
+      opacity: 0;
+      translate: 0 14px;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .escaparate,
+    .escaparate * {
+      transition-duration: 0s !important;
+    }
+  }
+
+  /* ——— Barra fija: el nombre y "Pedir" entran cuando el escaparate sale de la vista ——— */
+  .barra-nombre,
+  .barra-pedir {
+    transition:
+      opacity var(--dur-3) var(--ease-out),
+      translate var(--dur-3) var(--ease-out),
+      visibility var(--dur-3);
+  }
+  .barra.esc-visible .barra-nombre,
+  .barra.esc-visible .barra-pedir {
+    opacity: 0;
+    visibility: hidden;
+    translate: 0 6px;
+  }
+
+  /* ——— Escritorio: dos columnas. A la izquierda el nombre, el pedido y la referencia; a la derecha la máquina; debajo,
+     a todo el ancho, las pompas con las cifras ——— */
+  @media (min-width: 1001px) {
+    .escaparate {
+      display: grid;
+      grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+      grid-template-rows: 1fr auto auto auto auto 1fr auto;
+      column-gap: clamp(32px, 4vw, 72px);
+      padding-bottom: var(--sp-5);
+      text-align: left;
+    }
+    .datos > .cat {
+      grid-area: 2 / 1;
+    }
+    .datos > h1 {
+      grid-area: 3 / 1;
+      font-size: clamp(56px, 5.4vw, 92px);
+    }
+    .datos > .frase {
+      grid-area: 4 / 1;
+      font-size: 22px;
+    }
+    .datos > .botones {
+      grid-area: 5 / 1;
+      justify-content: flex-start;
+    }
+    .datos > .meta {
+      grid-area: 6 / 1;
+      align-self: start;
+      justify-content: flex-start;
+    }
+    .galeria {
+      grid-area: 1 / 2 / 7 / 3;
+      height: clamp(380px, 50vh, 500px);
+      margin-top: 0;
+    }
+    .franja {
+      grid-area: 7 / 1 / 8 / 3;
+    }
+  }
+
+  /* ——— 768 ——— */
+  @media (max-width: 1000px) {
+    .franja {
+      --d: clamp(104px, 24vw, 132px);
+      grid-auto-flow: row;
+      grid-template-columns: repeat(3, var(--d));
+      gap: var(--sp-3);
+    }
+    .cifra + .cifra::before {
+      display: none;
+    }
+    .cifra.codigos {
+      grid-column: 1 / -1;
+      justify-self: center;
+    }
+    .galeria .vista[data-tipo='3d'] {
+      position: absolute;
+    }
+  }
+
+  /* ——— 390: la máquina primero (deslizable con imán), luego el nombre y el pedido, la hoja de cifras ——— */
+  @media (max-width: 760px) {
+    .escaparate {
+      --mini: 44px;
+      padding-top: var(--sp-3);
+    }
+    .galeria {
+      order: -1;
+      height: auto;
+      aspect-ratio: 1 / 0.9;
+      margin-top: 0;
+    }
+    .escena {
+      display: flex;
+      overflow-x: auto;
+      overscroll-behavior-x: contain;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: none;
+    }
+    .galeria .vista,
+    .galeria .vista[hidden] {
+      position: relative;
+      inset: auto;
+      flex: 0 0 100%;
+      display: grid;
+      scroll-snap-align: start;
+    }
+    .galeria .vista[data-tipo='3d'] {
+      position: relative;
+      display: flex;
+    }
+    .galeria {
+      order: -2;
+    }
+    .datos > .cat {
+      margin-top: var(--sp-3);
+    }
+    .datos h1 {
+      font-size: clamp(52px, 16vw, 72px);
+    }
+    .datos .frase {
+      font-size: 18px;
+    }
+    .botones {
+      width: 100%;
+      margin-top: var(--sp-4);
+    }
+    .botones .btn {
+      flex: 1 1 0;
+      padding-inline: var(--sp-2);
+    }
+    /* Miniaturas en puntos, cada uno con su hueco táctil de 44 px */
+    .miniaturas {
+      gap: 0;
+      padding: 0;
+    }
+    .mini-raya,
+    .mini-foto {
+      display: none;
+    }
+    .mini::before {
+      content: '';
+      position: absolute;
+      inset: 18px;
+      background: rgba(0, 0, 0, 0.22);
+      transition:
+        background var(--dur-2) var(--ease-out),
+        scale var(--dur-2) var(--ease-out);
+    }
+    .mini[aria-selected='true']::before {
+      background: var(--ink);
+      scale: 1.3;
+    }
+    .franja {
+      grid-template-columns: repeat(2, var(--d));
+      gap: var(--sp-2);
+    }
+    .valor b {
+      font-size: 22px;
+    }
+    .ctx {
+      display: none;
     }
   }
 </style>

@@ -462,6 +462,8 @@ export const en: Textos = {
       version: 'Version',
       pdf: 'Download PDF catalogue',
       distribuidor: 'Order from a distributor',
+      gama: 'Orto Alresa range',
+      supera: 'Above {n} of the {total} models',
       secciones: {
         compatibilidad: 'Compatibility',
         datos: 'Technical data',
@@ -512,23 +514,34 @@ export const en: Textos = {
       ivd: 'also IVD',
       pedir: 'Order',
       leerMas: 'Read more',
+      verTodo: 'See all {n}',
+      verMenos: 'See less',
       caracteristicas: 'Features',
+      normas: 'Standards and Directives',
       compat: {
+        titulo: 'Which rotor takes your customer’s tube?',
         intro: (n: number) =>
           n === 1
-            ? 'Choose your tube to see whether this rotor takes it and with which adapter.'
-            : `${n} rotors. Choose your tube to see which take it, how many fit and with which adapter.`,
-        paso1: 'Tube type',
-        paso2: 'Size',
-        escala: 'Tubes drawn to scale with their real dimensions.',
-        todos: (n: number) => (n === 1 ? '1 rotor' : `All ${n} rotors`),
-        admiten: (n: number, total: number) =>
-          n === 1 ? `1 of ${total} rotors takes it` : `${n} of ${total} rotors take it`,
-        tubos: (n: string) => `${n} tubes`,
-        porCiclo: 'per run',
+            ? 'Choose the capacity of their tube to see whether this rotor takes it, how many fit and which adapter to order.'
+            : 'Choose the capacity of their tube to see which rotors take it, how many fit and which adapter to order.',
+        capacidad: 'Tube capacity',
+        elige: 'Choose',
+        rotor: 'Rotor',
+        caben: 'Fit',
+        tuboDe: (c: string) => `${c} tubes`,
+        tipo: 'Tube type',
+        todosTipos: 'All types',
+        todos: (n: number) => (n === 1 ? '1 rotor.' : `${n} rotors.`),
+        admiten: (n: number, total: number, tubo: string) =>
+          total === 1
+            ? `This rotor takes ${tubo}`
+            : n === 1
+              ? `1 of ${total} rotors takes ${tubo}`
+              : `${n} of ${total} rotors take ${tubo}`,
+        ud: 'tubes',
         sinAdaptador: 'No adapter',
-        verTubos: (n: number) => `All its tubes (${n})`,
-        quitar: 'See all',
+        verTubos: (n: number) => (n === 1 ? 'Its tube' : `Its ${n} tubes`),
+        quitar: 'See all rotors',
       },
       referencias: 'Each version with its code. Click a code to copy it.',
     },
