@@ -45,6 +45,40 @@
   --t-sub: clamp(18px, 1.6vw, 24px);
   --gut: clamp(16px, 4vw, 48px);
   --ease: cubic-bezier(0.2, 0.6, 0.2, 1);
+
+  /* Escala de espacios: todo hueco sale de aquí */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 24px;
+  --sp-6: 32px;
+  --sp-7: 40px;
+  --sp-8: 56px;
+  /* Esquinas rectas: la marca */
+  --radio: 0;
+  /* Movimiento: duraciones y la curva de salida, para que todo se mueva igual */
+  --dur-1: 160ms;
+  --dur-2: 280ms;
+  --dur-3: 450ms;
+  --dur-4: 700ms;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  /* Sombras: lo que flota sobre la escena */
+  --sombra-flota: 0 28px 60px -24px rgba(0, 0, 0, 0.6);
+  --sombra-tarjeta: 0 40px 90px -30px rgba(0, 0, 0, 0.7);
+  /* Foco visible: rojo de 2 px en toda la web */
+  --foco: 2px solid var(--red);
+  /* Sobre fondo oscuro, el rojo de marca no llega a 4.5:1 en texto pequeño: este sí (5.3:1 sobre carbono) */
+  --red-on-dark: #ff5257;
+  --sombra-suave: 0 18px 44px -28px rgba(0, 0, 0, 0.45);
+  /* Escaparate de la ficha: el tono de fondo de cada vista y el panel blanco de la tarjeta y la franja (casi opaco:
+     el texto oscuro pasa de 4.5:1 sobre cualquier vista) */
+  --esc-maquina: #26292c;
+  --esc-detalle: #1b1d1f;
+  --esc-estudio: #f1f1ef;
+  --esc-panel: rgba(255, 255, 255, 0.95);
+  --esc-linea: rgba(26, 26, 26, 0.12);
+  --esc-suave: var(--muted);
 }
 
 *,
@@ -198,5 +232,46 @@ button:focus-visible {
   *::after {
     animation: none !important;
     transition: none !important;
+  }
+}
+
+/* Raya de separación: una línea roja fina con un leve halo, y cada pocos segundos un brillo blanco que la recorre
+   de izquierda a derecha. Va arriba del elemento que la lleva (que pasa a ser su referencia) */
+.raya {
+  position: relative;
+}
+.raya::before,
+.raya::after {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  pointer-events: none;
+}
+.raya::before {
+  height: 1px;
+  background: var(--red);
+  box-shadow: 0 0 6px rgba(221, 4, 10, 0.45);
+}
+.raya::after {
+  top: -1px;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.95), transparent) no-repeat;
+  background-size: 22% 100%;
+  background-position: -40% 0;
+  animation: raya-brillo 6s cubic-bezier(0.45, 0, 0.25, 1) infinite;
+}
+@keyframes raya-brillo {
+  0% {
+    background-position: -40% 0;
+  }
+  45%,
+  100% {
+    background-position: 140% 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .raya::after {
+    animation: none;
+    opacity: 0;
   }
 }

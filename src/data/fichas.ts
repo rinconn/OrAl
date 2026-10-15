@@ -13,13 +13,28 @@ export interface Punto {
   punto: boolean;
   sub?: string[];
 }
+/** Celda de una tabla de la web actual; `span`, las columnas que ocupa si va unida */
+export interface Celda {
+  t: string;
+  span?: number;
+}
+export interface Tabla {
+  cabecera: Celda[][];
+  filas: Celda[][];
+}
 export interface Bloque {
   titulo: string;
   puntos: Punto[];
+  /** Tablas del bloque (versiones, referencias, accesorios), tal como las da la web actual */
+  tablas?: Tabla[];
+  imagenes?: { src: string; alt: string; ancho: number; alto: number }[];
 }
 export interface TextosFicha {
   nombre?: string;
+  /** Párrafos; los que empiezan por "• " son elementos de una lista */
   descripcion: string[];
+  /** Vídeo de YouTube (id) que acompaña a la descripción */
+  video?: string;
   bloques: Bloque[];
 }
 export interface Version {

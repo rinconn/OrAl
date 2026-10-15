@@ -1,6 +1,6 @@
 {
   "fuente": "ortoalresa.com (WordPress de la web actual)",
-  "fecha": "2026-10-06",
+  "fecha": "2026-10-15",
   "centrifugas": {
     "cyto-22": {
       "nombre": "Cyto 22",
@@ -414,7 +414,7 @@
                   "punto": true
                 },
                 {
-                  "t": "Délai de traitement",
+                  "t": "Délai de traitement <15 min.",
                   "punto": true
                 },
                 {
@@ -2978,7 +2978,7 @@
                   "punto": true
                 },
                 {
-                  "t": "PCBS : le système de freinage progressif contrôlable (jusqu’à 175 rampes sélectionnables) empêche l’homogénéisation de l’échantillon après la séparation.",
+                  "t": "PCBS : le système de freinage progressif contrôlable (jusqu’à 175 rampes sélectionnables) empêche l’homogénéisation de l’échantillon après la séparation.",
                   "punto": true
                 },
                 {
@@ -4509,7 +4509,7 @@
                   "punto": true
                 },
                 {
-                  "t": "PCBS : le système de freinage progressif contrôlable (jusqu’à 175 rampes sélectionnables) empêche l’homogénéisation de l’échantillon après la séparation.",
+                  "t": "PCBS : le système de freinage progressif contrôlable (jusqu’à 175 rampes sélectionnables) empêche l’homogénéisation de l’échantillon après la séparation.",
                   "punto": true
                 },
                 {
@@ -7327,7 +7327,7 @@
               "titulo": "Caractéristiques",
               "puntos": [
                 {
-                  "t": "Conçu pour les pétroles selon les normes: ASTM D 91, D96, D 893, D 1796, D2273, D2709, D 2711, D 4007, D 5546, API 2542, API 2548, BS 4385, ISO 3734, ISO 9030, IP75, IP 359, NF M07-020, DIN 51793. Apte pour bouteilles Babcok.",
+                  "t": "Conçu pour les pétroles selon les normes: ASTM D 91, D96, D 893, D 1796, D2273, D2709, D 2711, D 4007, D 5546, API 2542, API 2548, BS 4385, ISO 3734, ISO 9030, IP75, IP 359, NF M07-020, DIN 51793. Apte pour bouteilles Babcok.",
                   "punto": true
                 },
                 {
@@ -7912,7 +7912,7 @@
               "titulo": "Caractéristiques",
               "puntos": [
                 {
-                  "t": "Conçu pour les pétroles selon les normes : ASTM D 91, D96, D 893, D 1796, D2273, D2709, D 2711, D 4007, D 5546, API 2542, API 2548, BS 4385, ISO 3734, ISO 9030, IP75, IP 359, NF M07-020, DIN 51793. Apte pour les bouteilles Babcock.",
+                  "t": "Conçu pour les pétroles selon les normes : ASTM D 91, D96, D 893, D 1796, D2273, D2709, D 2711, D 4007, D 5546, API 2542, API 2548, BS 4385, ISO 3734, ISO 9030, IP75, IP 359, NF M07-020, DIN 51793. Apte pour les bouteilles Babcock.",
                   "punto": true
                 },
                 {
@@ -10066,7 +10066,7 @@
                   "punto": true
                 },
                 {
-                  "t": "PCBS : le système de freinage progressif contrôlable (jusqu’à 175 rampes sélectionnables) empêche l’homogénéisation de l’échantillon après la séparation.",
+                  "t": "PCBS : le système de freinage progressif contrôlable (jusqu’à 175 rampes sélectionnables) empêche l’homogénéisation de l’échantillon après la séparation.",
                   "punto": true
                 },
                 {
@@ -10622,7 +10622,7 @@
                   "punto": true
                 },
                 {
-                  "t": "PCBS : le système de freinage progressif contrôlable (jusqu’à 175 rampes sélectionnables) empêche l’homogénéisation de l’échantillon après la séparation.",
+                  "t": "PCBS : le système de freinage progressif contrôlable (jusqu’à 175 rampes sélectionnables) empêche l’homogénéisation de l’échantillon après la séparation.",
                   "punto": true
                 },
                 {
@@ -12209,7 +12209,7 @@
               "titulo": "Caractéristiques",
               "puntos": [
                 {
-                  "t": "Taille réduite : 5 kg de poids.",
+                  "t": "Taille réduite : 5 kg de poids.",
                   "punto": true
                 },
                 {
@@ -19246,118 +19246,108 @@
           "bloques": [
             {
               "titulo": "Referencias",
-              "puntos": [
+              "puntos": [],
+              "tablas": [
                 {
-                  "t": "Dimensiones",
-                  "punto": false
-                },
-                {
-                  "t": "(mm) (a x f x h)",
-                  "punto": false
-                },
-                {
-                  "t": "Peso neto (kg)",
-                  "punto": false
-                },
-                {
-                  "t": "Modelo de centrífuga",
-                  "punto": false
-                },
-                {
-                  "t": "CP 007",
-                  "punto": false
-                },
-                {
-                  "t": "560",
-                  "punto": false
-                },
-                {
-                  "t": "590",
-                  "punto": false
-                },
-                {
-                  "t": "580",
-                  "punto": false
-                },
-                {
-                  "t": "65",
-                  "punto": false
-                },
-                {
-                  "t": "Biocen 22 R, Bioprocen 22 R, Digicen 22 R, Consul 22, Digtor 22 y Serie Digtor 22 C",
-                  "punto": false
-                },
-                {
-                  "t": "CP 008",
-                  "punto": false
-                },
-                {
-                  "t": "440",
-                  "punto": false
-                },
-                {
-                  "t": "500",
-                  "punto": false
-                },
-                {
-                  "t": "690",
-                  "punto": false
-                },
-                {
-                  "t": "65",
-                  "punto": false
-                },
-                {
-                  "t": "Unicen 21 y Digicen 22",
-                  "punto": false
-                },
-                {
-                  "t": "CP 009",
-                  "punto": false
-                },
-                {
-                  "t": "750",
-                  "punto": false
-                },
-                {
-                  "t": "730",
-                  "punto": false
-                },
-                {
-                  "t": "350",
-                  "punto": false
-                },
-                {
-                  "t": "70",
-                  "punto": false
-                },
-                {
-                  "t": "Consul 22 R, Digtor 22 R y Dilitcen 22 R – para ocultar bajo mesa",
-                  "punto": false
-                },
-                {
-                  "t": "CP 010",
-                  "punto": false
-                },
-                {
-                  "t": "750",
-                  "punto": false
-                },
-                {
-                  "t": "730",
-                  "punto": false
-                },
-                {
-                  "t": "580",
-                  "punto": false
-                },
-                {
-                  "t": "90",
-                  "punto": false
-                },
-                {
-                  "t": "Consul 22 R, Digtor 22 R y Dilitcen 22 R",
-                  "punto": false
+                  "cabecera": [
+                    [
+                      {
+                        "t": ""
+                      },
+                      {
+                        "t": "Dimensiones (mm) (a x f x h)",
+                        "span": 3
+                      },
+                      {
+                        "t": "Peso neto (kg)"
+                      },
+                      {
+                        "t": "Modelo de centrífuga"
+                      }
+                    ]
+                  ],
+                  "filas": [
+                    [
+                      {
+                        "t": "CP 007"
+                      },
+                      {
+                        "t": "560"
+                      },
+                      {
+                        "t": "590"
+                      },
+                      {
+                        "t": "580"
+                      },
+                      {
+                        "t": "65"
+                      },
+                      {
+                        "t": "Biocen 22 R, Bioprocen 22 R, Digicen 22 R, Consul 22, Digtor 22 y Serie Digtor 22 C"
+                      }
+                    ],
+                    [
+                      {
+                        "t": "CP 008"
+                      },
+                      {
+                        "t": "440"
+                      },
+                      {
+                        "t": "500"
+                      },
+                      {
+                        "t": "690"
+                      },
+                      {
+                        "t": "65"
+                      },
+                      {
+                        "t": "Unicen 21 y Digicen 22"
+                      }
+                    ],
+                    [
+                      {
+                        "t": "CP 009"
+                      },
+                      {
+                        "t": "750"
+                      },
+                      {
+                        "t": "730"
+                      },
+                      {
+                        "t": "350"
+                      },
+                      {
+                        "t": "70"
+                      },
+                      {
+                        "t": "Consul 22 R, Digtor 22 R y Dilitcen 22 R – para ocultar bajo mesa"
+                      }
+                    ],
+                    [
+                      {
+                        "t": "CP 010"
+                      },
+                      {
+                        "t": "750"
+                      },
+                      {
+                        "t": "730"
+                      },
+                      {
+                        "t": "580"
+                      },
+                      {
+                        "t": "90"
+                      },
+                      {
+                        "t": "Consul 22 R, Digtor 22 R y Dilitcen 22 R"
+                      }
+                    ]
+                  ]
                 }
               ]
             }
@@ -19374,118 +19364,108 @@
           "bloques": [
             {
               "titulo": "References",
-              "puntos": [
+              "puntos": [],
+              "tablas": [
                 {
-                  "t": "Dimensions",
-                  "punto": false
-                },
-                {
-                  "t": "(mm) (w x d x h)",
-                  "punto": false
-                },
-                {
-                  "t": "Net weight (kg)",
-                  "punto": false
-                },
-                {
-                  "t": "Centrifuge model",
-                  "punto": false
-                },
-                {
-                  "t": "CP 007",
-                  "punto": false
-                },
-                {
-                  "t": "560",
-                  "punto": false
-                },
-                {
-                  "t": "590",
-                  "punto": false
-                },
-                {
-                  "t": "580",
-                  "punto": false
-                },
-                {
-                  "t": "65",
-                  "punto": false
-                },
-                {
-                  "t": "Biocen 22 R, Bioprocen 22 R, Digicen 22 R, Consul 22, Digtor 22 and Digtor 22 C Series",
-                  "punto": false
-                },
-                {
-                  "t": "CP 008",
-                  "punto": false
-                },
-                {
-                  "t": "440",
-                  "punto": false
-                },
-                {
-                  "t": "500",
-                  "punto": false
-                },
-                {
-                  "t": "690",
-                  "punto": false
-                },
-                {
-                  "t": "65",
-                  "punto": false
-                },
-                {
-                  "t": "Unicen 21 and Digicen 22",
-                  "punto": false
-                },
-                {
-                  "t": "CP 009",
-                  "punto": false
-                },
-                {
-                  "t": "750",
-                  "punto": false
-                },
-                {
-                  "t": "730",
-                  "punto": false
-                },
-                {
-                  "t": "350",
-                  "punto": false
-                },
-                {
-                  "t": "70",
-                  "punto": false
-                },
-                {
-                  "t": "Consul 22 R, Digtor 22 R and Dilitcen 22 R – to place under table",
-                  "punto": false
-                },
-                {
-                  "t": "CP 010",
-                  "punto": false
-                },
-                {
-                  "t": "750",
-                  "punto": false
-                },
-                {
-                  "t": "730",
-                  "punto": false
-                },
-                {
-                  "t": "580",
-                  "punto": false
-                },
-                {
-                  "t": "90",
-                  "punto": false
-                },
-                {
-                  "t": "Consul 22 R, Digtor 22 R and Dilitcen 22 R",
-                  "punto": false
+                  "cabecera": [
+                    [
+                      {
+                        "t": ""
+                      },
+                      {
+                        "t": "Dimensions (mm) (w x d x h)",
+                        "span": 3
+                      },
+                      {
+                        "t": "Net weight (kg)"
+                      },
+                      {
+                        "t": "Centrifuge model"
+                      }
+                    ]
+                  ],
+                  "filas": [
+                    [
+                      {
+                        "t": "CP 007"
+                      },
+                      {
+                        "t": "560"
+                      },
+                      {
+                        "t": "590"
+                      },
+                      {
+                        "t": "580"
+                      },
+                      {
+                        "t": "65"
+                      },
+                      {
+                        "t": "Biocen 22 R, Bioprocen 22 R, Digicen 22 R, Consul 22, Digtor 22 and Digtor 22 C Series"
+                      }
+                    ],
+                    [
+                      {
+                        "t": "CP 008"
+                      },
+                      {
+                        "t": "440"
+                      },
+                      {
+                        "t": "500"
+                      },
+                      {
+                        "t": "690"
+                      },
+                      {
+                        "t": "65"
+                      },
+                      {
+                        "t": "Unicen 21 and Digicen 22"
+                      }
+                    ],
+                    [
+                      {
+                        "t": "CP 009"
+                      },
+                      {
+                        "t": "750"
+                      },
+                      {
+                        "t": "730"
+                      },
+                      {
+                        "t": "350"
+                      },
+                      {
+                        "t": "70"
+                      },
+                      {
+                        "t": "Consul 22 R, Digtor 22 R and Dilitcen 22 R – to place under table"
+                      }
+                    ],
+                    [
+                      {
+                        "t": "CP 010"
+                      },
+                      {
+                        "t": "750"
+                      },
+                      {
+                        "t": "730"
+                      },
+                      {
+                        "t": "580"
+                      },
+                      {
+                        "t": "90"
+                      },
+                      {
+                        "t": "Consul 22 R, Digtor 22 R and Dilitcen 22 R"
+                      }
+                    ]
+                  ]
                 }
               ]
             }
@@ -19502,118 +19482,108 @@
           "bloques": [
             {
               "titulo": "Références",
-              "puntos": [
+              "puntos": [],
+              "tablas": [
                 {
-                  "t": "Dimensions",
-                  "punto": false
-                },
-                {
-                  "t": "(mm) (w x d x h)",
-                  "punto": false
-                },
-                {
-                  "t": "Net weight (kg)",
-                  "punto": false
-                },
-                {
-                  "t": "Centrifuge model",
-                  "punto": false
-                },
-                {
-                  "t": "CP 007",
-                  "punto": false
-                },
-                {
-                  "t": "560",
-                  "punto": false
-                },
-                {
-                  "t": "590",
-                  "punto": false
-                },
-                {
-                  "t": "580",
-                  "punto": false
-                },
-                {
-                  "t": "65",
-                  "punto": false
-                },
-                {
-                  "t": "Biocen 22 R, Bioprocen 22 R, Digicen 22 R, Consul 22, Digtor 22 and Digtor 22 C Series",
-                  "punto": false
-                },
-                {
-                  "t": "CP 008",
-                  "punto": false
-                },
-                {
-                  "t": "440",
-                  "punto": false
-                },
-                {
-                  "t": "500",
-                  "punto": false
-                },
-                {
-                  "t": "690",
-                  "punto": false
-                },
-                {
-                  "t": "65",
-                  "punto": false
-                },
-                {
-                  "t": "Unicen 21 and Digicen 22",
-                  "punto": false
-                },
-                {
-                  "t": "CP 009",
-                  "punto": false
-                },
-                {
-                  "t": "750",
-                  "punto": false
-                },
-                {
-                  "t": "730",
-                  "punto": false
-                },
-                {
-                  "t": "350",
-                  "punto": false
-                },
-                {
-                  "t": "70",
-                  "punto": false
-                },
-                {
-                  "t": "Consul 22 R, Digtor 22 R and Dilitcen 22 R – to place under table",
-                  "punto": false
-                },
-                {
-                  "t": "CP 010",
-                  "punto": false
-                },
-                {
-                  "t": "750",
-                  "punto": false
-                },
-                {
-                  "t": "730",
-                  "punto": false
-                },
-                {
-                  "t": "580",
-                  "punto": false
-                },
-                {
-                  "t": "90",
-                  "punto": false
-                },
-                {
-                  "t": "Consul 22 R, Digtor 22 R and Dilitcen 22 R",
-                  "punto": false
+                  "cabecera": [
+                    [
+                      {
+                        "t": ""
+                      },
+                      {
+                        "t": "Dimensions (mm) (w x d x h)",
+                        "span": 3
+                      },
+                      {
+                        "t": "Net weight (kg)"
+                      },
+                      {
+                        "t": "Centrifuge model"
+                      }
+                    ]
+                  ],
+                  "filas": [
+                    [
+                      {
+                        "t": "CP 007"
+                      },
+                      {
+                        "t": "560"
+                      },
+                      {
+                        "t": "590"
+                      },
+                      {
+                        "t": "580"
+                      },
+                      {
+                        "t": "65"
+                      },
+                      {
+                        "t": "Biocen 22 R, Bioprocen 22 R, Digicen 22 R, Consul 22, Digtor 22 and Digtor 22 C Series"
+                      }
+                    ],
+                    [
+                      {
+                        "t": "CP 008"
+                      },
+                      {
+                        "t": "440"
+                      },
+                      {
+                        "t": "500"
+                      },
+                      {
+                        "t": "690"
+                      },
+                      {
+                        "t": "65"
+                      },
+                      {
+                        "t": "Unicen 21 and Digicen 22"
+                      }
+                    ],
+                    [
+                      {
+                        "t": "CP 009"
+                      },
+                      {
+                        "t": "750"
+                      },
+                      {
+                        "t": "730"
+                      },
+                      {
+                        "t": "350"
+                      },
+                      {
+                        "t": "70"
+                      },
+                      {
+                        "t": "Consul 22 R, Digtor 22 R and Dilitcen 22 R – to place under table"
+                      }
+                    ],
+                    [
+                      {
+                        "t": "CP 010"
+                      },
+                      {
+                        "t": "750"
+                      },
+                      {
+                        "t": "730"
+                      },
+                      {
+                        "t": "580"
+                      },
+                      {
+                        "t": "90"
+                      },
+                      {
+                        "t": "Consul 22 R, Digtor 22 R and Dilitcen 22 R"
+                      }
+                    ]
+                  ]
                 }
               ]
             }
@@ -19629,11 +19599,12 @@
             "El entorno de los laboratorios de análisis de petróleos presenta una serie de riesgos inherentes al tipo de muestra. Los dispositivos para el análisis de muestras deben de asegurar el trabajo en condiciones de mínimo riesgo, premisa fundamental en el desarrollo de equipos para esta aplicación en Ortoalresa.",
             "Los procesos de centrifugado para la determinación de agua y sedimentos en petróleos, requieren solventes de tipo orgánico que, al reaccionar con la muestra y el aporte calórico del equipo, generan aerosoles. Para extraer del interior de la centrífuga los gases generados y trasladarlos a un área segura, Ortoalresa ha diseñado el GRS como accesorio para toda la gama de centrifugas de la serie Digtor 22 C. Este accesorio crea en el interior de la cámara de centrifugación, más concretamente en la parte superior cuando está cerrado, un toma de baja presión o aspiración por vacío, que permite la extracción de la atmosfera con alto contenido en aerosoles. Esta atmosfera es canalizada a través del GRS hasta su salida, donde podrá ser tratada aisladamente. Todo este circuito está controlado permanentemente por el equipo, que dirigirá el momento adecuado para poner en funcionamiento este sistema. Además solo es necesaria la presencia de un suministro de aire comprimido de 2 bares de presión, para poder crear una aspiración de 10l/min, suficiente para realizar la aspiración del volumen de la cámara interior de centrifugación cada 5 min.",
             "Las funciones principales del GRS son:",
-            "Reducir la concentración de gas durante el funcionamiento, y por lo tanto el riesgo de explosión.",
-            "Eliminar el riesgo para la salud del usuario por inhalación de los vapores generados.",
-            "Evitar la dispersión de los gases al entorno del laboratorio.",
+            "• Reducir la concentración de gas durante el funcionamiento, y por lo tanto el riesgo de explosión.",
+            "• Eliminar el riesgo para la salud del usuario por inhalación de los vapores generados.",
+            "• Evitar la dispersión de los gases al entorno del laboratorio.",
             "Puede ver su funcionamiento en este video:"
           ],
+          "video": "tWNtvEhI9Zs",
           "bloques": [
             {
               "titulo": "Fácil funcionamiento",
@@ -19697,7 +19668,7 @@
                   "punto": true
                 },
                 {
-                  "t": "Bajo nivel de ruido",
+                  "t": "Bajo nivel de ruido <40 dB.",
                   "punto": true
                 },
                 {
@@ -19730,94 +19701,86 @@
             },
             {
               "titulo": "Versión",
-              "puntos": [
+              "puntos": [],
+              "tablas": [
                 {
-                  "t": "Código",
-                  "punto": false
-                },
-                {
-                  "t": "Dimensiones (mm) (axlxh)",
-                  "punto": false
-                },
-                {
-                  "t": "Peso neto (kg)",
-                  "punto": false
-                },
-                {
-                  "t": "Voltaje (v)",
-                  "punto": false
-                },
-                {
-                  "t": "Frecuencia (Hz)",
-                  "punto": false
-                },
-                {
-                  "t": "Consumo (w)",
-                  "punto": false
-                },
-                {
-                  "t": "CP 001",
-                  "punto": false
-                },
-                {
-                  "t": "140",
-                  "punto": false
-                },
-                {
-                  "t": "220",
-                  "punto": false
-                },
-                {
-                  "t": "120",
-                  "punto": false
-                },
-                {
-                  "t": "2",
-                  "punto": false
-                },
-                {
-                  "t": "220-240",
-                  "punto": false
-                },
-                {
-                  "t": "50-60",
-                  "punto": false
-                },
-                {
-                  "t": "20",
-                  "punto": false
-                },
-                {
-                  "t": "CP 004",
-                  "punto": false
-                },
-                {
-                  "t": "140",
-                  "punto": false
-                },
-                {
-                  "t": "220",
-                  "punto": false
-                },
-                {
-                  "t": "120",
-                  "punto": false
-                },
-                {
-                  "t": "2",
-                  "punto": false
-                },
-                {
-                  "t": "110-120",
-                  "punto": false
-                },
-                {
-                  "t": "50-60",
-                  "punto": false
-                },
-                {
-                  "t": "20",
-                  "punto": false
+                  "cabecera": [
+                    [
+                      {
+                        "t": "Código"
+                      },
+                      {
+                        "t": "Dimensiones (mm) (axlxh)",
+                        "span": 3
+                      },
+                      {
+                        "t": "Peso neto (kg)"
+                      },
+                      {
+                        "t": "Voltaje (v)"
+                      },
+                      {
+                        "t": "Frecuencia (Hz)"
+                      },
+                      {
+                        "t": "Consumo (w)"
+                      }
+                    ]
+                  ],
+                  "filas": [
+                    [
+                      {
+                        "t": "CP 001"
+                      },
+                      {
+                        "t": "140"
+                      },
+                      {
+                        "t": "220"
+                      },
+                      {
+                        "t": "120"
+                      },
+                      {
+                        "t": "2"
+                      },
+                      {
+                        "t": "220-240"
+                      },
+                      {
+                        "t": "50-60"
+                      },
+                      {
+                        "t": "20"
+                      }
+                    ],
+                    [
+                      {
+                        "t": "CP 004"
+                      },
+                      {
+                        "t": "140"
+                      },
+                      {
+                        "t": "220"
+                      },
+                      {
+                        "t": "120"
+                      },
+                      {
+                        "t": "2"
+                      },
+                      {
+                        "t": "110-120"
+                      },
+                      {
+                        "t": "50-60"
+                      },
+                      {
+                        "t": "20"
+                      }
+                    ]
+                  ]
                 }
               ]
             }
@@ -19830,11 +19793,12 @@
             "The petroleum testing laboratories environment presents a number of risks inherent to the type of sample. The devices for the analysis of samples should ensure minimal risk conditions at work, a critical premise in the development of devices for this application in Ortoalresa.",
             "Centrifugation processes for the determination of water and sediment in petroleum, require an organic solvent which, reacting with the sample and caloric intake of the equipment, generates aerosols. In order to remove this gas from the centrifuge and take it to a safe area, Ortoalresa has designed GRS (Gas Release System) as an accessory for all of the Digtor 22 C series centrifuges. This accessory creates inside the centrifuge chamber, concretely on its top, when locked, that allows the suction of the atmosphere high in aerosols. This atmosphere is piped through the GRS up to its exit, where it can be treated in isolation. The whole circuit is continuously monitored by the equipment, which will lead the right moment to operate the system. Moreover, it only requires the presence of a compressed air supply of 2 bar pressure, in order to create a 10l/min suction, sufficient to perform the suction of the centrifuge inside chamber volume every 5 min.",
             "GRS main functions are:",
-            "Decreasing gas concentration during operation, and therefore the risk of explosion.",
-            "Eliminating the user’s health risk by inhalation of produced vapors",
-            "Avoiding gas dispersion into laboratory environment.",
+            "• Decreasing gas concentration during operation, and therefore the risk of explosion.",
+            "• Eliminating the user’s health risk by inhalation of produced vapors",
+            "• Avoiding gas dispersion into laboratory environment.",
             "Watch this video to see how our Gas Release System works:"
           ],
+          "video": "tWNtvEhI9Zs",
           "bloques": [
             {
               "titulo": "Easy to use",
@@ -19898,7 +19862,7 @@
                   "punto": true
                 },
                 {
-                  "t": "Low noise level",
+                  "t": "Low noise level <40 dB.",
                   "punto": true
                 },
                 {
@@ -19931,90 +19895,86 @@
             },
             {
               "titulo": "Versions",
-              "puntos": [
+              "puntos": [],
+              "tablas": [
                 {
-                  "t": "Dimensions (mm)(w x d x h)",
-                  "punto": false
-                },
-                {
-                  "t": "Net weight (kg)",
-                  "punto": false
-                },
-                {
-                  "t": "Voltage (v)",
-                  "punto": false
-                },
-                {
-                  "t": "Frecuency (Hz)",
-                  "punto": false
-                },
-                {
-                  "t": "Consumption (w)",
-                  "punto": false
-                },
-                {
-                  "t": "CP 001",
-                  "punto": false
-                },
-                {
-                  "t": "140",
-                  "punto": false
-                },
-                {
-                  "t": "220",
-                  "punto": false
-                },
-                {
-                  "t": "120",
-                  "punto": false
-                },
-                {
-                  "t": "2",
-                  "punto": false
-                },
-                {
-                  "t": "220-240",
-                  "punto": false
-                },
-                {
-                  "t": "50-60",
-                  "punto": false
-                },
-                {
-                  "t": "20",
-                  "punto": false
-                },
-                {
-                  "t": "CP 004",
-                  "punto": false
-                },
-                {
-                  "t": "140",
-                  "punto": false
-                },
-                {
-                  "t": "220",
-                  "punto": false
-                },
-                {
-                  "t": "120",
-                  "punto": false
-                },
-                {
-                  "t": "2",
-                  "punto": false
-                },
-                {
-                  "t": "110-120",
-                  "punto": false
-                },
-                {
-                  "t": "50-60",
-                  "punto": false
-                },
-                {
-                  "t": "20",
-                  "punto": false
+                  "cabecera": [
+                    [
+                      {
+                        "t": ""
+                      },
+                      {
+                        "t": "Dimensions (mm)(w x d x h)",
+                        "span": 3
+                      },
+                      {
+                        "t": "Net weight (kg)"
+                      },
+                      {
+                        "t": "Voltage (v)"
+                      },
+                      {
+                        "t": "Frecuency (Hz)"
+                      },
+                      {
+                        "t": "Consumption (w)"
+                      }
+                    ]
+                  ],
+                  "filas": [
+                    [
+                      {
+                        "t": "CP 001"
+                      },
+                      {
+                        "t": "140"
+                      },
+                      {
+                        "t": "220"
+                      },
+                      {
+                        "t": "120"
+                      },
+                      {
+                        "t": "2"
+                      },
+                      {
+                        "t": "220-240"
+                      },
+                      {
+                        "t": "50-60"
+                      },
+                      {
+                        "t": "20"
+                      }
+                    ],
+                    [
+                      {
+                        "t": "CP 004"
+                      },
+                      {
+                        "t": "140"
+                      },
+                      {
+                        "t": "220"
+                      },
+                      {
+                        "t": "120"
+                      },
+                      {
+                        "t": "2"
+                      },
+                      {
+                        "t": "110-120"
+                      },
+                      {
+                        "t": "50-60"
+                      },
+                      {
+                        "t": "20"
+                      }
+                    ]
+                  ]
                 }
               ]
             }
@@ -20025,12 +19985,13 @@
           "descripcion": [
             "L’environnement du laboratoire d’analyse des pétroles présente une série de risques inhérents au type d’échantillon. Les dispositifs d’analyse des échantillons doivent permettre de travailler dans des conditions de risque minimal, un principe fondamental dans le développement d’équipements pour cette application à Ortoalresa.",
             "Les processus de centrifugation pour la détermination de l’eau et des sédiments dans les pétroles nécessitent des solvants organiques qui, en réagissant avec l’échantillon et l’apport de chaleur de l’équipement, génèrent des aérosols. Pour extraire les gaz générés à l’intérieur de la centrifugeuse et les transférer dans une zone sûre, Ortoalresa a conçu le GRS en tant qu’accessoire pour toute la gamme de centrifugeuses de la série Digtor 22 C. Cet accessoire crée à l’intérieur de la chambre de centrifugation, plus précisément dans la partie supérieure lorsqu’elle est fermée, une prise d’air à basse pression ou une aspiration à vide, qui permet l’extraction de l’atmosphère à forte teneur en aérosols. Cette atmosphère est canalisée à travers le GRS jusqu’à sa sortie, où elle peut être traitée de manière isolée. L’ensemble du circuit est contrôlé en permanence par l’équipement, qui indiquera le moment opportun pour mettre ce système en service. En outre, il suffit d’une alimentation en air comprimé de 2 bars de pression pour créer une aspiration de 10 l/min, ce qui est suffisant pour aspirer le volume de la chambre de centrifugation intérieure toutes les 5 minutes.",
-            "Les fonctions principales du GRS sont :",
-            "Réduire la concentration de gaz pendant le fonctionnement, et donc le risque d’explosion.",
-            "Éliminer le risque pour la santé de l’utilisateur lié à l’inhalation des vapeurs générées.",
-            "Éviter la dispersion des gaz dans l’environnement du laboratoire.",
+            "Les fonctions principales du GRS sont :",
+            "• Réduire la concentration de gaz pendant le fonctionnement, et donc le risque d’explosion.",
+            "• Éliminer le risque pour la santé de l’utilisateur lié à l’inhalation des vapeurs générées.",
+            "• Éviter la dispersion des gaz dans l’environnement du laboratoire.",
             "Vous pouvez voir comment cela fonctionne dans cette vidéo:"
           ],
+          "video": "tWNtvEhI9Zs",
           "bloques": [
             {
               "titulo": "Fonctionnement simple",
@@ -20094,7 +20055,7 @@
                   "punto": true
                 },
                 {
-                  "t": "Faible niveau sonore",
+                  "t": "Faible niveau sonore <40 dB.",
                   "punto": true
                 },
                 {
@@ -20127,90 +20088,86 @@
             },
             {
               "titulo": "Versions",
-              "puntos": [
+              "puntos": [],
+              "tablas": [
                 {
-                  "t": "Dimensions (mm)(w x d x h)",
-                  "punto": false
-                },
-                {
-                  "t": "Net weight (kg)",
-                  "punto": false
-                },
-                {
-                  "t": "Voltage (v)",
-                  "punto": false
-                },
-                {
-                  "t": "Frecuency (Hz)",
-                  "punto": false
-                },
-                {
-                  "t": "Consumption (w)",
-                  "punto": false
-                },
-                {
-                  "t": "CP 001",
-                  "punto": false
-                },
-                {
-                  "t": "140",
-                  "punto": false
-                },
-                {
-                  "t": "220",
-                  "punto": false
-                },
-                {
-                  "t": "120",
-                  "punto": false
-                },
-                {
-                  "t": "2",
-                  "punto": false
-                },
-                {
-                  "t": "220-240",
-                  "punto": false
-                },
-                {
-                  "t": "50-60",
-                  "punto": false
-                },
-                {
-                  "t": "20",
-                  "punto": false
-                },
-                {
-                  "t": "CP 004",
-                  "punto": false
-                },
-                {
-                  "t": "140",
-                  "punto": false
-                },
-                {
-                  "t": "220",
-                  "punto": false
-                },
-                {
-                  "t": "120",
-                  "punto": false
-                },
-                {
-                  "t": "2",
-                  "punto": false
-                },
-                {
-                  "t": "110-120",
-                  "punto": false
-                },
-                {
-                  "t": "50-60",
-                  "punto": false
-                },
-                {
-                  "t": "20",
-                  "punto": false
+                  "cabecera": [
+                    [
+                      {
+                        "t": ""
+                      },
+                      {
+                        "t": "Dimensions (mm)(w x d x h)",
+                        "span": 3
+                      },
+                      {
+                        "t": "Net weight (kg)"
+                      },
+                      {
+                        "t": "Voltage (v)"
+                      },
+                      {
+                        "t": "Frecuency (Hz)"
+                      },
+                      {
+                        "t": "Consumption (w)"
+                      }
+                    ]
+                  ],
+                  "filas": [
+                    [
+                      {
+                        "t": "CP 001"
+                      },
+                      {
+                        "t": "140"
+                      },
+                      {
+                        "t": "220"
+                      },
+                      {
+                        "t": "120"
+                      },
+                      {
+                        "t": "2"
+                      },
+                      {
+                        "t": "220-240"
+                      },
+                      {
+                        "t": "50-60"
+                      },
+                      {
+                        "t": "20"
+                      }
+                    ],
+                    [
+                      {
+                        "t": "CP 004"
+                      },
+                      {
+                        "t": "140"
+                      },
+                      {
+                        "t": "220"
+                      },
+                      {
+                        "t": "120"
+                      },
+                      {
+                        "t": "2"
+                      },
+                      {
+                        "t": "110-120"
+                      },
+                      {
+                        "t": "50-60"
+                      },
+                      {
+                        "t": "20"
+                      }
+                    ]
+                  ]
                 }
               ]
             }
@@ -20346,96 +20303,89 @@
               "titulo": "Versiones",
               "puntos": [
                 {
-                  "t": "Código",
-                  "punto": false
-                },
-                {
-                  "t": "Dimensiones exteriores (axlxh)",
-                  "punto": false
-                },
-                {
-                  "t": "Consumo (w)",
-                  "punto": false
-                },
-                {
-                  "t": "Voltaje (V)",
-                  "punto": false
-                },
-                {
-                  "t": "Frecuencia (Hz)",
-                  "punto": false
-                },
-                {
-                  "t": "Peso (Kg)",
-                  "punto": false
-                },
-                {
-                  "t": "TA 005",
-                  "punto": false
-                },
-                {
-                  "t": "270",
-                  "punto": false
-                },
-                {
-                  "t": "380",
-                  "punto": false
-                },
-                {
-                  "t": "270",
-                  "punto": false
-                },
-                {
-                  "t": "120",
-                  "punto": false
-                },
-                {
-                  "t": "220-240",
-                  "punto": false
-                },
-                {
-                  "t": "50-60",
-                  "punto": false
-                },
-                {
-                  "t": "19",
-                  "punto": false
-                },
-                {
-                  "t": "TA 006",
-                  "punto": false
-                },
-                {
-                  "t": "270",
-                  "punto": false
-                },
-                {
-                  "t": "380",
-                  "punto": false
-                },
-                {
-                  "t": "270",
-                  "punto": false
-                },
-                {
-                  "t": "120",
-                  "punto": false
-                },
-                {
-                  "t": "110-120",
-                  "punto": false
-                },
-                {
-                  "t": "50-60",
-                  "punto": false
-                },
-                {
-                  "t": "19",
-                  "punto": false
-                },
-                {
                   "t": "*Altura de la tamizadora con la máxima capacidad de tamices: 750 mm",
                   "punto": false
+                }
+              ],
+              "tablas": [
+                {
+                  "cabecera": [
+                    [
+                      {
+                        "t": "Código"
+                      },
+                      {
+                        "t": "Dimensiones exteriores (axlxh)",
+                        "span": 3
+                      },
+                      {
+                        "t": "Consumo (w)"
+                      },
+                      {
+                        "t": "Voltaje (V)"
+                      },
+                      {
+                        "t": "Frecuencia (Hz)"
+                      },
+                      {
+                        "t": "Peso (Kg)"
+                      }
+                    ]
+                  ],
+                  "filas": [
+                    [
+                      {
+                        "t": "TA 005"
+                      },
+                      {
+                        "t": "270"
+                      },
+                      {
+                        "t": "380"
+                      },
+                      {
+                        "t": "270"
+                      },
+                      {
+                        "t": "120"
+                      },
+                      {
+                        "t": "220-240"
+                      },
+                      {
+                        "t": "50-60"
+                      },
+                      {
+                        "t": "19"
+                      }
+                    ],
+                    [
+                      {
+                        "t": "TA 006"
+                      },
+                      {
+                        "t": "270"
+                      },
+                      {
+                        "t": "380"
+                      },
+                      {
+                        "t": "270"
+                      },
+                      {
+                        "t": "120"
+                      },
+                      {
+                        "t": "110-120"
+                      },
+                      {
+                        "t": "50-60"
+                      },
+                      {
+                        "t": "19"
+                      }
+                    ]
+                  ]
                 }
               ]
             },
@@ -20445,6 +20395,14 @@
                 {
                   "t": "Dimensiones disponibles: Ø 200 x 50 mm; Ø 200 x 25 mm; Ø 100 x 50 mm; 8” x 2” (Ø 203 x 50 mm); 8” x 1” (Ø 203 x 25 mm). Para otras dimensiones de malla, consúltenos Tamices de acero inoxidable AISI 304 para el bastidor, AISI 316 para mallas y AISI 304 para chapa perforada.",
                   "punto": false
+                }
+              ],
+              "imagenes": [
+                {
+                  "src": "/img/fichas/tamices-1.webp",
+                  "alt": "tamices",
+                  "ancho": 950,
+                  "alto": 585
                 }
               ]
             }
@@ -20574,96 +20532,89 @@
               "titulo": "Versions",
               "puntos": [
                 {
-                  "t": "Reference",
-                  "punto": false
-                },
-                {
-                  "t": "External dimensions(w x d x h)",
-                  "punto": false
-                },
-                {
-                  "t": "Power Consumption (w)",
-                  "punto": false
-                },
-                {
-                  "t": "Voltage (V)",
-                  "punto": false
-                },
-                {
-                  "t": "Frecuency (Hz)",
-                  "punto": false
-                },
-                {
-                  "t": "Weight (Kg)",
-                  "punto": false
-                },
-                {
-                  "t": "TA 005",
-                  "punto": false
-                },
-                {
-                  "t": "270",
-                  "punto": false
-                },
-                {
-                  "t": "380",
-                  "punto": false
-                },
-                {
-                  "t": "270",
-                  "punto": false
-                },
-                {
-                  "t": "120",
-                  "punto": false
-                },
-                {
-                  "t": "220-240",
-                  "punto": false
-                },
-                {
-                  "t": "50-60",
-                  "punto": false
-                },
-                {
-                  "t": "19",
-                  "punto": false
-                },
-                {
-                  "t": "TA 006",
-                  "punto": false
-                },
-                {
-                  "t": "270",
-                  "punto": false
-                },
-                {
-                  "t": "380",
-                  "punto": false
-                },
-                {
-                  "t": "270",
-                  "punto": false
-                },
-                {
-                  "t": "120",
-                  "punto": false
-                },
-                {
-                  "t": "110-120",
-                  "punto": false
-                },
-                {
-                  "t": "50-60",
-                  "punto": false
-                },
-                {
-                  "t": "19",
-                  "punto": false
-                },
-                {
                   "t": "*Altura de la tamizadora con la máxima capacidad de tamices: 750 mm",
                   "punto": false
+                }
+              ],
+              "tablas": [
+                {
+                  "cabecera": [
+                    [
+                      {
+                        "t": "Reference"
+                      },
+                      {
+                        "t": "External dimensions(w x d x h)",
+                        "span": 3
+                      },
+                      {
+                        "t": "Power Consumption (w)"
+                      },
+                      {
+                        "t": "Voltage (V)"
+                      },
+                      {
+                        "t": "Frecuency (Hz)"
+                      },
+                      {
+                        "t": "Weight (Kg)"
+                      }
+                    ]
+                  ],
+                  "filas": [
+                    [
+                      {
+                        "t": "TA 005"
+                      },
+                      {
+                        "t": "270"
+                      },
+                      {
+                        "t": "380"
+                      },
+                      {
+                        "t": "270"
+                      },
+                      {
+                        "t": "120"
+                      },
+                      {
+                        "t": "220-240"
+                      },
+                      {
+                        "t": "50-60"
+                      },
+                      {
+                        "t": "19"
+                      }
+                    ],
+                    [
+                      {
+                        "t": "TA 006"
+                      },
+                      {
+                        "t": "270"
+                      },
+                      {
+                        "t": "380"
+                      },
+                      {
+                        "t": "270"
+                      },
+                      {
+                        "t": "120"
+                      },
+                      {
+                        "t": "110-120"
+                      },
+                      {
+                        "t": "50-60"
+                      },
+                      {
+                        "t": "19"
+                      }
+                    ]
+                  ]
                 }
               ]
             },
@@ -20673,6 +20624,14 @@
                 {
                   "t": "Available dimensions: Ø 200 x 50 mm; Ø 200 x 25 mm; Ø 100 x 50 mm; 8” x 2” (Ø 203 x 50 mm); 8” x 1” (Ø 203 x 25 mm). For further mesh dimensions, you can consult us on telf. +34 91 884 40 16 or in info@ortoalresa.com. Sieves of stainless steel AISI 304 for the frame, AISI 316 for the mesh and AISI 304 for the perforated plates.",
                   "punto": false
+                }
+              ],
+              "imagenes": [
+                {
+                  "src": "/img/fichas/sieves.webp",
+                  "alt": "sieve",
+                  "ancho": 950,
+                  "alto": 585
                 }
               ]
             }
@@ -20802,96 +20761,89 @@
               "titulo": "Versions",
               "puntos": [
                 {
-                  "t": "Reference",
-                  "punto": false
-                },
-                {
-                  "t": "External dimensions(w x d x h)",
-                  "punto": false
-                },
-                {
-                  "t": "Power Consumption (w)",
-                  "punto": false
-                },
-                {
-                  "t": "Voltage (V)",
-                  "punto": false
-                },
-                {
-                  "t": "Frecuency (Hz)",
-                  "punto": false
-                },
-                {
-                  "t": "Weight (Kg)",
-                  "punto": false
-                },
-                {
-                  "t": "TA 005",
-                  "punto": false
-                },
-                {
-                  "t": "270",
-                  "punto": false
-                },
-                {
-                  "t": "380",
-                  "punto": false
-                },
-                {
-                  "t": "270",
-                  "punto": false
-                },
-                {
-                  "t": "120",
-                  "punto": false
-                },
-                {
-                  "t": "220-240",
-                  "punto": false
-                },
-                {
-                  "t": "50-60",
-                  "punto": false
-                },
-                {
-                  "t": "19",
-                  "punto": false
-                },
-                {
-                  "t": "TA 006",
-                  "punto": false
-                },
-                {
-                  "t": "270",
-                  "punto": false
-                },
-                {
-                  "t": "380",
-                  "punto": false
-                },
-                {
-                  "t": "270",
-                  "punto": false
-                },
-                {
-                  "t": "120",
-                  "punto": false
-                },
-                {
-                  "t": "110-120",
-                  "punto": false
-                },
-                {
-                  "t": "50-60",
-                  "punto": false
-                },
-                {
-                  "t": "19",
-                  "punto": false
-                },
-                {
                   "t": "*Altura de la tamizadora con la máxima capacidad de tamices: 750 mm",
                   "punto": false
+                }
+              ],
+              "tablas": [
+                {
+                  "cabecera": [
+                    [
+                      {
+                        "t": "Reference"
+                      },
+                      {
+                        "t": "External dimensions(w x d x h)",
+                        "span": 3
+                      },
+                      {
+                        "t": "Power Consumption (w)"
+                      },
+                      {
+                        "t": "Voltage (V)"
+                      },
+                      {
+                        "t": "Frecuency (Hz)"
+                      },
+                      {
+                        "t": "Weight (Kg)"
+                      }
+                    ]
+                  ],
+                  "filas": [
+                    [
+                      {
+                        "t": "TA 005"
+                      },
+                      {
+                        "t": "270"
+                      },
+                      {
+                        "t": "380"
+                      },
+                      {
+                        "t": "270"
+                      },
+                      {
+                        "t": "120"
+                      },
+                      {
+                        "t": "220-240"
+                      },
+                      {
+                        "t": "50-60"
+                      },
+                      {
+                        "t": "19"
+                      }
+                    ],
+                    [
+                      {
+                        "t": "TA 006"
+                      },
+                      {
+                        "t": "270"
+                      },
+                      {
+                        "t": "380"
+                      },
+                      {
+                        "t": "270"
+                      },
+                      {
+                        "t": "120"
+                      },
+                      {
+                        "t": "110-120"
+                      },
+                      {
+                        "t": "50-60"
+                      },
+                      {
+                        "t": "19"
+                      }
+                    ]
+                  ]
                 }
               ]
             },
@@ -20901,6 +20853,14 @@
                 {
                   "t": "Dimensions disponibles: Ø 200 x 50 mm; Ø 200 x 25 mm; Ø 100 x 50 mm; 8” x 2” (Ø 203 x 50 mm); 8” x 1” (Ø 203 x 25 mm). Pour d’autres tailles de mailles, veuillez nous contacter. +34 91 884 40 16 or in info@ortoalresa.com. Tamis en acier inoxydable AISI 304 pour le cadre, AISI 316 pour les mailles et AISI 304 pour la tôle perforée.",
                   "punto": false
+                }
+              ],
+              "imagenes": [
+                {
+                  "src": "/img/fichas/sieves.webp",
+                  "alt": "sieve",
+                  "ancho": 950,
+                  "alto": 585
                 }
               ]
             }
@@ -21012,94 +20972,86 @@
             },
             {
               "titulo": "Versiones",
-              "puntos": [
+              "puntos": [],
+              "tablas": [
                 {
-                  "t": "Código",
-                  "punto": false
-                },
-                {
-                  "t": "Voltaje monofásico (v)",
-                  "punto": false
-                },
-                {
-                  "t": "Dimensiones exteriores (axlxh)",
-                  "punto": false
-                },
-                {
-                  "t": "Consumo (w)",
-                  "punto": false
-                },
-                {
-                  "t": "Frecuencia (hz)",
-                  "punto": false
-                },
-                {
-                  "t": "Peso (Kg)",
-                  "punto": false
-                },
-                {
-                  "t": "ML 007",
-                  "punto": false
-                },
-                {
-                  "t": "230/220",
-                  "punto": false
-                },
-                {
-                  "t": "1230",
-                  "punto": false
-                },
-                {
-                  "t": "490",
-                  "punto": false
-                },
-                {
-                  "t": "350",
-                  "punto": false
-                },
-                {
-                  "t": "150",
-                  "punto": false
-                },
-                {
-                  "t": "50/60",
-                  "punto": false
-                },
-                {
-                  "t": "72",
-                  "punto": false
-                },
-                {
-                  "t": "ML 008",
-                  "punto": false
-                },
-                {
-                  "t": "120/110",
-                  "punto": false
-                },
-                {
-                  "t": "1230",
-                  "punto": false
-                },
-                {
-                  "t": "490",
-                  "punto": false
-                },
-                {
-                  "t": "350",
-                  "punto": false
-                },
-                {
-                  "t": "150",
-                  "punto": false
-                },
-                {
-                  "t": "50/60",
-                  "punto": false
-                },
-                {
-                  "t": "72",
-                  "punto": false
+                  "cabecera": [
+                    [
+                      {
+                        "t": "Código"
+                      },
+                      {
+                        "t": "Voltaje monofásico (v)"
+                      },
+                      {
+                        "t": "Dimensiones exteriores (axlxh)",
+                        "span": 3
+                      },
+                      {
+                        "t": "Consumo (w)"
+                      },
+                      {
+                        "t": "Frecuencia (hz)"
+                      },
+                      {
+                        "t": "Peso (Kg)"
+                      }
+                    ]
+                  ],
+                  "filas": [
+                    [
+                      {
+                        "t": "ML 007"
+                      },
+                      {
+                        "t": "230/220"
+                      },
+                      {
+                        "t": "1230"
+                      },
+                      {
+                        "t": "490"
+                      },
+                      {
+                        "t": "350"
+                      },
+                      {
+                        "t": "150"
+                      },
+                      {
+                        "t": "50/60"
+                      },
+                      {
+                        "t": "72"
+                      }
+                    ],
+                    [
+                      {
+                        "t": "ML 008"
+                      },
+                      {
+                        "t": "120/110"
+                      },
+                      {
+                        "t": "1230"
+                      },
+                      {
+                        "t": "490"
+                      },
+                      {
+                        "t": "350"
+                      },
+                      {
+                        "t": "150"
+                      },
+                      {
+                        "t": "50/60"
+                      },
+                      {
+                        "t": "72"
+                      }
+                    ]
+                  ]
                 }
               ]
             },
@@ -21107,144 +21059,158 @@
               "titulo": "Accesorios",
               "puntos": [
                 {
-                  "t": "Jarros de acero inoxidable (AISI 304)",
-                  "punto": false
-                },
-                {
-                  "t": "Jarros de alúmina (92% pureza)",
-                  "punto": false
-                },
-                {
-                  "t": "15 litros",
-                  "punto": false
-                },
-                {
-                  "t": "5 litros",
-                  "punto": false
-                },
-                {
-                  "t": "3 litros",
-                  "punto": false
-                },
-                {
-                  "t": "1 litro",
-                  "punto": false
-                },
-                {
-                  "t": "1 litro",
-                  "punto": false
-                },
-                {
-                  "t": "3 litros",
-                  "punto": false
-                },
-                {
-                  "t": "5 litros",
-                  "punto": false
-                },
-                {
-                  "t": "PI 226",
-                  "punto": false
-                },
-                {
-                  "t": "PI 064",
-                  "punto": false
-                },
-                {
-                  "t": "PI 063",
-                  "punto": false
-                },
-                {
-                  "t": "PI 062",
-                  "punto": false
-                },
-                {
-                  "t": "PV 035",
-                  "punto": false
-                },
-                {
-                  "t": "PV 036",
-                  "punto": false
-                },
-                {
-                  "t": "PV 037",
-                  "punto": false
-                },
-                {
-                  "t": "Bolas de acero inoxidable (AISI 304)",
-                  "punto": false
-                },
-                {
-                  "t": "Bolas de alúmina (92% pureza)",
-                  "punto": false
-                },
-                {
-                  "t": "Diámetro",
-                  "punto": false
-                },
-                {
-                  "t": "Diámetro",
-                  "punto": false
-                },
-                {
-                  "t": "PI 058",
-                  "punto": false
-                },
-                {
-                  "t": "15 mm. (1 kg. Aprox.)",
-                  "punto": false
-                },
-                {
-                  "t": "PV 040",
-                  "punto": false
-                },
-                {
-                  "t": "20 mm. (1 kg. Aprox.)",
-                  "punto": false
-                },
-                {
-                  "t": "PI 059",
-                  "punto": false
-                },
-                {
-                  "t": "20 mm. (1 kg. Aprox.)",
-                  "punto": false
-                },
-                {
-                  "t": "PV 042",
-                  "punto": false
-                },
-                {
-                  "t": "30 mm. (1 kg. Aprox.)",
-                  "punto": false
-                },
-                {
-                  "t": "PI 060",
-                  "punto": false
-                },
-                {
-                  "t": "30 mm. (1 kg. Aprox.)",
-                  "punto": false,
-                  "sub": [
-                    "",
-                    ""
-                  ]
-                },
-                {
-                  "t": "PI 061",
-                  "punto": false
-                },
-                {
-                  "t": "9 mm. (1 kg. Aprox.)",
-                  "punto": false,
-                  "sub": [
-                    "",
-                    ""
-                  ]
-                },
-                {
                   "t": "Para una óptima molienda, recomendamos que los jarros se llenen en la siguiente proporción: dejar el 50% de la capacidad vacío, el 25% de la capacidad con bolas y el 25% restante con el producto a moler.",
                   "punto": false
+                }
+              ],
+              "tablas": [
+                {
+                  "cabecera": [
+                    [
+                      {
+                        "t": "Jarros de acero inoxidable (AISI 304)",
+                        "span": 4
+                      },
+                      {
+                        "t": "Jarros de alúmina (92% pureza)",
+                        "span": 3
+                      }
+                    ]
+                  ],
+                  "filas": [
+                    [
+                      {
+                        "t": "15 litros"
+                      },
+                      {
+                        "t": "5 litros"
+                      },
+                      {
+                        "t": "3 litros"
+                      },
+                      {
+                        "t": "1 litro"
+                      },
+                      {
+                        "t": "1 litro"
+                      },
+                      {
+                        "t": "3 litros"
+                      },
+                      {
+                        "t": "5 litros"
+                      }
+                    ],
+                    [
+                      {
+                        "t": "PI 226"
+                      },
+                      {
+                        "t": "PI 064"
+                      },
+                      {
+                        "t": "PI 063"
+                      },
+                      {
+                        "t": "PI 062"
+                      },
+                      {
+                        "t": "PV 035"
+                      },
+                      {
+                        "t": "PV 036"
+                      },
+                      {
+                        "t": "PV 037"
+                      }
+                    ]
+                  ]
+                },
+                {
+                  "cabecera": [
+                    [
+                      {
+                        "t": "Bolas de acero inoxidable (AISI 304)",
+                        "span": 2
+                      },
+                      {
+                        "t": "Bolas de alúmina (92% pureza)",
+                        "span": 2
+                      }
+                    ]
+                  ],
+                  "filas": [
+                    [
+                      {
+                        "t": ""
+                      },
+                      {
+                        "t": "Diámetro"
+                      },
+                      {
+                        "t": ""
+                      },
+                      {
+                        "t": "Diámetro"
+                      }
+                    ],
+                    [
+                      {
+                        "t": "PI 058"
+                      },
+                      {
+                        "t": "15 mm. (1 kg. Aprox.)"
+                      },
+                      {
+                        "t": "PV 040"
+                      },
+                      {
+                        "t": "20 mm. (1 kg. Aprox.)"
+                      }
+                    ],
+                    [
+                      {
+                        "t": "PI 059"
+                      },
+                      {
+                        "t": "20 mm. (1 kg. Aprox.)"
+                      },
+                      {
+                        "t": "PV 042"
+                      },
+                      {
+                        "t": "30 mm. (1 kg. Aprox.)"
+                      }
+                    ],
+                    [
+                      {
+                        "t": "PI 060"
+                      },
+                      {
+                        "t": "30 mm. (1 kg. Aprox.)"
+                      },
+                      {
+                        "t": "–"
+                      },
+                      {
+                        "t": "–"
+                      }
+                    ],
+                    [
+                      {
+                        "t": "PI 061"
+                      },
+                      {
+                        "t": "9 mm. (1 kg. Aprox.)"
+                      },
+                      {
+                        "t": "–"
+                      },
+                      {
+                        "t": "–"
+                      }
+                    ]
+                  ]
                 }
               ]
             }
@@ -21352,94 +21318,86 @@
             },
             {
               "titulo": "Versions",
-              "puntos": [
+              "puntos": [],
+              "tablas": [
                 {
-                  "t": "Reference",
-                  "punto": false
-                },
-                {
-                  "t": "Voltage (V) single-phase",
-                  "punto": false
-                },
-                {
-                  "t": "External dimensions(w x d x h)",
-                  "punto": false
-                },
-                {
-                  "t": "Power consumption (w)",
-                  "punto": false
-                },
-                {
-                  "t": "Frecuency (hz)",
-                  "punto": false
-                },
-                {
-                  "t": "Weight (Kg)",
-                  "punto": false
-                },
-                {
-                  "t": "ML 007",
-                  "punto": false
-                },
-                {
-                  "t": "230/220",
-                  "punto": false
-                },
-                {
-                  "t": "1230",
-                  "punto": false
-                },
-                {
-                  "t": "490",
-                  "punto": false
-                },
-                {
-                  "t": "350",
-                  "punto": false
-                },
-                {
-                  "t": "150",
-                  "punto": false
-                },
-                {
-                  "t": "50/60",
-                  "punto": false
-                },
-                {
-                  "t": "72",
-                  "punto": false
-                },
-                {
-                  "t": "ML 008",
-                  "punto": false
-                },
-                {
-                  "t": "120/110",
-                  "punto": false
-                },
-                {
-                  "t": "1230",
-                  "punto": false
-                },
-                {
-                  "t": "490",
-                  "punto": false
-                },
-                {
-                  "t": "350",
-                  "punto": false
-                },
-                {
-                  "t": "150",
-                  "punto": false
-                },
-                {
-                  "t": "50/60",
-                  "punto": false
-                },
-                {
-                  "t": "72",
-                  "punto": false
+                  "cabecera": [
+                    [
+                      {
+                        "t": "Reference"
+                      },
+                      {
+                        "t": "Voltage (V) single-phase"
+                      },
+                      {
+                        "t": "External dimensions(w x d x h)",
+                        "span": 3
+                      },
+                      {
+                        "t": "Power consumption (w)"
+                      },
+                      {
+                        "t": "Frecuency (hz)"
+                      },
+                      {
+                        "t": "Weight (Kg)"
+                      }
+                    ]
+                  ],
+                  "filas": [
+                    [
+                      {
+                        "t": "ML 007"
+                      },
+                      {
+                        "t": "230/220"
+                      },
+                      {
+                        "t": "1230"
+                      },
+                      {
+                        "t": "490"
+                      },
+                      {
+                        "t": "350"
+                      },
+                      {
+                        "t": "150"
+                      },
+                      {
+                        "t": "50/60"
+                      },
+                      {
+                        "t": "72"
+                      }
+                    ],
+                    [
+                      {
+                        "t": "ML 008"
+                      },
+                      {
+                        "t": "120/110"
+                      },
+                      {
+                        "t": "1230"
+                      },
+                      {
+                        "t": "490"
+                      },
+                      {
+                        "t": "350"
+                      },
+                      {
+                        "t": "150"
+                      },
+                      {
+                        "t": "50/60"
+                      },
+                      {
+                        "t": "72"
+                      }
+                    ]
+                  ]
                 }
               ]
             },
@@ -21447,144 +21405,158 @@
               "titulo": "Accesories",
               "puntos": [
                 {
-                  "t": "Stainless steel jars (AISI 304)",
-                  "punto": false
-                },
-                {
-                  "t": "Alumnia jars (92% purity)",
-                  "punto": false
-                },
-                {
-                  "t": "15 liters",
-                  "punto": false
-                },
-                {
-                  "t": "5 litres",
-                  "punto": false
-                },
-                {
-                  "t": "3 liters",
-                  "punto": false
-                },
-                {
-                  "t": "1 liter",
-                  "punto": false
-                },
-                {
-                  "t": "1 liter",
-                  "punto": false
-                },
-                {
-                  "t": "3 liters",
-                  "punto": false
-                },
-                {
-                  "t": "5 liters",
-                  "punto": false
-                },
-                {
-                  "t": "PI 226",
-                  "punto": false
-                },
-                {
-                  "t": "PI 064",
-                  "punto": false
-                },
-                {
-                  "t": "PI 063",
-                  "punto": false
-                },
-                {
-                  "t": "PI 062",
-                  "punto": false
-                },
-                {
-                  "t": "PV 035",
-                  "punto": false
-                },
-                {
-                  "t": "PV 036",
-                  "punto": false
-                },
-                {
-                  "t": "PV 037",
-                  "punto": false
-                },
-                {
-                  "t": "Stainless steel balls (AISI 304)",
-                  "punto": false
-                },
-                {
-                  "t": "Alumina balls (92% purity)",
-                  "punto": false
-                },
-                {
-                  "t": "Diámetro",
-                  "punto": false
-                },
-                {
-                  "t": "Diámetro",
-                  "punto": false
-                },
-                {
-                  "t": "PI 058",
-                  "punto": false
-                },
-                {
-                  "t": "15 mm. (1 kg. Aprox.)",
-                  "punto": false
-                },
-                {
-                  "t": "PV 040",
-                  "punto": false
-                },
-                {
-                  "t": "20 mm. (1 kg. Aprox.)",
-                  "punto": false
-                },
-                {
-                  "t": "PI 059",
-                  "punto": false
-                },
-                {
-                  "t": "20 mm. (1 kg. Aprox.)",
-                  "punto": false
-                },
-                {
-                  "t": "PV 042",
-                  "punto": false
-                },
-                {
-                  "t": "30 mm. (1 kg. Aprox.)",
-                  "punto": false
-                },
-                {
-                  "t": "PI 060",
-                  "punto": false
-                },
-                {
-                  "t": "30 mm. (1 kg. Aprox.)",
-                  "punto": false,
-                  "sub": [
-                    "",
-                    ""
-                  ]
-                },
-                {
-                  "t": "PI 061",
-                  "punto": false
-                },
-                {
-                  "t": "9 mm. (1 kg. Aprox.)",
-                  "punto": false,
-                  "sub": [
-                    "",
-                    ""
-                  ]
-                },
-                {
                   "t": "For an optimum milling, we recommend to fill the jars with the following proportions: leave 50% on the capacity empty, 25% of the capacity with balls and the remaining 25% with the product to be milled.",
                   "punto": false
+                }
+              ],
+              "tablas": [
+                {
+                  "cabecera": [
+                    [
+                      {
+                        "t": "Stainless steel jars (AISI 304)",
+                        "span": 4
+                      },
+                      {
+                        "t": "Alumnia jars (92% purity)",
+                        "span": 3
+                      }
+                    ]
+                  ],
+                  "filas": [
+                    [
+                      {
+                        "t": "15 liters"
+                      },
+                      {
+                        "t": "5 litres"
+                      },
+                      {
+                        "t": "3 liters"
+                      },
+                      {
+                        "t": "1 liter"
+                      },
+                      {
+                        "t": "1 liter"
+                      },
+                      {
+                        "t": "3 liters"
+                      },
+                      {
+                        "t": "5 liters"
+                      }
+                    ],
+                    [
+                      {
+                        "t": "PI 226"
+                      },
+                      {
+                        "t": "PI 064"
+                      },
+                      {
+                        "t": "PI 063"
+                      },
+                      {
+                        "t": "PI 062"
+                      },
+                      {
+                        "t": "PV 035"
+                      },
+                      {
+                        "t": "PV 036"
+                      },
+                      {
+                        "t": "PV 037"
+                      }
+                    ]
+                  ]
+                },
+                {
+                  "cabecera": [
+                    [
+                      {
+                        "t": "Stainless steel balls (AISI 304)",
+                        "span": 2
+                      },
+                      {
+                        "t": "Alumina balls (92% purity)",
+                        "span": 2
+                      }
+                    ]
+                  ],
+                  "filas": [
+                    [
+                      {
+                        "t": ""
+                      },
+                      {
+                        "t": "Diámetro"
+                      },
+                      {
+                        "t": ""
+                      },
+                      {
+                        "t": "Diámetro"
+                      }
+                    ],
+                    [
+                      {
+                        "t": "PI 058"
+                      },
+                      {
+                        "t": "15 mm. (1 kg. Aprox.)"
+                      },
+                      {
+                        "t": "PV 040"
+                      },
+                      {
+                        "t": "20 mm. (1 kg. Aprox.)"
+                      }
+                    ],
+                    [
+                      {
+                        "t": "PI 059"
+                      },
+                      {
+                        "t": "20 mm. (1 kg. Aprox.)"
+                      },
+                      {
+                        "t": "PV 042"
+                      },
+                      {
+                        "t": "30 mm. (1 kg. Aprox.)"
+                      }
+                    ],
+                    [
+                      {
+                        "t": "PI 060"
+                      },
+                      {
+                        "t": "30 mm. (1 kg. Aprox.)"
+                      },
+                      {
+                        "t": "–"
+                      },
+                      {
+                        "t": "–"
+                      }
+                    ],
+                    [
+                      {
+                        "t": "PI 061"
+                      },
+                      {
+                        "t": "9 mm. (1 kg. Aprox.)"
+                      },
+                      {
+                        "t": "–"
+                      },
+                      {
+                        "t": "–"
+                      }
+                    ]
+                  ]
                 }
               ]
             }
@@ -21682,101 +21654,93 @@
               "titulo": "Normes et directives communautaires",
               "puntos": [
                 {
-                  "t": "Directives communautaires: 2014/30/UE, 2014/35/UE , 2011/65/UE, 2012/19/UE. Normes : EN 61010-1, EN 61010-2-051, EN 61010-2-101, EN 61326-1.",
+                  "t": "Directives communautaires: 2014/30/UE, 2014/35/UE , 2011/65/UE, 2012/19/UE. Normes : EN 61010-1, EN 61010-2-051, EN 61010-2-101, EN 61326-1.",
                   "punto": false
                 }
               ]
             },
             {
               "titulo": "Versions",
-              "puntos": [
+              "puntos": [],
+              "tablas": [
                 {
-                  "t": "Reference",
-                  "punto": false
-                },
-                {
-                  "t": "Voltage (V) single-phase",
-                  "punto": false
-                },
-                {
-                  "t": "External dimensions(w x d x h)",
-                  "punto": false
-                },
-                {
-                  "t": "Power consumption (w)",
-                  "punto": false
-                },
-                {
-                  "t": "Frecuency (hz)",
-                  "punto": false
-                },
-                {
-                  "t": "Weight (Kg)",
-                  "punto": false
-                },
-                {
-                  "t": "ML 007",
-                  "punto": false
-                },
-                {
-                  "t": "230/220",
-                  "punto": false
-                },
-                {
-                  "t": "1230",
-                  "punto": false
-                },
-                {
-                  "t": "490",
-                  "punto": false
-                },
-                {
-                  "t": "350",
-                  "punto": false
-                },
-                {
-                  "t": "150",
-                  "punto": false
-                },
-                {
-                  "t": "50/60",
-                  "punto": false
-                },
-                {
-                  "t": "72",
-                  "punto": false
-                },
-                {
-                  "t": "ML 008",
-                  "punto": false
-                },
-                {
-                  "t": "120/110",
-                  "punto": false
-                },
-                {
-                  "t": "1230",
-                  "punto": false
-                },
-                {
-                  "t": "490",
-                  "punto": false
-                },
-                {
-                  "t": "350",
-                  "punto": false
-                },
-                {
-                  "t": "150",
-                  "punto": false
-                },
-                {
-                  "t": "50/60",
-                  "punto": false
-                },
-                {
-                  "t": "72",
-                  "punto": false
+                  "cabecera": [
+                    [
+                      {
+                        "t": "Reference"
+                      },
+                      {
+                        "t": "Voltage (V) single-phase"
+                      },
+                      {
+                        "t": "External dimensions(w x d x h)",
+                        "span": 3
+                      },
+                      {
+                        "t": "Power consumption (w)"
+                      },
+                      {
+                        "t": "Frecuency (hz)"
+                      },
+                      {
+                        "t": "Weight (Kg)"
+                      }
+                    ]
+                  ],
+                  "filas": [
+                    [
+                      {
+                        "t": "ML 007"
+                      },
+                      {
+                        "t": "230/220"
+                      },
+                      {
+                        "t": "1230"
+                      },
+                      {
+                        "t": "490"
+                      },
+                      {
+                        "t": "350"
+                      },
+                      {
+                        "t": "150"
+                      },
+                      {
+                        "t": "50/60"
+                      },
+                      {
+                        "t": "72"
+                      }
+                    ],
+                    [
+                      {
+                        "t": "ML 008"
+                      },
+                      {
+                        "t": "120/110"
+                      },
+                      {
+                        "t": "1230"
+                      },
+                      {
+                        "t": "490"
+                      },
+                      {
+                        "t": "350"
+                      },
+                      {
+                        "t": "150"
+                      },
+                      {
+                        "t": "50/60"
+                      },
+                      {
+                        "t": "72"
+                      }
+                    ]
+                  ]
                 }
               ]
             },
@@ -21784,144 +21748,158 @@
               "titulo": "Accesories",
               "puntos": [
                 {
-                  "t": "Bocaux en acier inoxydable (AISI 304)",
-                  "punto": false
-                },
-                {
-                  "t": "Bocaux en alumine (pureté 92%)",
-                  "punto": false
-                },
-                {
-                  "t": "15 liters",
-                  "punto": false
-                },
-                {
-                  "t": "5 litres",
-                  "punto": false
-                },
-                {
-                  "t": "3 liters",
-                  "punto": false
-                },
-                {
-                  "t": "1 liter",
-                  "punto": false
-                },
-                {
-                  "t": "1 liter",
-                  "punto": false
-                },
-                {
-                  "t": "3 liters",
-                  "punto": false
-                },
-                {
-                  "t": "5 liters",
-                  "punto": false
-                },
-                {
-                  "t": "PI 226",
-                  "punto": false
-                },
-                {
-                  "t": "PI 064",
-                  "punto": false
-                },
-                {
-                  "t": "PI 063",
-                  "punto": false
-                },
-                {
-                  "t": "PI 062",
-                  "punto": false
-                },
-                {
-                  "t": "PV 035",
-                  "punto": false
-                },
-                {
-                  "t": "PV 036",
-                  "punto": false
-                },
-                {
-                  "t": "PV 037",
-                  "punto": false
-                },
-                {
-                  "t": "Billes en acier inoxydable (AISI 304)",
-                  "punto": false
-                },
-                {
-                  "t": "Billes en alumine (pureté 92%)",
-                  "punto": false
-                },
-                {
-                  "t": "Diámetro",
-                  "punto": false
-                },
-                {
-                  "t": "Diámetro",
-                  "punto": false
-                },
-                {
-                  "t": "PI 058",
-                  "punto": false
-                },
-                {
-                  "t": "15 mm. (1 kg. Aprox.)",
-                  "punto": false
-                },
-                {
-                  "t": "PV 040",
-                  "punto": false
-                },
-                {
-                  "t": "20 mm. (1 kg. Aprox.)",
-                  "punto": false
-                },
-                {
-                  "t": "PI 059",
-                  "punto": false
-                },
-                {
-                  "t": "20 mm. (1 kg. Aprox.)",
-                  "punto": false
-                },
-                {
-                  "t": "PV 042",
-                  "punto": false
-                },
-                {
-                  "t": "30 mm. (1 kg. Aprox.)",
-                  "punto": false
-                },
-                {
-                  "t": "PI 060",
-                  "punto": false
-                },
-                {
-                  "t": "30 mm. (1 kg. Aprox.)",
-                  "punto": false,
-                  "sub": [
-                    "",
-                    ""
-                  ]
-                },
-                {
-                  "t": "PI 061",
-                  "punto": false
-                },
-                {
-                  "t": "9 mm. (1 kg. Aprox.)",
-                  "punto": false,
-                  "sub": [
-                    "",
-                    ""
-                  ]
-                },
-                {
                   "t": "Pour un broyage optimal, nous recommandons de remplir les bocaux dans les proportions suivantes : 50 % de la capacité doit être vide, 25 % de la capacité doit être remplie avec les billes et les 25 % restants avec le produit à broyer.",
                   "punto": false
+                }
+              ],
+              "tablas": [
+                {
+                  "cabecera": [
+                    [
+                      {
+                        "t": "Bocaux en acier inoxydable (AISI 304)",
+                        "span": 4
+                      },
+                      {
+                        "t": "Bocaux en alumine (pureté 92%)",
+                        "span": 3
+                      }
+                    ]
+                  ],
+                  "filas": [
+                    [
+                      {
+                        "t": "15 liters"
+                      },
+                      {
+                        "t": "5 litres"
+                      },
+                      {
+                        "t": "3 liters"
+                      },
+                      {
+                        "t": "1 liter"
+                      },
+                      {
+                        "t": "1 liter"
+                      },
+                      {
+                        "t": "3 liters"
+                      },
+                      {
+                        "t": "5 liters"
+                      }
+                    ],
+                    [
+                      {
+                        "t": "PI 226"
+                      },
+                      {
+                        "t": "PI 064"
+                      },
+                      {
+                        "t": "PI 063"
+                      },
+                      {
+                        "t": "PI 062"
+                      },
+                      {
+                        "t": "PV 035"
+                      },
+                      {
+                        "t": "PV 036"
+                      },
+                      {
+                        "t": "PV 037"
+                      }
+                    ]
+                  ]
+                },
+                {
+                  "cabecera": [
+                    [
+                      {
+                        "t": "Billes en acier inoxydable (AISI 304)",
+                        "span": 2
+                      },
+                      {
+                        "t": "Billes en alumine (pureté 92%)",
+                        "span": 2
+                      }
+                    ]
+                  ],
+                  "filas": [
+                    [
+                      {
+                        "t": ""
+                      },
+                      {
+                        "t": "Diámetro"
+                      },
+                      {
+                        "t": ""
+                      },
+                      {
+                        "t": "Diámetro"
+                      }
+                    ],
+                    [
+                      {
+                        "t": "PI 058"
+                      },
+                      {
+                        "t": "15 mm. (1 kg. Aprox.)"
+                      },
+                      {
+                        "t": "PV 040"
+                      },
+                      {
+                        "t": "20 mm. (1 kg. Aprox.)"
+                      }
+                    ],
+                    [
+                      {
+                        "t": "PI 059"
+                      },
+                      {
+                        "t": "20 mm. (1 kg. Aprox.)"
+                      },
+                      {
+                        "t": "PV 042"
+                      },
+                      {
+                        "t": "30 mm. (1 kg. Aprox.)"
+                      }
+                    ],
+                    [
+                      {
+                        "t": "PI 060"
+                      },
+                      {
+                        "t": "30 mm. (1 kg. Aprox.)"
+                      },
+                      {
+                        "t": "–"
+                      },
+                      {
+                        "t": "–"
+                      }
+                    ],
+                    [
+                      {
+                        "t": "PI 061"
+                      },
+                      {
+                        "t": "9 mm. (1 kg. Aprox.)"
+                      },
+                      {
+                        "t": "–"
+                      },
+                      {
+                        "t": "–"
+                      }
+                    ]
+                  ]
                 }
               ]
             }
@@ -22032,196 +22010,123 @@
             },
             {
               "titulo": "Versiones",
-              "puntos": [
+              "puntos": [],
+              "tablas": [
                 {
-                  "t": "Código",
-                  "punto": false
-                },
-                {
-                  "t": "Dimensiones",
-                  "punto": false
-                },
-                {
-                  "t": "(mm) (a x f x h)",
-                  "punto": false
-                },
-                {
-                  "t": "Peso neto",
-                  "punto": false
-                },
-                {
-                  "t": "(Kg)",
-                  "punto": false
-                },
-                {
-                  "t": "Voltaje",
-                  "punto": false
-                },
-                {
-                  "t": "(V)",
-                  "punto": false
-                },
-                {
-                  "t": "Frecuencia",
-                  "punto": false
-                },
-                {
-                  "t": "(Hz)",
-                  "punto": false
-                },
-                {
-                  "t": "Resistencia",
-                  "punto": false
-                },
-                {
-                  "t": "(W)",
-                  "punto": false
-                },
-                {
-                  "t": "Capacidad",
-                  "punto": false
-                },
-                {
-                  "t": "(l/h)",
-                  "punto": false
-                },
-                {
-                  "t": "Consumo agua",
-                  "punto": false
-                },
-                {
-                  "t": "refrigeración (l/h",
-                  "punto": false
-                },
-                {
-                  "t": "DA 005",
-                  "punto": false
-                },
-                {
-                  "t": "370 220 440",
-                  "punto": false
-                },
-                {
-                  "t": "8",
-                  "punto": false
-                },
-                {
-                  "t": "220",
-                  "punto": false
-                },
-                {
-                  "t": "50-60",
-                  "punto": false
-                },
-                {
-                  "t": "3000",
-                  "punto": false
-                },
-                {
-                  "t": "4",
-                  "punto": false
-                },
-                {
-                  "t": "60",
-                  "punto": false
-                },
-                {
-                  "t": "DA 006",
-                  "punto": false
-                },
-                {
-                  "t": "370 260 640",
-                  "punto": false
-                },
-                {
-                  "t": "14",
-                  "punto": false
-                },
-                {
-                  "t": "220",
-                  "punto": false
-                },
-                {
-                  "t": "50-60",
-                  "punto": false
-                },
-                {
-                  "t": "6000",
-                  "punto": false
-                },
-                {
-                  "t": "8",
-                  "punto": false
-                },
-                {
-                  "t": "84",
-                  "punto": false
-                },
-                {
-                  "t": "DA 007",
-                  "punto": false
-                },
-                {
-                  "t": "370 220 440",
-                  "punto": false
-                },
-                {
-                  "t": "8",
-                  "punto": false
-                },
-                {
-                  "t": "110",
-                  "punto": false
-                },
-                {
-                  "t": "50-60",
-                  "punto": false
-                },
-                {
-                  "t": "3000",
-                  "punto": false
-                },
-                {
-                  "t": "4",
-                  "punto": false
-                },
-                {
-                  "t": "60",
-                  "punto": false
+                  "cabecera": [
+                    [
+                      {
+                        "t": "Código"
+                      },
+                      {
+                        "t": "Dimensiones (mm) (a x f x h)"
+                      },
+                      {
+                        "t": "Peso neto (Kg)"
+                      },
+                      {
+                        "t": "Voltaje (V)"
+                      },
+                      {
+                        "t": "Frecuencia (Hz)"
+                      },
+                      {
+                        "t": "Resistencia (W)"
+                      },
+                      {
+                        "t": "Capacidad (l/h)"
+                      },
+                      {
+                        "t": "Consumo agua refrigeración (l/h"
+                      }
+                    ]
+                  ],
+                  "filas": [
+                    [
+                      {
+                        "t": "DA 005"
+                      },
+                      {
+                        "t": "370 220 440"
+                      },
+                      {
+                        "t": "8"
+                      },
+                      {
+                        "t": "220"
+                      },
+                      {
+                        "t": "50-60"
+                      },
+                      {
+                        "t": "3000"
+                      },
+                      {
+                        "t": "4"
+                      },
+                      {
+                        "t": "60"
+                      }
+                    ],
+                    [
+                      {
+                        "t": "DA 006"
+                      },
+                      {
+                        "t": "370 260 640"
+                      },
+                      {
+                        "t": "14"
+                      },
+                      {
+                        "t": "220"
+                      },
+                      {
+                        "t": "50-60"
+                      },
+                      {
+                        "t": "6000"
+                      },
+                      {
+                        "t": "8"
+                      },
+                      {
+                        "t": "84"
+                      }
+                    ],
+                    [
+                      {
+                        "t": "DA 007"
+                      },
+                      {
+                        "t": "370 220 440"
+                      },
+                      {
+                        "t": "8"
+                      },
+                      {
+                        "t": "110"
+                      },
+                      {
+                        "t": "50-60"
+                      },
+                      {
+                        "t": "3000"
+                      },
+                      {
+                        "t": "4"
+                      },
+                      {
+                        "t": "60"
+                      }
+                    ]
+                  ]
                 }
               ]
             },
             {
               "titulo": "Accesorios",
               "puntos": [
-                {
-                  "t": "Descripción",
-                  "punto": false
-                },
-                {
-                  "t": "PP 354",
-                  "punto": false
-                },
-                {
-                  "t": "Depósito de plástico para 30 litros con grifo.",
-                  "punto": false
-                },
-                {
-                  "t": "PV 192",
-                  "punto": false
-                },
-                {
-                  "t": "Limitador de caudal de agua de red para DA 005/007",
-                  "punto": false
-                },
-                {
-                  "t": "PV 193",
-                  "punto": false
-                },
-                {
-                  "t": "Limitador de caudal de agua de red para DA 006",
-                  "punto": false
-                },
                 {
                   "t": "Purificación del agua",
                   "punto": false
@@ -22233,6 +22138,54 @@
                 {
                   "t": "A continuación reflejamos la eficacia del proceso de destilación frente a diferentes compuestos y organismos:",
                   "punto": false
+                }
+              ],
+              "tablas": [
+                {
+                  "cabecera": [
+                    [
+                      {
+                        "t": ""
+                      },
+                      {
+                        "t": "Descripción"
+                      }
+                    ]
+                  ],
+                  "filas": [
+                    [
+                      {
+                        "t": "PP 354"
+                      },
+                      {
+                        "t": "Depósito de plástico para 30 litros con grifo."
+                      }
+                    ],
+                    [
+                      {
+                        "t": "PV 192"
+                      },
+                      {
+                        "t": "Limitador de caudal de agua de red para DA 005/007"
+                      }
+                    ],
+                    [
+                      {
+                        "t": "PV 193"
+                      },
+                      {
+                        "t": "Limitador de caudal de agua de red para DA 006"
+                      }
+                    ]
+                  ]
+                }
+              ],
+              "imagenes": [
+                {
+                  "src": "/img/fichas/destilacion-768x429-1.webp",
+                  "alt": "",
+                  "ancho": 768,
+                  "alto": 429
                 }
               ]
             }
@@ -22339,184 +22292,123 @@
             },
             {
               "titulo": "Versions",
-              "puntos": [
+              "puntos": [],
+              "tablas": [
                 {
-                  "t": "Ref",
-                  "punto": false
-                },
-                {
-                  "t": "Dimensions (mm)",
-                  "punto": false
-                },
-                {
-                  "t": "(w x d x h)",
-                  "punto": false
-                },
-                {
-                  "t": "Net weight(Kg)",
-                  "punto": false
-                },
-                {
-                  "t": "Voltage",
-                  "punto": false
-                },
-                {
-                  "t": "(V)",
-                  "punto": false
-                },
-                {
-                  "t": "Frecuency",
-                  "punto": false
-                },
-                {
-                  "t": "(Hz)",
-                  "punto": false
-                },
-                {
-                  "t": "Power",
-                  "punto": false
-                },
-                {
-                  "t": "(W)",
-                  "punto": false
-                },
-                {
-                  "t": "Capacity (l)",
-                  "punto": false
-                },
-                {
-                  "t": "Refrigeration water (l)",
-                  "punto": false
-                },
-                {
-                  "t": "DA 005",
-                  "punto": false
-                },
-                {
-                  "t": "370 220 440",
-                  "punto": false
-                },
-                {
-                  "t": "8",
-                  "punto": false
-                },
-                {
-                  "t": "220",
-                  "punto": false
-                },
-                {
-                  "t": "50-60",
-                  "punto": false
-                },
-                {
-                  "t": "3000",
-                  "punto": false
-                },
-                {
-                  "t": "4",
-                  "punto": false
-                },
-                {
-                  "t": "60",
-                  "punto": false
-                },
-                {
-                  "t": "DA 006",
-                  "punto": false
-                },
-                {
-                  "t": "370 260 640",
-                  "punto": false
-                },
-                {
-                  "t": "14",
-                  "punto": false
-                },
-                {
-                  "t": "220",
-                  "punto": false
-                },
-                {
-                  "t": "50-60",
-                  "punto": false
-                },
-                {
-                  "t": "6000",
-                  "punto": false
-                },
-                {
-                  "t": "8",
-                  "punto": false
-                },
-                {
-                  "t": "84",
-                  "punto": false
-                },
-                {
-                  "t": "DA 007",
-                  "punto": false
-                },
-                {
-                  "t": "370 220 440",
-                  "punto": false
-                },
-                {
-                  "t": "8",
-                  "punto": false
-                },
-                {
-                  "t": "110",
-                  "punto": false
-                },
-                {
-                  "t": "50-60",
-                  "punto": false
-                },
-                {
-                  "t": "3000",
-                  "punto": false
-                },
-                {
-                  "t": "4",
-                  "punto": false
-                },
-                {
-                  "t": "60",
-                  "punto": false
+                  "cabecera": [
+                    [
+                      {
+                        "t": "Ref"
+                      },
+                      {
+                        "t": "Dimensions (mm) (w x d x h)"
+                      },
+                      {
+                        "t": "Net weight(Kg)"
+                      },
+                      {
+                        "t": "Voltage (V)"
+                      },
+                      {
+                        "t": "Frecuency (Hz)"
+                      },
+                      {
+                        "t": "Power (W)"
+                      },
+                      {
+                        "t": "Capacity (l)"
+                      },
+                      {
+                        "t": "Refrigeration water (l)"
+                      }
+                    ]
+                  ],
+                  "filas": [
+                    [
+                      {
+                        "t": "DA 005"
+                      },
+                      {
+                        "t": "370 220 440"
+                      },
+                      {
+                        "t": "8"
+                      },
+                      {
+                        "t": "220"
+                      },
+                      {
+                        "t": "50-60"
+                      },
+                      {
+                        "t": "3000"
+                      },
+                      {
+                        "t": "4"
+                      },
+                      {
+                        "t": "60"
+                      }
+                    ],
+                    [
+                      {
+                        "t": "DA 006"
+                      },
+                      {
+                        "t": "370 260 640"
+                      },
+                      {
+                        "t": "14"
+                      },
+                      {
+                        "t": "220"
+                      },
+                      {
+                        "t": "50-60"
+                      },
+                      {
+                        "t": "6000"
+                      },
+                      {
+                        "t": "8"
+                      },
+                      {
+                        "t": "84"
+                      }
+                    ],
+                    [
+                      {
+                        "t": "DA 007"
+                      },
+                      {
+                        "t": "370 220 440"
+                      },
+                      {
+                        "t": "8"
+                      },
+                      {
+                        "t": "110"
+                      },
+                      {
+                        "t": "50-60"
+                      },
+                      {
+                        "t": "3000"
+                      },
+                      {
+                        "t": "4"
+                      },
+                      {
+                        "t": "60"
+                      }
+                    ]
+                  ]
                 }
               ]
             },
             {
               "titulo": "Accesories",
               "puntos": [
-                {
-                  "t": "Description",
-                  "punto": false
-                },
-                {
-                  "t": "PP 354",
-                  "punto": false
-                },
-                {
-                  "t": "Plastic tank for 30 litres with tap.",
-                  "punto": false
-                },
-                {
-                  "t": "PV 192",
-                  "punto": false
-                },
-                {
-                  "t": "Flow water limiter DA 005/007",
-                  "punto": false
-                },
-                {
-                  "t": "PV 193",
-                  "punto": false
-                },
-                {
-                  "t": "Flow water limiter DA 006",
-                  "punto": false
-                },
                 {
                   "t": "Water purification",
                   "punto": false
@@ -22528,6 +22420,54 @@
                 {
                   "t": "Below we show the effectiveness of the distillation process against different compounds and organisms:",
                   "punto": false
+                }
+              ],
+              "tablas": [
+                {
+                  "cabecera": [
+                    [
+                      {
+                        "t": "Description"
+                      },
+                      {
+                        "t": ""
+                      }
+                    ]
+                  ],
+                  "filas": [
+                    [
+                      {
+                        "t": "PP 354"
+                      },
+                      {
+                        "t": "Plastic tank for 30 litres with tap."
+                      }
+                    ],
+                    [
+                      {
+                        "t": "PV 192"
+                      },
+                      {
+                        "t": "Flow water limiter DA 005/007"
+                      }
+                    ],
+                    [
+                      {
+                        "t": "PV 193"
+                      },
+                      {
+                        "t": "Flow water limiter DA 006"
+                      }
+                    ]
+                  ]
+                }
+              ],
+              "imagenes": [
+                {
+                  "src": "/img/fichas/destilation-510x287-1.webp",
+                  "alt": "",
+                  "ancho": 510,
+                  "alto": 287
                 }
               ]
             }
@@ -22634,150 +22574,117 @@
             },
             {
               "titulo": "Versions",
-              "puntos": [
+              "puntos": [],
+              "tablas": [
                 {
-                  "t": "Ref",
-                  "punto": false
-                },
-                {
-                  "t": "Dimensions (mm)",
-                  "punto": false
-                },
-                {
-                  "t": "(w x d x h)",
-                  "punto": false
-                },
-                {
-                  "t": "Net weight(Kg)",
-                  "punto": false
-                },
-                {
-                  "t": "Voltage",
-                  "punto": false
-                },
-                {
-                  "t": "(V)",
-                  "punto": false
-                },
-                {
-                  "t": "Frecuency",
-                  "punto": false
-                },
-                {
-                  "t": "(Hz)",
-                  "punto": false
-                },
-                {
-                  "t": "Power",
-                  "punto": false
-                },
-                {
-                  "t": "(W)",
-                  "punto": false
-                },
-                {
-                  "t": "Capacity (l)",
-                  "punto": false
-                },
-                {
-                  "t": "Refrigeration water (l)",
-                  "punto": false
-                },
-                {
-                  "t": "DA 005",
-                  "punto": false
-                },
-                {
-                  "t": "370 220 440",
-                  "punto": false
-                },
-                {
-                  "t": "8",
-                  "punto": false
-                },
-                {
-                  "t": "220",
-                  "punto": false
-                },
-                {
-                  "t": "50-60",
-                  "punto": false
-                },
-                {
-                  "t": "3000",
-                  "punto": false
-                },
-                {
-                  "t": "4",
-                  "punto": false
-                },
-                {
-                  "t": "60",
-                  "punto": false
-                },
-                {
-                  "t": "DA 006",
-                  "punto": false
-                },
-                {
-                  "t": "370 260 640",
-                  "punto": false
-                },
-                {
-                  "t": "14",
-                  "punto": false
-                },
-                {
-                  "t": "220",
-                  "punto": false
-                },
-                {
-                  "t": "50-60",
-                  "punto": false
-                },
-                {
-                  "t": "6000",
-                  "punto": false
-                },
-                {
-                  "t": "8",
-                  "punto": false
-                },
-                {
-                  "t": "84",
-                  "punto": false
-                },
-                {
-                  "t": "DA 007",
-                  "punto": false
-                },
-                {
-                  "t": "370 220 440",
-                  "punto": false
-                },
-                {
-                  "t": "8",
-                  "punto": false
-                },
-                {
-                  "t": "110",
-                  "punto": false
-                },
-                {
-                  "t": "50-60",
-                  "punto": false
-                },
-                {
-                  "t": "3000",
-                  "punto": false
-                },
-                {
-                  "t": "4",
-                  "punto": false
-                },
-                {
-                  "t": "60",
-                  "punto": false
+                  "cabecera": [
+                    [
+                      {
+                        "t": "Ref"
+                      },
+                      {
+                        "t": "Dimensions (mm) (w x d x h)"
+                      },
+                      {
+                        "t": "Net weight(Kg)"
+                      },
+                      {
+                        "t": "Voltage (V)"
+                      },
+                      {
+                        "t": "Frecuency (Hz)"
+                      },
+                      {
+                        "t": "Power (W)"
+                      },
+                      {
+                        "t": "Capacity (l)"
+                      },
+                      {
+                        "t": "Refrigeration water (l)"
+                      }
+                    ]
+                  ],
+                  "filas": [
+                    [
+                      {
+                        "t": "DA 005"
+                      },
+                      {
+                        "t": "370 220 440"
+                      },
+                      {
+                        "t": "8"
+                      },
+                      {
+                        "t": "220"
+                      },
+                      {
+                        "t": "50-60"
+                      },
+                      {
+                        "t": "3000"
+                      },
+                      {
+                        "t": "4"
+                      },
+                      {
+                        "t": "60"
+                      }
+                    ],
+                    [
+                      {
+                        "t": "DA 006"
+                      },
+                      {
+                        "t": "370 260 640"
+                      },
+                      {
+                        "t": "14"
+                      },
+                      {
+                        "t": "220"
+                      },
+                      {
+                        "t": "50-60"
+                      },
+                      {
+                        "t": "6000"
+                      },
+                      {
+                        "t": "8"
+                      },
+                      {
+                        "t": "84"
+                      }
+                    ],
+                    [
+                      {
+                        "t": "DA 007"
+                      },
+                      {
+                        "t": "370 220 440"
+                      },
+                      {
+                        "t": "8"
+                      },
+                      {
+                        "t": "110"
+                      },
+                      {
+                        "t": "50-60"
+                      },
+                      {
+                        "t": "3000"
+                      },
+                      {
+                        "t": "4"
+                      },
+                      {
+                        "t": "60"
+                      }
+                    ]
+                  ]
                 }
               ]
             },
@@ -22786,30 +22693,6 @@
               "puntos": [
                 {
                   "t": "Description",
-                  "punto": false
-                },
-                {
-                  "t": "PP 354",
-                  "punto": false
-                },
-                {
-                  "t": "Réservoir en plastique de 30 litres avec robinet.",
-                  "punto": false
-                },
-                {
-                  "t": "PV 192",
-                  "punto": false
-                },
-                {
-                  "t": "Limiteur de débit d’eau pour DA 005/007",
-                  "punto": false
-                },
-                {
-                  "t": "PV 193",
-                  "punto": false
-                },
-                {
-                  "t": "Limiteur de débit d’eau pour DA 006",
                   "punto": false
                 },
                 {
@@ -22823,6 +22706,45 @@
                 {
                   "t": "Ci-dessous, nous montrons l’efficacité du processus de distillation contre différents composés et organismes :",
                   "punto": false
+                }
+              ],
+              "tablas": [
+                {
+                  "cabecera": [],
+                  "filas": [
+                    [
+                      {
+                        "t": "PP 354"
+                      },
+                      {
+                        "t": "Réservoir en plastique de 30 litres avec robinet."
+                      }
+                    ],
+                    [
+                      {
+                        "t": "PV 192"
+                      },
+                      {
+                        "t": "Limiteur de débit d’eau pour DA 005/007"
+                      }
+                    ],
+                    [
+                      {
+                        "t": "PV 193"
+                      },
+                      {
+                        "t": "Limiteur de débit d’eau pour DA 006"
+                      }
+                    ]
+                  ]
+                }
+              ],
+              "imagenes": [
+                {
+                  "src": "/img/fichas/destiladores_fr-300x171.webp",
+                  "alt": "",
+                  "ancho": 300,
+                  "alto": 171
                 }
               ]
             }
