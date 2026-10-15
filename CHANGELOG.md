@@ -146,6 +146,8 @@ Hasta que se publique la web, todo va en "Sin publicar"; al publicar se cierra l
 
 ### Corregido
 
+- Fichas de producto: **un solo aviso al copiar códigos**. En Referencias, al copiar un código y pasar al de al lado (CE 202 → CE 202IVD) salían «Copiado» y «Copiar código» a la vez, uno encima del otro. Ahora el aviso del código anterior se quita al copiar otro o al pasar el ratón por otro de la misma celda.
+
 - Productos: **las sugerencias del buscador vuelven a llevar foto**. Buscaban la imagen dentro de `.foto` y la tarjeta la lleva en `.estudio`, así que salían todas con la imagen rota.
 - Productos: **el número de cada tipo de tubo sigue a los demás filtros**. Contaba cuántas medidas del tipo daban algún resultado, así que casi nunca cambiaba (con Refrigerada, "Fondo redondo, tapón" seguía en 10). Ahora cuenta las máquinas que lo admiten con los filtros activos, como el desplegable de aplicación (con Refrigerada, "Fondo redondo con tapón" pasa de 9 a 6).
 - Productos y fichas: **nombres de tubo con un mismo criterio** en los tres idiomas: forma, luego cierre y al final "(HS)" ("Cónico con tapón", "Cónico con tapón de rosca", "Fondo redondo con tapón (HS)", "Cónico de traza", "Extracción de sangre"). Antes salían tal cual del ERP, con comas y abreviaturas sueltas ("Cónico tapón", "Fondo redondo, tapón (hs)", "Fondo plano, tapón, (hs)").
