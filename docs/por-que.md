@@ -1492,3 +1492,15 @@ Las familias pasan a grafito y el rojo de la marca marca dónde empieza cada una
   inventar a qué fila va cada cifra; hay que reimportarlas como tabla.
 - **Descartado:** pestañas por bloque (esconden lo que el distribuidor quiere comparar de un vistazo) y dejar la
   descripción al lado (es lo que dejaba el hueco en blanco).
+
+## 39. Referencias en móvil: una tarjeta por versión
+
+- **Problema:** en un teléfono (390 px) la tabla de versiones no cabía. El peso salía cortado («98 k») y voltaje,
+  frecuencia y consumo solo se veían deslizando la tabla de lado, sin nada que avisara de que había más.
+- **Ahora:** hasta 760 px, cada versión es una tarjeta. Arriba, sus códigos (se siguen copiando con un toque);
+  debajo, sus datos con el nombre de cada uno encima, en tres columnas iguales: las medidas, que son el dato más
+  largo, ocupan dos y el peso la tercera; en la segunda fila, voltaje, frecuencia y consumo. Las columnas caen en el
+  mismo sitio en todas las tarjetas, así que la CE 232 y la CE 233 se comparan de un vistazo. Sin scroll lateral ni
+  textos cortados. En escritorio la tabla no cambia.
+- **Descartado:** dejar la tabla con scroll lateral y una sombra que lo indique (sigue escondiendo la mitad de los
+  datos), los datos en una sola columna (cada versión ocupaba el doble de alto) y dos columnas (tres filas de datos por versión en vez de dos).
