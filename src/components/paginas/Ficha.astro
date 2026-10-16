@@ -229,6 +229,15 @@ const refBloques = (txt?.bloques.filter(esReferencia) ?? []).map((b) =>
 const esFotoDestilacion = (src: string) => /destil/i.test(src);
 // Y la foto de las tablas de tamices, por las tablas
 const tt = tf.tamices;
+// Cada tabla de tamices, en filas de cinco parejas código–luz que se leen de arriba abajo
+const PARES = 5;
+const columnasDe = (n: number) => Math.ceil(n / Math.ceil(n / PARES));
+const enColumnas = <T,>(xs: T[]): (T | undefined)[][] => {
+  const filas = Math.ceil(xs.length / PARES);
+  return Array.from({ length: filas }, (_, r) =>
+    Array.from({ length: columnasDe(xs.length) }, (_, c) => xs[c * filas + r]),
+  );
+};
 // Tabla de dos columnas con códigos (accesorios de los destiladores): su cabecera, la nuestra
 const esCodigoYTexto = (t: NonNullable<BloqueFicha['tablas']>[number]) =>
   t.filas.length > 0 && t.filas.every((f) => f.length === 2 && esCodigo(f[0].t));
@@ -1124,79 +1133,109 @@ const descripcion = m
                 {b.imagenes?.some((im) => esFotoTamices(im.src)) ? (
                   <div class="tamices" data-tamices>
                     <div class="tm-barra">
+                      <div class="tm-pestanas" role="radiogroup">
+                        {seriesTamices.map((s, i) => (
+                          <label>
+                            <input type="radio" name="tm-serie" checked={i === 0} />
+                            {s.medida} <span>{s.normas}</span>
+                          </label>
+                        ))}
+                      </div>
                       <label class="tm-buscar">
                         <span class="sr">{tt.buscar}</span>
                         <input type="search" placeholder={tt.buscar} autocomplete="off" data-tm-buscar />
                       </label>
-                      <p class="tm-medidas">
-                        {tt.medidas}: {medidasTamices.join(' · ')}
-                      </p>
                     </div>
-                    <div class="tm-series">
-                      {seriesTamices.map((s) => (
-                        <section class="tm-serie">
-                          <h4>
-                            {s.medida} <span>{s.normas}</span>
-                          </h4>
-                          {s.tablas.map((tb) => (
-                            <div class="tm-grupo">
-                              <p class="tm-tipo">
-                                {tt[tb.tipo]}
-                                <span>
-                                  {tb.norma} · {tb.acero} · {tt.luz}
-                                  {tb.enMm && ' (mm)'}
-                                </span>
-                              </p>
-                              <ul class="tm-fichas">
-                                {tb.filas.map((x) => (
-                                  <li
-                                    data-tm={`${x.codigo} ${x.codigo.replace(' ', '')} ${decimal(lang, x.luz)} ${x.luz}`}
-                                  >
-                                    <button
-                                      type="button"
-                                      class="copiar"
-                                      data-copiar={x.codigo}
-                                      data-pista={tf.copiar}
-                                      data-hecho={tf.copiado}
-                                    >
-                                      <b>
-                                        {decimal(lang, x.luz)}
-                                        {x.aire && <sup>*</sup>}
-                                      </b>
-                                      <span>{x.codigo}</span>
-                                    </button>
-                                  </li>
-                                ))}
-                              </ul>
-                            </div>
-                          ))}
+                    {seriesTamices.map((s) => (
+                      <section class="tm-serie" aria-label={s.medida}>
+                        <p class="tm-nombre">
+                          {s.medida} <span>{s.normas}</span>
+                        </p>
+                        {[
+                          ...s.tablas.map((tb) => ({
+                            titulo: tt[tb.tipo],
+                            pie: `${tb.norma} · ${tb.acero}`,
+                            col: tb.enMm ? `${tt.luz} (mm)` : tt.luz,
+                            filas: tb.filas.map((x) => ({
+                              codigo: x.codigo,
+                              valor: decimal(lang, x.luz),
+                              aire: x.aire,
+                              busca: `${x.luz}`,
+                            })),
+                          })),
+                          {
+                            titulo: tt.extras,
+                            pie: '',
+                            col: tf.descripcion,
+                            filas: s.extras.map((x) => ({
+                              codigo: x.codigo,
+                              valor: tt[x.que],
+                              aire: undefined,
+                              busca: '',
+                            })),
+                          },
+                        ].map((g) => (
                           <div class="tm-grupo">
-                            <p class="tm-tipo">{tt.extras}</p>
-                            <ul class="tm-fichas tm-anchas">
-                              {s.extras.map((x) => (
-                                <li data-tm={`${x.codigo} ${x.codigo.replace(' ', '')} ${tt[x.que]}`}>
-                                  <button
-                                    type="button"
-                                    class="copiar"
-                                    data-copiar={x.codigo}
-                                    data-pista={tf.copiar}
-                                    data-hecho={tf.copiado}
-                                  >
-                                    <b>{tt[x.que]}</b>
-                                    <span>{x.codigo}</span>
-                                  </button>
-                                </li>
-                              ))}
-                            </ul>
+                            <p class="tm-tipo">
+                              {g.titulo} {g.pie && <span>{g.pie}</span>}
+                            </p>
+                            <div class="tabla-scroll">
+                              <table class="ref-tabla tm-tabla">
+                                <thead>
+                                  <tr>
+                                    {Array.from({ length: columnasDe(g.filas.length) }, () => (
+                                      <>
+                                        <th scope="col">{tf.versiones.codigo}</th>
+                                        <th scope="col">{g.col}</th>
+                                      </>
+                                    ))}
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {enColumnas(g.filas).map((fila) => (
+                                    <tr>
+                                      {fila.map((x) =>
+                                        x ? (
+                                          <>
+                                            <td
+                                              data-tm={`${x.codigo} ${x.codigo.replace(' ', '')} ${x.valor} ${x.busca}`}
+                                            >
+                                              <button
+                                                type="button"
+                                                class="copiar"
+                                                data-copiar={x.codigo}
+                                                data-pista={tf.copiar}
+                                                data-hecho={tf.copiado}
+                                              >
+                                                {x.codigo}
+                                              </button>
+                                            </td>
+                                            <td class="tm-luz">
+                                              {x.valor}
+                                              {x.aire && <sup>*</sup>}
+                                            </td>
+                                          </>
+                                        ) : (
+                                          <>
+                                            <td />
+                                            <td class="tm-luz" />
+                                          </>
+                                        ),
+                                      )}
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
                           </div>
-                        </section>
-                      ))}
-                    </div>
+                        ))}
+                      </section>
+                    ))}
                     <p class="tm-nada" hidden data-tm-nada>
                       {tt.nada}
                     </p>
                     <p class="v-notas">
-                      {tt.notaAire} {tt.material} {tt.consulta}
+                      {tt.notaAire} {tt.medidas}: {medidasTamices.join(' · ')}. {tt.material} {tt.consulta}
                     </p>
                   </div>
                 ) : (
@@ -1520,24 +1559,35 @@ const descripcion = m
   }
 
   // Códigos: un clic los copia (para el pedido). "Copiado" sale en el sitio de "Copiar", sin mover nada, y se anuncia
-  // Tamices: el buscador deja solo las fichas cuyo código o luz contiene lo escrito ("384", "PI384", "0,5")
+  // Tamices: al escribir un código o una luz ("384", "PI384", "0,5") se ven las dos series, se marca lo que casa y
+  // se apaga lo demás; las tablas sin nada que casar salen
   for (const caja of document.querySelectorAll<HTMLElement>('[data-tamices]')) {
     const campo = caja.querySelector<HTMLInputElement>('[data-tm-buscar]');
     const nada = caja.querySelector<HTMLElement>('[data-tm-nada]');
-    const fichas = [...caja.querySelectorAll<HTMLElement>('[data-tm]')];
     const norma = (s: string) => s.toLowerCase().replace(/\s+/g, '').replace(/\./g, ',');
     campo?.addEventListener('input', () => {
       const q = norma(campo.value);
-      let quedan = 0;
-      for (const f of fichas) {
-        const sale = Boolean(q) && !norma(f.dataset.tm!).includes(q);
-        f.hidden = sale;
-        if (!sale) quedan++;
+      caja.classList.toggle('buscando', Boolean(q));
+      let total = 0;
+      for (const serie of caja.querySelectorAll<HTMLElement>('.tm-serie')) {
+        let enSerie = 0;
+        for (const grupo of serie.querySelectorAll<HTMLElement>('.tm-grupo')) {
+          let enGrupo = 0;
+          for (const td of grupo.querySelectorAll<HTMLElement>('[data-tm]')) {
+            const casa = Boolean(q) && norma(td.dataset.tm!).includes(q);
+            td.classList.toggle('casa', casa);
+            td.classList.toggle('sale', Boolean(q) && !casa);
+            if (casa) enGrupo++;
+          }
+          grupo.classList.toggle('vacio', Boolean(q) && !enGrupo);
+          enSerie += enGrupo;
+        }
+        serie.classList.toggle('vacia', Boolean(q) && !enSerie);
+        total += enSerie;
       }
-      if (nada) nada.hidden = quedan > 0;
+      if (nada) nada.hidden = !q || total > 0;
     });
   }
-
   // Solo un aviso a la vez: al copiar otro código, el "Copiado" anterior se quita en el momento
   const reponer = new Map<HTMLButtonElement, () => void>();
   for (const b of document.querySelectorAll<HTMLButtonElement>('[data-copiar]')) {
@@ -3258,21 +3308,62 @@ const descripcion = m
       font-size: 11px;
     }
   }
-  /* Tamices: las dos series a la vez, una por columna, y cada tamiz en una ficha con la luz en grande y el código
-     debajo (un clic lo copia). Todo a la vista, para que Ctrl+F y la impresión lo encuentren; el buscador solo
-     estrecha lo que se ve cuando se escribe un código o una luz */
+  /* Tamices: con el mismo lenguaje que la tabla de versiones (cabecera fina, rayas, códigos en negrita). Una
+     pestaña por serie, como el menú de la ficha, y cada tabla con cinco parejas código–luz por fila, leídas de arriba
+     abajo, para que no se alargue. Al buscar se ven las dos series y solo las tablas con algo que casa */
   .tm-barra {
     display: flex;
     flex-wrap: wrap;
-    align-items: center;
+    align-items: flex-end;
+    justify-content: space-between;
     gap: 12px 24px;
-    margin-bottom: 24px;
+    margin-bottom: 8px;
+    border-bottom: 1px solid var(--line);
+  }
+  .tm-pestanas {
+    display: flex;
+    flex-wrap: wrap;
+    column-gap: 28px;
+  }
+  .tm-pestanas label {
+    margin-bottom: -1px;
+    padding: 10px 0 12px;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--muted);
+    border-bottom: 3px solid transparent;
+    cursor: pointer;
+    transition: color var(--dur-1) var(--ease);
+  }
+  .tm-pestanas label span {
+    font-weight: 400;
+  }
+  .tm-pestanas label:hover,
+  .tm-pestanas label:has(:checked) {
+    color: var(--ink);
+  }
+  .tm-pestanas label:has(:checked) {
+    border-bottom-color: var(--red);
+  }
+  .tm-pestanas label:has(:focus-visible) {
+    outline: 2px solid var(--ink);
+    outline-offset: -2px;
+  }
+  .tm-pestanas input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .tm-buscar {
+    flex: 1 1 220px;
+    max-width: 300px;
+    margin-bottom: 8px;
   }
   .tm-buscar input {
-    width: min(100%, 280px);
-    padding: 10px 14px;
+    width: 100%;
+    padding: 8px 12px;
     font: inherit;
-    font-size: 16px;
+    font-size: 15px;
     color: var(--ink);
     background: var(--white);
     border: 1px solid var(--line);
@@ -3284,104 +3375,74 @@ const descripcion = m
     border-color: var(--ink);
     outline: none;
   }
-  .tm-medidas {
-    margin: 0;
-    font-size: 14px;
+  /* Solo la serie elegida, salvo mientras se busca */
+  .tamices:not(.buscando):has(.tm-pestanas label:nth-child(1) :checked) .tm-serie:not(:nth-of-type(1)),
+  .tamices:not(.buscando):has(.tm-pestanas label:nth-child(2) :checked) .tm-serie:not(:nth-of-type(2)) {
+    display: none;
+  }
+  .tamices.buscando .tm-pestanas label:has(:checked) {
     color: var(--muted);
+    border-bottom-color: transparent;
   }
-  .tm-series {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr));
-    gap: 32px clamp(32px, 4vw, 64px);
-    align-items: start;
+  .tm-grupo {
+    margin-top: 28px;
   }
-  .tm-serie h4 {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    gap: 4px 12px;
-    margin: 0 0 14px;
-    padding-bottom: 10px;
+  /* El nombre de la serie solo hace falta cuando se ven las dos, al buscar */
+  .tm-nombre {
+    display: none;
+    margin: 32px 0 -12px;
     font-size: 20px;
-    border-bottom: 2px solid var(--ink);
+    font-weight: 700;
   }
-  .tm-serie h4 span {
-    font-size: 14px;
+  .tm-nombre span {
     font-weight: 400;
     color: var(--muted);
   }
-  .tm-grupo + .tm-grupo {
-    margin-top: 16px;
+  .tamices.buscando .tm-nombre {
+    display: block;
   }
   .tm-tipo {
-    margin: 0 0 8px;
-    font-size: 15px;
+    margin: 0 0 4px;
+    font-size: 17px;
     font-weight: 700;
   }
   .tm-tipo span {
-    margin-left: 6px;
-    font-size: 13px;
+    margin-left: 8px;
+    font-size: 14px;
     font-weight: 400;
     color: var(--muted);
   }
-  .tm-fichas {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
-    gap: 4px;
-    margin: 0;
-    padding: 0;
-    list-style: none;
+  .tm-tabla th,
+  .tm-tabla td {
+    padding: 9px 12px;
   }
-  .tm-anchas {
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  }
-  .tm-fichas .copiar {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    padding: 7px 10px;
-    text-align: left;
-    text-decoration: none;
-    background: var(--band);
-    border: 1px solid transparent;
-    transition:
-      border-color var(--dur-1) var(--ease),
-      background var(--dur-1) var(--ease);
-  }
-  .tm-fichas .copiar:hover,
-  .tm-fichas .copiar:focus-visible {
-    color: inherit;
-    background: var(--white);
-    border-color: var(--red);
-    outline: none;
-  }
-  .tm-fichas b {
-    font-size: 17px;
-    line-height: 1.2;
-    font-variant-numeric: tabular-nums;
+  .tm-tabla td.tm-luz {
+    min-width: 0;
+    padding-right: 28px;
     white-space: nowrap;
+    font-variant-numeric: tabular-nums;
   }
-  .tm-anchas b {
-    font-size: 15px;
+  .tm-tabla tr > :last-child {
+    padding-right: 12px;
   }
-  .tm-fichas span {
-    font-size: 12px;
-    color: var(--muted);
-  }
-  .tm-fichas .copiar:hover span {
+  .tm-tabla sup {
     color: var(--red);
   }
-  .tm-fichas sup {
-    color: var(--red);
+  /* Al buscar: lo que casa, marcado; lo demás, apagado; una tabla o una serie sin nada, fuera */
+  .tm-tabla td.sale,
+  .tm-tabla td.sale + td {
+    opacity: 0.25;
   }
-  /* Lo que no casa con la búsqueda sale; un grupo o una serie sin nada que enseñar, también */
-  .tm-fichas li[hidden],
-  .tm-grupo:not(:has(li:not([hidden]))),
-  .tm-serie:not(:has(li:not([hidden]))) {
+  .tm-tabla td.casa,
+  .tm-tabla td.casa + td {
+    background: #fdeced;
+  }
+  .tm-grupo.vacio,
+  .tm-serie.vacia {
     display: none;
   }
   .tm-nada {
-    margin: 0;
+    margin: 24px 0 0;
     font-size: 16px;
     color: var(--muted);
   }
