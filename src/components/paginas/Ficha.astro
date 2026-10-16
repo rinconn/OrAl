@@ -565,7 +565,7 @@ const descripcion = m
                     </button>
                   ) : (
                     <span class="valor">
-                      <b>{x.v}</b>
+                      <b>{x.v.includes(' · ') ? x.v.split(' · ').map((c) => <span>{c}</span>) : x.v}</b>
                       {x.u && <small>{x.u}</small>}
                     </span>
                   )}
@@ -3773,7 +3773,7 @@ const descripcion = m
     --marea-tubo: rgba(226, 18, 26, 0.54);
     display: grid;
     grid-auto-flow: column;
-    grid-auto-columns: auto;
+    grid-auto-columns: var(--d);
     align-items: center;
     justify-self: center;
     gap: var(--puente);
@@ -3803,13 +3803,15 @@ const descripcion = m
       0 14px 28px -16px rgba(0, 0, 0, 0.35);
     transition: box-shadow var(--dur-3) var(--ease-out);
   }
-  /* Los códigos de un equipo ("DA 005 · DA 006 · DA 007") no se parten: la pompa se estira en cápsula */
-  .cifra.codigos {
-    width: auto;
-    min-width: var(--d);
-    padding-inline: 22px;
-  }
+  /* Los códigos de un equipo ("DA 005 · DA 006 · DA 007"): uno por línea, en pequeño, dentro de la misma pompa
+     redonda que las demás */
   .cifra.codigos .valor b {
+    font-size: 17px;
+    line-height: 1.2;
+    letter-spacing: 0;
+  }
+  .cifra.codigos .valor b span {
+    display: block;
     white-space: nowrap;
   }
   .cifra.llena {
@@ -4190,10 +4192,6 @@ const descripcion = m
     }
     .cifra + .cifra::before {
       display: none;
-    }
-    .cifra.codigos {
-      grid-column: 1 / -1;
-      justify-self: center;
     }
     .galeria .vista[data-tipo='3d'] {
       position: absolute;
