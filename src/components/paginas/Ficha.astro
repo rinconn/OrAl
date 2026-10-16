@@ -925,7 +925,17 @@ const descripcion = m
                     <figure class="eficacia">
                       <figcaption>{tf.destilacion.titulo}</figcaption>
                       <ul>
-                        {(Object.keys(destilacion) as (keyof typeof destilacion)[]).map((k, i) => (
+                        {(Object.keys(destilacion) as (keyof typeof destilacion)[]).flatMap((k, i) => [
+                          // La escala va a la izquierda de cada fila: en escritorio hay una, en móvil dos
+                          ...(i === 0 || i === 3
+                            ? [
+                                <li class:list={['escala', { segunda: i === 3 }]} aria-hidden="true">
+                                  {[3, 2, 1].map((n) => (
+                                    <span style={`--k: ${n}`}>{tf.destilacion.niveles[n - 1]}</span>
+                                  ))}
+                                </li>,
+                              ]
+                            : []),
                           <li style={`--n: ${destilacion[k]}; --i: ${i}`}>
                             <span class="probeta" aria-hidden="true">
                               <span class="agua">
@@ -934,8 +944,8 @@ const descripcion = m
                             </span>
                             <b>{tf.destilacion.niveles[destilacion[k] - 1]}</b>
                             <span>{tf.destilacion.filas[k]}</span>
-                          </li>
-                        ))}
+                          </li>,
+                        ])}
                       </ul>
                     </figure>
                   ) : (
@@ -2961,27 +2971,31 @@ const descripcion = m
   .aparte p {
     margin: 8px 0 0;
   }
-  /* Eficacia del destilado: una probeta por contaminante, con el agua hasta su nivel (un tercio, dos o llena) y la
-     superficie ondulando. El agua sube al llegar a la vista; con movimiento reducido ya está en su sitio y quieta */
+  /* Eficacia del destilado: una probeta graduada por contaminante, con el agua justo hasta su raya (un tercio, dos
+     tercios o llena). A la izquierda, la escala; sus tres líneas guía cruzan todas las probetas a la misma altura, así el
+     nivel se lee de un vistazo. El agua sube al llegar a la vista; con movimiento reducido ya está en su sitio y quieta */
   .eficacia {
+    --alto: 168px;
     margin: clamp(24px, 2.4vw, 32px) 0 0;
   }
   .eficacia figcaption {
-    margin-bottom: 18px;
+    margin-bottom: 22px;
     font-size: 15px;
     font-weight: 700;
     color: var(--ink);
   }
   .eficacia ul {
     display: grid;
-    grid-template-columns: repeat(6, minmax(0, 1fr));
-    gap: clamp(12px, 1.6vw, 24px);
-    max-width: 960px;
+    grid-template-columns: auto repeat(6, minmax(0, 1fr));
+    column-gap: clamp(12px, 1.6vw, 24px);
+    max-width: 1040px;
     margin: 0;
     padding: 0;
     list-style: none;
+    isolation: isolate;
   }
   .eficacia li {
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -2991,43 +3005,97 @@ const descripcion = m
     line-height: 1.35;
     color: var(--body);
   }
+  /* Las líneas guía: en cada columna y un poco más, para que se vean seguidas de la escala a la última probeta */
+  .eficacia li::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: calc(clamp(12px, 1.6vw, 24px) / -2 - 1px);
+    right: calc(clamp(12px, 1.6vw, 24px) / -2 - 1px);
+    z-index: -1;
+    height: var(--alto);
+    background:
+      linear-gradient(90deg, var(--steel) 50%, transparent 0) 0 0 / 6px 1px repeat-x,
+      linear-gradient(90deg, var(--steel) 50%, transparent 0) 0 calc(var(--alto) / 3) / 6px 1px repeat-x,
+      linear-gradient(90deg, var(--steel) 50%, transparent 0) 0 calc(var(--alto) * 2 / 3) / 6px 1px repeat-x;
+  }
+  .eficacia li:last-child::before {
+    right: 0;
+  }
   .eficacia li b {
-    margin-top: 10px;
+    margin-top: 12px;
     font-size: 17px;
     color: var(--ink);
   }
-  /* La probeta: cristal con graduación a un tercio y dos tercios y la boca abierta */
+  /* La escala: cada nivel a la altura de su línea */
+  .eficacia .escala {
+    width: 7.5em;
+    height: var(--alto);
+  }
+  .eficacia .escala::before {
+    left: 0;
+  }
+  .escala span {
+    position: absolute;
+    right: 8px;
+    top: calc((3 - var(--k)) / 3 * var(--alto));
+    padding: 0 0 0 4px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    color: var(--ink);
+    background: #fff;
+    translate: 0 -50%;
+  }
+  .eficacia .escala.segunda {
+    display: none;
+  }
+  /* La probeta: cristal con graduación (una raya corta cada doceavo y una larga en cada tercio), boca abierta y base */
   .probeta {
     --agua-1: #6fc3ef;
     --agua-2: #1d7fc1;
     position: relative;
-    width: 64px;
-    height: 132px;
+    width: min(64px, 100%);
+    height: var(--alto);
     overflow: hidden;
-    background:
-      linear-gradient(var(--steel), var(--steel)) right 0 top 33.33% / 12px 1px no-repeat,
-      linear-gradient(var(--steel), var(--steel)) right 0 top 66.66% / 12px 1px no-repeat,
-      linear-gradient(90deg, rgba(255, 255, 255, 0.9), #f3f6f8 45%, #e8edf0);
-    border: 1px solid #cdd5da;
+    background: linear-gradient(90deg, #fff, #f3f6f8 45%, #e8edf0);
+    border: 1px solid #b9c3c9;
     border-top: 0;
-    border-bottom: 3px solid #b9c3c9;
+    border-bottom: 3px solid #8f9aa1;
+  }
+  .probeta::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background:
+      linear-gradient(rgba(20, 40, 55, 0.55), rgba(20, 40, 55, 0.55)) right 0 top 0 / 22px 1px no-repeat,
+      linear-gradient(rgba(20, 40, 55, 0.55), rgba(20, 40, 55, 0.55)) right 0 top calc(var(--alto) / 3) / 22px 1px
+        no-repeat,
+      linear-gradient(rgba(20, 40, 55, 0.55), rgba(20, 40, 55, 0.55)) right 0 top calc(var(--alto) * 2 / 3) / 22px 1px
+        no-repeat,
+      repeating-linear-gradient(rgba(20, 40, 55, 0.35) 0 1px, transparent 1px calc(var(--alto) / 12)) right 0 top 0 /
+        9px 100% no-repeat;
+    pointer-events: none;
   }
   .agua {
     position: absolute;
     inset: auto 0 0;
-    height: calc(var(--n) * 33.33% - 6px);
+    height: calc(var(--n) / 3 * 100%);
     background: linear-gradient(var(--agua-1), var(--agua-2));
     transform-origin: bottom;
   }
-  /* La superficie: una ola que corre de lado a lado, del color de arriba del agua */
+  /* La superficie: una ola baja que corre de lado a lado; su línea media cae justo en la raya del nivel */
   .agua i {
     position: absolute;
     left: 0;
-    bottom: calc(100% - 1px);
+    bottom: calc(100% - 3px);
     width: 200%;
-    height: 8px;
-    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 8'%3E%3Cpath d='M0 4c8 0 8-4 16-4s8 4 16 4 8-4 16-4 8 4 16 4v4H0z' fill='%236fc3ef'/%3E%3C/svg%3E")
-      repeat-x 0 0 / 32px 8px;
+    height: 6px;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 6'%3E%3Cpath d='M0 3c8 0 8-3 16-3s8 3 16 3 8-3 16-3 8 3 16 3v3H0z' fill='%236fc3ef'/%3E%3C/svg%3E")
+      repeat-x 0 0 / 32px 6px;
   }
   @media (prefers-reduced-motion: no-preference) {
     .eficacia .agua {
@@ -3038,22 +3106,37 @@ const descripcion = m
       transform: scaleY(1);
     }
     .agua i {
-      animation: ola 2.6s linear infinite;
+      animation: ola-probeta 2.6s linear infinite;
     }
-    .eficacia li:nth-child(even) .agua i {
+    .eficacia li:nth-child(odd) .agua i {
       animation-duration: 3.4s;
       animation-direction: reverse;
     }
   }
-  @keyframes ola {
+  @keyframes ola-probeta {
     to {
       translate: -32px 0;
     }
   }
   @media (max-width: 760px) {
+    .eficacia {
+      --alto: 132px;
+    }
     .eficacia ul {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      row-gap: 28px;
+      grid-template-columns: auto repeat(3, minmax(0, 1fr));
+      row-gap: 32px;
+    }
+    .eficacia .escala.segunda {
+      display: flex;
+    }
+    .eficacia .escala {
+      width: 6.2em;
+    }
+    .eficacia li {
+      font-size: 14px;
+    }
+    .escala span {
+      font-size: 11px;
     }
   }
   .ref-foto {
