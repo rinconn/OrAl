@@ -502,7 +502,7 @@ export const fr: Textos = {
       galeria: {
         foto: 'Photo',
         detalle: 'Détail',
-        tresD: 'Voir en 3D',
+        todas: 'Voir toutes les photos',
         anterior: 'Vue précédente',
         siguiente: 'Vue suivante',
         ampliar: 'Voir en plein écran',

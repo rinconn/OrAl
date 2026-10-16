@@ -12,7 +12,6 @@ import { existsSync } from 'node:fs';
 import Base from '../../layouts/Base.astro';
 import Maquina from '../Maquina.astro';
 import Tarjeta from '../Tarjeta.astro';
-import Visor3D from '../Visor3D.astro';
 import IconoTemp from '../ui/IconoTemp.astro';
 import { familias, modelos, productos, type Modelo } from '../../data/productos';
 import { accesorios, equipos, type ProductoLab } from '../../data/laboratorio';
@@ -74,19 +73,22 @@ const rotores = (web?.rotores ?? []).map(rotor);
 const versiones = web?.versiones ?? [];
 const deAccesorios = [...accesorios].filter((a) => web?.accesorios.includes(a.slug));
 
-// Galería: la máquina entera, su foto de detalle (la de la gama, si es de esta versión), sus rotores y el 3D
-type Vista = { tipo: 'maquina' | 'detalle' | 'rotor' | '3d'; src: string; nombre: string };
+// Galería: la máquina entera, su foto de detalle (la de la gama, si es de esta versión) y sus rotores
+type Vista = { tipo: 'maquina' | 'detalle' | 'rotor'; src: string; nombre: string };
 const tg = tf.galeria;
-const conVisor = m?.slug === 'digicen-22';
 const gamaPropia = !!m && existsSync(`${process.cwd()}/public/img/gama/${m.slug}.webp`);
 const detalle = m && (gamaPropia || m.slug === m.serie) ? `/img/gama/${m.slug}.webp` : undefined;
 const vistas = [
-  conVisor && { tipo: '3d', src: imagen.src, nombre: tg.tresD },
   { tipo: 'maquina', src: imagen.src, nombre: tg.foto },
   detalle && { tipo: 'detalle', src: detalle, nombre: tg.detalle },
   p?.imagen2 && { tipo: 'detalle', src: p.imagen2.src, nombre: tg.detalle },
   ...rotores.filter((r) => r.imagen).map((r) => ({ tipo: 'rotor', src: r.imagen!, nombre: r.nombre })),
 ].filter(Boolean) as Vista[];
+// Con muchas vistas (los modelos con una docena de rotores) la tira no crece: enseña las primeras y una casilla "+N"
+// que abre todas a pantalla completa. Las demás siguen en la galería (flechas, deslizar), solo sin miniatura
+const MAX_MINIS = 6;
+const minisVisibles = vistas.length > MAX_MINIS ? MAX_MINIS - 1 : vistas.length;
+const minisFuera = vistas.length - minisVisibles;
 
 // ——— Tabla de la cabecera ———
 // Rotores: cuántos y de qué tipo ("13 angulares y oscilantes")
@@ -377,9 +379,7 @@ const descripcion = m
                 role="tabpanel"
                 aria-label={v.tipo === 'maquina' ? nombre : v.nombre}
               >
-                {v.tipo === '3d' ? (
-                  <Visor3D />
-                ) : v.tipo === 'maquina' ? (
+                {v.tipo === 'maquina' ? (
                   <span class="pieza">
                     <span class="contacto" aria-hidden="true"></span>
                     <img
@@ -444,13 +444,21 @@ const descripcion = m
                   aria-controls={`vista-${i}`}
                   aria-selected={i === 0 ? 'true' : 'false'}
                   tabindex={i === 0 ? 0 : -1}
+                  hidden={i >= minisVisibles}
                 >
                   <span class="mini-foto">
-                    {v.tipo === '3d' ? <b>3D</b> : <img src={v.src} alt="" width="120" height="100" decoding="async" />}
+                    <img src={v.src} alt="" width="120" height="100" decoding="async" />
                   </span>
                   <span class="mini-nombre">{v.nombre}</span>
                 </button>
               ))}
+              {minisFuera > 0 && (
+                <button type="button" class="mini mini-todas" aria-label={`${tg.todas} (${vistas.length})`}>
+                  <span class="mini-foto">
+                    <b>+{minisFuera}</b>
+                  </span>
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -1097,7 +1105,11 @@ const descripcion = m
   const escaparate = document.querySelector<HTMLElement>('.escaparate');
   const escena = document.querySelector<HTMLElement>('.escena');
   const tira = document.querySelector<HTMLElement>('.miniaturas');
-  const minis = [...document.querySelectorAll<HTMLButtonElement>('.miniaturas .mini')];
+  const minis = [...document.querySelectorAll<HTMLButtonElement>('.miniaturas .mini:not(.mini-todas)')];
+  const botonTodas = document.querySelector<HTMLButtonElement>('.miniaturas .mini-todas');
+  // Las vistas sin miniatura las representa la casilla "+N": el indicador se queda en ella y el foco va a ella
+  const nVisibles = minis.filter((x) => !x.hidden).length;
+  const mini = (i: number) => (minis[i].hidden && botonTodas ? botonTodas : minis[i]);
   const vistas = [...document.querySelectorAll<HTMLElement>('.escena .vista')];
   const dos = (n: number) => String(n).padStart(2, '0');
   const deslizar = matchMedia('(max-width: 760px)');
@@ -1110,7 +1122,8 @@ const descripcion = m
       x.setAttribute('aria-selected', String(j === iVista));
       x.tabIndex = j === iVista ? 0 : -1;
     });
-    tira?.style.setProperty('--sel', String(iVista));
+    if (botonTodas) botonTodas.toggleAttribute('data-dentro', iVista >= nVisibles);
+    tira?.style.setProperty('--sel', String(Math.min(iVista, nVisibles)));
     escaparate?.setAttribute('data-vista', vistas[iVista].dataset.tipo!);
     if (deslizar.matches && escena && !desdeScroll) {
       escena.scrollTo({ left: iVista * escena.clientWidth, behavior: quieto.matches ? 'auto' : 'smooth' });
@@ -1123,7 +1136,7 @@ const descripcion = m
       if (!j) return;
       e.preventDefault();
       verVista(i + j);
-      minis[iVista].focus();
+      mini(iVista).focus();
     });
   });
   // Al deslizar, la vista que queda centrada pasa a ser la elegida
@@ -1248,10 +1261,10 @@ const descripcion = m
     vigia.observe(franja);
   }
 
-  // Pantalla completa: solo las fotos (el 3D tiene su propio visor). Clic en la foto para acercar donde se pulsa
+  // Pantalla completa: todas las fotos, con flechas. Clic en la foto para acercar donde se pulsa
   const visor = document.querySelector<HTMLDialogElement>('.visor-foto');
   if (escena && visor) {
-    const fotos = vistas.filter((v) => v.dataset.tipo !== '3d');
+    const fotos = vistas;
     const img = visor.querySelector('img')!;
     const pie = visor.querySelector('figcaption b')!;
     const lbCuenta = visor.querySelector('.lb-cuenta')!;
@@ -1272,6 +1285,11 @@ const descripcion = m
       visor.showModal();
     };
     document.querySelector('.ampliar')?.addEventListener('click', abrir);
+    // "+N": a pantalla completa desde la primera foto sin miniatura (o desde la que se está viendo, si ya es una de ellas)
+    botonTodas?.addEventListener('click', () => {
+      verFoto(iVista >= nVisibles ? iVista : nVisibles);
+      visor.showModal();
+    });
     for (const f of fotos) f.querySelector('img')!.addEventListener('click', abrir);
     for (const b of visor.querySelectorAll<HTMLButtonElement>('.lb-paso')) {
       b.hidden = fotos.length < 2;
@@ -1666,7 +1684,7 @@ const descripcion = m
     color: var(--ink);
   }
 
-  .vista:not([data-tipo='3d']) img {
+  .vista img {
     cursor: zoom-in;
   }
   /* Mandos del escenario: ampliar arriba a la derecha y, abajo, flechas con el contador entre ellas */
@@ -1737,15 +1755,6 @@ const descripcion = m
   }
   .cuenta b {
     color: var(--ink);
-  }
-  /* El 3D trae sus propios mandos abajo: los de la galería se apartan */
-  .escena[data-vista='3d'] .ampliar {
-    opacity: 0;
-    pointer-events: none;
-  }
-  .escena[data-vista='3d'] .mandos {
-    top: 16px;
-    bottom: auto;
   }
 
   /* Pantalla completa */
@@ -3092,15 +3101,6 @@ const descripcion = m
     }
   }
   @media (max-width: 1000px) {
-    .vista[data-tipo='3d'] {
-      position: relative;
-    }
-    .escena[data-vista='3d'] .mandos {
-      display: none;
-    }
-    .escena:has(.vista[data-tipo='3d']:not([hidden])) {
-      aspect-ratio: auto;
-    }
     .bloques {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
@@ -3622,7 +3622,7 @@ const descripcion = m
     background: rgba(0, 0, 0, 0.07);
     filter: blur(14px);
   }
-  .vista:not([data-tipo='3d']) img {
+  .vista img {
     cursor: zoom-in;
   }
   /* Detalle y rotores: en el mismo estudio, sin recuadro (el blanco de su foto se funde con el fondo) */
@@ -3633,18 +3633,6 @@ const descripcion = m
     max-width: 100%;
     object-fit: contain;
     mix-blend-mode: multiply;
-  }
-  .galeria .vista[data-tipo='3d'] {
-    display: flex;
-    max-width: 900px;
-    margin-inline: auto;
-    padding: var(--sp-4);
-    color: #fff;
-    background: var(--carbon);
-  }
-  .vista[data-tipo='3d'] > :global(.visor) {
-    flex: 1;
-    min-height: 0;
   }
   .pie-vista {
     position: absolute;
@@ -3671,9 +3659,6 @@ const descripcion = m
   .galeria .ampliar:hover {
     color: #fff;
     background: var(--red);
-  }
-  .escaparate[data-vista='3d'] .ampliar {
-    visibility: hidden;
   }
 
   /* Miniaturas: una fila centrada bajo la máquina; el indicador rojo se desliza a la elegida (--sel lo pone el script) */
@@ -3728,9 +3713,6 @@ const descripcion = m
   .mini[aria-selected='true'] .mini-foto {
     border-color: var(--ink);
   }
-  .mini[data-tipo='3d'] .mini-foto {
-    background: var(--carbon);
-  }
   .mini-foto img {
     width: 100%;
     height: 100%;
@@ -3741,9 +3723,24 @@ const descripcion = m
     padding: 0;
     object-fit: cover;
   }
-  .mini-foto b {
-    font-size: 16px;
+  .mini[hidden] {
+    display: none;
+  }
+  /* "+N": una casilla de tinta con la cuenta de las vistas que no tienen miniatura */
+  .mini-todas .mini-foto {
+    background: var(--ink);
+    border-color: var(--ink);
+    opacity: 1;
+  }
+  .mini-todas .mini-foto b {
+    font-size: 20px;
+    font-weight: 700;
     color: #fff;
+    font-variant-numeric: tabular-nums;
+  }
+  .mini-todas:hover .mini-foto {
+    background: var(--red);
+    border-color: var(--red);
   }
   .mini-nombre {
     position: absolute;
@@ -4195,9 +4192,6 @@ const descripcion = m
       grid-column: 1 / -1;
       justify-self: center;
     }
-    .galeria .vista[data-tipo='3d'] {
-      position: absolute;
-    }
   }
 
   /* ——— 390: la máquina primero (deslizable con imán), luego el nombre y el pedido, la hoja de cifras ——— */
@@ -4226,10 +4220,6 @@ const descripcion = m
       flex: 0 0 100%;
       display: grid;
       scroll-snap-align: start;
-    }
-    .galeria .vista[data-tipo='3d'] {
-      position: relative;
-      display: flex;
     }
     .galeria {
       order: -2;
@@ -4272,6 +4262,21 @@ const descripcion = m
     .mini[aria-selected='true']::before {
       background: var(--ink);
       scale: 1.3;
+    }
+    .mini-todas::before {
+      display: none;
+    }
+    .mini-todas .mini-foto {
+      display: grid;
+      background: none;
+      border: 0;
+    }
+    .mini-todas .mini-foto b {
+      font-size: 14px;
+      color: var(--ink);
+    }
+    .mini-todas[data-dentro] .mini-foto b {
+      color: var(--red);
     }
     .franja {
       grid-template-columns: repeat(2, var(--d));

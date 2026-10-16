@@ -1504,3 +1504,20 @@ Las familias pasan a grafito y el rojo de la marca marca dónde empieza cada una
   textos cortados. En escritorio la tabla no cambia.
 - **Descartado:** dejar la tabla con scroll lateral y una sombra que lo indique (sigue escondiendo la mitad de los
   datos), los datos en una sola columna (cada versión ocupaba el doble de alto) y dos columnas (tres filas de datos por versión en vez de dos).
+
+## 40. La galería de la ficha: sin 3D y con las fotos que sobran recogidas
+
+- **Problema:** la Digicen 22 era la única ficha que abría con el 3D en un panel oscuro, con su propia barra, y no se
+  parecía a las demás. Y en los modelos con muchos rotores la tira de miniaturas no tenía tope: 18 casillas en la
+  Digicen 22 que cruzaban la página y tapaban la temperatura y las referencias; en móvil, 18 puntos que no cabían.
+- **Ahora:** la Digicen 22 empieza por su foto, como todas. La tira tiene seis casillas como mucho: con más vistas,
+  las cinco primeras y una casilla de tinta con «+12» que abre la pantalla completa en la primera foto que no se ve,
+  con flechas para recorrerlas todas. Las demás siguen en la galería (teclado y deslizar en móvil), y cuando se ve
+  una de ellas el indicador rojo se queda bajo «+N». En móvil, cinco puntos y «+12». Vale para las 13 fichas con
+  muchas vistas; las demás no cambian.
+- **Por qué:** lo primero que mira el distribuidor (nombre, temperatura, referencias) no queda tapado por fotos de
+  rotores que ya están en Compatibilidad, y todas las fichas se ven igual. Las fotos siguen a un clic.
+- **Descartado:** tira con scroll lateral (esconde a medias y no dice cuántas hay), desplegar todas al pulsar «+N»
+  (vuelve a tapar la tarjeta), quitar los rotores de la galería (son las únicas fotos reales de muchas máquinas) y
+  dejar el 3D como una miniatura más (otra vez un panel distinto en un solo modelo). Ver la decisión
+  [0014](decisiones/0014-galeria-sin-3d-y-miniaturas-contadas.md).

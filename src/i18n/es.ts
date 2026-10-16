@@ -511,7 +511,7 @@ export const es = {
       galeria: {
         foto: 'Foto',
         detalle: 'Detalle',
-        tresD: 'Ver en 3D',
+        todas: 'Ver todas las fotos',
         anterior: 'Vista anterior',
         siguiente: 'Vista siguiente',
         ampliar: 'Ver a pantalla completa',
