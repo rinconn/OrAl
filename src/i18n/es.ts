@@ -504,6 +504,10 @@ export const es = {
         zMax: 'Z máx.',
         calefaccion: 'Calefacción',
         sinDatos: 'Datos bajo consulta',
+        produccion: 'Producción',
+        agua: 'Agua de refrigeración',
+        para: 'Para centrífugas',
+        cambia: 'En negro, lo que cambia de una versión a otra; en gris, lo que es igual en todas.',
       },
       accesorios: 'Accesorios para este modelo',
       mas: 'Más de',
@@ -529,6 +533,20 @@ export const es = {
       verMenos: 'Ver menos',
       caracteristicas: 'Características',
       normas: 'Normas y directivas comunitarias',
+      accesoriosEquipo: 'Accesorios',
+      descripcion: 'Descripción',
+      destilacion: {
+        titulo: 'Eficacia de la destilación',
+        filas: {
+          pirogenos: 'Pirógenos y virus',
+          bacterias: 'Bacterias',
+          particulas: 'Partículas',
+          solidos: 'Sólidos inorgánicos disueltos',
+          gases: 'Gases inorgánicos disueltos',
+          organicos: 'Compuestos orgánicos disueltos',
+        },
+        niveles: ['Baja', 'Óptima', 'Excelente'],
+      },
       compat: {
         titulo: '¿Qué rotor admite el tubo de tu cliente?',
         intro: (n: number): string =>
