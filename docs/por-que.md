@@ -1504,3 +1504,24 @@ Las familias pasan a grafito y el rojo de la marca marca dónde empieza cada una
   textos cortados. En escritorio la tabla no cambia.
 - **Descartado:** dejar la tabla con scroll lateral y una sombra que lo indique (sigue escondiendo la mitad de los
   datos), los datos en una sola columna (cada versión ocupaba el doble de alto) y dos columnas (tres filas de datos por versión en vez de dos).
+
+## 40. Descargas: un portal con todos los catálogos y un QR por PDF
+
+- **Problema:** «Descargas» estaba en la cabecera pero daba un 404. Los catálogos en PDF existían, pero cada uno
+  solo dentro de la ficha de su producto: para mandar tres había que abrir tres fichas, y no se veía si un PDF era
+  reciente ni en qué idiomas estaba.
+- **Ahora:** `/descargas/` reúne los 20 PDF que ya publica ortoalresa.com (17 series en español e inglés y 3
+  equipos de laboratorio en español). Arriba, cuántos hay y un QR de la propia página para abrirla en el móvil.
+  Debajo, en grande, los actualizados en el último año; después, todos por familia con buscador y filtros, cada uno
+  con su fecha, el botón de cada idioma con su peso y su QR. El QR se abre en una ventana, cambia de idioma, se
+  descarga en PNG con el nombre debajo (para imprimirlo y pegarlo junto a la máquina) y deja copiar el enlace. Al
+  final, a quién pedir un documento que no esté.
+- **Datos:** nada a mano. La lista sale de los mismos PDF que enlaza cada ficha; la fecha (última subida del
+  archivo) y el peso, de la propia web actual con `node scripts/importar-descargas.mjs`, que guarda
+  `src/data/descargas.json`. Se vuelve a ejecutar cuando la empresa suba catálogos nuevos y «reciente» se
+  recalcula solo. El número de los nombres de archivo («_22», «_24») es el del modelo, no el año de la edición, así
+  que no se usa como fecha.
+- **Pendiente (dato de origen):** el PDF del Catálogo General 2025; cuando lo pase la empresa, irá destacado arriba.
+- **Descartado:** fechas o ediciones escritas a mano (se quedan viejas), pintar en la página un QR por cada PDF
+  (pesa; se generan solo al abrir la ventana) y llevar los antiguos a otra página (con 20 documentos basta con
+  destacar los recientes).
