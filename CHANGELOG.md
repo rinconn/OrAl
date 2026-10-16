@@ -86,7 +86,7 @@ Hasta que se publique la web, todo va en "Sin publicar"; al publicar se cierra l
   enlace "Saltar al contenido"; enlaces centralizados en `src/data/navegacion.ts`. (#3)
 - Entorno en GitHub Codespaces: se abre, instala y arranca la web solo; vista previa en `*.app.github.dev`. (#2)
 - Base de calidad: comprobación automática en cada PR (formato, lint, tipos y build), sitemap, página 404,
-  `robots.txt`, cabeceras de seguridad y caché, y normas del proyecto en `CLAUDE.md`. (#1)
+  `robots.txt`, cabeceras de seguridad y caché. (#1)
 - Portada nueva con la marca de Orto Alresa: titular, cifras, gama con filtro, tecnología, distribuidores,
   empresa y aplicaciones, con notas "antes y después" para la presentación.
 
