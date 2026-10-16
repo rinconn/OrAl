@@ -1,6 +1,6 @@
 # 0009 · Una ficha por producto con los datos de la web actual, y la Digicen 22 en 3D
 
-- **Estado:** Aceptada
+- **Estado:** Aceptada (el 3D en la ficha: sustituido por [0014](0014-galeria-sin-3d-y-miniaturas-contadas.md))
 - **Fecha:** 2026-10-06
 - **Completa a:** [0008](0008-catalogo-en-pagina-propia.md) (el catálogo sigue en `/centrifugas/`; ahora cada producto tiene además su página)
 

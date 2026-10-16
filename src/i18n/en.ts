@@ -501,7 +501,7 @@ export const en: Textos = {
       galeria: {
         foto: 'Photo',
         detalle: 'Close-up',
-        tresD: 'View in 3D',
+        todas: 'See all photos',
         anterior: 'Previous view',
         siguiente: 'Next view',
         ampliar: 'View full screen',

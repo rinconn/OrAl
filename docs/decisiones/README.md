@@ -17,8 +17,9 @@ Así, dentro de un año, nadie tiene que adivinar por qué la web es como es.
 | 0006 | [Datos solo de fuentes oficiales, validados al compilar](0006-datos-oficiales-validados.md)                            | Aceptada               | 2026-09-28 |
 | 0007 | [La gama se agrupa por uso, con un color por familia](0007-gama-por-uso.md)                                            | Aceptada (color: 0013) | 2026-09-29 |
 | 0008 | [El catálogo sale de la portada a su propia página](0008-catalogo-en-pagina-propia.md)                                 | Aceptada               | 2026-10-02 |
-| 0009 | [Una ficha por producto con los datos de la web actual, y la Digicen 22 en 3D](0009-fichas-de-producto-y-modelo-3d.md) | Aceptada               | 2026-10-06 |
+| 0009 | [Una ficha por producto con los datos de la web actual, y la Digicen 22 en 3D](0009-fichas-de-producto-y-modelo-3d.md) | Aceptada (3D: 0014)    | 2026-10-06 |
 | 0010 | [Los PDF del catálogo se generan con jsPDF, en Helvetica](0010-pdf-generado-con-jspdf.md)                              | Aceptada               | 2026-10-08 |
 | 0011 | [En móvil, el 3D arriba y compacto, y el catálogo asomando en la primera pantalla](0011-movil-3d-compacto.md)          | Aceptada               | 2026-10-13 |
 | 0012 | [Las referencias y los rotores de cada centrífuga salen del CRM](0012-rotores-y-referencias-del-crm.md)                | Aceptada               | 2026-10-14 |
 | 0013 | [Las familias, sin color propio: grafito y el rojo de la marca](0013-familias-sin-color-propio.md)                     | Aceptada               | 2026-10-14 |
+| 0014 | [La galería de la ficha, sin 3D y con seis miniaturas como mucho](0014-galeria-sin-3d-y-miniaturas-contadas.md)        | Aceptada               | 2026-10-16 |
