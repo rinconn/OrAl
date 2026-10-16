@@ -1,0 +1,154 @@
+{
+  "fuente": "ortoalresa.com (cabeceras de cada PDF)",
+  "fecha": "2026-10-16",
+  "archivos": {
+    "https://ortoalresa.com/catalogo_producto/Catalogo_Biocen_22_ESP.pdf": {
+      "fecha": "2025-05-29",
+      "bytes": 519053
+    },
+    "https://ortoalresa.com/catalogo_producto/Catalogo_Biocen_22_R_ESP.pdf": {
+      "fecha": "2025-05-29",
+      "bytes": 1125338
+    },
+    "https://ortoalresa.com/catalogo_producto/Catalogo_Bioprocen_22_R_ESP.pdf": {
+      "fecha": "2025-05-29",
+      "bytes": 867199
+    },
+    "https://ortoalresa.com/catalogo_producto/Catalogo_Cyto_22_ESP.pdf": {
+      "fecha": "2026-01-27",
+      "bytes": 1454468
+    },
+    "https://ortoalresa.com/catalogo_producto/Catalogo_Digtor_22_Col_ESP.pdf": {
+      "fecha": "2025-02-25",
+      "bytes": 936899
+    },
+    "https://ortoalresa.com/catalogo_producto/Catalogo_Dilitcen_22_R_ESP.pdf": {
+      "fecha": "2025-05-29",
+      "bytes": 868682
+    },
+    "https://ortoalresa.com/catalogo_producto/Catalogo_Lacter_21_ESP.pdf": {
+      "fecha": "2025-02-25",
+      "bytes": 922961
+    },
+    "https://ortoalresa.com/catalogo_producto/Catalogo_Microcen_24_ESP.pdf": {
+      "fecha": "2025-05-29",
+      "bytes": 512465
+    },
+    "https://ortoalresa.com/catalogo_producto/Catalogo_Minicen_ESP.pdf": {
+      "fecha": "2025-05-29",
+      "bytes": 576866
+    },
+    "https://ortoalresa.com/catalogo_producto/Catalogo_Plasma_22_ESP.pdf": {
+      "fecha": "2025-02-25",
+      "bytes": 993340
+    },
+    "https://ortoalresa.com/catalogo_producto/Catalogo_Unicen_21_ESP.pdf": {
+      "fecha": "2026-09-29",
+      "bytes": 4457761
+    },
+    "https://ortoalresa.com/catalogo_producto/Catalogo_Vetcen_ESP.pdf": {
+      "fecha": "2025-02-25",
+      "bytes": 1020636
+    },
+    "https://ortoalresa.com/catalogo_producto/Catalogo_serie_Consul_22_ESP.pdf": {
+      "fecha": "2025-05-29",
+      "bytes": 1098182
+    },
+    "https://ortoalresa.com/catalogo_producto/Catalogo_serie_Digicen_22_ESP.pdf": {
+      "fecha": "2026-06-10",
+      "bytes": 2644252
+    },
+    "https://ortoalresa.com/catalogo_producto/Catalogo_serie_Digtor_22_C_ESP.pdf": {
+      "fecha": "2025-02-25",
+      "bytes": 1783811
+    },
+    "https://ortoalresa.com/catalogo_producto/Catalogo_serie_Digtor_22_ESP.pdf": {
+      "fecha": "2025-05-29",
+      "bytes": 1129602
+    },
+    "https://ortoalresa.com/catalogo_producto/Catalogo_serie_Magnus_22_ESP.pdf": {
+      "fecha": "2026-06-10",
+      "bytes": 986294
+    },
+    "https://ortoalresa.com/catalogo_producto/Catalogue_Biocen_22_ENG.pdf": {
+      "fecha": "2025-05-29",
+      "bytes": 517897
+    },
+    "https://ortoalresa.com/catalogo_producto/Catalogue_Biocen_22_R_ENG.pdf": {
+      "fecha": "2025-05-29",
+      "bytes": 1126275
+    },
+    "https://ortoalresa.com/catalogo_producto/Catalogue_Bioprocen_22_R_ENG.pdf": {
+      "fecha": "2025-05-29",
+      "bytes": 866988
+    },
+    "https://ortoalresa.com/catalogo_producto/Catalogue_Cyto_22_ENG.pdf": {
+      "fecha": "2026-01-27",
+      "bytes": 1448859
+    },
+    "https://ortoalresa.com/catalogo_producto/Catalogue_Digtor_22_Col_ENG.pdf": {
+      "fecha": "2025-02-25",
+      "bytes": 936077
+    },
+    "https://ortoalresa.com/catalogo_producto/Catalogue_Dilitcen_22_R_ENG.pdf": {
+      "fecha": "2025-05-29",
+      "bytes": 867650
+    },
+    "https://ortoalresa.com/catalogo_producto/Catalogue_Lacter_21_ENG.pdf": {
+      "fecha": "2025-02-25",
+      "bytes": 913544
+    },
+    "https://ortoalresa.com/catalogo_producto/Catalogue_Microcen_24_ENG.pdf": {
+      "fecha": "2025-12-22",
+      "bytes": 919267
+    },
+    "https://ortoalresa.com/catalogo_producto/Catalogue_Minicen_ENG.pdf": {
+      "fecha": "2025-05-29",
+      "bytes": 575757
+    },
+    "https://ortoalresa.com/catalogo_producto/Catalogue_Plasma_22_ENG.pdf": {
+      "fecha": "2025-02-25",
+      "bytes": 992476
+    },
+    "https://ortoalresa.com/catalogo_producto/Catalogue_Unicen_21_ENG.pdf": {
+      "fecha": "2026-09-29",
+      "bytes": 4444933
+    },
+    "https://ortoalresa.com/catalogo_producto/Catalogue_Vetcen_ENG.pdf": {
+      "fecha": "2025-02-25",
+      "bytes": 1019472
+    },
+    "https://ortoalresa.com/catalogo_producto/Catalogue_series_Consul_22_ENG.pdf": {
+      "fecha": "2025-05-29",
+      "bytes": 1097752
+    },
+    "https://ortoalresa.com/catalogo_producto/Catalogue_series_Digicen_22_ENG.pdf": {
+      "fecha": "2026-06-10",
+      "bytes": 2641762
+    },
+    "https://ortoalresa.com/catalogo_producto/Catalogue_series_Digtor_22_C_ENG.pdf": {
+      "fecha": "2025-02-25",
+      "bytes": 1784237
+    },
+    "https://ortoalresa.com/catalogo_producto/Catalogue_series_Digtor_22_ENG.pdf": {
+      "fecha": "2025-05-29",
+      "bytes": 1135605
+    },
+    "https://ortoalresa.com/catalogo_producto/Catalogue_series_Magnus_22_ENG.pdf": {
+      "fecha": "2025-05-29",
+      "bytes": 925338
+    },
+    "https://wp.ortoalresa.com/wp-content/uploads/2020/10/destiladores.pdf": {
+      "fecha": "2020-11-10",
+      "bytes": 703548
+    },
+    "https://wp.ortoalresa.com/wp-content/uploads/2020/10/molinodebolas.pdf": {
+      "fecha": "2020-10-27",
+      "bytes": 704783
+    },
+    "https://wp.ortoalresa.com/wp-content/uploads/2020/10/tamizadora.pdf": {
+      "fecha": "2020-10-27",
+      "bytes": 829522
+    }
+  }
+}

@@ -14,10 +14,11 @@ import Maquina from '../Maquina.astro';
 import Tarjeta from '../Tarjeta.astro';
 import IconoTemp from '../ui/IconoTemp.astro';
 import { familias, modelos, productos, type Modelo } from '../../data/productos';
-import { accesorios, equipos, type ProductoLab } from '../../data/laboratorio';
+import { accesorios, destilacion, equipos, type ProductoLab } from '../../data/laboratorio';
 import {
   cifra,
   fichaCentrifuga,
+  esCodigo,
   fichaLab,
   medida,
   rotor,
@@ -45,7 +46,8 @@ const p: ProductoLab | undefined = [...accesorios, ...equipos].find((x) => x.slu
 
 // Lo común a centrífugas y equipos
 const web = m ? fichaCentrifuga(m.slug) : undefined;
-const txt: TextosFicha | undefined = web?.textos[lang] ?? (p ? fichaLab(p.slug)?.[lang] : undefined);
+const lab = p ? fichaLab(p.slug)?.[lang] : undefined;
+const txt: TextosFicha | undefined = web?.textos[lang] ?? lab;
 const nombre = m ? m.nombre : t.laboratorio.items[p!.slug].nombre;
 const cat = m ? t.catalogo.categorias[m.categoria] : esAccesorio ? t.laboratorio.accesorios : t.laboratorio.equipos;
 const catClave = m ? m.categoria : esAccesorio ? 'accesorios' : 'laboratorio';
@@ -70,7 +72,7 @@ const versionPorTemp =
 const etiquetaVersion = (x: Modelo) =>
   versionPorTemp ? may(t.temperatura[x.temperatura]) : x.nombre.replace(/^.* (?=\S+$)/, '');
 const rotores = (web?.rotores ?? []).map(rotor);
-const versiones = web?.versiones ?? [];
+const versiones = web?.versiones ?? lab?.versiones ?? [];
 const deAccesorios = [...accesorios].filter((a) => web?.accesorios.includes(a.slug));
 
 // Galería: la máquina entera, su foto de detalle (la de la gama, si es de esta versión) y sus rotores
@@ -164,20 +166,28 @@ const listaOpciones = [...opciones.values()].sort(
 const conTipos = listaOpciones.filter((o) => o.tipos.length > 1);
 
 // ——— Referencias: columnas de la tabla de versiones, solo las que tienen algún dato ———
-const columnas = (['medidas', 'peso', 'voltaje', 'frecuencia', 'consumo', 'zMax', 'calefaccion'] as const).filter((k) =>
-  versiones.some((v) => v[k]),
-);
+const columnas = (
+  ['medidas', 'peso', 'voltaje', 'frecuencia', 'consumo', 'produccion', 'agua', 'zMax', 'calefaccion', 'para'] as const
+).filter((k) => versiones.some((v) => v[k]));
 const unidades: Record<(typeof columnas)[number], string> = {
   medidas: ' mm',
   peso: ' kg',
   voltaje: ' V',
   frecuencia: ' Hz',
   consumo: ' W',
+  produccion: ' l/h',
+  agua: ' l/h',
   zMax: '',
   calefaccion: '',
+  para: '',
 };
 const valor = (k: (typeof columnas)[number], v?: string) =>
   v ? (k === 'medidas' ? v.replace(/x/g, ' × ') : v) + unidades[k] : '—';
+// Lo que cambia de una versión a otra (en los destiladores, el voltaje y la producción) se resalta; lo que es igual
+// en todas queda en gris
+const cambian = new Set(
+  versiones.length > 1 ? columnas.filter((k) => new Set(versiones.map((v) => v[k] ?? '')).size > 1) : [],
+);
 
 // Datos técnicos: el primer párrafo a la vista y el resto tras "Leer más"
 // Los párrafos seguidos que empiezan por "• " son una lista (las funciones del GRS)
@@ -193,7 +203,28 @@ const restoTexto = restoLineas.reduce<(string | string[])[]>((acc, d) => {
 type BloqueFicha = NonNullable<typeof txt>['bloques'][number];
 // Los bloques con tablas o fotos (versiones, referencias, accesorios) van en Referencias, como tablas de verdad
 const esReferencia = (b: BloqueFicha) => Boolean(b.tablas?.length || b.imagenes?.length);
-const refBloques = txt?.bloques.filter(esReferencia) ?? [];
+// Un bloque de tablas que además trae un apartado con título propio ("Purificación del agua", tras la tabla de
+// accesorios de los destiladores) se parte: las tablas se quedan en Referencias y el apartado va a Datos técnicos.
+// El título es la línea corta justo antes del primer párrafo; lo que hay antes son restos de la tabla ("Description"
+// suelto en francés) y no se enseña
+const conApartado = (b: BloqueFicha) => {
+  const i = b.puntos.findIndex((pt) => pt.t.length >= 60) - 1;
+  return b.tablas?.length && i >= 0 && !b.puntos[i].punto && b.puntos[i].t.length < 60 ? i : -1;
+};
+const apartesDatos = (txt?.bloques ?? [])
+  .filter((b) => esReferencia(b) && conApartado(b) >= 0)
+  .map((b) => {
+    const i = conApartado(b);
+    return { titulo: b.puntos[i].t, parrafos: b.puntos.slice(i + 1).map((pt) => pt.t), imagenes: b.imagenes ?? [] };
+  });
+const refBloques = (txt?.bloques.filter(esReferencia) ?? []).map((b) =>
+  conApartado(b) >= 0 ? { ...b, puntos: [], imagenes: [] } : b,
+);
+// La foto de la eficacia del destilado se cambia por su tabla, con los mismos datos, en cada idioma
+const esFotoDestilacion = (src: string) => /destil/i.test(src);
+// Tabla de dos columnas con códigos (accesorios de los destiladores): su cabecera, la nuestra
+const esCodigoYTexto = (t: NonNullable<BloqueFicha['tablas']>[number]) =>
+  t.filas.length > 0 && t.filas.every((f) => f.length === 2 && esCodigo(f[0].t));
 // Cada bloque va en su tarjeta; los de normas (solo líneas sin viñeta) quedan fuera, como una línea de texto bajo
 // las tarjetas. Una tarjeta sin ningún punto con texto no se enseña
 const esNormas = (b: BloqueFicha) =>
@@ -221,12 +252,15 @@ const normas = bloquesNormas.length && {
 const VISIBLES = 4;
 const cuenta = (b: (typeof tarjetas)[number]) => b.puntos.filter((pt) => pt.punto || pt.sub).length;
 // Datos técnicos solo si hay algo que enseñar: texto, alguna tarjeta o las normas
-const hayDatos = Boolean(entrada || tarjetas.length || normas);
-// En las tablas de la web actual, los códigos ("CP 007", "PI 226") se copian con un clic, como en las versiones
-const esCodigo = (s: string) => /^[A-Z]{2,3} ?\d{3}[A-Z]*$/.test(s);
+const hayDatos = Boolean(entrada || tarjetas.length || normas || apartesDatos.length);
 // El bloque que se llama como el apartado ("Referencias") no repite el título
+// y "Accesorios" va en el idioma de la página (la web actual pone "Accesories", en inglés y con errata, en francés)
 const tituloRef = (b: BloqueFicha) =>
-  b.titulo.toLowerCase() === tf.secciones.referencias.toLowerCase() ? '' : b.titulo;
+  b.titulo.toLowerCase() === tf.secciones.referencias.toLowerCase()
+    ? ''
+    : /^acc?es+or/i.test(b.titulo)
+      ? tf.accesoriosEquipo
+      : b.titulo;
 
 const apartados = [
   rotores.length && { id: 'compatibilidad', nombre: tf.secciones.compatibilidad },
@@ -573,7 +607,7 @@ const descripcion = m
                     </button>
                   ) : (
                     <span class="valor">
-                      <b>{x.v}</b>
+                      <b>{x.v.includes(' · ') ? x.v.split(' · ').map((c) => <span>{c}</span>) : x.v}</b>
                       {x.u && <small>{x.u}</small>}
                     </span>
                   )}
@@ -888,6 +922,54 @@ const descripcion = m
                 ))}
               </div>
             ) : null}
+            {apartesDatos.map((a) => (
+              <div class="aparte">
+                <h3>{a.titulo}</h3>
+                {a.parrafos.map((d) => (
+                  <p>{d}</p>
+                ))}
+                {a.imagenes.map((im) =>
+                  esFotoDestilacion(im.src) ? (
+                    <figure class="eficacia">
+                      <figcaption>{tf.destilacion.titulo}</figcaption>
+                      <ul>
+                        {(Object.keys(destilacion) as (keyof typeof destilacion)[]).flatMap((k, i) => [
+                          // La escala va a la izquierda de cada fila: en escritorio hay una, en móvil dos
+                          ...(i === 0 || i === 3
+                            ? [
+                                <li class:list={['escala', { segunda: i === 3 }]} aria-hidden="true">
+                                  {[3, 2, 1].map((n) => (
+                                    <span style={`--k: ${n}`}>{tf.destilacion.niveles[n - 1]}</span>
+                                  ))}
+                                </li>,
+                              ]
+                            : []),
+                          <li style={`--n: ${destilacion[k]}; --i: ${i}`}>
+                            <span class="probeta" aria-hidden="true">
+                              <span class="agua">
+                                <i />
+                              </span>
+                            </span>
+                            <b>{tf.destilacion.niveles[destilacion[k] - 1]}</b>
+                            <span>{tf.destilacion.filas[k]}</span>
+                          </li>,
+                        ])}
+                      </ul>
+                    </figure>
+                  ) : (
+                    <img
+                      class="ref-foto"
+                      src={im.src}
+                      alt={im.alt || a.titulo}
+                      width={im.ancho}
+                      height={im.alto}
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  ),
+                )}
+              </div>
+            ))}
             {normas ? (
               <div class="normas">
                 <h3>{normas.titulo}</h3>
@@ -918,12 +1000,14 @@ const descripcion = m
             </header>
             {versiones.length > 0 && (
               <div class="tabla-scroll">
-                <table class="versiones">
+                <table class:list={['versiones', { 'con-cambios': cambian.size > 0 }]}>
                   <thead>
                     <tr>
                       <th scope="col">{tf.versiones.codigo}</th>
                       {columnas.map((k) => (
-                        <th scope="col">{tf.versiones[k]}</th>
+                        <th scope="col" class:list={{ cambia: cambian.has(k) }}>
+                          {tf.versiones[k]}
+                        </th>
                       ))}
                     </tr>
                   </thead>
@@ -953,7 +1037,11 @@ const descripcion = m
                           )}
                         </th>
                         {columnas.some((k) => v[k]) ? (
-                          columnas.map((k) => <td data-k={tf.versiones[k]}>{valor(k, v[k])}</td>)
+                          columnas.map((k) => (
+                            <td data-k={tf.versiones[k]} class:list={{ cambia: cambian.has(k), ancha: k === 'para' }}>
+                              {valor(k, v[k])}
+                            </td>
+                          ))
                         ) : (
                           <td class="sin-datos" colspan={columnas.length}>
                             {tf.versiones.sinDatos}
@@ -965,22 +1053,37 @@ const descripcion = m
                 </table>
               </div>
             )}
+            {versiones.length > 0 && (cambian.size > 0 || lab?.notasVersiones.length) ? (
+              <div class="v-notas">
+                {cambian.size > 0 && <p class="v-cambia">{tf.versiones.cambia}</p>}
+                {lab?.notasVersiones.map((n) => (
+                  <p>{n}</p>
+                ))}
+              </div>
+            ) : null}
             {refBloques.map((b) => (
               <div class="ref-bloque">
                 {tituloRef(b) && <h3>{tituloRef(b)}</h3>}
                 {b.tablas?.map((tb) => (
                   <div class="tabla-scroll">
-                    <table class="versiones ref-tabla">
+                    <table class="ref-tabla">
                       <thead>
-                        {tb.cabecera.map((fila) => (
+                        {esCodigoYTexto(tb) ? (
                           <tr>
-                            {fila.map((c) => (
-                              <th scope="col" colspan={c.span}>
-                                {c.t}
-                              </th>
-                            ))}
+                            <th scope="col">{tf.versiones.codigo}</th>
+                            <th scope="col">{tf.descripcion}</th>
                           </tr>
-                        ))}
+                        ) : (
+                          tb.cabecera.map((fila) => (
+                            <tr>
+                              {fila.map((c) => (
+                                <th scope="col" colspan={c.span}>
+                                  {c.t}
+                                </th>
+                              ))}
+                            </tr>
+                          ))
+                        )}
                       </thead>
                       <tbody>
                         {tb.filas.map((fila) => (
@@ -1100,6 +1203,21 @@ const descripcion = m
 </Base>
 
 <script>
+  // Eficacia del destilado: el agua de cada probeta sube cuando la tabla llega a la vista
+  const eficacia = document.querySelector<HTMLElement>('.eficacia');
+  if (eficacia) {
+    const vista = new IntersectionObserver(
+      (es) => {
+        if (es.some((e) => e.isIntersecting)) {
+          eficacia.classList.add('llena');
+          vista.disconnect();
+        }
+      },
+      { threshold: 0.3 },
+    );
+    vista.observe(eficacia);
+  }
+
   // Galería: cada miniatura enseña su vista (flechas del teclado en la tira); el fondo del escaparate cambia de tono
   // con ella y el indicador rojo se desliza a la elegida. En móvil las vistas van en fila y se deslizan con imán
   const escaparate = document.querySelector<HTMLElement>('.escaparate');
@@ -2760,6 +2878,7 @@ const descripcion = m
     .versiones td:first-of-type {
       grid-column: span 2;
     }
+    .versiones td.ancha,
     .versiones td.sin-datos {
       grid-column: 1 / -1;
     }
@@ -2782,7 +2901,8 @@ const descripcion = m
   /* Tablas de equipos y accesorios, tal como las da la web actual: celdas unidas y los textos largos en varias
      líneas para que la tabla no se salga */
   .ref-bloque + .ref-bloque,
-  .tabla-scroll + .ref-bloque {
+  .tabla-scroll + .ref-bloque,
+  .v-notas + .ref-bloque {
     margin-top: clamp(40px, 5vw, 64px);
   }
   .ref-bloque h3 {
@@ -2817,6 +2937,216 @@ const descripcion = m
     font-size: 16px;
     line-height: 1.55;
     color: var(--body);
+  }
+  /* Lo que cambia entre versiones, en negro y negrita; lo que es igual en todas, en gris */
+  .con-cambios td {
+    color: var(--muted);
+  }
+  .con-cambios td.cambia {
+    font-weight: 700;
+    color: var(--ink);
+  }
+  .con-cambios thead th.cambia {
+    color: var(--ink);
+  }
+  .ref-tabla td.ancha,
+  .versiones td.ancha {
+    min-width: 24ch;
+    white-space: normal;
+  }
+  .v-notas {
+    margin-top: 14px;
+    font-size: 15px;
+    line-height: 1.5;
+    color: var(--muted);
+  }
+  .v-notas p {
+    margin: 4px 0 0;
+  }
+  /* Un apartado propio dentro de Datos técnicos (la purificación del agua de los destiladores) */
+  .aparte {
+    max-width: 100ch;
+    margin-top: clamp(32px, 3vw, 44px);
+    font-size: 17px;
+    line-height: 1.6;
+    color: var(--body);
+  }
+  .aparte h3 {
+    margin: 0 0 8px;
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--ink);
+  }
+  .aparte p {
+    margin: 8px 0 0;
+  }
+  /* Eficacia del destilado: una probeta graduada por contaminante, con el agua justo hasta su raya (un tercio, dos
+     tercios o llena). A la izquierda, la escala; sus tres líneas guía cruzan todas las probetas a la misma altura, así el
+     nivel se lee de un vistazo. El agua sube al llegar a la vista; con movimiento reducido ya está en su sitio y quieta */
+  .eficacia {
+    --alto: 168px;
+    margin: clamp(24px, 2.4vw, 32px) 0 0;
+  }
+  .eficacia figcaption {
+    margin-bottom: 22px;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--ink);
+  }
+  .eficacia ul {
+    display: grid;
+    grid-template-columns: auto repeat(6, minmax(0, 1fr));
+    column-gap: clamp(12px, 1.6vw, 24px);
+    max-width: 1040px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    isolation: isolate;
+  }
+  .eficacia li {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    text-align: center;
+    font-size: 15px;
+    line-height: 1.35;
+    color: var(--body);
+  }
+  /* Las líneas guía: en cada columna y un poco más, para que se vean seguidas de la escala a la última probeta */
+  .eficacia li::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: calc(clamp(12px, 1.6vw, 24px) / -2 - 1px);
+    right: calc(clamp(12px, 1.6vw, 24px) / -2 - 1px);
+    z-index: -1;
+    height: var(--alto);
+    background:
+      linear-gradient(90deg, var(--steel) 50%, transparent 0) 0 0 / 6px 1px repeat-x,
+      linear-gradient(90deg, var(--steel) 50%, transparent 0) 0 calc(var(--alto) / 3) / 6px 1px repeat-x,
+      linear-gradient(90deg, var(--steel) 50%, transparent 0) 0 calc(var(--alto) * 2 / 3) / 6px 1px repeat-x;
+  }
+  .eficacia li:last-child::before {
+    right: 0;
+  }
+  .eficacia li b {
+    margin-top: 12px;
+    font-size: 17px;
+    color: var(--ink);
+  }
+  /* La escala: cada nivel a la altura de su línea */
+  .eficacia .escala {
+    width: 7.5em;
+    height: var(--alto);
+  }
+  .eficacia .escala::before {
+    left: 0;
+  }
+  .escala span {
+    position: absolute;
+    right: 8px;
+    top: calc((3 - var(--k)) / 3 * var(--alto));
+    padding: 0 0 0 4px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    color: var(--ink);
+    background: #fff;
+    translate: 0 -50%;
+  }
+  .eficacia .escala.segunda {
+    display: none;
+  }
+  /* La probeta: cristal con graduación (una raya corta cada doceavo y una larga en cada tercio), boca abierta y base */
+  .probeta {
+    --agua-1: #6fc3ef;
+    --agua-2: #1d7fc1;
+    position: relative;
+    width: min(64px, 100%);
+    height: var(--alto);
+    overflow: hidden;
+    background: linear-gradient(90deg, #fff, #f3f6f8 45%, #e8edf0);
+    border: 1px solid #b9c3c9;
+    border-top: 0;
+    border-bottom: 3px solid #8f9aa1;
+  }
+  .probeta::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background:
+      linear-gradient(rgba(20, 40, 55, 0.55), rgba(20, 40, 55, 0.55)) right 0 top 0 / 22px 1px no-repeat,
+      linear-gradient(rgba(20, 40, 55, 0.55), rgba(20, 40, 55, 0.55)) right 0 top calc(var(--alto) / 3) / 22px 1px
+        no-repeat,
+      linear-gradient(rgba(20, 40, 55, 0.55), rgba(20, 40, 55, 0.55)) right 0 top calc(var(--alto) * 2 / 3) / 22px 1px
+        no-repeat,
+      repeating-linear-gradient(rgba(20, 40, 55, 0.35) 0 1px, transparent 1px calc(var(--alto) / 12)) right 0 top 0 /
+        9px 100% no-repeat;
+    pointer-events: none;
+  }
+  .agua {
+    position: absolute;
+    inset: auto 0 0;
+    height: calc(var(--n) / 3 * 100%);
+    background: linear-gradient(var(--agua-1), var(--agua-2));
+    transform-origin: bottom;
+  }
+  /* La superficie: una ola baja que corre de lado a lado; su línea media cae justo en la raya del nivel */
+  .agua i {
+    position: absolute;
+    left: 0;
+    bottom: calc(100% - 3px);
+    width: 200%;
+    height: 6px;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 6'%3E%3Cpath d='M0 3c8 0 8-3 16-3s8 3 16 3 8-3 16-3 8 3 16 3v3H0z' fill='%236fc3ef'/%3E%3C/svg%3E")
+      repeat-x 0 0 / 32px 6px;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .eficacia .agua {
+      transform: scaleY(0);
+      transition: transform 1.4s var(--ease-out) calc(var(--i) * 120ms);
+    }
+    .eficacia.llena .agua {
+      transform: scaleY(1);
+    }
+    .agua i {
+      animation: ola-probeta 2.6s linear infinite;
+    }
+    .eficacia li:nth-child(odd) .agua i {
+      animation-duration: 3.4s;
+      animation-direction: reverse;
+    }
+  }
+  @keyframes ola-probeta {
+    to {
+      translate: -32px 0;
+    }
+  }
+  @media (max-width: 760px) {
+    .eficacia {
+      --alto: 132px;
+    }
+    .eficacia ul {
+      grid-template-columns: auto repeat(3, minmax(0, 1fr));
+      row-gap: 32px;
+    }
+    .eficacia .escala.segunda {
+      display: flex;
+    }
+    .eficacia .escala {
+      width: 6.2em;
+    }
+    .eficacia li {
+      font-size: 14px;
+    }
+    .escala span {
+      font-size: 11px;
+    }
   }
   .ref-foto {
     display: block;
@@ -3770,7 +4100,7 @@ const descripcion = m
     --marea-tubo: rgba(226, 18, 26, 0.54);
     display: grid;
     grid-auto-flow: column;
-    grid-auto-columns: auto;
+    grid-auto-columns: var(--d);
     align-items: center;
     justify-self: center;
     gap: var(--puente);
@@ -3800,13 +4130,15 @@ const descripcion = m
       0 14px 28px -16px rgba(0, 0, 0, 0.35);
     transition: box-shadow var(--dur-3) var(--ease-out);
   }
-  /* Los códigos de un equipo ("DA 005 · DA 006 · DA 007") no se parten: la pompa se estira en cápsula */
-  .cifra.codigos {
-    width: auto;
-    min-width: var(--d);
-    padding-inline: 22px;
-  }
+  /* Los códigos de un equipo ("DA 005 · DA 006 · DA 007"): uno por línea, en pequeño, dentro de la misma pompa
+     redonda que las demás */
   .cifra.codigos .valor b {
+    font-size: 17px;
+    line-height: 1.2;
+    letter-spacing: 0;
+  }
+  .cifra.codigos .valor b span {
+    display: block;
     white-space: nowrap;
   }
   .cifra.llena {
@@ -4187,10 +4519,6 @@ const descripcion = m
     }
     .cifra + .cifra::before {
       display: none;
-    }
-    .cifra.codigos {
-      grid-column: 1 / -1;
-      justify-self: center;
     }
   }
 
