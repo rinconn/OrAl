@@ -495,6 +495,10 @@ export const fr: Textos = {
         zMax: 'Z max.',
         calefaccion: 'Chauffage',
         sinDatos: 'Données sur demande',
+        produccion: 'Production',
+        agua: 'Eau de refroidissement',
+        para: 'Pour centrifugeuses',
+        cambia: 'En noir, ce qui change d’une version à l’autre ; en gris, ce qui est identique dans toutes.',
       },
       accesorios: 'Accessoires pour ce modèle',
       mas: 'Plus de',
@@ -520,6 +524,20 @@ export const fr: Textos = {
       verMenos: 'Voir moins',
       caracteristicas: 'Caractéristiques',
       normas: 'Normes et directives communautaires',
+      accesoriosEquipo: 'Accessoires',
+      descripcion: 'Description',
+      destilacion: {
+        titulo: 'Efficacité de la distillation',
+        filas: {
+          pirogenos: 'Pyrogènes et virus',
+          bacterias: 'Bactéries',
+          particulas: 'Particules',
+          solidos: 'Solutés inorganiques dissous',
+          gases: 'Gaz inorganiques dissous',
+          organicos: 'Organiques dissous',
+        },
+        niveles: ['Faible', 'Optimale', 'Excellente'],
+      },
       compat: {
         titulo: 'Quel rotor accepte le tube de votre client ?',
         intro: (n: number) =>
