@@ -48,6 +48,12 @@ export interface Version {
   consumo?: string;
   zMax?: string;
   calefaccion?: string;
+  /** Equipos: litros por hora que destila */
+  produccion?: string;
+  /** Equipos: agua de refrigeración, en l/h */
+  agua?: string;
+  /** Accesorios: las centrífugas para las que vale */
+  para?: string;
 }
 export interface Tubo {
   reductor?: string;
@@ -145,8 +151,90 @@ export const rotor = (id: string): Rotor => rotores[id];
 
 /** Productos de laboratorio y accesorios: nuestra clave → la de la web actual */
 const claveLab: Record<string, string> = { tamizadora: 'tamizadora-y-tamices' };
-export const fichaLab = (slug: string) =>
-  d.laboratorio[claveLab[slug] ?? slug]?.textos ?? d.accesorios[claveLab[slug] ?? slug]?.textos;
+
+/** Un código de la empresa: "CP 007", "DA 005", "PI 226" */
+export const esCodigo = (s: string) => /^[A-Z]{2,3} ?\d{3}[A-Z]*$/.test(s.trim());
+
+// La tabla de versiones de un equipo o accesorio pasa a ser como la de las centrífugas: una versión por código, con
+// las mismas columnas, unidades y textos en cada idioma. Las cifras salen de la tabla en español (en inglés y francés
+// son las mismas, pero con cabeceras en inglés y erratas); el texto de cada fila ("Unicen 21 y Digicen 22"), de la
+// tabla de su idioma. La columna se reconoce por la cabecera en español; "agua" va antes que "consumo" porque
+// "Consumo agua refrigeración" es el agua y no la potencia
+type ColumnaLab = Exclude<keyof Version, 'codigo' | 'ivd'>;
+const columnasLab: [RegExp, ColumnaLab][] = [
+  [/dimensi/i, 'medidas'],
+  [/peso/i, 'peso'],
+  [/voltaje/i, 'voltaje'],
+  [/frecuencia/i, 'frecuencia'],
+  [/agua/i, 'agua'],
+  [/capacidad/i, 'produccion'],
+  [/consumo|resistencia/i, 'consumo'],
+  [/modelo/i, 'para'],
+];
+/** Columna de cada celda de una fila, desplegando las celdas unidas de la cabecera ("Dimensiones" ocupa tres) */
+const columnasDe = (t: Tabla) =>
+  (t.cabecera.at(-1) ?? []).flatMap((c, i) => {
+    const k = i === 0 ? 'codigo' : columnasLab.find(([re]) => re.test(c.t))?.[1];
+    return Array<ColumnaLab | 'codigo' | undefined>(c.span ?? 1).fill(k);
+  });
+const esDeVersiones = (t: Tabla) =>
+  t.filas.length > 0 &&
+  t.filas.every((f) => esCodigo(f[0]?.t ?? '')) &&
+  columnasDe(t).filter((k) => k && k !== 'codigo').length >= 2;
+
+/** Textos de un equipo o accesorio en un idioma, con sus versiones ya sacadas de la tabla */
+export interface TextosLab extends TextosFicha {
+  versiones: Version[];
+  /** Líneas que acompañaban a la tabla de versiones ("*Altura con la máxima capacidad de tamices: 750 mm") */
+  notasVersiones: string[];
+}
+const textosLab = (textos: Record<Idioma, TextosFicha>): Record<Idioma, TextosLab> => {
+  // Dónde está la tabla de versiones (bloque y tabla), en español
+  const iB = textos.es.bloques.findIndex((b) => b.tablas?.some(esDeVersiones));
+  const iT = iB < 0 ? -1 : textos.es.bloques[iB].tablas!.findIndex(esDeVersiones);
+  const base = iB < 0 ? undefined : textos.es.bloques[iB].tablas![iT];
+  const cols = base ? columnasDe(base) : [];
+  const iPara = cols.indexOf('para');
+  const versiones: Version[] = (base?.filas ?? []).map((f) => {
+    const v: Version = { codigo: f[0].t.trim() };
+    cols.forEach((k, i) => {
+      const x = f[i]?.t.trim();
+      if (!k || k === 'codigo' || !x) return;
+      // Las medidas, en una celda ("370 220 440") o en tres: "370x220x440", como las de las centrífugas
+      v[k] = k === 'medidas' ? [v[k], ...x.split(/\s+/)].filter(Boolean).join('x') : x;
+    });
+    return v;
+  });
+  return Object.fromEntries(
+    (Object.keys(textos) as Idioma[]).map((l) => {
+      const t = textos[l];
+      if (!base) return [l, { ...t, versiones, notasVersiones: [] }];
+      // El texto de cada fila en su idioma, si su tabla tiene las mismas filas
+      const suya = t.bloques[iB]?.tablas?.[iT];
+      const propias =
+        iPara >= 0 && suya?.filas.length === versiones.length
+          ? versiones.map((v, j) => ({ ...v, para: suya.filas[j][iPara]?.t.trim() || v.para }))
+          : versiones;
+      // La tabla sale de su bloque; si el bloque se queda sin tablas ni fotos, sale entero y sus líneas van debajo
+      // de la tabla de versiones
+      const b = t.bloques[iB];
+      const resto = (b?.tablas ?? []).filter((_, k) => k !== iT);
+      const queda = b && (resto.length > 0 || (b.imagenes?.length ?? 0) > 0);
+      const bloques = t.bloques.flatMap((x, j) => (j !== iB ? [x] : queda ? [{ ...x, tablas: resto }] : []));
+      const notasVersiones = b && !queda ? b.puntos.map((p) => p.t).filter(Boolean) : [];
+      return [l, { ...t, bloques, versiones: propias, notasVersiones }];
+    }),
+  ) as Record<Idioma, TextosLab>;
+};
+const fichasLab = new Map<string, Record<Idioma, TextosLab> | undefined>();
+export const fichaLab = (slug: string): Record<Idioma, TextosLab> | undefined => {
+  if (!fichasLab.has(slug)) {
+    const clave = claveLab[slug] ?? slug;
+    const textos = d.laboratorio[clave]?.textos ?? d.accesorios[clave]?.textos;
+    fichasLab.set(slug, textos && textosLab(textos));
+  }
+  return fichasLab.get(slug);
+};
 
 /** Formato de un número del ERP ("16500") con los miles de cada idioma */
 export const cifra = (lang: Idioma, n?: string) => {

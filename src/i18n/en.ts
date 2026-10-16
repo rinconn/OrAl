@@ -494,6 +494,10 @@ export const en: Textos = {
         zMax: 'Max. Z',
         calefaccion: 'Heating',
         sinDatos: 'Data on request',
+        produccion: 'Output',
+        agua: 'Cooling water',
+        para: 'For centrifuges',
+        cambia: 'In black, what changes from one version to another; in grey, what is the same in all of them.',
       },
       accesorios: 'Accessories for this model',
       mas: 'More',
@@ -519,6 +523,20 @@ export const en: Textos = {
       verMenos: 'See less',
       caracteristicas: 'Features',
       normas: 'Standards and Directives',
+      accesoriosEquipo: 'Accessories',
+      descripcion: 'Description',
+      destilacion: {
+        titulo: 'Distillation efficiency',
+        filas: {
+          pirogenos: 'Pyrogens and viruses',
+          bacterias: 'Bacteria',
+          particulas: 'Particles',
+          solidos: 'Dissolved inorganic solutes',
+          gases: 'Dissolved inorganic gases',
+          organicos: 'Dissolved organics',
+        },
+        niveles: ['Low', 'Good', 'Excellent'],
+      },
       compat: {
         titulo: 'Which rotor takes your customer’s tube?',
         intro: (n: number) =>
