@@ -2,6 +2,86 @@
   "fuente": "ortoalresa.com (cabeceras de cada PDF)",
   "fecha": "2026-10-16",
   "archivos": {
+    "https://ortoalresa.com/catalogo_general/EN-iso-13485.pdf": {
+      "fecha": "2025-12-02",
+      "bytes": 288555
+    },
+    "https://ortoalresa.com/catalogo_general/EN-iso-14001.pdf": {
+      "fecha": "2024-10-11",
+      "bytes": 935554
+    },
+    "https://ortoalresa.com/catalogo_general/EN-iso-9001.pdf": {
+      "fecha": "2025-12-02",
+      "bytes": 821950
+    },
+    "https://ortoalresa.com/catalogo_general/EN-service-pattern.pdf": {
+      "fecha": "2025-09-24",
+      "bytes": 141532
+    },
+    "https://ortoalresa.com/catalogo_general/ES-Catalogo-de-Servicios.pdf": {
+      "fecha": "2025-03-24",
+      "bytes": 614828
+    },
+    "https://ortoalresa.com/catalogo_general/ES-Condicionado-garantia-reparaciones-repuestos.pdf": {
+      "fecha": "2025-09-24",
+      "bytes": 180111
+    },
+    "https://ortoalresa.com/catalogo_general/ES-Condicionado-general-garantia.pdf": {
+      "fecha": "2026-05-07",
+      "bytes": 199465
+    },
+    "https://ortoalresa.com/catalogo_general/ES-Condiciones-Generales-Venta-Prestacion-Servicios-OA.pdf": {
+      "fecha": "2026-05-07",
+      "bytes": 294546
+    },
+    "https://ortoalresa.com/catalogo_general/ES-Manual-de-Limpieza-y-Descontaminaci%C3%B3n.pdf": {
+      "fecha": "2025-07-17",
+      "bytes": 2605789
+    },
+    "https://ortoalresa.com/catalogo_general/ES-Ortoalresa%20paquetes.pdf": {
+      "fecha": "2026-06-24",
+      "bytes": 1004972
+    },
+    "https://ortoalresa.com/catalogo_general/ES-catalogo-centrifugas-aplicaciones-generales.pdf": {
+      "fecha": "2024-10-28",
+      "bytes": 5006707
+    },
+    "https://ortoalresa.com/catalogo_general/ES-catalogo-centrifugas-peque%C3%B1as.pdf": {
+      "fecha": "2025-02-27",
+      "bytes": 2409062
+    },
+    "https://ortoalresa.com/catalogo_general/ES-catalogo-general.pdf": {
+      "fecha": "2026-09-29",
+      "bytes": 15440536
+    },
+    "https://ortoalresa.com/catalogo_general/ES-certificado-de-descontaminacion.pdf": {
+      "fecha": "2025-09-24",
+      "bytes": 151606
+    },
+    "https://ortoalresa.com/catalogo_general/ES-iso-13485.pdf": {
+      "fecha": "2025-12-02",
+      "bytes": 288555
+    },
+    "https://ortoalresa.com/catalogo_general/ES-iso-14001.pdf": {
+      "fecha": "2024-10-11",
+      "bytes": 935554
+    },
+    "https://ortoalresa.com/catalogo_general/ES-iso-9001.pdf": {
+      "fecha": "2025-12-02",
+      "bytes": 821950
+    },
+    "https://ortoalresa.com/catalogo_general/ES-politica-ambiental.pdf": {
+      "fecha": "2026-06-04",
+      "bytes": 88103
+    },
+    "https://ortoalresa.com/catalogo_general/ES-politica-organizacion.pdf": {
+      "fecha": "2026-09-07",
+      "bytes": 196886
+    },
+    "https://ortoalresa.com/catalogo_general/ES-service-pattern.pdf": {
+      "fecha": "2025-09-24",
+      "bytes": 145766
+    },
     "https://ortoalresa.com/catalogo_producto/Catalogo_Biocen_22_ESP.pdf": {
       "fecha": "2025-05-29",
       "bytes": 519053

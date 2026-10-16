@@ -1,6 +1,7 @@
 // Fecha y peso de cada PDF que enseña la página de Descargas, tal como los sirve ortoalresa.com: la fecha es la de la
 // última subida del archivo (cabecera Last-Modified) y el peso, el del archivo (Content-Length). Con eso la página
 // separa lo actualizado hace poco de lo anterior, sin poner fechas a mano. Lo guarda en src/data/descargas.json.
+// Además de los catálogos de cada serie y equipo, lee los documentos de empresa de src/data/documentos.json.
 //
 //   node scripts/importar-descargas.mjs
 //
@@ -9,10 +10,13 @@ import { readFile, writeFile } from 'node:fs/promises';
 
 const web = JSON.parse(await readFile(new URL('../src/data/web-actual.json', import.meta.url), 'utf8'));
 const lab = await readFile(new URL('../src/data/laboratorio.ts', import.meta.url), 'utf8');
+const empresa = JSON.parse(await readFile(new URL('../src/data/documentos.json', import.meta.url), 'utf8'));
 
 const urls = new Set();
 for (const c of Object.values(web.centrifugas)) for (const u of Object.values(c.pdf ?? {})) urls.add(u);
 for (const [, u] of lab.matchAll(/pdf: '([^']+)'/g)) urls.add(u);
+// Catálogos generales, certificados, documentos del servicio técnico y condiciones (src/data/documentos.json)
+for (const d of empresa.documentos) for (const u of [d.es, d.en].filter(Boolean)) urls.add(u);
 
 const archivos = {};
 for (const url of [...urls].sort()) {

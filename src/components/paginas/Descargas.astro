@@ -1,28 +1,85 @@
 ---
-// Descargas: el portal de documentación. Arriba, qué hay y un QR para llevarse la página al móvil; después, los
-// catálogos actualizados en el último año, grandes; y debajo todos, por familia, con buscador y filtros. Cada PDF
-// tiene su QR (se abre en una ventana, se puede descargar en PNG para imprimirlo junto a la máquina) y se puede
-// copiar su enlace. Todo sale de los PDF que ya publica ortoalresa.com, con su fecha y peso reales.
+// Descargas: la biblioteca de documentos de Orto Alresa.
+// · Portada: la foto del catálogo con un velo gris claro y partículas sueltas que suben despacio; buscador.
+// · Índice: las cinco secciones con los iconos de la marca, bajo la línea roja con destello.
+// · Catálogo general a lo grande. Después, cada tipo con su forma: catálogos generales en portadas con fotos distintas
+//   (la información sube al pasar el ratón), el de cada equipo en tarjetas compactas sin foto, certificados en banda
+//   oscura con su sello, servicio técnico en tres columnas y condiciones en lista. El título de cada sección lleva la
+//   barra roja que crece al llegar a ella, como en las fichas.
+// · Cualquier documento se puede añadir a "tu selección": un QR la abre en el móvil (para quien está en el ordenador
+//   y lo quiere llevar encima), un enlace (?sel=) la comparte y el PDF la reúne con el QR de cada archivo.
+// Todo se pinta en el servidor: sin JavaScript se ve y se descarga igual.
+import { existsSync } from 'node:fs';
 import Base from '../../layouts/Base.astro';
-import { familias } from '../../data/productos';
-import { comprobado, documentos, esReciente, peso, type Documento, type IdiomaPdf } from '../../data/descargas';
+import { familias, modelos } from '../../data/productos';
+import {
+  comprobado,
+  documentos,
+  esReciente,
+  generales,
+  peso,
+  type Archivo,
+  type Documento,
+  type General,
+  type IdiomaPdf,
+  type TipoGeneral,
+} from '../../data/descargas';
+import { cifra, fichaCentrifuga, medida, rotor, tipoRotor } from '../../data/fichas';
 import { contacto } from '../../data/navegacion';
-import { qrSvg } from '../../scripts/qr';
 import { idioma, ruta, textoSerie, textos } from '../../i18n';
 
 const lang = idioma(Astro.currentLocale);
 const t = textos(lang);
 const d = t.descargas;
+const tv = t.catalogo.filtros.vista;
+const cruz = 'M6 6l12 12M18 6 6 18';
 
 const fecha = (iso: string) =>
   new Date(iso).toLocaleDateString(t.meta.fechas, { day: 'numeric', month: 'short', year: 'numeric' });
 const plano = (...partes: (string | undefined)[]) =>
   partes.filter(Boolean).join(' ').normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
+const limite = new Date(comprobado);
+limite.setFullYear(limite.getFullYear() - 1);
+const nuevo = (iso: string) => iso >= limite.toISOString().slice(0, 10);
 
 // Primero el PDF en el idioma de la página; en francés, el inglés
 const orden: IdiomaPdf[] = lang === 'es' ? ['es', 'en'] : ['en', 'es'];
-const pdfs = (x: Documento) => orden.flatMap((l) => (x.pdf[l] ? [{ l, a: x.pdf[l]! }] : []));
+const pdfsDe = (pdf: Partial<Record<IdiomaPdf, Archivo>>) =>
+  orden.flatMap((l) => (pdf[l] ? [{ l, a: pdf[l]!, peso: peso(pdf[l]!.bytes, t.meta.fechas) }] : []));
 
+// ——— Documentos de empresa ———
+const txt = (g: General) => d.docs[g.id] ?? { nombre: g.id };
+const porTipo = (tipo: TipoGeneral) => generales.filter((g) => g.tipo === tipo);
+const destacado = generales.find((g) => g.id === 'catalogo-general');
+const catalogos = porTipo('catalogo').filter((g) => g !== destacado);
+// Cada catálogo general con una foto distinta de la casa, para que no parezcan la misma cortada
+const portadas: [string, string][] = [
+  ['/img/fotos/catalogos.webp', '10% 45%'],
+  ['/img/fotos/portada-rotor.webp', '50% 50%'],
+  ['/img/fotos/lab-235.webp', '35% 50%'],
+  ['/img/fotos/empresa-tubos.webp', '50% 50%'],
+];
+// Los iconos de la marca (los de la web actual) para cada sección y documento
+const iconoSeccion = {
+  catalogo: 'pack',
+  equipos: 'centrifuge',
+  certificado: 'ico-seguridad',
+  servicio: 'telefono',
+  condiciones: 'ico-tabla',
+} as const;
+const iconoDoc: Record<string, string> = {
+  descontaminacion: 'ico-seguridad',
+  'service-pattern': 'telefono',
+  limpieza: 'ico-tubos',
+  'condiciones-venta': 'ico-tabla',
+  'garantia-productos': 'pack',
+  'garantia-reparaciones': 'rotor-add',
+  'politica-organizacion': 'ico-tabla',
+  'politica-ambiental': 'ico-seguridad',
+};
+const icono = (n: string) => `/img/iconos/${n}.svg`;
+
+// ——— Catálogos de cada equipo ———
 const nombreGrupo = (g: Documento['grupo']) => (g === 'laboratorio' ? d.lab : t.familias[g]);
 const nombre = (x: Documento) =>
   x.tipo === 'lab' ? t.laboratorio.items[x.slug as keyof typeof t.laboratorio.items].nombre : x.nombre;
@@ -30,326 +87,935 @@ const frase = (x: Documento) =>
   x.tipo === 'lab'
     ? t.laboratorio.items[x.slug as keyof typeof t.laboratorio.items].frase
     : textoSerie(lang, x.slug).frase;
-
+const ficha = (x: Documento) => ruta(lang, `/centrifugas/${x.slug}/`);
+// La máquina entera, para el PDF de la selección (en la página no se enseña: para verlas está el catálogo)
+const foto = (x: Documento) => {
+  const entera = `/img/catalogo/${x.slug}.webp`;
+  return x.tipo === 'serie' && existsSync(`public${entera}`) ? entera : x.imagen.src;
+};
+// Los rotores de todos los modelos de la serie, sin repetir (las cifras también en bruto, para el Excel)
+const rotoresDe = (x: Documento) => {
+  if (x.tipo === 'lab') return [];
+  const vistos = new Set<string>();
+  return modelos
+    .filter((m) => m.serie === x.slug)
+    .flatMap((m) => fichaCentrifuga(m.slug)?.rotores ?? [])
+    .map(rotor)
+    .filter((r) => r && !vistos.has(r.nombre) && vistos.add(r.nombre))
+    .map((r) => ({
+      c: [
+        r.nombre,
+        tipoRotor(lang, r.tipo),
+        cifra(lang, r.rpm) ?? '',
+        cifra(lang, r.xg) ?? '',
+        medida(lang, r.capacidad) ?? '',
+      ],
+      n: [r.rpm ?? '', r.xg ?? ''],
+    }));
+};
 const grupos = [...(Object.keys(familias) as Documento['grupo'][]), 'laboratorio' as const]
   .map((g) => ({ g, docs: documentos.filter((x) => x.grupo === g) }))
   .filter((x) => x.docs.length);
-const recientes = documentos.filter(esReciente).sort((a, b) => b.fecha.localeCompare(a.fecha));
-const idiomasPdf = new Set(documentos.flatMap((x) => Object.keys(x.pdf))).size;
 
-const pagina = new URL(Astro.url.pathname, Astro.site).href;
+const totalDocs = generales.length + documentos.length;
+const totalPdf = [...generales, ...documentos].reduce((n, x) => n + Object.keys(x.pdf).length, 0);
+// El índice lleva las cinco; los certificados no van como sección sino en el cierre, junto a "¿Necesitas otro documento?"
+const indiceSecciones = [
+  { id: 'catalogo', n: porTipo('catalogo').length },
+  { id: 'equipos', n: documentos.length },
+  { id: 'servicio', n: porTipo('servicio').length },
+  { id: 'condiciones', n: porTipo('condiciones').length },
+  { id: 'certificado', n: porTipo('certificado').length },
+] as const;
+const secciones = indiceSecciones.filter((s) => s.id !== 'certificado');
+
+// Para el navegador: la selección (cualquier documento) y el Excel de rotores
+const datos = {
+  docs: {
+    ...Object.fromEntries(
+      documentos.map((x) => [
+        x.slug,
+        {
+          nombre: nombre(x),
+          variantes: x.variantes,
+          grupo: nombreGrupo(x.grupo),
+          frase: frase(x),
+          fecha: `${d.actualizado} ${fecha(x.fecha)}`,
+          img: foto(x),
+          ficha: new URL(ficha(x), Astro.site).href,
+          pdfs: pdfsDe(x.pdf).map(({ l, a, peso }) => ({ l, url: a.url, peso })),
+          rotores: rotoresDe(x),
+        },
+      ]),
+    ),
+    ...Object.fromEntries(
+      generales.map((g) => [
+        g.id,
+        {
+          nombre: txt(g).nombre,
+          grupo: d.saltos[g.tipo],
+          frase: txt(g).frase ?? '',
+          fecha: `${d.actualizado} ${fecha(g.fecha)}`,
+          img: '',
+          ficha: pdfsDe(g.pdf)[0].a.url,
+          pdfs: pdfsDe(g.pdf).map(({ l, a, peso }) => ({ l, url: a.url, peso })),
+          rotores: [],
+        },
+      ]),
+    ),
+  },
+  idiomas: d.idiomas,
+  t: {
+    rotores: d.rotores,
+    columnas: d.columnas.join('|'),
+    etqEquipo: d.etqEquipo,
+    copiado: d.copiado,
+    quitar: d.quitar('{x}'),
+    tipo: d.pdfTipo,
+    titulo: d.pdfTitulo,
+    etqEquipos: d.etqEquipos,
+    etqCatalogos: d.etqCatalogos,
+    etqIdiomas: d.etqIdiomas,
+    intro: d.pdfIntro,
+    verFicha: d.verFicha,
+    enlace: d.pdfEnlace,
+    archivo: d.archivo,
+  },
+  n: { bandeja: [d.bandeja(1), d.bandeja(99)], equipos: [d.equipos(1), d.equipos(99)] },
+  pie: { empresa: `${contacto.empresa} · ${contacto.direccion}`, web: 'ortoalresa.com', pagina: tv.pagina, fuente: '' },
+};
+
+const icoBajar = 'M12 4v11M7 10l5 5 5-5M5 20h14';
 ---
 
-<Base title={d.title} description={d.description(documentos.length)}>
-  <section class="sec cab">
-    <div class="wrap cab-in">
-      <div>
-        <span class="eyebrow">{t.nav.descargas}</span>
-        <h1>
-          {d.titulo[0]}
-          <b>{d.titulo[1]}</b>
-        </h1>
-        <p class="lead">{d.lead}</p>
-        <dl class="cifras">
-          <div>
-            <dt>{d.cifras.catalogos}</dt>
-            <dd>{documentos.length}</dd>
-          </div>
-          <div>
-            <dt>{d.cifras.idiomas}</dt>
-            <dd>{idiomasPdf}</dd>
-          </div>
-          <div>
-            <dt>{d.cifras.recientes}</dt>
-            <dd>{recientes.length}</dd>
-          </div>
-        </dl>
-      </div>
-      <aside class="movil">
-        <div class="movil-qr" set:html={qrSvg(pagina, d.movil[1])} />
-        <p>
-          <b>
-            {d.movil[0]}
-            {d.movil[1]}
-          </b>
-          {d.movil[2]}
-        </p>
-      </aside>
-    </div>
-  </section>
-
-  {recientes.length > 0 && (
-    <section class="sec nuevos">
-      <div class="wrap">
-        <div class="head">
-          <h2>
-            {d.recientes[0]}
-            <b>{d.recientes[1]}</b>
-          </h2>
+<Base title={d.title} description={d.description(totalDocs)}>
+  <div class="descargas">
+    <!-- ——— Portada ——— -->
+    <section class="portada">
+      <img
+        class="portada-foto"
+        src="/img/fotos/catalogo-general.webp"
+        alt=""
+        width="1900"
+        height="1266"
+        fetchpriority="high"
+      />
+      <div class="velo" aria-hidden="true"></div>
+      <canvas class="particulas" id="particulas" aria-hidden="true"></canvas>
+      <div class="wrap portada-in">
+        <div class="portada-txt">
+          <span class="eyebrow">{t.nav.descargas}</span>
+          <h1>
+            {d.titulo[0]}
+            <b>{d.titulo[1]}</b>
+          </h1>
+          <p class="lead">{d.lead}</p>
+          <label class="busca" role="search">
+            <span class="sr">{d.buscar}</span>
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="10.5" cy="10.5" r="6.5"></circle>
+              <path d="M15.5 15.5 21 21"></path>
+            </svg>
+            <input type="search" id="busca" placeholder={d.ejemplo} autocomplete="off" />
+          </label>
+          <p class="resumen">{d.resumen(totalDocs, totalPdf)}</p>
         </div>
-        <ul class="tarjetas">
-          {recientes.map((x) => (
-            <li class="tarjeta">
-              <a class="foto" href={ruta(lang, `/centrifugas/${x.slug}/`)} tabindex="-1" aria-hidden="true">
-                <img src={x.imagen.src} width={x.imagen.ancho} height={x.imagen.alto} alt="" loading="lazy" />
-              </a>
-              <span class="fecha">
-                {d.actualizado} {fecha(x.fecha)}
-              </span>
-              <h3>
-                {nombre(x)}
-                {x.variantes && <span>· {x.variantes}</span>}
-              </h3>
-              <p>{frase(x)}</p>
-              <div class="acciones">
-                {pdfs(x).map(({ l, a }) => (
-                  <a class="pdf" href={a.url} target="_blank" rel="noopener" lang={l} title={d.idiomas[l]}>
-                    <b>PDF {l.toUpperCase()}</b>
-                    <span>{peso(a.bytes, t.meta.fechas)}</span>
-                  </a>
-                ))}
-                <button type="button" class="ver-qr" data-qr={JSON.stringify({ n: nombre(x), p: pdfs(x) })}>
-                  {d.qr}
-                </button>
-              </div>
-            </li>
-          ))}
-        </ul>
       </div>
     </section>
-  )}
 
-  <section class="sec todos" id="catalogos">
-    <div class="wrap">
-      <div class="head">
-        <h2>
-          {d.todos[0]}
-          <b>{d.todos[1]}</b>
-        </h2>
-      </div>
-      <div class="barra" role="search">
-        <label class="busca">
-          <span class="sr">{d.buscar}</span>
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <circle cx="10.5" cy="10.5" r="6.5"></circle>
-            <path d="M15.5 15.5 21 21"></path>
-          </svg>
-          <input type="search" id="busca" placeholder={d.ejemplo} autocomplete="off" />
-        </label>
-        <div class="chips" role="group" aria-label={d.buscar}>
-          <button type="button" class="chip" aria-pressed="true" data-g="">
-            {d.todo}
-          </button>
-          {grupos.map(({ g, docs }) => (
-            <button type="button" class="chip" aria-pressed="false" data-g={g}>
-              {nombreGrupo(g)} <span>{docs.length}</span>
-            </button>
+    <!-- ——— Índice: cada sección con su icono ——— -->
+    <nav class="indice raya" aria-label={d.buscar}>
+      <ol class="wrap">
+        {indiceSecciones.map((s) => (
+          <li>
+            <a href={`#${s.id}`}>
+              <span class="ind-ico">
+                <img src={icono(iconoSeccion[s.id])} alt="" width="26" height="26" />
+              </span>
+              <span class="ind-txt">
+                <b>{d.saltos[s.id]}</b>
+                <small>{d.equipos(s.n)}</small>
+              </span>
+            </a>
+          </li>
+        ))}
+      </ol>
+    </nav>
+
+    <!-- ——— Catálogo general ——— -->
+    {destacado && (
+      <section class="destacado" data-busca={plano(txt(destacado).nombre, txt(destacado).frase)}>
+        <div class="des-foto">
+          <img src="/img/fotos/catalogos.webp" alt="" width="1900" height="888" loading="lazy" />
+        </div>
+        <div class="des-txt">
+          <span class="eyebrow">{d.destacado}</span>
+          <h2>{txt(destacado).nombre}</h2>
+          {txt(destacado).frase && <p>{txt(destacado).frase}</p>}
+          {pdfsDe(destacado.pdf).map(({ l, a, peso }) => (
+            <>
+              <dl class="ficha-doc">
+                <div>
+                  <dt>{d.etqIdiomas}</dt>
+                  <dd>{d.idiomas[l]}</dd>
+                </div>
+                <div>
+                  <dt>PDF</dt>
+                  <dd>{peso}</dd>
+                </div>
+                <div>
+                  <dt>{d.actualizado}</dt>
+                  <dd>{fecha(a.fecha)}</dd>
+                </div>
+              </dl>
+              <div class="acc">
+                <a class="boton negro grande" href={a.url} target="_blank" rel="noopener" hreflang={l}>
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d={icoBajar} />
+                  </svg>
+                  {d.descargar}
+                </a>
+                <button
+                  type="button"
+                  class="boton grande sel"
+                  data-sel={destacado.id}
+                  aria-pressed="false"
+                  aria-label={d.anadir(txt(destacado).nombre)}
+                  hidden
+                >
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path class="mas" d="M12 6v12M6 12h12" />
+                    <path class="ok" d="m6 12.5 4 4L18 8" />
+                  </svg>
+                  {d.alDossier}
+                </button>
+              </div>
+            </>
           ))}
         </div>
-      </div>
+      </section>
+    )}
 
-      {grupos.map(({ g, docs }) => (
-        <div class="grupo" data-grupo={g}>
-          <h3 class="grupo-tit">
-            {nombreGrupo(g)} <span>{docs.length}</span>
-          </h3>
-          <ul class="filas">
-            {docs.map((x) => (
-              <li class="fila" data-texto={plano(nombre(x), x.variantes, nombreGrupo(g), frase(x))}>
-                <img src={x.imagen.src} width={x.imagen.ancho} height={x.imagen.alto} alt="" loading="lazy" />
-                <div class="fila-nombre">
-                  <a href={ruta(lang, `/centrifugas/${x.slug}/`)}>
-                    {nombre(x)}
-                    {x.variantes && <span>· {x.variantes}</span>}
-                  </a>
-                  <small>{frase(x)}</small>
-                </div>
-                <span class="fila-fecha">
-                  <small>{d.actualizado}</small>
-                  {fecha(x.fecha)}
-                  {esReciente(x) && <i class="punto" aria-hidden="true" />}
-                </span>
-                <div class="acciones">
-                  {pdfs(x).map(({ l, a }) => (
-                    <a class="pdf" href={a.url} target="_blank" rel="noopener" lang={l} title={d.idiomas[l]}>
-                      <b>PDF {l.toUpperCase()}</b>
-                      <span>{peso(a.bytes, t.meta.fechas)}</span>
-                    </a>
-                  ))}
-                  <button type="button" class="ver-qr" data-qr={JSON.stringify({ n: nombre(x), p: pdfs(x) })}>
-                    {d.qr}
-                  </button>
-                </div>
-              </li>
-            ))}
+    <!-- ——— Secciones ——— -->
+    {secciones.map((s) => (
+      <section class:list={['seccion', `sec-${s.id}`]} id={s.id} data-seccion>
+        <header class="wrap sec-cab raya">
+          <h2>
+            {d.secciones[s.id].titulo[0]}
+            <b>{d.secciones[s.id].titulo[1]}</b>
+          </h2>
+          <p>{d.secciones[s.id].texto}</p>
+        </header>
+
+        {s.id === 'catalogo' && (
+          <ul class="wrap portadas">
+            {catalogos.map((g, j) => {
+              const pdfs = pdfsDe(g.pdf);
+              const [src, pos] = portadas[j % portadas.length];
+              return (
+                <li class="doc portada-doc" data-busca={plano(txt(g).nombre, txt(g).frase, d.saltos.catalogo)}>
+                  <img src={src} alt="" loading="lazy" style={`object-position:${pos}`} />
+                  <div class="pd-cab">
+                    {nuevo(g.fecha) && <span class="nuevo">{d.reciente}</span>}
+                    <h3>{txt(g).nombre}</h3>
+                  </div>
+                  <div class="pd-info">
+                    {txt(g).frase && <p>{txt(g).frase}</p>}
+                    <p class="meta">
+                      PDF · {pdfs.map((p) => p.peso).join(' / ')} · {d.actualizado} {fecha(g.fecha)}
+                    </p>
+                    <div class="doc-acc">
+                      {pdfs.map(({ l, a }) => (
+                        <a class="pdf" href={a.url} target="_blank" rel="noopener" hreflang={l} title={d.idiomas[l]}>
+                          <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d={icoBajar} />
+                          </svg>
+                          {l.toUpperCase()}
+                        </a>
+                      ))}
+                      <button
+                        type="button"
+                        class="sel mini"
+                        data-sel={g.id}
+                        aria-pressed="false"
+                        aria-label={d.anadir(txt(g).nombre)}
+                        hidden
+                      >
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                          <path class="mas" d="M12 6v12M6 12h12" />
+                          <path class="ok" d="m6 12.5 4 4L18 8" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+
+        {s.id === 'equipos' &&
+          grupos.map(({ g, docs }) => (
+            <div class="wrap familia">
+              <h3 class="fam-tit">
+                {nombreGrupo(g)} <span>{docs.length}</span>
+              </h3>
+              <ul class="equipos">
+                {docs.map((x) => {
+                  const rot = rotoresDe(x);
+                  const pdfs = pdfsDe(x.pdf);
+                  return (
+                    <li class="doc equipo vidrio" data-busca={plano(nombre(x), x.variantes, nombreGrupo(g), frase(x))}>
+                      <div class="cab-tarjeta">
+                        <span class="insignia">
+                          <img src={icono(x.tipo === 'lab' ? 'pack' : 'centrifuge')} alt="" width="24" height="24" />
+                        </span>
+                        <span class="chips">
+                          {esReciente(x) && <span class="chip rojo">{d.reciente}</span>}
+                          <span class="chip">PDF</span>
+                          {rot.length > 0 && <span class="chip verde">XLSX</span>}
+                        </span>
+                      </div>
+                      <h4>
+                        <a href={ficha(x)}>
+                          {nombre(x)}
+                          {x.variantes && <span>{x.variantes}</span>}
+                        </a>
+                      </h4>
+                      <p class="eq-frase">{frase(x)}</p>
+                      <p class="meta">
+                        {d.actualizado} {fecha(x.fecha)}
+                      </p>
+                      <div class="doc-acc">
+                        {pdfs.map(({ l, a, peso }) => (
+                          <a
+                            class="pdf"
+                            href={a.url}
+                            target="_blank"
+                            rel="noopener"
+                            hreflang={l}
+                            title={`${d.idiomas[l]} · ${peso}`}
+                          >
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                              <path d={icoBajar} />
+                            </svg>
+                            {l.toUpperCase()}
+                          </a>
+                        ))}
+                        {rot.length > 0 && (
+                          <button type="button" class="pdf xlsx" data-excel={x.slug} title={d.rotores} hidden>
+                            XLSX
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          class="sel mini"
+                          data-sel={x.slug}
+                          aria-pressed="false"
+                          aria-label={d.anadir(nombre(x))}
+                          hidden
+                        >
+                          <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path class="mas" d="M12 6v12M6 12h12" />
+                            <path class="ok" d="m6 12.5 4 4L18 8" />
+                          </svg>
+                        </button>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          ))}
+
+        {(s.id === 'servicio' || s.id === 'condiciones') && (
+          <ul class:list={['wrap', 'tarjetas', `t-${s.id}`]}>
+            {porTipo(s.id).map((g) => {
+              const pdfs = pdfsDe(g.pdf);
+              return (
+                <li class="doc tarjeta vidrio" data-busca={plano(txt(g).nombre, txt(g).frase, d.saltos[s.id])}>
+                  <div class="cab-tarjeta">
+                    <span class="insignia">
+                      <img src={icono(iconoDoc[g.id] ?? 'ico-tabla')} alt="" width="24" height="24" />
+                    </span>
+                    <span class="chips">
+                      {nuevo(g.fecha) && <span class="chip rojo">{d.reciente}</span>}
+                      {pdfs.map((x) => (
+                        <span class="chip">{x.l.toUpperCase()}</span>
+                      ))}
+                    </span>
+                  </div>
+                  <h3>{txt(g).nombre}</h3>
+                  <p class="meta">
+                    PDF · {pdfs.map((x) => x.peso).join(' / ')} · {d.actualizado} {fecha(g.fecha)}
+                  </p>
+                  <div class="doc-acc">
+                    {pdfs.map(({ l, a }) => (
+                      <a class="pdf" href={a.url} target="_blank" rel="noopener" hreflang={l} title={d.idiomas[l]}>
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                          <path d={icoBajar} />
+                        </svg>
+                        {l.toUpperCase()}
+                      </a>
+                    ))}
+                    <button
+                      type="button"
+                      class="sel mini"
+                      data-sel={g.id}
+                      aria-pressed="false"
+                      aria-label={d.anadir(txt(g).nombre)}
+                      hidden
+                    >
+                      <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path class="mas" d="M12 6v12M6 12h12" />
+                        <path class="ok" d="m6 12.5 4 4L18 8" />
+                      </svg>
+                    </button>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </section>
+    ))}
+
+    <p class="wrap nada" id="nada" hidden>
+      {d.nada}
+    </p>
+
+    <!-- ——— Cierre: certificados de calidad y "¿Necesitas otro documento?", a modo de pie ——— -->
+    <section class="cierre raya" id="certificado" data-seccion>
+      <div class="wrap cierre-in">
+        <div class="falta">
+          <h2>
+            {d.falta[0]}
+            <b>{d.falta[1]}</b>
+          </h2>
+          <p>{d.faltaTexto}</p>
+          <div class="falta-links">
+            <a class="arrow" href={`mailto:${contacto.tecnico}`}>
+              {d.tecnico} · {contacto.tecnico}
+            </a>
+            <a class="arrow" href={`mailto:${contacto.comercial}`}>
+              {d.comercial} · {contacto.comercial}
+            </a>
+          </div>
+          <p class="nota">
+            {d.comprobado} {fecha(comprobado)}.
+          </p>
+        </div>
+        <div class="certificados">
+          <span class="eyebrow">{d.saltos.certificado}</span>
+          <ul class="sellos">
+            {porTipo('certificado').map((g) => {
+              const n = txt(g).nombre.replace(/^ISO\s*/, '');
+              return (
+                <li class="doc sello" data-busca={plano(txt(g).nombre, txt(g).frase, d.saltos.certificado)}>
+                  <span class="se-marca" aria-hidden="true">
+                    <svg class="se-anillo" viewBox="0 0 120 120">
+                      <defs>
+                        <path id={`c-${g.id}`} d="M60 60m-46 0a46 46 0 1 1 92 0a46 46 0 1 1-92 0" />
+                      </defs>
+                      <circle cx="60" cy="60" r="56" />
+                      <circle cx="60" cy="60" r="34" />
+                      <text>
+                        <textPath href={`#c-${g.id}`}>ORTO ALRESA · CERTIFIED · ORTO ALRESA · CERTIFIED ·</textPath>
+                      </text>
+                    </svg>
+                    <span class="se-n">
+                      <small>ISO</small>
+                      {n}
+                    </span>
+                  </span>
+                  <div class="se-txt">
+                    <h3>{txt(g).nombre}</h3>
+                    {txt(g).frase && <p>{txt(g).frase}</p>}
+                  </div>
+                  <div class="doc-acc">
+                    {pdfsDe(g.pdf).map(({ l, a, peso }) => (
+                      <a
+                        class="pdf"
+                        href={a.url}
+                        target="_blank"
+                        rel="noopener"
+                        hreflang={l}
+                        title={`${d.idiomas[l]} · ${peso}`}
+                      >
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                          <path d={icoBajar} />
+                        </svg>
+                        {l.toUpperCase()}
+                      </a>
+                    ))}
+                    <button
+                      type="button"
+                      class="sel mini"
+                      data-sel={g.id}
+                      aria-pressed="false"
+                      aria-label={d.anadir(txt(g).nombre)}
+                      hidden
+                    >
+                      <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path class="mas" d="M12 6v12M6 12h12" />
+                        <path class="ok" d="m6 12.5 4 4L18 8" />
+                      </svg>
+                    </button>
+                  </div>
+                </li>
+              );
+            })}
           </ul>
         </div>
-      ))}
-      <p class="nada" id="nada" hidden>
-        {d.nada}
-      </p>
-      <p class="nota">
-        {d.comprobado} {fecha(comprobado)}.
-      </p>
-    </div>
-  </section>
+      </div>
+    </section>
+  </div>
 
-  <section class="sec falta">
-    <div class="wrap falta-in">
-      <h2>
-        {d.falta[0]}
-        <b>{d.falta[1]}</b>
-      </h2>
-      <p>{d.faltaTexto}</p>
-      <div class="falta-links">
-        <a class="arrow" href={`mailto:${contacto.tecnico}`}>
-          {d.tecnico} · {contacto.tecnico}
-        </a>
-        <a class="arrow" href={`mailto:${contacto.comercial}`}>
-          {d.comercial} · {contacto.comercial}
-        </a>
+  <!-- La bandeja: tu selección, con el QR para abrirla en el móvil -->
+  <div class="bandeja" id="bandeja" hidden>
+    <button type="button" class="ban-qr" aria-label={d.qr}></button>
+    <span class="ban-txt">
+      <b class="ban-n" aria-live="polite"></b>
+      <small>{d.qr}</small>
+    </span>
+    <button type="button" class="ban-vaciar">
+      {d.vaciar}
+    </button>
+    <button type="button" class="ban-ver">
+      {d.verDossier}
+    </button>
+  </div>
+
+  <dialog class="dossier" id="dossier" aria-labelledby="dos-tit">
+    <div class="dos-cab">
+      <div>
+        <span class="eyebrow">{d.tuDossier}</span>
+        <h2 id="dos-tit">{d.equipos(0)}</h2>
+      </div>
+      <button type="button" class="dos-cerrar" aria-label={d.cerrar}>
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+          <path d={cruz} stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path>
+        </svg>
+      </button>
+    </div>
+    <div class="dos-qr">
+      <div class="dos-qr-img" id="dos-qr"></div>
+      <div>
+        <b>{d.qr}</b>
+        <p>{d.qrTexto}</p>
       </div>
     </div>
-  </section>
-
-  <dialog class="qr" id="qr" aria-labelledby="qr-tit">
-    <form method="dialog">
-      <button class="qr-cerrar" aria-label={d.cerrar}>
-        ×
-      </button>
-    </form>
-    <span class="eyebrow">{d.qrDe}</span>
-    <h2 id="qr-tit">{nombre(documentos[0])}</h2>
-    <div class="qr-idiomas" role="group"></div>
-    <div class="qr-img" id="qr-img"></div>
-    <p>{d.qrTexto}</p>
-    <div class="qr-acc">
-      <a class="btn red" id="qr-abrir" href={pdfs(documentos[0])[0].a.url} target="_blank" rel="noopener">
-        {d.abrir}
-      </a>
-      <button type="button" class="btn ghost" id="qr-png">
-        {d.descargarQr}
-      </button>
-      <button type="button" class="btn ghost" id="qr-copiar" data-ok={d.copiado}>
-        {d.copiar}
-      </button>
+    <ol class="dos-lista"></ol>
+    <p class="dos-vacio">{d.vacio}</p>
+    <div class="dos-pie">
+      <div class="dos-acc">
+        <button type="button" class="boton rojo" id="dos-pdf">
+          {d.crearPdf}
+        </button>
+        <button type="button" class="boton" id="dos-copiar">
+          {d.copiar}
+        </button>
+        <button type="button" class="boton" id="dos-compartir" hidden>
+          {d.compartir}
+        </button>
+      </div>
+      <p>{d.dossierTexto}</p>
     </div>
   </dialog>
+
+  <dialog class="vista-pdf" id="vista-pdf" aria-labelledby="vista-pdf-tit">
+    <div class="vp-cab">
+      <h2 id="vista-pdf-tit">{tv.vistaPrevia}</h2>
+      <button type="button" class="vp-descargar">
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+          <path d={icoBajar} fill="none" stroke="currentColor" stroke-width="1.8"></path>
+        </svg>
+        {tv.descargarPdf}
+      </button>
+      <button type="button" class="vp-imprimir">
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+          <path
+            d="M7 9V4h10v5M7 17H5v-7h14v7h-2M8 14h8v6H8z"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.6"
+            stroke-linejoin="round"
+          ></path>
+        </svg>
+        {tv.imprimir}
+      </button>
+      <button type="button" class="vp-cerrar" aria-label={d.cerrar}>
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+          <path d={cruz} stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path>
+        </svg>
+      </button>
+    </div>
+    <div class="vp-cuerpo">
+      <iframe title={tv.vistaPrevia}></iframe>
+      <p class="vp-espera">{tv.preparando}</p>
+      <p class="vp-sin">{tv.sinVista}</p>
+      <p class="vp-fallo">{tv.fallo}</p>
+    </div>
+  </dialog>
+
+  <script type="application/json" id="datos-descargas" set:html={JSON.stringify(datos)} />
 </Base>
 
 <script>
+  import { excel, hoy, iniciarVistaPdf, vistaPdf, type Pie } from '../../scripts/exportar';
+  import { dossierPdf, type EquipoDossier } from '../../scripts/dossier';
   import { qrSvg } from '../../scripts/qr';
 
-  // ——— Buscador y filtros por familia ———
-  const busca = document.querySelector<HTMLInputElement>('#busca')!;
-  const chips = [...document.querySelectorAll<HTMLButtonElement>('.chip')];
-  const grupos = [...document.querySelectorAll<HTMLElement>('.grupo')];
-  const nada = document.querySelector<HTMLElement>('#nada')!;
-  let grupo = '';
+  type Doc = EquipoDossier & { rotores: { c: string[]; n: string[] }[] };
+  const datos = JSON.parse(document.getElementById('datos-descargas')!.textContent!) as {
+    docs: Record<string, Doc>;
+    idiomas: Record<string, string>;
+    t: Record<string, string>;
+    n: Record<'bandeja' | 'equipos', [string, string]>;
+    pie: Pie;
+  };
+  const { docs, t } = datos;
+  const contar = ([uno, varios]: [string, string], n: number) => (n === 1 ? uno : varios.replace('99', String(n)));
+  const esc = (s: string) =>
+    s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
   const plano = (s: string) => s.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().trim();
+  const quieto = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const guardado = (k: string) => {
+    try {
+      return localStorage.getItem(k);
+    } catch {
+      return null;
+    }
+  };
+  const guardar = (k: string, v: string) => {
+    try {
+      localStorage.setItem(k, v);
+    } catch {
+      /* sin almacenamiento: vale mientras dure la página */
+    }
+  };
+  // Lo que solo funciona con JavaScript se enseña ahora
+  for (const el of document.querySelectorAll<HTMLElement>('.descargas [hidden]:is(.sel, .xlsx)')) el.hidden = false;
+
+  // ——— Partículas de la portada: puntos sueltos que suben despacio, sin líneas; se apartan del ratón ———
+  const lienzo = document.querySelector<HTMLCanvasElement>('#particulas');
+  if (lienzo) {
+    const g = lienzo.getContext('2d')!;
+    let w = 0;
+    let h = 0;
+    type P = { x: number; y: number; r: number; v: number; o: number; fase: number; rojo: boolean };
+    let ps: P[] = [];
+    const raton = { x: -999, y: -999 };
+    const nueva = (y?: number): P => ({
+      x: Math.random() * w,
+      y: y ?? Math.random() * h,
+      r: 1.6 + Math.random() * 3.4,
+      v: 0.12 + Math.random() * 0.35,
+      o: 0.25 + Math.random() * 0.5,
+      fase: Math.random() * Math.PI * 2,
+      rojo: Math.random() < 0.38,
+    });
+    const medir = () => {
+      const r = lienzo.getBoundingClientRect();
+      const k = Math.min(devicePixelRatio || 1, 2);
+      w = r.width;
+      h = r.height;
+      lienzo.width = w * k;
+      lienzo.height = h * k;
+      g.setTransform(k, 0, 0, k, 0, 0);
+      ps = Array.from({ length: Math.round(Math.min(90, Math.max(30, (w * h) / 13000))) }, () => nueva());
+    };
+    const pintar = () => {
+      g.clearRect(0, 0, w, h);
+      for (const p of ps) {
+        g.fillStyle = p.rojo ? `rgba(221, 4, 10, ${p.o * 0.85})` : `rgba(26, 26, 26, ${p.o * 0.45})`;
+        g.beginPath();
+        g.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        g.fill();
+      }
+    };
+    let activo = true;
+    let tiempo = 0;
+    const paso = () => {
+      if (!activo) return;
+      tiempo += 0.01;
+      for (const p of ps) {
+        p.y -= p.v;
+        p.x += Math.sin(tiempo + p.fase) * 0.25;
+        const dx = p.x - raton.x;
+        const dy = p.y - raton.y;
+        const dist = Math.hypot(dx, dy);
+        if (dist < 120 && dist > 0) {
+          p.x += (dx / dist) * 1.2;
+          p.y += (dy / dist) * 1.2;
+        }
+        if (p.y < -6) Object.assign(p, nueva(h + 6));
+      }
+      pintar();
+      requestAnimationFrame(paso);
+    };
+    medir();
+    pintar();
+    if (!quieto) {
+      new IntersectionObserver(([e]) => {
+        const antes = activo;
+        activo = e.isIntersecting;
+        if (activo && !antes) requestAnimationFrame(paso);
+      }).observe(lienzo);
+      requestAnimationFrame(paso);
+      const portada = lienzo.parentElement!;
+      portada.addEventListener('pointermove', (e) => {
+        const r = lienzo.getBoundingClientRect();
+        raton.x = e.clientX - r.left;
+        raton.y = e.clientY - r.top;
+      });
+      portada.addEventListener('pointerleave', () => Object.assign(raton, { x: -999, y: -999 }));
+    }
+    let espera = 0;
+    addEventListener('resize', () => {
+      clearTimeout(espera);
+      espera = window.setTimeout(() => {
+        medir();
+        pintar();
+      }, 200);
+    });
+  }
+
+  // ——— La sección que se está leyendo: su título enciende la barra roja ———
+  const secciones = [...document.querySelectorAll<HTMLElement>('[data-seccion]')];
+  if ('IntersectionObserver' in window) {
+    const vistas = new IntersectionObserver(
+      (es) => {
+        for (const e of es) e.target.classList.toggle('actual', e.isIntersecting);
+      },
+      { rootMargin: '-35% 0px -50% 0px' },
+    );
+    secciones.forEach((s) => vistas.observe(s));
+  }
+
+  // ——— Buscador ———
+  const busca = document.querySelector<HTMLInputElement>('#busca')!;
+  const nada = document.querySelector<HTMLElement>('#nada')!;
   const filtrar = () => {
     const q = plano(busca.value);
     let total = 0;
-    for (const g of grupos) {
-      let n = 0;
-      for (const f of g.querySelectorAll<HTMLElement>('.fila')) {
-        const ok = (!grupo || g.dataset.grupo === grupo) && (!q || f.dataset.texto!.includes(q));
-        f.hidden = !ok;
-        if (ok) n++;
-      }
-      g.hidden = !n;
+    const destacado = document.querySelector<HTMLElement>('.destacado');
+    if (destacado) {
+      destacado.hidden = !!q && !destacado.dataset.busca!.includes(q);
+      if (!destacado.hidden) total++;
+    }
+    for (const s of secciones) {
+      for (const x of s.querySelectorAll<HTMLElement>('.doc')) x.hidden = !!q && !x.dataset.busca!.includes(q);
+      for (const f of s.querySelectorAll<HTMLElement>('.familia')) f.hidden = !f.querySelector('.doc:not([hidden])');
+      const n = s.querySelectorAll('.doc:not([hidden])').length;
+      s.hidden = !n;
       total += n;
     }
     nada.hidden = total > 0;
   };
   busca.addEventListener('input', filtrar);
-  for (const c of chips)
-    c.addEventListener('click', () => {
-      grupo = c.dataset.g ?? '';
-      for (const o of chips) o.setAttribute('aria-pressed', String(o === c));
+  busca.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      busca.value = '';
       filtrar();
-    });
-
-  // ——— QR de cada PDF ———
-  type Pdf = { l: string; a: { url: string } };
-  const dlg = document.querySelector<HTMLDialogElement>('#qr')!;
-  const tit = dlg.querySelector<HTMLElement>('#qr-tit')!;
-  const img = dlg.querySelector<HTMLElement>('#qr-img')!;
-  const sel = dlg.querySelector<HTMLElement>('.qr-idiomas')!;
-  const abrir = dlg.querySelector<HTMLAnchorElement>('#qr-abrir')!;
-  const copiar = dlg.querySelector<HTMLButtonElement>('#qr-copiar')!;
-  const textoCopiar = copiar.textContent;
-  let actual = { n: '', l: '', url: '' };
-
-  const pintar = (n: string, p: Pdf) => {
-    actual = { n, l: p.l, url: p.a.url };
-    img.innerHTML = qrSvg(p.a.url, `${n} · PDF ${p.l.toUpperCase()}`);
-    abrir.href = p.a.url;
-    copiar.textContent = textoCopiar;
-    for (const b of sel.querySelectorAll('button')) b.setAttribute('aria-pressed', String(b.dataset.l === p.l));
-  };
-
-  for (const b of document.querySelectorAll<HTMLButtonElement>('.ver-qr'))
-    b.addEventListener('click', () => {
-      const { n, p } = JSON.parse(b.dataset.qr!) as { n: string; p: Pdf[] };
-      tit.textContent = n;
-      sel.replaceChildren(
-        ...p.map((x) => {
-          const o = document.createElement('button');
-          o.type = 'button';
-          o.className = 'chip';
-          o.dataset.l = x.l;
-          o.textContent = `PDF ${x.l.toUpperCase()}`;
-          o.addEventListener('click', () => pintar(n, x));
-          return o;
-        }),
-      );
-      sel.hidden = p.length < 2;
-      pintar(n, p[0]);
-      dlg.showModal();
-    });
-  dlg.addEventListener('click', (e) => {
-    if (e.target === dlg) dlg.close();
-  });
-
-  copiar.addEventListener('click', async () => {
-    try {
-      await navigator.clipboard.writeText(actual.url);
-      copiar.textContent = copiar.dataset.ok ?? '';
-    } catch {
-      window.prompt('', actual.url);
     }
   });
 
-  // PNG de 1024 px, con el nombre debajo, listo para imprimir
-  dlg.querySelector('#qr-png')!.addEventListener('click', () => {
-    const svg = img.querySelector('svg')!.outerHTML;
-    const im = new Image();
-    im.onload = () => {
-      const lado = 1024;
-      const pie = 96;
-      const c = document.createElement('canvas');
-      c.width = lado;
-      c.height = lado + pie;
-      const x = c.getContext('2d')!;
-      x.fillStyle = '#fff';
-      x.fillRect(0, 0, c.width, c.height);
-      x.imageSmoothingEnabled = false;
-      x.drawImage(im, 0, 0, lado, lado);
-      x.fillStyle = '#1a1a1a';
-      x.font = '700 44px "Helvetica Neue Cond", "Arial Narrow", Arial, sans-serif';
-      x.textAlign = 'center';
-      x.fillText(`${actual.n} · PDF ${actual.l.toUpperCase()}`, lado / 2, lado + 40, lado - 80);
-      const a = document.createElement('a');
-      a.download = `qr-${plano(actual.n).replace(/[^a-z0-9]+/g, '-')}-${actual.l}.png`;
-      a.href = c.toDataURL('image/png');
-      a.click();
-    };
-    im.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+  // ——— Excel de rotores, con los datos de la ficha ———
+  for (const b of document.querySelectorAll<HTMLButtonElement>('[data-excel]'))
+    b.addEventListener('click', () => {
+      const slug = b.dataset.excel!;
+      const x = docs[slug];
+      const [c0, c1, c2, c3, c4] = t.columnas.split('|');
+      excel({
+        titulo: `${x.nombre}${x.variantes ? ` · ${x.variantes}` : ''} · ${t.rotores}`,
+        tipo: t.rotores,
+        fecha: hoy().texto,
+        datos: [[t.etqEquipo, x.nombre]],
+        cabecera: [{ t: c0 }, { t: c1 }, { t: c2, ud: 'rpm', num: true }, { t: c3, ud: 'x g', num: true }, { t: c4 }],
+        filas: x.rotores.map((r) => [
+          { t: r.c[0] },
+          { t: r.c[1] },
+          { t: r.c[2], n: Number(r.n[0]) || undefined },
+          { t: r.c[3], n: Number(r.n[1]) || undefined },
+          { t: r.c[4] },
+        ]),
+        archivo: `rotores-${slug}-orto-alresa`,
+      });
+    });
+
+  // ——— Tu selección: en la dirección (?sel=) o en el navegador; un QR la abre en el móvil ———
+  const CLAVE = 'oa-dossier';
+  const params = new URLSearchParams(location.search);
+  const venia = params.has('sel');
+  const leer = (): string[] => {
+    const url = params.get('sel');
+    if (url !== null) return url.split(',').filter((s) => docs[s]);
+    try {
+      return (JSON.parse(guardado(CLAVE) ?? '[]') as string[]).filter((s) => docs[s]);
+    } catch {
+      return [];
+    }
+  };
+  let sel = [...new Set(leer())];
+  // Lo que abre el QR: con un solo documento, su PDF directamente; con varios, esta página con la selección
+  const destinoQr = () => (sel.length === 1 ? docs[sel[0]].pdfs[0].url : enlace());
+  const enlace = () => {
+    const u = new URL(location.pathname, location.origin);
+    if (sel.length) u.searchParams.set('sel', sel.join(','));
+    return u.href.replace(/%2C/g, ',');
+  };
+  const bandeja = document.querySelector<HTMLElement>('#bandeja')!;
+  const banQr = bandeja.querySelector<HTMLButtonElement>('.ban-qr')!;
+  const banN = bandeja.querySelector<HTMLElement>('.ban-n')!;
+  const dlg = document.querySelector<HTMLDialogElement>('#dossier')!;
+  const lista = dlg.querySelector<HTMLOListElement>('.dos-lista')!;
+  const dosQr = dlg.querySelector<HTMLElement>('#dos-qr')!;
+  const pintarSel = () => {
+    guardar(CLAVE, JSON.stringify(sel));
+    history.replaceState(null, '', enlace() + location.hash);
+    for (const b of document.querySelectorAll<HTMLButtonElement>('.sel')) {
+      const si = sel.includes(b.dataset.sel!);
+      b.setAttribute('aria-pressed', String(si));
+      b.closest('.doc, .destacado')?.classList.toggle('elegido', si);
+    }
+    bandeja.hidden = !sel.length;
+    document.body.classList.toggle('con-bandeja', sel.length > 0);
+    banN.textContent = contar(datos.n.bandeja, sel.length);
+    if (sel.length) {
+      const qr = qrSvg(destinoQr(), '');
+      banQr.innerHTML = qr;
+      dosQr.innerHTML = `${qr}<i class="barrido"></i>`;
+    }
+    dlg.querySelector('#dos-tit')!.textContent = contar(datos.n.equipos, sel.length);
+    dlg.classList.toggle('vacio', !sel.length);
+    lista.innerHTML = sel
+      .map((s) => {
+        const x = docs[s];
+        return `<li data-s="${s}"><span class="dl-pdf">PDF</span><div class="dl-txt">
+          <b>${esc(x.nombre)}${x.variantes ? ` <span>${esc(x.variantes)}</span>` : ''}</b>
+          <small>${esc(x.grupo)}</small>
+          <div class="dl-pdfs">${x.pdfs
+            .map(
+              (p) =>
+                `<a href="${esc(p.url)}" target="_blank" rel="noopener"><b>${p.l.toUpperCase()}</b> <span>${esc(p.peso)}</span></a>`,
+            )
+            .join('')}</div></div>
+          <button type="button" class="dl-quitar" aria-label="${esc(t.quitar.replace('{x}', x.nombre))}">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button></li>`;
+      })
+      .join('');
+  };
+  for (const b of document.querySelectorAll<HTMLButtonElement>('.sel'))
+    b.addEventListener('click', () => {
+      const s = b.dataset.sel!;
+      const entra = !sel.includes(s);
+      sel = entra ? [...sel, s] : sel.filter((o) => o !== s);
+      pintarSel();
+      if (entra && !quieto) {
+        bandeja.classList.remove('late');
+        void bandeja.offsetWidth;
+        bandeja.classList.add('late');
+      }
+    });
+  lista.addEventListener('click', (e) => {
+    const li = (e.target as HTMLElement).closest<HTMLElement>('li');
+    if (li && (e.target as HTMLElement).closest('.dl-quitar')) {
+      sel = sel.filter((o) => o !== li.dataset.s);
+      pintarSel();
+    }
   });
+  bandeja.querySelector('.ban-vaciar')!.addEventListener('click', () => {
+    sel = [];
+    pintarSel();
+  });
+  bandeja.querySelector('.ban-ver')!.addEventListener('click', () => dlg.showModal());
+  banQr.addEventListener('click', () => dlg.showModal());
+  dlg.querySelector('.dos-cerrar')!.addEventListener('click', () => dlg.close());
+  dlg.addEventListener('click', (e) => {
+    if (e.target === dlg) dlg.close();
+  });
+  const copiar = async (texto: string, boton: HTMLButtonElement) => {
+    try {
+      await navigator.clipboard.writeText(texto);
+      boton.textContent = t.copiado;
+    } catch {
+      window.prompt('', texto);
+    }
+  };
+  const copiarDos = dlg.querySelector<HTMLButtonElement>('#dos-copiar')!;
+  copiarDos.addEventListener('click', () => void copiar(enlace(), copiarDos));
+  const compartir = dlg.querySelector<HTMLButtonElement>('#dos-compartir')!;
+  if ('share' in navigator) {
+    compartir.hidden = false;
+    compartir.addEventListener('click', () => {
+      void navigator.share({ title: document.title, url: enlace() }).catch(() => {});
+    });
+  }
+  iniciarVistaPdf();
+  dlg.querySelector('#dos-pdf')!.addEventListener('click', () => {
+    if (!sel.length) return;
+    const equipos = sel.map((s) => docs[s]);
+    const todos = equipos.flatMap((e) => e.pdfs);
+    const idiomas = [...new Set(todos.map((p) => p.l))].map((l) => datos.idiomas[l]);
+    const f = hoy();
+    void vistaPdf(
+      () =>
+        dossierPdf(
+          {
+            tipo: t.tipo,
+            titulo: t.titulo,
+            fecha: f.texto,
+            datos: [
+              [t.etqEquipos, String(equipos.length)],
+              [t.etqCatalogos, String(todos.length)],
+              [t.etqIdiomas, idiomas.join(' · ')],
+            ],
+            intro: t.intro,
+            verFicha: t.verFicha,
+            enlace: [t.enlace, enlace()],
+            equipos,
+          },
+          datos.pie,
+        ),
+      `${t.archivo}-${f.archivo}`,
+    );
+  });
+  pintarSel();
+  if (venia && sel.length) dlg.showModal();
+
+  // ——— Entradas al aparecer ———
+  if (!quieto && 'IntersectionObserver' in window) {
+    const io = new IntersectionObserver(
+      (es) =>
+        es.forEach((e) => {
+          if (!e.isIntersecting) return;
+          e.target.classList.add('visto');
+          io.unobserve(e.target);
+        }),
+      { rootMargin: '0px 0px -6% 0px' },
+    );
+    document.documentElement.classList.add('animar');
+    document.querySelectorAll<HTMLElement>('.doc, .destacado').forEach((el, i) => {
+      el.style.setProperty('--retraso', `${(i % 4) * 60}ms`);
+      io.observe(el);
+    });
+  }
 </script>
 
 <style>
+  .descargas {
+    --gris-fondo: #eceef0;
+    background: var(--gris-fondo);
+    padding-bottom: clamp(56px, 7vw, 104px);
+  }
+  :global(body:has(.descargas)) {
+    background: var(--gris-fondo, #eceef0);
+  }
+  /* La cabecera blanca se separa siempre de la portada */
+  :global(body:has(.descargas) .top) {
+    box-shadow: 0 8px 24px -10px rgba(21, 23, 25, 0.25);
+  }
   .sr {
     position: absolute;
     width: 1px;
@@ -357,456 +1023,1439 @@ const pagina = new URL(Astro.url.pathname, Astro.site).href;
     overflow: hidden;
     clip-path: inset(50%);
   }
-
-  /* ——— Cabecera ——— */
-  .cab {
-    border-bottom: 1px solid var(--line);
+  h1 b,
+  h2 b {
+    font-weight: 700;
   }
-  .cab-in {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    gap: clamp(32px, 6vw, 96px);
-    align-items: end;
+
+  /* ——— Portada: la foto del catálogo a la izquierda, el texto a la derecha sobre un velo gris ——— */
+  .portada {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    min-height: min(82vh, 780px);
+    display: flex;
+    align-items: center;
+    padding: clamp(64px, 8vw, 112px) 0;
+    background: #d9dcdf;
+  }
+  .portada-foto {
+    position: absolute;
+    inset: 0;
+    z-index: -3;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 10% 50%;
+    animation: acerca 28s ease-in-out infinite alternate;
+  }
+  @keyframes acerca {
+    to {
+      transform: scale(1.06) translateX(1%);
+    }
+  }
+  .velo {
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+    background:
+      linear-gradient(
+        270deg,
+        rgba(236, 238, 240, 0.96) 0%,
+        rgba(236, 238, 240, 0.86) 32%,
+        rgba(236, 238, 240, 0.12) 52%,
+        rgba(236, 238, 240, 0) 62%
+      ),
+      linear-gradient(180deg, transparent 70%, var(--gris-fondo) 100%);
+  }
+  .particulas {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    width: 100%;
+    height: 100%;
+  }
+  .portada-in {
+    display: flex;
+    justify-content: flex-end;
+    width: 100%;
+  }
+  .portada-txt {
+    width: min(600px, 100%);
   }
   h1 {
+    margin-top: 22px;
     font-weight: 300;
     font-size: var(--t-titulo);
-    line-height: 0.95;
-    margin-top: 22px;
-    max-width: 14ch;
+    line-height: 0.93;
   }
   .lead {
-    margin-top: 24px;
+    margin-top: 20px;
     color: var(--body);
     font-size: var(--t-sub);
-    max-width: 52ch;
-  }
-  .cifras {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 16px clamp(28px, 4vw, 56px);
-    margin-top: 40px;
-  }
-  .cifras div {
-    display: flex;
-    flex-direction: column-reverse;
-    border-left: 2px solid var(--red);
-    padding-left: 14px;
-  }
-  .cifras dd {
-    font-weight: 700;
-    font-size: clamp(40px, 4.4vw, 60px);
-    line-height: 1;
-  }
-  .cifras dt {
-    color: var(--muted);
-    font-size: 15px;
-    margin-top: 6px;
-  }
-  .movil {
-    width: 220px;
-    border: 1px solid var(--line);
-    padding: 16px 16px 18px;
-    background: var(--white);
-  }
-  .movil-qr :global(svg) {
-    display: block;
-    width: 100%;
-    height: auto;
-  }
-  .movil p {
-    margin-top: 10px;
-    font-size: 15px;
-    line-height: 1.3;
-    color: var(--body);
-  }
-  .movil b {
-    display: block;
-    color: var(--ink);
-    font-size: 18px;
-  }
-
-  h2 b,
-  h1 b {
-    font-weight: 700;
-  }
-
-  /* ——— Recientes ——— */
-  .nuevos {
-    background: var(--band);
-  }
-  .tarjetas {
-    list-style: none;
-    padding: 0;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 24px;
-  }
-  .tarjeta {
-    background: var(--white);
-    border: 1px solid var(--line);
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    transition: border-color 0.2s var(--ease);
-  }
-  .tarjeta:hover {
-    border-color: var(--ink);
-  }
-  .foto {
-    display: grid;
-    place-items: center;
-    aspect-ratio: 4 / 3;
-    background: var(--panel);
-    margin: -20px -20px 6px;
-    overflow: hidden;
-  }
-  .foto img {
-    width: 72%;
-    height: 82%;
-    object-fit: contain;
-    transition: transform 0.4s var(--ease);
-  }
-  .tarjeta:hover .foto img {
-    transform: scale(1.04);
-  }
-  .fecha {
-    font-weight: 700;
-    font-size: 12px;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--red);
-  }
-  .tarjeta h3 {
-    font-size: 28px;
-    line-height: 1;
-  }
-  .tarjeta h3 span,
-  .fila-nombre a span {
-    font-weight: 300;
-  }
-  .tarjeta p {
-    color: var(--body);
-    font-size: 16px;
-    flex: 1;
-  }
-
-  /* Botones de descarga: idioma en negrita y peso en fino; el QR al lado */
-  .acciones {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-top: 6px;
-  }
-  .pdf,
-  .ver-qr {
-    display: inline-flex;
-    align-items: baseline;
-    gap: 8px;
-    padding: 10px 14px;
-    border: 1px solid var(--ink);
-    text-decoration: none;
-    font: 700 15px/1 var(--f);
-    background: var(--white);
-    color: var(--ink);
-    cursor: pointer;
-    transition:
-      background 0.2s var(--ease),
-      color 0.2s var(--ease);
-  }
-  .pdf span {
-    font-weight: 300;
-    font-size: 13px;
-  }
-  .pdf:hover,
-  .ver-qr:hover {
-    background: var(--ink);
-    color: #fff;
-  }
-  .ver-qr {
-    border-color: var(--red);
-    color: var(--red);
-  }
-  .ver-qr:hover {
-    background: var(--red);
-  }
-
-  /* ——— Todos ——— */
-  .barra {
-    position: sticky;
-    top: 76px;
-    z-index: 5;
-    background: var(--white);
-    display: flex;
-    flex-wrap: wrap;
-    gap: 14px 24px;
-    align-items: center;
-    padding-block: 14px;
-    border-bottom: 1px solid var(--line);
-    margin-bottom: 8px;
   }
   .busca {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 14px;
+    height: 62px;
+    margin-top: 30px;
+    padding: 0 20px;
+    background: rgba(255, 255, 255, 0.9);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
     border-bottom: 2px solid var(--ink);
-    min-width: min(320px, 100%);
-    flex: 0 1 360px;
+    box-shadow: 0 22px 44px -28px rgba(21, 23, 25, 0.5);
+    transition:
+      border-color var(--dur-1) ease,
+      box-shadow var(--dur-2) ease;
+  }
+  .busca:focus-within {
+    border-bottom-color: var(--red);
   }
   .busca svg {
-    width: 20px;
-    height: 20px;
-    fill: none;
-    stroke: var(--ink);
-    stroke-width: 2;
+    width: 22px;
+    height: 22px;
     flex: none;
+    fill: none;
+    stroke: var(--red);
+    stroke-width: 2;
   }
   .busca input {
+    flex: 1;
+    min-width: 0;
     border: 0;
     outline: 0;
-    font: 300 19px var(--f);
-    padding: 8px 0;
+    background: none;
+    font: 300 clamp(19px, 1.8vw, 23px) var(--f);
+  }
+  .resumen {
+    margin-top: 14px;
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  /* ——— Índice: iconos de la marca, sin números ——— */
+  .indice {
+    background: #fff;
+  }
+  .indice ol {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    margin-block: 0;
+    list-style: none;
+  }
+  .indice li + li {
+    border-left: 1px solid rgba(21, 23, 25, 0.08);
+  }
+  .indice a {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 22px 20px;
+    text-decoration: none;
+    transition: background var(--dur-2) ease;
+  }
+  .indice a::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 3px;
+    background: var(--red);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform var(--dur-3) var(--ease-out);
+  }
+  .indice a:hover {
+    background: #f7f8f8;
+  }
+  .indice a:hover::after {
+    transform: scaleX(1);
+  }
+  .ind-ico {
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    flex: none;
+    background: var(--gris-fondo);
+    transition:
+      background var(--dur-2) ease,
+      transform var(--dur-3) var(--ease-out);
+  }
+  .ind-ico img {
+    width: 26px;
+    height: 26px;
+    transition: filter var(--dur-2) ease;
+  }
+  .indice a:hover .ind-ico {
+    background: var(--red);
+    transform: rotate(-6deg);
+  }
+  .indice a:hover .ind-ico img {
+    filter: brightness(0) invert(1);
+  }
+  .ind-txt b {
+    display: block;
+    font-size: 18px;
+    line-height: 1.1;
+  }
+  .ind-txt small {
+    font-size: 14px;
+    color: var(--muted);
+  }
+
+  /* ——— Catálogo general ——— */
+  .destacado {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+    margin-top: clamp(56px, 7vw, 104px);
+    background: #fff;
+  }
+  .des-foto {
+    position: relative;
+    overflow: hidden;
+    min-height: 460px;
+  }
+  .des-foto img {
+    position: absolute;
+    inset: 0;
     width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 8% 60%;
+    transition: transform 1.2s var(--ease-out);
+  }
+  .destacado:hover .des-foto img {
+    transform: scale(1.05);
+  }
+  .des-foto::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-left: 6px solid var(--red);
+    background: linear-gradient(90deg, transparent 75%, #fff 100%);
+  }
+  .des-txt {
+    align-self: center;
+    padding: clamp(40px, 5vw, 80px) clamp(24px, 5vw, 80px) clamp(40px, 5vw, 80px) clamp(16px, 2vw, 32px);
+  }
+  .des-txt h2 {
+    margin-top: 16px;
+    font-size: clamp(44px, 5vw, 76px);
+    line-height: 0.92;
+  }
+  .des-txt > p {
+    margin-top: 16px;
+    max-width: 38ch;
+    color: var(--body);
+    font-size: var(--t-sub);
+  }
+  .ficha-doc {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px clamp(20px, 3vw, 40px);
+    margin: 28px 0 0;
+  }
+  .ficha-doc div {
+    display: flex;
+    flex-direction: column-reverse;
+    padding-left: 12px;
+    border-left: 2px solid var(--red);
+  }
+  .ficha-doc dt {
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .ficha-doc dd {
+    margin: 0;
+    font-weight: 700;
+    font-size: 21px;
+  }
+  .acc {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 30px;
+  }
+
+  /* ——— Secciones: el título con la barra roja que crece al llegar a él ——— */
+  .seccion {
+    padding-top: clamp(64px, 8vw, 112px);
+    scroll-margin-top: 60px;
+  }
+  .sec-cab {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 0.9fr);
+    gap: 10px 40px;
+    align-items: end;
+    padding-top: 30px;
+    margin-bottom: 32px;
+  }
+  .sec-cab h2 {
+    position: relative;
+    font-weight: 300;
+    font-size: clamp(34px, 3.6vw, 54px);
+    line-height: 0.95;
+  }
+  .sec-cab h2::before {
+    content: '';
+    position: absolute;
+    top: 0.08em;
+    bottom: 0.08em;
+    left: calc(-1 * clamp(12px, 1.4vw, 22px));
+    width: 4px;
+    background: var(--red);
+    transform: scaleY(0);
+    transform-origin: top;
+    transition: transform var(--dur-4) var(--ease-out);
+  }
+  .actual .sec-cab h2::before {
+    transform: scaleY(1);
+  }
+  .sec-cab p {
+    max-width: 44ch;
+    color: var(--body);
+    font-size: 18px;
+  }
+  :global(html.animar) :is(.doc, .destacado) {
+    opacity: 0;
+    translate: 0 22px;
+  }
+  :global(html.animar) :is(.doc, .destacado).visto {
+    opacity: 1;
+    translate: 0 0;
+    transition:
+      opacity 0.7s var(--ease-out) var(--retraso, 0ms),
+      translate 0.7s var(--ease-out) var(--retraso, 0ms);
+  }
+  .nuevo {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-right: 10px;
+    font-weight: 700;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--red);
+  }
+  .nuevo::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    background: var(--red);
+  }
+  .meta {
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  /* Botones de descarga: barrido de abajo arriba */
+  .doc-acc {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+  }
+  .pdf {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 36px;
+    padding: 0 12px;
+    border: 1px solid var(--ink);
     background: transparent;
+    color: var(--ink);
+    font: 700 14px/1 var(--f);
+    text-decoration: none;
+    cursor: pointer;
+    transition: color var(--dur-2) ease;
+  }
+  .pdf::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: var(--ink);
+    transform: scaleY(0);
+    transform-origin: bottom;
+    transition: transform var(--dur-2) var(--ease-out);
+  }
+  .pdf:hover {
+    color: #fff;
+  }
+  .pdf:hover::before {
+    transform: scaleY(1);
+  }
+  .pdf svg,
+  .sel svg,
+  .boton svg {
+    width: 16px;
+    height: 16px;
+    flex: none;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+  }
+  .xlsx {
+    border-color: #1e7f5c;
+    color: #1e7f5c;
+  }
+  .xlsx::before {
+    background: #1e7f5c;
+  }
+  .sel.mini {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    margin-left: auto;
+    border: 1px solid rgba(21, 23, 25, 0.22);
+    background: transparent;
+    color: var(--ink);
+    cursor: pointer;
+    transition:
+      background var(--dur-1) ease,
+      border-color var(--dur-1) ease,
+      color var(--dur-1) ease,
+      transform var(--dur-2) var(--ease-out);
+  }
+  .sel.mini:hover {
+    border-color: var(--red);
+    color: var(--red);
+    transform: rotate(90deg);
+  }
+  .sel .ok,
+  .sel[aria-pressed='true'] .mas {
+    display: none;
+  }
+  .sel[aria-pressed='true'] .ok {
+    display: inline;
+  }
+  .sel.mini[aria-pressed='true'] {
+    background: var(--red);
+    border-color: var(--red);
+    color: #fff;
+    transform: none;
+  }
+  .sel[hidden],
+  .xlsx[hidden] {
+    display: none;
+  }
+
+  /* — Catálogos generales: portadas con fotos distintas; la información sube al pasar — */
+  .portadas {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+    margin-block: 0;
+    list-style: none;
+  }
+  .portada-doc {
+    position: relative;
+    overflow: hidden;
+    aspect-ratio: 3 / 4;
+    background: var(--carbon);
+    color: #fff;
+  }
+  .portada-doc > img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: grayscale(0.3);
+    transition:
+      transform 1s var(--ease-out),
+      filter var(--dur-3) ease;
+  }
+  .portada-doc::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background: linear-gradient(180deg, rgba(21, 23, 25, 0.05) 35%, rgba(21, 23, 25, 0.9) 100%);
+  }
+  .portada-doc::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 2;
+    width: 5px;
+    background: var(--red);
+    transform: scaleY(0.25);
+    transform-origin: bottom;
+    transition: transform var(--dur-3) var(--ease-out);
+  }
+  .pd-cab {
+    position: absolute;
+    inset: auto 0 0;
+    z-index: 2;
+    padding: 22px 22px 24px;
+    transition: transform var(--dur-3) var(--ease-out);
+  }
+  .pd-cab h3 {
+    margin-top: 6px;
+    font-size: clamp(22px, 1.9vw, 28px);
+    line-height: 1;
+  }
+  .portada-doc .nuevo {
+    color: #fff;
+  }
+  .pd-info {
+    position: absolute;
+    inset: auto 0 0;
+    z-index: 3;
+    display: grid;
+    gap: 10px;
+    padding: 20px 22px 22px;
+    background: rgba(255, 255, 255, 0.94);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+    color: var(--ink);
+    transform: translateY(101%);
+    transition: transform var(--dur-3) var(--ease-out);
+  }
+  .pd-info p:not(.meta) {
+    font-size: 15px;
+    color: var(--body);
+  }
+  .portada-doc:hover > img,
+  .portada-doc:focus-within > img {
+    transform: scale(1.08);
+    filter: none;
+  }
+  .portada-doc:hover::after,
+  .portada-doc:focus-within::after,
+  .portada-doc.elegido::after {
+    transform: none;
+  }
+  .portada-doc:hover .pd-info,
+  .portada-doc:focus-within .pd-info {
+    transform: none;
+  }
+  .portada-doc:hover .pd-cab,
+  .portada-doc:focus-within .pd-cab {
+    transform: translateY(-104px);
+  }
+
+  /* — Tarjetas de cristal: equipos, servicio técnico y condiciones — */
+  /* Detrás, manchas de luz suaves que se mueven: es lo que hace que el cristal se note */
+  .sec-equipos,
+  .sec-servicio,
+  .sec-condiciones {
+    position: relative;
+    isolation: isolate;
+    overflow: clip;
+  }
+  .sec-equipos::before,
+  .sec-equipos::after,
+  .sec-servicio::before,
+  .sec-condiciones::after {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    width: 520px;
+    height: 520px;
+    border-radius: 50%;
+    filter: blur(90px);
+    pointer-events: none;
+    animation: deriva 24s ease-in-out infinite alternate;
+  }
+  .sec-equipos::before {
+    top: 10%;
+    left: -140px;
+    background: rgba(221, 4, 10, 0.16);
+  }
+  .sec-equipos::after {
+    bottom: 5%;
+    right: -120px;
+    background: rgba(120, 132, 142, 0.35);
+    animation-duration: 30s;
+  }
+  .sec-servicio::before {
+    top: 20%;
+    right: -100px;
+    background: rgba(221, 4, 10, 0.13);
+  }
+  .sec-condiciones::after {
+    bottom: 0;
+    left: -120px;
+    background: rgba(120, 132, 142, 0.3);
+  }
+  @keyframes deriva {
+    to {
+      transform: translate(60px, -40px) scale(1.15);
+    }
+  }
+  .familia + .familia {
+    margin-top: 34px;
+  }
+  .fam-tit {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 14px;
+    font-size: 13px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+  .fam-tit span {
+    color: var(--red);
+  }
+  .equipos,
+  .tarjetas {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+    margin-block: 0;
+    padding-block: 0;
+    list-style: none;
+  }
+  .t-servicio {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .vidrio {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.5);
+    -webkit-backdrop-filter: blur(18px) saturate(1.4);
+    backdrop-filter: blur(18px) saturate(1.4);
+    border: 1px solid rgba(255, 255, 255, 0.85);
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.9) inset,
+      0 16px 40px -28px rgba(21, 23, 25, 0.45);
+    transition:
+      transform var(--dur-3) var(--ease-out),
+      background var(--dur-2) ease,
+      box-shadow var(--dur-3) ease;
+  }
+  /* Al pasar: sube, se aclara y se enciende el filo rojo de arriba */
+  .vidrio::before {
+    content: '';
+    position: absolute;
+    inset: -1px -1px auto;
+    height: 3px;
+    background: var(--red);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform var(--dur-3) var(--ease-out);
+  }
+  .vidrio:hover {
+    transform: translateY(-4px);
+    background: rgba(255, 255, 255, 0.78);
+    box-shadow:
+      0 1px 0 #fff inset,
+      0 28px 50px -28px rgba(21, 23, 25, 0.5);
+  }
+  .vidrio:hover::before,
+  .vidrio.elegido::before {
+    transform: scaleX(1);
+  }
+  .vidrio.elegido {
+    background: rgba(255, 255, 255, 0.85);
+  }
+  .cab-tarjeta {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 6px;
+  }
+  /* La insignia: el icono de la marca en blanco sobre un cuadro rojo */
+  .insignia {
+    display: grid;
+    place-items: center;
+    width: 46px;
+    height: 46px;
+    flex: none;
+    background: linear-gradient(135deg, var(--red), var(--red-d));
+    box-shadow: 0 10px 20px -10px rgba(221, 4, 10, 0.7);
+    transition: transform var(--dur-3) var(--ease-out);
+  }
+  .insignia img {
+    width: 24px;
+    height: 24px;
+    filter: brightness(0) invert(1);
+  }
+  .vidrio:hover .insignia {
+    transform: rotate(-8deg) scale(1.06);
   }
   .chips {
     display: flex;
     flex-wrap: wrap;
-    gap: 6px;
+    justify-content: flex-end;
+    gap: 4px;
   }
   .chip {
-    border: 1px solid var(--line);
-    background: var(--white);
-    padding: 8px 12px;
-    font: 700 15px/1 var(--f);
-    cursor: pointer;
-    color: var(--ink);
+    padding: 4px 8px;
+    border: 1px solid rgba(21, 23, 25, 0.14);
+    background: rgba(255, 255, 255, 0.7);
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--body);
   }
-  .chip span {
+  .chip.rojo {
+    border-color: var(--red);
+    background: var(--red);
+    color: #fff;
+  }
+  .chip.verde {
+    border-color: rgba(30, 127, 92, 0.4);
+    color: #1e7f5c;
+  }
+  .vidrio h3,
+  .vidrio h4 {
+    font-size: 22px;
+    line-height: 1.05;
+  }
+  .vidrio h4 a {
+    text-decoration: none;
+  }
+  .vidrio h4 a:hover {
+    color: var(--red);
+  }
+  .vidrio h4 span {
+    margin-left: 0.3em;
     font-weight: 300;
     color: var(--muted);
   }
-  .chip[aria-pressed='true'] {
+  .eq-frase {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    font-size: 14px;
+    line-height: 1.3;
+    color: var(--body);
+  }
+  .vidrio .meta {
+    margin-top: auto;
+    padding-top: 4px;
+  }
+  .vidrio .doc-acc {
+    margin-top: 10px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(21, 23, 25, 0.08);
+  }
+
+  /* Botones grandes */
+  .boton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 44px;
+    padding: 0 18px;
+    border: 1px solid rgba(21, 23, 25, 0.22);
+    background: #fff;
+    color: var(--ink);
+    font: 700 15px/1 var(--f);
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+    transition:
+      background var(--dur-1) ease,
+      border-color var(--dur-1) ease,
+      color var(--dur-1) ease;
+  }
+  .boton.grande {
+    height: 56px;
+    padding: 0 28px;
+    font-size: 17px;
+  }
+  .boton:hover {
+    border-color: var(--ink);
+  }
+  .boton.negro {
     background: var(--ink);
     border-color: var(--ink);
     color: #fff;
   }
-  .chip[aria-pressed='true'] span {
-    color: var(--steel);
-  }
-  .grupo-tit {
-    font-size: 15px;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    margin: 40px 0 0;
-    padding-bottom: 12px;
-    border-bottom: 2px solid var(--ink);
-    display: flex;
-    gap: 10px;
-  }
-  .grupo-tit span {
-    color: var(--red);
-  }
-  .filas {
-    list-style: none;
-    padding: 0;
-  }
-  .fila {
-    display: grid;
-    grid-template-columns: 64px minmax(0, 1fr) 150px auto;
-    gap: 20px;
-    align-items: center;
-    padding: 14px 0;
-    border-bottom: 1px solid var(--line);
-  }
-  .fila > img {
-    width: 64px;
-    height: 64px;
-    object-fit: contain;
-    background: var(--panel);
-    padding: 6px;
-  }
-  .fila-nombre a {
-    font-weight: 700;
-    font-size: 22px;
-    text-decoration: none;
-  }
-  .fila-nombre a:hover {
-    color: var(--red);
-  }
-  .fila-nombre small {
-    display: block;
-    color: var(--muted);
-    font-size: 15px;
-    margin-top: 2px;
-  }
-  .fila-fecha {
-    font-size: 16px;
-    display: flex;
-    flex-direction: column;
-    position: relative;
-  }
-  .fila-fecha small {
-    color: var(--muted);
-    font-size: 12px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-  }
-  .punto {
-    position: absolute;
-    left: -14px;
-    bottom: 7px;
-    width: 7px;
-    height: 7px;
+  .boton.negro:hover {
     background: var(--red);
+    border-color: var(--red);
   }
-  .fila .acciones {
-    margin: 0;
-    justify-content: flex-end;
+  .boton.rojo {
+    background: var(--red);
+    border-color: var(--red);
+    color: #fff;
+  }
+  .boton.rojo:hover {
+    background: var(--red-d);
+  }
+  .boton.sel[aria-pressed='true'] {
+    background: var(--red);
+    border-color: var(--red);
+    color: #fff;
+  }
+  .boton:active,
+  .pdf:active,
+  .sel:active,
+  .indice a:active {
+    scale: 0.97;
+  }
+  .boton:focus-visible,
+  .pdf:focus-visible,
+  .sel:focus-visible,
+  .indice a:focus-visible,
+  .equipo h4 a:focus-visible {
+    outline: var(--foco);
+    outline-offset: 2px;
   }
   .nada {
-    padding: 40px 0;
+    padding: 56px 0;
     color: var(--body);
     font-size: var(--t-sub);
   }
-  .nota {
-    margin-top: 28px;
-    color: var(--muted);
-    font-size: 14px;
-  }
 
-  /* ——— ¿Falta algo? ——— */
-  .falta {
+  /* ——— Cierre: "¿Necesitas otro documento?" y los certificados, en oscuro, a modo de pie ——— */
+  .cierre {
+    margin-top: clamp(80px, 10vw, 140px);
+    padding: clamp(56px, 7vw, 96px) 0;
     background: var(--carbon);
     color: #fff;
+    scroll-margin-top: 60px;
   }
-  .falta-in {
+  .cierre-in {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px 48px;
-    align-items: end;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    gap: clamp(40px, 6vw, 96px);
   }
   .falta h2 {
     font-weight: 300;
-    font-size: clamp(36px, 4.6vw, 64px);
+    font-size: clamp(36px, 4.2vw, 58px);
     line-height: 0.95;
-    grid-row: span 2;
+    color: #fff;
   }
-  .falta p {
-    color: var(--steel);
+  .falta > p {
+    margin-top: 16px;
+    color: var(--on-dark);
     font-size: var(--t-sub);
   }
   .falta-links {
     display: flex;
     flex-direction: column;
     gap: 10px;
+    margin-top: 26px;
   }
   .falta .arrow {
     color: #fff;
   }
-
-  /* ——— Ventana del QR ——— */
-  .qr {
-    border: 0;
-    padding: 32px;
-    width: min(440px, calc(100vw - 32px));
-    margin: auto;
+  .falta .nota {
+    margin-top: 32px;
+    font-size: 13px;
+    color: var(--steel);
   }
-  .qr::backdrop {
-    background: rgb(21 23 25 / 0.72);
+  .certificados .eyebrow {
+    color: var(--on-dark);
   }
-  .qr h2 {
-    font-size: 34px;
-    line-height: 1;
-    margin-top: 12px;
+  .sellos {
+    margin: 18px 0 0;
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid var(--carbon-line);
   }
-  .qr-cerrar {
+  .sello {
+    display: grid;
+    grid-template-columns: 84px minmax(0, 1fr) auto;
+    gap: 20px;
+    align-items: center;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--carbon-line);
+  }
+  .se-marca {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 84px;
+    height: 84px;
+  }
+  .se-anillo {
     position: absolute;
-    top: 10px;
-    right: 14px;
-    border: 0;
-    background: none;
-    font-size: 32px;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    fill: none;
+    animation: gira 30s linear infinite;
+  }
+  .se-anillo circle:first-of-type {
+    stroke: rgba(255, 255, 255, 0.22);
+    stroke-width: 1;
+  }
+  .se-anillo circle:last-of-type {
+    stroke: var(--red);
+    stroke-width: 1.5;
+  }
+  .se-anillo text {
+    fill: var(--on-dark);
+    font: 700 8.4px var(--f);
+    letter-spacing: 0.22em;
+  }
+  @keyframes gira {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  .sello:hover .se-anillo {
+    animation-duration: 6s;
+  }
+  .se-n {
+    position: relative;
+    display: grid;
+    text-align: center;
+    font-weight: 700;
+    font-size: 15px;
     line-height: 1;
-    cursor: pointer;
+  }
+  .se-n small {
+    font-size: 8px;
+    letter-spacing: 0.24em;
+    color: var(--red-on-dark);
+  }
+  .se-txt h3 {
+    font-size: 22px;
+    line-height: 1;
+  }
+  .se-txt p {
+    margin-top: 4px;
+    color: var(--on-dark);
+    font-size: 15px;
+  }
+  .cierre .pdf {
+    border-color: rgba(255, 255, 255, 0.55);
+    color: #fff;
+  }
+  .cierre .pdf::before {
+    background: #fff;
+  }
+  .cierre .pdf:hover {
     color: var(--ink);
   }
-  .qr-idiomas {
-    display: flex;
-    gap: 6px;
-    margin-top: 16px;
+  .cierre .sel.mini {
+    margin-left: 0;
+    border-color: rgba(255, 255, 255, 0.35);
+    color: #fff;
   }
-  .qr-idiomas[hidden] {
+
+  /* ——— Bandeja: la selección y su QR ——— */
+  :global(body.con-bandeja) {
+    padding-bottom: 100px;
+  }
+  .bandeja {
+    position: fixed;
+    left: 50%;
+    bottom: 16px;
+    z-index: 20;
+    translate: -50% 0;
+    width: min(680px, calc(100vw - 32px));
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.92);
+    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(20px);
+    border-top: 3px solid var(--red);
+    box-shadow: 0 24px 50px -20px rgba(21, 23, 25, 0.45);
+    animation: sale var(--dur-3) var(--ease-out);
+  }
+  .bandeja[hidden] {
     display: none;
   }
-  .qr-img {
-    margin: 18px auto 0;
-    width: min(280px, 100%);
-    border: 1px solid var(--line);
+  .bandeja.late {
+    animation: late var(--dur-3) var(--ease-out);
   }
-  .qr-img :global(svg) {
+  @keyframes sale {
+    from {
+      translate: -50% 120%;
+    }
+  }
+  @keyframes late {
+    40% {
+      scale: 1.03;
+    }
+  }
+  .ban-qr {
+    width: 56px;
+    height: 56px;
+    flex: none;
+    padding: 0;
+    border: 0;
+    background: #fff;
+    cursor: pointer;
+    transition: transform var(--dur-2) var(--ease-out);
+  }
+  .ban-qr:hover {
+    transform: scale(1.08);
+  }
+  .ban-qr :global(svg) {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+  .ban-txt {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .ban-n {
+    font-size: 17px;
+  }
+  .ban-txt small {
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .ban-vaciar,
+  .ban-ver {
+    height: 44px;
+    padding: 0 16px;
+    border: 1px solid rgba(21, 23, 25, 0.2);
+    background: none;
+    font: 700 15px var(--f);
+    white-space: nowrap;
+    cursor: pointer;
+  }
+  .ban-ver {
+    border-color: var(--ink);
+    background: var(--ink);
+    color: #fff;
+    transition: background var(--dur-1) ease;
+  }
+  .ban-ver:hover {
+    background: var(--red);
+    border-color: var(--red);
+  }
+
+  /* ——— Tu selección ——— */
+  .dossier {
+    margin: 0 0 0 auto;
+    width: min(480px, 100vw);
+    max-width: none;
+    height: 100dvh;
+    max-height: none;
+    padding: 0;
+    border: 0;
+    border-left: 3px solid var(--red);
+    background: #fafafb;
+  }
+  .dossier[open] {
+    display: flex;
+    flex-direction: column;
+    animation: entra var(--dur-3) var(--ease-out);
+  }
+  @keyframes entra {
+    from {
+      translate: 100% 0;
+    }
+  }
+  .dossier::backdrop {
+    background: rgba(21, 23, 25, 0.35);
+  }
+  .dos-cab {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 24px 24px 18px;
+  }
+  .dos-cab h2 {
+    margin-top: 10px;
+    font-size: 34px;
+    line-height: 1;
+  }
+  .dos-qr {
+    display: grid;
+    grid-template-columns: 140px minmax(0, 1fr);
+    gap: 18px;
+    align-items: center;
+    margin: 0 24px;
+    padding: 16px;
+    background: #fff;
+    border-left: 3px solid var(--red);
+  }
+  .dos-qr-img {
+    position: relative;
+    overflow: hidden;
+  }
+  .dos-qr-img :global(svg) {
     display: block;
     width: 100%;
     height: auto;
   }
-  .qr p {
-    color: var(--body);
-    font-size: 16px;
-    margin-top: 16px;
+  .dos-qr-img :global(.barrido) {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    height: 2px;
+    background: var(--red);
+    box-shadow: 0 0 10px 2px rgba(221, 4, 10, 0.4);
+    animation: escanea 1.8s ease-in-out infinite alternate;
   }
-  .qr-acc {
+  @keyframes escanea {
+    to {
+      top: calc(100% - 2px);
+    }
+  }
+  .dos-qr b {
+    font-size: 21px;
+    line-height: 1.1;
+  }
+  .dos-qr p {
+    margin-top: 6px;
+    font-size: 15px;
+    color: var(--body);
+  }
+  .dos-cerrar,
+  .dos-lista :global(.dl-quitar) {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    flex: none;
+    border: 0;
+    background: none;
+    color: var(--ink);
+    cursor: pointer;
+  }
+  .dos-lista :global(.dl-quitar svg) {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+  }
+  .dos-lista :global(.dl-quitar:hover) {
+    color: var(--red);
+  }
+  .dos-lista {
+    flex: 1;
+    overflow-y: auto;
+    list-style: none;
+    margin: 12px 0 0;
+    padding: 0 24px;
+  }
+  .dos-lista :global(li) {
+    display: grid;
+    grid-template-columns: 44px minmax(0, 1fr) auto;
+    gap: 14px;
+    align-items: start;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(21, 23, 25, 0.08);
+  }
+  .dos-lista :global(.dl-pdf) {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 52px;
+    background: #fff;
+    font-weight: 700;
+    font-size: 12px;
+    color: var(--red);
+    border-left: 3px solid var(--red);
+  }
+  .dos-lista :global(.dl-txt b) {
+    font-size: 18px;
+  }
+  .dos-lista :global(.dl-txt b span) {
+    font-weight: 300;
+  }
+  .dos-lista :global(.dl-txt small) {
+    display: block;
+    font-size: 14px;
+    color: var(--muted);
+  }
+  .dos-lista :global(.dl-pdfs) {
+    display: flex;
+    gap: 6px;
+    margin-top: 6px;
+  }
+  .dos-lista :global(.dl-pdfs a) {
+    padding: 5px 9px;
+    border: 1px solid rgba(21, 23, 25, 0.2);
+    background: #fff;
+    font-size: 13px;
+    text-decoration: none;
+  }
+  .dos-lista :global(.dl-pdfs a span) {
+    font-weight: 300;
+    font-size: 12px;
+  }
+  .dos-vacio {
+    display: none;
+    flex: 1;
+    padding: 32px 24px;
+    color: var(--body);
+    font-size: 18px;
+  }
+  .dossier.vacio .dos-vacio {
+    display: block;
+  }
+  .dossier.vacio :is(.dos-lista, .dos-pie, .dos-qr) {
+    display: none;
+  }
+  .dos-pie {
+    padding: 20px 24px 24px;
+    border-top: 1px solid rgba(21, 23, 25, 0.1);
+    background: #fff;
+  }
+  .dos-acc {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
-    margin-top: 20px;
+    margin-top: 18px;
   }
-  .qr-acc .btn {
-    padding: 12px 16px;
-    font-size: 15px;
-    cursor: pointer;
-    background: var(--white);
+  .dos-acc [hidden] {
+    display: none;
   }
-  .qr-acc .btn.red {
-    background: var(--red);
+  .dos-pie p {
+    margin-top: 14px;
+    font-size: 14px;
+    color: var(--muted);
   }
 
-  @media (max-width: 1439px) {
-    .barra {
-      top: 60px;
+  /* ——— Vista previa del PDF (como la del catálogo) ——— */
+  .vista-pdf {
+    width: min(980px, calc(100vw - 32px));
+    height: min(92vh, 1200px);
+    max-width: none;
+    max-height: none;
+    padding: 0;
+    border: 0;
+    border-top: 3px solid var(--red);
+    background: #fff;
+    box-shadow: 0 40px 80px -30px rgba(17, 19, 21, 0.6);
+  }
+  .vista-pdf[open] {
+    display: flex;
+    flex-direction: column;
+  }
+  .vista-pdf::backdrop {
+    background: rgba(21, 23, 25, 0.5);
+  }
+  .vp-cab {
+    display: flex;
+    flex: none;
+    align-items: center;
+    gap: 12px;
+    padding: 14px clamp(16px, 2.4vw, 28px);
+    border-bottom: 1px solid var(--line);
+  }
+  .vp-cab h2 {
+    margin-right: auto;
+    font-size: clamp(22px, 2.2vw, 28px);
+    font-weight: 300;
+  }
+  .vp-descargar,
+  .vp-imprimir {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 44px;
+    padding: 0 18px;
+    font: 700 16px var(--f);
+    cursor: pointer;
+  }
+  .vp-descargar {
+    border: 1px solid var(--red);
+    background: var(--red);
+    color: #fff;
+  }
+  .vp-imprimir {
+    border: 1px solid var(--line);
+    background: #fff;
+    color: var(--ink);
+  }
+  .vp-imprimir svg {
+    color: var(--red);
+  }
+  .vp-cerrar {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border: 0;
+    background: none;
+    color: var(--ink);
+    cursor: pointer;
+  }
+  .vp-cuerpo {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    background: #e9ebed;
+  }
+  .vp-cuerpo iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+  .vp-espera,
+  .vp-sin,
+  .vp-fallo {
+    position: absolute;
+    inset: 0;
+    display: none;
+    place-items: center;
+    margin: 0;
+    padding: 24px;
+    font-size: 17px;
+    color: var(--muted);
+    text-align: center;
+  }
+  .vista-pdf.cargando .vp-espera,
+  .vista-pdf.sin-visor .vp-sin,
+  .vista-pdf.fallo .vp-fallo {
+    display: grid;
+  }
+  .vista-pdf.cargando iframe,
+  .vista-pdf.fallo iframe,
+  .vista-pdf.sin-visor iframe {
+    visibility: hidden;
+  }
+  .vista-pdf.sin-visor .vp-imprimir {
+    display: none;
+  }
+  .vista-pdf.cargando .vp-descargar,
+  .vista-pdf.cargando .vp-imprimir,
+  .vista-pdf.fallo .vp-descargar,
+  .vista-pdf.fallo .vp-imprimir {
+    opacity: 0.4;
+    pointer-events: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .portada-foto,
+    .se-anillo,
+    .sec-equipos::before,
+    .sec-equipos::after,
+    .sec-servicio::before,
+    .sec-condiciones::after,
+    .dos-qr-img :global(.barrido) {
+      animation: none;
+    }
+  }
+  @media (max-width: 1100px) {
+    .indice ol {
+      grid-template-columns: repeat(5, minmax(200px, 1fr));
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .portadas {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
     }
   }
   @media (max-width: 900px) {
-    .cab-in {
-      grid-template-columns: 1fr;
+    .destacado,
+    .cierre-in,
+    .sec-cab,
+    .t-servicio {
+      grid-template-columns: minmax(0, 1fr);
     }
-    .movil {
-      display: grid;
-      grid-template-columns: 96px 1fr;
-      gap: 16px;
-      align-items: center;
-      width: 100%;
+    .des-foto {
+      min-height: 280px;
     }
-    .movil p {
-      margin: 0;
+    .des-foto::after {
+      background: linear-gradient(180deg, transparent 70%, #fff 100%);
     }
-    .fila {
-      grid-template-columns: 56px minmax(0, 1fr);
-      gap: 10px 16px;
+    .des-txt {
+      padding: 8px var(--gut) 40px;
     }
-    .fila > img {
-      width: 56px;
+    .portada {
+      align-items: flex-end;
+    }
+    .velo {
+      background: linear-gradient(
+        180deg,
+        rgba(236, 238, 240, 0.4) 0%,
+        rgba(236, 238, 240, 0.92) 45%,
+        var(--gris-fondo) 100%
+      );
+    }
+  }
+  @media (max-width: 640px) {
+    .sello {
+      grid-template-columns: 72px minmax(0, 1fr);
+    }
+    .se-marca {
+      width: 72px;
+      height: 72px;
+    }
+    .sello .doc-acc {
+      grid-column: 2;
+    }
+    .portada {
+      min-height: 0;
+      padding-top: 140px;
+    }
+    .busca {
       height: 56px;
-      grid-row: span 2;
+      padding: 0 14px;
     }
-    .fila-fecha {
+    .indice a {
+      padding: 16px;
+    }
+    .portadas {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .portada-doc {
+      aspect-ratio: 4 / 3;
+    }
+    .ban-n {
+      font-size: 15px;
+    }
+    .ban-txt small,
+    .ban-vaciar {
       display: none;
     }
-    .fila .acciones {
-      justify-content: flex-start;
+    .dos-cab,
+    .dos-lista,
+    .dos-pie {
+      padding-inline: 16px;
     }
-    .falta-in {
-      grid-template-columns: 1fr;
+    .dos-qr {
+      margin-inline: 16px;
+      grid-template-columns: 104px minmax(0, 1fr);
+    }
+  }
+  /* En pantallas táctiles las portadas enseñan siempre su información */
+  @media (hover: none) {
+    .pd-info {
+      position: relative;
+      transform: none;
+    }
+    .portada-doc {
+      aspect-ratio: auto;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      min-height: 380px;
+    }
+    .pd-cab {
+      position: relative;
+    }
+    .portada-doc:hover .pd-cab {
+      transform: none;
     }
   }
 </style>

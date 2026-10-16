@@ -221,16 +221,17 @@ export interface Pie {
   pagina: string;
   fuente: string;
 }
-type Rgb = [number, number, number];
-const ROJO: Rgb = [221, 4, 10];
-const TINTA: Rgb = [26, 26, 26];
-const CARBON: Rgb = [21, 23, 25];
-const GRIS: Rgb = [110, 110, 110];
+export type Rgb = [number, number, number];
+export const ROJO: Rgb = [221, 4, 10];
+export const TINTA: Rgb = [26, 26, 26];
+export const CARBON: Rgb = [21, 23, 25];
+export const GRIS: Rgb = [110, 110, 110];
 // Las letras del PDF son las estándar (Helvetica): lo que no cabe en ellas, por su equivalente
-const pdfTxt = (s: string) => s.replace(/[‘’]/g, "'").replace(/≥/g, '>=').replace(/≤/g, '<=').replace(/[–—]/g, '-');
+export const pdfTxt = (s: string) =>
+  s.replace(/[‘’]/g, "'").replace(/≥/g, '>=').replace(/≤/g, '<=').replace(/[–—]/g, '-');
 // Una imagen de la página, lista para el PDF: las fotos en JPEG sobre blanco; el logo, en PNG con su transparencia
-type Img = { data: string; w: number; h: number };
-const cargar = (src: string, lado: number, png = false) =>
+export type Img = { data: string; w: number; h: number };
+export const cargar = (src: string, lado: number, png = false) =>
   new Promise<Img | undefined>((ok) => {
     const im = new Image();
     im.onload = () => {
@@ -253,7 +254,7 @@ const cargar = (src: string, lado: number, png = false) =>
     im.src = src;
   });
 // Cabe en una caja sin deformarse, centrada
-const encajar = (im: Img, x: number, y: number, w: number, h: number) => {
+export const encajar = (im: Img, x: number, y: number, w: number, h: number) => {
   const k = Math.min(w / im.w, h / im.h);
   return [x + (w - im.w * k) / 2, y + (h - im.h * k) / 2, im.w * k, im.h * k] as const;
 };
@@ -301,7 +302,7 @@ const aclarar = ([r, g, b]: Rgb, k: number): Rgb => [r + (255 - r) * k, g + (255
 
 // ——— Las tarjetas en el PDF: por familia, su cabecera oscura con el número, el nombre y cuántas hay; debajo, tres
 // fichas por fila con la foto sobre la mesa, la raya del color de la familia, aplicación, nombre, frase y la placa ———
-type Doc = InstanceType<(typeof import('jspdf'))['jsPDF']>;
+export type Doc = InstanceType<(typeof import('jspdf'))['jsPDF']>;
 async function fichasPdf(doc: Doc, grupos: Grupo[], y: number, M: number, ancho: number) {
   const fondo = await imagen('/img/fondos/mesa-tarjeta.webp');
   const fotos = await Promise.all(grupos.map((gr) => Promise.all(gr.fichas.map((f) => estudio(f.img, fondo, f.lab)))));
@@ -442,24 +443,14 @@ async function fichasPdf(doc: Doc, grupos: Grupo[], y: number, M: number, ancho:
   return y;
 }
 
-let autoTablaCargada: (typeof import('jspdf-autotable'))['autoTable'] | undefined;
-async function generar(h: Hoja, pie: Pie) {
-  const [{ jsPDF }, { autoTable }] = await Promise.all([import('jspdf'), import('jspdf-autotable')]);
-  autoTablaCargada = autoTable;
-  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
-  doc.setProperties({ title: pdfTxt(`${h.titulo} · ${h.fecha}`), author: 'Orto Alresa', creator: 'ortoalresa.com' });
-  const M = 12;
-  const ancho = 210 - 2 * M;
-  const comparativa = h.cabecera.some((c) => c.img);
-  const [logo, ...fotos] = await Promise.all([
-    cargar('/img/marca/logo-ortoalresa-white.svg', 600, true),
-    ...h.cabecera.map((c) => (c.img ? cargar(c.img, 500) : Promise.resolve(undefined))),
-    ...h.filas.map((f) => (f[0]?.img ? cargar(f[0].img, 160) : Promise.resolve(undefined))),
-  ]);
-  const fotosCab = fotos.slice(0, h.cabecera.length);
-  const fotosFila = fotos.slice(h.cabecera.length);
-
-  // Banda: logo, raya vertical, tipo en rojo y título; la fecha a la derecha
+// Banda de la cabecera: logo, raya vertical, tipo en rojo y título; la fecha a la derecha
+export function cabecera(
+  doc: Doc,
+  logo: Img | undefined,
+  h: Pick<Hoja, 'tipo' | 'titulo' | 'fecha'>,
+  M: number,
+  ancho: number,
+) {
   doc.setFillColor(...CARBON);
   doc.rect(M, M, ancho, 25, 'F');
   let x = M + 7;
@@ -488,17 +479,18 @@ async function generar(h: Hoja, pie: Pie) {
   doc.text(pdfTxt(h.fecha), M + ancho - 7, M + 18.5, { align: 'right' });
   doc.setFillColor(...ROJO);
   doc.rect(M, M + 25, ancho, 1.2, 'F');
+}
 
-  // Datos: una franja gris con cada dato y su etiqueta
-  const y0 = M + 26.2;
-  const cw = ancho / h.datos.length;
+// Datos: una franja gris con cada dato y su etiqueta. Devuelve su alto
+export function franja(doc: Doc, datos: [string, string][], y0: number, M: number, ancho: number) {
+  const cw = ancho / datos.length;
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(9);
-  const valores = h.datos.map(([, v]) => doc.splitTextToSize(pdfTxt(v), cw - 12) as string[]);
+  const valores = datos.map(([, v]) => doc.splitTextToSize(pdfTxt(v), cw - 12) as string[]);
   const alto = 11 + 4 * Math.max(...valores.map((l) => l.length));
   doc.setFillColor(242, 242, 242);
   doc.rect(M, y0, ancho, alto, 'F');
-  h.datos.forEach(([e], i) => {
+  datos.forEach(([e], i) => {
     const cx = M + i * cw;
     if (i) {
       doc.setDrawColor(255, 255, 255);
@@ -515,6 +507,29 @@ async function generar(h: Hoja, pie: Pie) {
     doc.setTextColor(...TINTA);
     doc.text(valores[i], cx + 6, y0 + 10.5);
   });
+  return alto;
+}
+
+let autoTablaCargada: (typeof import('jspdf-autotable'))['autoTable'] | undefined;
+async function generar(h: Hoja, pie: Pie) {
+  const [{ jsPDF }, { autoTable }] = await Promise.all([import('jspdf'), import('jspdf-autotable')]);
+  autoTablaCargada = autoTable;
+  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+  doc.setProperties({ title: pdfTxt(`${h.titulo} · ${h.fecha}`), author: 'Orto Alresa', creator: 'ortoalresa.com' });
+  const M = 12;
+  const ancho = 210 - 2 * M;
+  const comparativa = h.cabecera.some((c) => c.img);
+  const [logo, ...fotos] = await Promise.all([
+    cargar('/img/marca/logo-ortoalresa-white.svg', 600, true),
+    ...h.cabecera.map((c) => (c.img ? cargar(c.img, 500) : Promise.resolve(undefined))),
+    ...h.filas.map((f) => (f[0]?.img ? cargar(f[0].img, 160) : Promise.resolve(undefined))),
+  ]);
+  const fotosCab = fotos.slice(0, h.cabecera.length);
+  const fotosFila = fotos.slice(h.cabecera.length);
+
+  cabecera(doc, logo, h, M, ancho);
+  const y0 = M + 26.2;
+  const alto = franja(doc, h.datos, y0, M, ancho);
 
   // Vista de tarjetas: las fichas por familia en vez de la tabla
   let fin: number;
@@ -664,7 +679,7 @@ function tabla(
 
 // Pie de cada hoja, como un membrete: raya roja corta, la marca en negrita y debajo la empresa en gris; a la
 // derecha la web en rojo y "Página 1 de 2"
-function pieDeHojas(doc: Doc, pie: Pie, M: number, ancho: number) {
+export function pieDeHojas(doc: Doc, pie: Pie, M: number, ancho: number) {
   const n = doc.getNumberOfPages();
   for (let p = 1; p <= n; p++) {
     doc.setPage(p);
@@ -691,7 +706,9 @@ function pieDeHojas(doc: Doc, pie: Pie, M: number, ancho: number) {
 // Vista previa: el PDF ya hecho dentro de una ventana, con "Descargar PDF" e "Imprimir"
 let enlace = '';
 let nombre = '';
-export async function pdf(h: Hoja, pie: Pie) {
+export const pdf = (h: Hoja, pie: Pie) => vistaPdf(() => generar(h, pie), h.archivo);
+/** La vista previa de cualquier PDF hecho en la página (la usa también el dossier de Descargas) */
+export async function vistaPdf(hacer: () => Promise<Blob>, archivo: string) {
   const dialogo = document.getElementById('vista-pdf') as HTMLDialogElement | null;
   if (!dialogo) return;
   const marco = dialogo.querySelector('iframe')!;
@@ -700,14 +717,14 @@ export async function pdf(h: Hoja, pie: Pie) {
   if (!dialogo.open) dialogo.showModal();
   let blob: Blob;
   try {
-    blob = await generar(h, pie);
+    blob = await hacer();
   } catch {
     dialogo.classList.replace('cargando', 'fallo');
     return;
   }
   if (enlace) URL.revokeObjectURL(enlace);
   enlace = URL.createObjectURL(blob);
-  nombre = `${h.archivo}.pdf`;
+  nombre = `${archivo}.pdf`;
   // Sin visor de PDF en el navegador (la mayoría de móviles), solo se ofrece descargarlo
   dialogo.classList.toggle('sin-visor', navigator.pdfViewerEnabled === false);
   marco.src = `${enlace}#view=FitH&navpanes=0`;
