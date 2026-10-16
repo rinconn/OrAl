@@ -1,18 +1,19 @@
 ---
-// Descargas: el portal de documentación. Arriba, qué hay y un QR para llevarse la página al móvil; después, los
-// catálogos actualizados en el último año, grandes; y debajo todos, por familia, con buscador y filtros. Cada PDF
-// tiene su QR (se abre en una ventana, se puede descargar en PNG para imprimirlo junto a la máquina) y se puede
-// copiar su enlace. Todo sale de los PDF que ya publica ortoalresa.com, con su fecha y peso reales.
+// Descargas: el portal de documentación. Un buscador grande ("¿Qué equipo buscas?") y los filtros por familia, fijos
+// al bajar; debajo, cada catálogo en su tarjeta, agrupados por familia, con sus PDF y el botón "Al dossier". Lo
+// elegido baja a una bandeja y se abre como dossier: un enlace para compartir con la misma selección (?sel=) y un
+// PDF con la foto, la fecha y el QR de cada catálogo. Todo sale de los PDF que ya publica ortoalresa.com.
 import Base from '../../layouts/Base.astro';
 import { familias } from '../../data/productos';
 import { comprobado, documentos, esReciente, peso, type Documento, type IdiomaPdf } from '../../data/descargas';
 import { contacto } from '../../data/navegacion';
-import { qrSvg } from '../../scripts/qr';
 import { idioma, ruta, textoSerie, textos } from '../../i18n';
 
 const lang = idioma(Astro.currentLocale);
 const t = textos(lang);
 const d = t.descargas;
+const tv = t.catalogo.filtros.vista;
+const cruz = 'M6 6l12 12M18 6 6 18';
 
 const fecha = (iso: string) =>
   new Date(iso).toLocaleDateString(t.meta.fechas, { day: 'numeric', month: 'short', year: 'numeric' });
@@ -30,104 +31,66 @@ const frase = (x: Documento) =>
   x.tipo === 'lab'
     ? t.laboratorio.items[x.slug as keyof typeof t.laboratorio.items].frase
     : textoSerie(lang, x.slug).frase;
+const ficha = (x: Documento) => ruta(lang, `/centrifugas/${x.slug}/`);
 
 const grupos = [...(Object.keys(familias) as Documento['grupo'][]), 'laboratorio' as const]
   .map((g) => ({ g, docs: documentos.filter((x) => x.grupo === g) }))
   .filter((x) => x.docs.length);
-const recientes = documentos.filter(esReciente).sort((a, b) => b.fecha.localeCompare(a.fecha));
-const idiomasPdf = new Set(documentos.flatMap((x) => Object.keys(x.pdf))).size;
+const recientes = documentos.filter(esReciente).length;
 
-const pagina = new URL(Astro.url.pathname, Astro.site).href;
+// Lo que necesita el dossier de cada equipo, por su slug
+const datos = {
+  docs: Object.fromEntries(
+    documentos.map((x) => [
+      x.slug,
+      {
+        nombre: nombre(x),
+        variantes: x.variantes,
+        grupo: nombreGrupo(x.grupo),
+        frase: frase(x),
+        fecha: `${d.actualizado} ${fecha(x.fecha)}`,
+        img: x.imagen.src,
+        ficha: new URL(ficha(x), Astro.site).href,
+        pdfs: pdfs(x).map(({ l, a }) => ({ l, url: a.url, peso: peso(a.bytes, t.meta.fechas) })),
+      },
+    ]),
+  ),
+  idiomas: d.idiomas,
+  t: {
+    quitar: d.quitar('{x}'),
+    tipo: d.pdfTipo,
+    titulo: d.pdfTitulo,
+    para: d.para,
+    etqEquipos: d.etqEquipos,
+    etqCatalogos: d.etqCatalogos,
+    etqIdiomas: d.etqIdiomas,
+    intro: d.pdfIntro,
+    verFicha: d.verFicha,
+    enlace: d.pdfEnlace,
+    archivo: d.archivo,
+    copiado: d.copiado,
+  },
+  // Las formas con número, para el navegador: "{n} equipos en tu dossier"
+  n: { bandeja: [d.bandeja(1), d.bandeja(99)], equipos: [d.equipos(1), d.equipos(99)] },
+  pie: { empresa: `${contacto.empresa} · ${contacto.direccion}`, web: 'ortoalresa.com', pagina: tv.pagina, fuente: '' },
+};
 ---
 
 <Base title={d.title} description={d.description(documentos.length)}>
   <section class="sec cab">
-    <div class="wrap cab-in">
-      <div>
-        <span class="eyebrow">{t.nav.descargas}</span>
-        <h1>
-          {d.titulo[0]}
-          <b>{d.titulo[1]}</b>
-        </h1>
-        <p class="lead">{d.lead}</p>
-        <dl class="cifras">
-          <div>
-            <dt>{d.cifras.catalogos}</dt>
-            <dd>{documentos.length}</dd>
-          </div>
-          <div>
-            <dt>{d.cifras.idiomas}</dt>
-            <dd>{idiomasPdf}</dd>
-          </div>
-          <div>
-            <dt>{d.cifras.recientes}</dt>
-            <dd>{recientes.length}</dd>
-          </div>
-        </dl>
-      </div>
-      <aside class="movil">
-        <div class="movil-qr" set:html={qrSvg(pagina, d.movil[1])} />
-        <p>
-          <b>
-            {d.movil[0]}
-            {d.movil[1]}
-          </b>
-          {d.movil[2]}
-        </p>
-      </aside>
+    <div class="wrap">
+      <span class="eyebrow">{t.nav.descargas}</span>
+      <h1>
+        {d.titulo[0]}
+        <b>{d.titulo[1]}</b>
+      </h1>
+      <p class="lead">{d.lead}</p>
     </div>
   </section>
 
-  {recientes.length > 0 && (
-    <section class="sec nuevos">
-      <div class="wrap">
-        <div class="head">
-          <h2>
-            {d.recientes[0]}
-            <b>{d.recientes[1]}</b>
-          </h2>
-        </div>
-        <ul class="tarjetas">
-          {recientes.map((x) => (
-            <li class="tarjeta">
-              <a class="foto" href={ruta(lang, `/centrifugas/${x.slug}/`)} tabindex="-1" aria-hidden="true">
-                <img src={x.imagen.src} width={x.imagen.ancho} height={x.imagen.alto} alt="" loading="lazy" />
-              </a>
-              <span class="fecha">
-                {d.actualizado} {fecha(x.fecha)}
-              </span>
-              <h3>
-                {nombre(x)}
-                {x.variantes && <span>· {x.variantes}</span>}
-              </h3>
-              <p>{frase(x)}</p>
-              <div class="acciones">
-                {pdfs(x).map(({ l, a }) => (
-                  <a class="pdf" href={a.url} target="_blank" rel="noopener" lang={l} title={d.idiomas[l]}>
-                    <b>PDF {l.toUpperCase()}</b>
-                    <span>{peso(a.bytes, t.meta.fechas)}</span>
-                  </a>
-                ))}
-                <button type="button" class="ver-qr" data-qr={JSON.stringify({ n: nombre(x), p: pdfs(x) })}>
-                  {d.qr}
-                </button>
-              </div>
-            </li>
-          ))}
-        </ul>
-      </div>
-    </section>
-  )}
-
-  <section class="sec todos" id="catalogos">
-    <div class="wrap">
-      <div class="head">
-        <h2>
-          {d.todos[0]}
-          <b>{d.todos[1]}</b>
-        </h2>
-      </div>
-      <div class="barra" role="search">
+  <section class="lista" id="catalogos">
+    <div class="barra" role="search">
+      <div class="wrap barra-in">
         <label class="busca">
           <span class="sr">{d.buscar}</span>
           <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -138,8 +101,14 @@ const pagina = new URL(Astro.url.pathname, Astro.site).href;
         </label>
         <div class="chips" role="group" aria-label={d.buscar}>
           <button type="button" class="chip" aria-pressed="true" data-g="">
-            {d.todo}
+            {d.todo} <span>{documentos.length}</span>
           </button>
+          {recientes > 0 && (
+            <button type="button" class="chip chip-rec" aria-pressed="false" data-g="recientes">
+              <i aria-hidden="true" />
+              {d.recientes} <span>{recientes}</span>
+            </button>
+          )}
           {grupos.map(({ g, docs }) => (
             <button type="button" class="chip" aria-pressed="false" data-g={g}>
               {nombreGrupo(g)} <span>{docs.length}</span>
@@ -147,28 +116,38 @@ const pagina = new URL(Astro.url.pathname, Astro.site).href;
           ))}
         </div>
       </div>
+    </div>
 
+    <div class="wrap">
       {grupos.map(({ g, docs }) => (
-        <div class="grupo" data-grupo={g}>
-          <h3 class="grupo-tit">
+        <section class="grupo" data-grupo={g} aria-labelledby={`g-${g}`}>
+          <h2 class="grupo-tit" id={`g-${g}`}>
             {nombreGrupo(g)} <span>{docs.length}</span>
-          </h3>
-          <ul class="filas">
+          </h2>
+          <ul class="rejilla">
             {docs.map((x) => (
-              <li class="fila" data-texto={plano(nombre(x), x.variantes, nombreGrupo(g), frase(x))}>
-                <img src={x.imagen.src} width={x.imagen.ancho} height={x.imagen.alto} alt="" loading="lazy" />
-                <div class="fila-nombre">
-                  <a href={ruta(lang, `/centrifugas/${x.slug}/`)}>
-                    {nombre(x)}
-                    {x.variantes && <span>· {x.variantes}</span>}
-                  </a>
-                  <small>{frase(x)}</small>
+              <li
+                class="doc"
+                data-slug={x.slug}
+                data-reciente={esReciente(x) ? '' : undefined}
+                data-texto={plano(nombre(x), x.variantes, nombreGrupo(g), frase(x))}
+              >
+                <a class="foto" href={ficha(x)} tabindex="-1" aria-hidden="true">
+                  <img src={x.imagen.src} width={x.imagen.ancho} height={x.imagen.alto} alt="" loading="lazy" />
+                  {esReciente(x) && <span class="nuevo">{d.reciente}</span>}
+                </a>
+                <div class="doc-txt">
+                  <h3>
+                    <a href={ficha(x)}>
+                      {nombre(x)}
+                      {x.variantes && <span>· {x.variantes}</span>}
+                    </a>
+                  </h3>
+                  <p>{frase(x)}</p>
+                  <small>
+                    {d.actualizado} {fecha(x.fecha)}
+                  </small>
                 </div>
-                <span class="fila-fecha">
-                  <small>{d.actualizado}</small>
-                  {fecha(x.fecha)}
-                  {esReciente(x) && <i class="punto" aria-hidden="true" />}
-                </span>
                 <div class="acciones">
                   {pdfs(x).map(({ l, a }) => (
                     <a class="pdf" href={a.url} target="_blank" rel="noopener" lang={l} title={d.idiomas[l]}>
@@ -176,20 +155,26 @@ const pagina = new URL(Astro.url.pathname, Astro.site).href;
                       <span>{peso(a.bytes, t.meta.fechas)}</span>
                     </a>
                   ))}
-                  <button type="button" class="ver-qr" data-qr={JSON.stringify({ n: nombre(x), p: pdfs(x) })}>
-                    {d.qr}
+                  <button type="button" class="elegir" aria-pressed="false" aria-label={d.anadir(nombre(x))}>
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <path class="mas" d="M12 5v14M5 12h14" />
+                      <path class="ok" d="m5 12.5 4.5 4.5L19 7.5" />
+                    </svg>
+                    <span class="no">{d.alDossier}</span>
+                    <span class="si">{d.enDossier}</span>
                   </button>
                 </div>
               </li>
             ))}
           </ul>
-        </div>
+        </section>
       ))}
       <p class="nada" id="nada" hidden>
         {d.nada}
       </p>
       <p class="nota">
-        {d.comprobado} {fecha(comprobado)}.
+        {d.comprobado}
+        {fecha(comprobado)}.
       </p>
     </div>
   </section>
@@ -212,48 +197,123 @@ const pagina = new URL(Astro.url.pathname, Astro.site).href;
     </div>
   </section>
 
-  <dialog class="qr" id="qr" aria-labelledby="qr-tit">
-    <form method="dialog">
-      <button class="qr-cerrar" aria-label={d.cerrar}>
-        ×
-      </button>
-    </form>
-    <span class="eyebrow">{d.qrDe}</span>
-    <h2 id="qr-tit">{nombre(documentos[0])}</h2>
-    <div class="qr-idiomas" role="group"></div>
-    <div class="qr-img" id="qr-img"></div>
-    <p>{d.qrTexto}</p>
-    <div class="qr-acc">
-      <a class="btn red" id="qr-abrir" href={pdfs(documentos[0])[0].a.url} target="_blank" rel="noopener">
-        {d.abrir}
-      </a>
-      <button type="button" class="btn ghost" id="qr-png">
-        {d.descargarQr}
-      </button>
-      <button type="button" class="btn ghost" id="qr-copiar" data-ok={d.copiado}>
-        {d.copiar}
+  <!-- La bandeja: lo elegido, siempre a mano abajo -->
+  <div class="bandeja" id="bandeja" hidden>
+    <div class="ban-fotos" aria-hidden="true"></div>
+    <b class="ban-n" aria-live="polite"></b>
+    <button type="button" class="ban-vaciar">
+      {d.vaciar}
+    </button>
+    <button type="button" class="ban-ver">
+      {d.verDossier} »
+    </button>
+  </div>
+
+  <!-- El dossier: la lista de lo elegido con sus PDF, para quién es, y el PDF o el enlace para compartirlo -->
+  <dialog class="dossier" id="dossier" aria-labelledby="dos-tit">
+    <div class="dos-cab">
+      <div>
+        <span class="eyebrow">{d.tuDossier}</span>
+        <h2 id="dos-tit">{d.equipos(0)}</h2>
+      </div>
+      <button type="button" class="dos-cerrar" aria-label={d.cerrar}>
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+          <path d={cruz} stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path>
+        </svg>
       </button>
     </div>
+    <ol class="dos-lista"></ol>
+    <p class="dos-vacio">{d.vacio}</p>
+    <div class="dos-pie">
+      <label class="dos-para">
+        <span>{d.para}</span>
+        <input type="text" id="dos-para" maxlength="60" placeholder={d.paraEjemplo} autocomplete="organization" />
+      </label>
+      <div class="dos-acc">
+        <button type="button" class="btn red" id="dos-pdf">
+          {d.crearPdf}
+        </button>
+        <button type="button" class="btn ghost" id="dos-copiar">
+          {d.copiar}
+        </button>
+        <button type="button" class="btn ghost" id="dos-compartir" hidden>
+          {d.compartir}
+        </button>
+      </div>
+      <p>{d.dossierTexto}</p>
+    </div>
   </dialog>
+
+  <!-- Vista previa del PDF del dossier: desde aquí se descarga o se imprime -->
+  <dialog class="vista-pdf" id="vista-pdf" aria-labelledby="vista-pdf-tit">
+    <div class="vp-cab">
+      <h2 id="vista-pdf-tit">{tv.vistaPrevia}</h2>
+      <button type="button" class="vp-descargar">
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+          <path d="M12 4v11M7 10l5 5 5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="1.8"></path>
+        </svg>
+        {tv.descargarPdf}
+      </button>
+      <button type="button" class="vp-imprimir">
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+          <path
+            d="M7 9V4h10v5M7 17H5v-7h14v7h-2M8 14h8v6H8z"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.6"
+            stroke-linejoin="round"
+          ></path>
+        </svg>
+        {tv.imprimir}
+      </button>
+      <button type="button" class="vp-cerrar" aria-label={d.cerrar}>
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+          <path d={cruz} stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path>
+        </svg>
+      </button>
+    </div>
+    <div class="vp-cuerpo">
+      <iframe title={tv.vistaPrevia}></iframe>
+      <p class="vp-espera">{tv.preparando}</p>
+      <p class="vp-sin">{tv.sinVista}</p>
+      <p class="vp-fallo">{tv.fallo}</p>
+    </div>
+  </dialog>
+
+  <script type="application/json" id="datos-dossier" set:html={JSON.stringify(datos)} />
 </Base>
 
 <script>
-  import { qrSvg } from '../../scripts/qr';
+  import { hoy, iniciarVistaPdf, vistaPdf, type Pie } from '../../scripts/exportar';
+  import { dossierPdf, type EquipoDossier } from '../../scripts/dossier';
 
-  // ——— Buscador y filtros por familia ———
+  const datos = JSON.parse(document.getElementById('datos-dossier')!.textContent!) as {
+    docs: Record<string, EquipoDossier>;
+    idiomas: Record<string, string>;
+    t: Record<string, string>;
+    n: { bandeja: [string, string]; equipos: [string, string] };
+    pie: Pie;
+  };
+  const { docs, t } = datos;
+  // "99 equipos" → "3 equipos": las formas con número se escriben en el servidor y aquí solo cambia la cifra
+  const contar = ([uno, varios]: [string, string], n: number) => (n === 1 ? uno : varios.replace('99', String(n)));
+
+  // ——— Buscador y filtros ———
   const busca = document.querySelector<HTMLInputElement>('#busca')!;
   const chips = [...document.querySelectorAll<HTMLButtonElement>('.chip')];
   const grupos = [...document.querySelectorAll<HTMLElement>('.grupo')];
   const nada = document.querySelector<HTMLElement>('#nada')!;
-  let grupo = '';
+  let filtro = '';
   const plano = (s: string) => s.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().trim();
   const filtrar = () => {
     const q = plano(busca.value);
     let total = 0;
     for (const g of grupos) {
       let n = 0;
-      for (const f of g.querySelectorAll<HTMLElement>('.fila')) {
-        const ok = (!grupo || g.dataset.grupo === grupo) && (!q || f.dataset.texto!.includes(q));
+      for (const f of g.querySelectorAll<HTMLElement>('.doc')) {
+        const enFiltro =
+          !filtro || (filtro === 'recientes' ? f.dataset.reciente !== undefined : g.dataset.grupo === filtro);
+        const ok = enFiltro && (!q || f.dataset.texto!.includes(q));
         f.hidden = !ok;
         if (ok) n++;
       }
@@ -265,88 +325,178 @@ const pagina = new URL(Astro.url.pathname, Astro.site).href;
   busca.addEventListener('input', filtrar);
   for (const c of chips)
     c.addEventListener('click', () => {
-      grupo = c.dataset.g ?? '';
+      filtro = c.dataset.g ?? '';
       for (const o of chips) o.setAttribute('aria-pressed', String(o === c));
       filtrar();
     });
 
-  // ——— QR de cada PDF ———
-  type Pdf = { l: string; a: { url: string } };
-  const dlg = document.querySelector<HTMLDialogElement>('#qr')!;
-  const tit = dlg.querySelector<HTMLElement>('#qr-tit')!;
-  const img = dlg.querySelector<HTMLElement>('#qr-img')!;
-  const sel = dlg.querySelector<HTMLElement>('.qr-idiomas')!;
-  const abrir = dlg.querySelector<HTMLAnchorElement>('#qr-abrir')!;
-  const copiar = dlg.querySelector<HTMLButtonElement>('#qr-copiar')!;
-  const textoCopiar = copiar.textContent;
-  let actual = { n: '', l: '', url: '' };
+  // ——— El dossier: lo elegido vive en la dirección (?sel=) y, si no viene en ella, en el navegador ———
+  const CLAVE = 'oa-dossier';
+  const leer = (): string[] => {
+    const url = new URLSearchParams(location.search).get('sel');
+    if (url !== null) return url.split(',').filter((s) => docs[s]);
+    try {
+      return (JSON.parse(localStorage.getItem(CLAVE) ?? '[]') as string[]).filter((s) => docs[s]);
+    } catch {
+      return [];
+    }
+  };
+  const venia = new URLSearchParams(location.search).has('sel');
+  let sel = [...new Set(leer())];
 
-  const pintar = (n: string, p: Pdf) => {
-    actual = { n, l: p.l, url: p.a.url };
-    img.innerHTML = qrSvg(p.a.url, `${n} · PDF ${p.l.toUpperCase()}`);
-    abrir.href = p.a.url;
-    copiar.textContent = textoCopiar;
-    for (const b of sel.querySelectorAll('button')) b.setAttribute('aria-pressed', String(b.dataset.l === p.l));
+  const enlace = () => {
+    const u = new URL(location.pathname, location.origin);
+    if (sel.length) u.searchParams.set('sel', sel.join(','));
+    return u.href.replace(/%2C/g, ',');
   };
 
-  for (const b of document.querySelectorAll<HTMLButtonElement>('.ver-qr'))
+  const bandeja = document.querySelector<HTMLElement>('#bandeja')!;
+  const banFotos = bandeja.querySelector<HTMLElement>('.ban-fotos')!;
+  const banN = bandeja.querySelector<HTMLElement>('.ban-n')!;
+  const dlg = document.querySelector<HTMLDialogElement>('#dossier')!;
+  const lista = dlg.querySelector<HTMLOListElement>('.dos-lista')!;
+  const titulo = dlg.querySelector<HTMLElement>('#dos-tit')!;
+  const copiar = dlg.querySelector<HTMLButtonElement>('#dos-copiar')!;
+  const textoCopiar = copiar.textContent;
+  const para = dlg.querySelector<HTMLInputElement>('#dos-para')!;
+
+  const foto = (src: string) => Object.assign(document.createElement('img'), { src, alt: '', loading: 'lazy' });
+
+  const pintar = () => {
+    try {
+      localStorage.setItem(CLAVE, JSON.stringify(sel));
+    } catch {
+      /* sin almacenamiento: la selección vale mientras dure la página */
+    }
+    history.replaceState(null, '', enlace());
+    for (const li of document.querySelectorAll<HTMLElement>('.doc')) {
+      const si = sel.includes(li.dataset.slug!);
+      li.classList.toggle('elegido', si);
+      li.querySelector('.elegir')!.setAttribute('aria-pressed', String(si));
+    }
+    bandeja.hidden = !sel.length;
+    document.body.classList.toggle('con-bandeja', sel.length > 0);
+    banN.textContent = contar(datos.n.bandeja, sel.length);
+    banFotos.replaceChildren(...sel.slice(-4).map((s) => foto(docs[s].img)));
+    titulo.textContent = contar(datos.n.equipos, sel.length);
+    dlg.classList.toggle('vacio', !sel.length);
+    copiar.textContent = textoCopiar;
+    lista.replaceChildren(
+      ...sel.map((s) => {
+        const x = docs[s];
+        const li = document.createElement('li');
+        const txt = document.createElement('div');
+        txt.className = 'dl-txt';
+        const n = Object.assign(document.createElement('a'), { href: x.ficha, textContent: x.nombre });
+        if (x.variantes) n.append(Object.assign(document.createElement('span'), { textContent: ` · ${x.variantes}` }));
+        const g = Object.assign(document.createElement('small'), { textContent: `${x.grupo} · ${x.fecha}` });
+        const acc = document.createElement('div');
+        acc.className = 'dl-pdfs';
+        acc.append(
+          ...x.pdfs.map((p) => {
+            const a = Object.assign(document.createElement('a'), {
+              href: p.url,
+              target: '_blank',
+              rel: 'noopener',
+              title: datos.idiomas[p.l],
+            });
+            a.append(
+              Object.assign(document.createElement('b'), { textContent: `PDF ${p.l.toUpperCase()}` }),
+              Object.assign(document.createElement('span'), { textContent: p.peso }),
+            );
+            return a;
+          }),
+        );
+        txt.append(n, g, acc);
+        const quitar = Object.assign(document.createElement('button'), {
+          type: 'button',
+          className: 'dl-quitar',
+          innerHTML: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>',
+        });
+        quitar.setAttribute('aria-label', t.quitar.replace('{x}', x.nombre));
+        quitar.addEventListener('click', () => {
+          sel = sel.filter((o) => o !== s);
+          pintar();
+        });
+        li.append(foto(x.img), txt, quitar);
+        return li;
+      }),
+    );
+  };
+
+  for (const b of document.querySelectorAll<HTMLButtonElement>('.elegir'))
     b.addEventListener('click', () => {
-      const { n, p } = JSON.parse(b.dataset.qr!) as { n: string; p: Pdf[] };
-      tit.textContent = n;
-      sel.replaceChildren(
-        ...p.map((x) => {
-          const o = document.createElement('button');
-          o.type = 'button';
-          o.className = 'chip';
-          o.dataset.l = x.l;
-          o.textContent = `PDF ${x.l.toUpperCase()}`;
-          o.addEventListener('click', () => pintar(n, x));
-          return o;
-        }),
-      );
-      sel.hidden = p.length < 2;
-      pintar(n, p[0]);
-      dlg.showModal();
+      const s = b.closest<HTMLElement>('.doc')!.dataset.slug!;
+      sel = sel.includes(s) ? sel.filter((o) => o !== s) : [...sel, s];
+      pintar();
+      if (sel.includes(s)) {
+        bandeja.classList.remove('late');
+        void bandeja.offsetWidth;
+        bandeja.classList.add('late');
+      }
     });
+  bandeja.querySelector('.ban-vaciar')!.addEventListener('click', () => {
+    sel = [];
+    pintar();
+  });
+  bandeja.querySelector('.ban-ver')!.addEventListener('click', () => dlg.showModal());
+  dlg.querySelector('.dos-cerrar')!.addEventListener('click', () => dlg.close());
   dlg.addEventListener('click', (e) => {
     if (e.target === dlg) dlg.close();
   });
 
   copiar.addEventListener('click', async () => {
     try {
-      await navigator.clipboard.writeText(actual.url);
-      copiar.textContent = copiar.dataset.ok ?? '';
+      await navigator.clipboard.writeText(enlace());
+      copiar.textContent = t.copiado;
     } catch {
-      window.prompt('', actual.url);
+      window.prompt('', enlace());
     }
   });
+  const compartir = dlg.querySelector<HTMLButtonElement>('#dos-compartir')!;
+  if ('share' in navigator) {
+    compartir.hidden = false;
+    compartir.addEventListener('click', () => {
+      void navigator.share({ title: document.title, url: enlace() }).catch(() => {});
+    });
+  }
 
-  // PNG de 1024 px, con el nombre debajo, listo para imprimir
-  dlg.querySelector('#qr-png')!.addEventListener('click', () => {
-    const svg = img.querySelector('svg')!.outerHTML;
-    const im = new Image();
-    im.onload = () => {
-      const lado = 1024;
-      const pie = 96;
-      const c = document.createElement('canvas');
-      c.width = lado;
-      c.height = lado + pie;
-      const x = c.getContext('2d')!;
-      x.fillStyle = '#fff';
-      x.fillRect(0, 0, c.width, c.height);
-      x.imageSmoothingEnabled = false;
-      x.drawImage(im, 0, 0, lado, lado);
-      x.fillStyle = '#1a1a1a';
-      x.font = '700 44px "Helvetica Neue Cond", "Arial Narrow", Arial, sans-serif';
-      x.textAlign = 'center';
-      x.fillText(`${actual.n} · PDF ${actual.l.toUpperCase()}`, lado / 2, lado + 40, lado - 80);
-      const a = document.createElement('a');
-      a.download = `qr-${plano(actual.n).replace(/[^a-z0-9]+/g, '-')}-${actual.l}.png`;
-      a.href = c.toDataURL('image/png');
-      a.click();
-    };
-    im.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+  // El PDF: para quién es (si se dice), cuántos equipos y catálogos, en qué idiomas, y cada equipo con sus QR
+  iniciarVistaPdf();
+  dlg.querySelector('#dos-pdf')!.addEventListener('click', () => {
+    if (!sel.length) return;
+    const equipos = sel.map((s) => docs[s]);
+    const pdfs = equipos.flatMap((e) => e.pdfs);
+    const idiomas = [...new Set(pdfs.map((p) => p.l))].map((l) => datos.idiomas[l]);
+    const cliente = para.value.trim();
+    const f = hoy();
+    void vistaPdf(
+      () =>
+        dossierPdf(
+          {
+            tipo: t.tipo,
+            titulo: t.titulo,
+            fecha: f.texto,
+            datos: [
+              ...(cliente ? [[t.para, cliente] as [string, string]] : []),
+              [t.etqEquipos, String(equipos.length)],
+              [t.etqCatalogos, String(pdfs.length)],
+              [t.etqIdiomas, idiomas.join(' · ')],
+            ],
+            intro: t.intro,
+            verFicha: t.verFicha,
+            enlace: [t.enlace, enlace()],
+            equipos,
+          },
+          datos.pie,
+        ),
+      `${t.archivo}-${f.archivo}`,
+    );
   });
+
+  pintar();
+  // Quien recibe el enlace llega con el dossier abierto
+  if (venia && sel.length) dlg.showModal();
 </script>
 
 <style>
@@ -357,16 +507,14 @@ const pagina = new URL(Astro.url.pathname, Astro.site).href;
     overflow: hidden;
     clip-path: inset(50%);
   }
+  h1 b,
+  h2 b {
+    font-weight: 700;
+  }
 
   /* ——— Cabecera ——— */
   .cab {
-    border-bottom: 1px solid var(--line);
-  }
-  .cab-in {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    gap: clamp(32px, 6vw, 96px);
-    align-items: end;
+    padding-bottom: clamp(32px, 4vw, 56px);
   }
   h1 {
     font-weight: 300;
@@ -379,184 +527,36 @@ const pagina = new URL(Astro.url.pathname, Astro.site).href;
     margin-top: 24px;
     color: var(--body);
     font-size: var(--t-sub);
-    max-width: 52ch;
-  }
-  .cifras {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 16px clamp(28px, 4vw, 56px);
-    margin-top: 40px;
-  }
-  .cifras div {
-    display: flex;
-    flex-direction: column-reverse;
-    border-left: 2px solid var(--red);
-    padding-left: 14px;
-  }
-  .cifras dd {
-    font-weight: 700;
-    font-size: clamp(40px, 4.4vw, 60px);
-    line-height: 1;
-  }
-  .cifras dt {
-    color: var(--muted);
-    font-size: 15px;
-    margin-top: 6px;
-  }
-  .movil {
-    width: 220px;
-    border: 1px solid var(--line);
-    padding: 16px 16px 18px;
-    background: var(--white);
-  }
-  .movil-qr :global(svg) {
-    display: block;
-    width: 100%;
-    height: auto;
-  }
-  .movil p {
-    margin-top: 10px;
-    font-size: 15px;
-    line-height: 1.3;
-    color: var(--body);
-  }
-  .movil b {
-    display: block;
-    color: var(--ink);
-    font-size: 18px;
+    max-width: 56ch;
   }
 
-  h2 b,
-  h1 b {
-    font-weight: 700;
-  }
-
-  /* ——— Recientes ——— */
-  .nuevos {
-    background: var(--band);
-  }
-  .tarjetas {
-    list-style: none;
-    padding: 0;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 24px;
-  }
-  .tarjeta {
-    background: var(--white);
-    border: 1px solid var(--line);
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    transition: border-color 0.2s var(--ease);
-  }
-  .tarjeta:hover {
-    border-color: var(--ink);
-  }
-  .foto {
-    display: grid;
-    place-items: center;
-    aspect-ratio: 4 / 3;
-    background: var(--panel);
-    margin: -20px -20px 6px;
-    overflow: hidden;
-  }
-  .foto img {
-    width: 72%;
-    height: 82%;
-    object-fit: contain;
-    transition: transform 0.4s var(--ease);
-  }
-  .tarjeta:hover .foto img {
-    transform: scale(1.04);
-  }
-  .fecha {
-    font-weight: 700;
-    font-size: 12px;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--red);
-  }
-  .tarjeta h3 {
-    font-size: 28px;
-    line-height: 1;
-  }
-  .tarjeta h3 span,
-  .fila-nombre a span {
-    font-weight: 300;
-  }
-  .tarjeta p {
-    color: var(--body);
-    font-size: 16px;
-    flex: 1;
-  }
-
-  /* Botones de descarga: idioma en negrita y peso en fino; el QR al lado */
-  .acciones {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-top: 6px;
-  }
-  .pdf,
-  .ver-qr {
-    display: inline-flex;
-    align-items: baseline;
-    gap: 8px;
-    padding: 10px 14px;
-    border: 1px solid var(--ink);
-    text-decoration: none;
-    font: 700 15px/1 var(--f);
-    background: var(--white);
-    color: var(--ink);
-    cursor: pointer;
-    transition:
-      background 0.2s var(--ease),
-      color 0.2s var(--ease);
-  }
-  .pdf span {
-    font-weight: 300;
-    font-size: 13px;
-  }
-  .pdf:hover,
-  .ver-qr:hover {
-    background: var(--ink);
-    color: #fff;
-  }
-  .ver-qr {
-    border-color: var(--red);
-    color: var(--red);
-  }
-  .ver-qr:hover {
-    background: var(--red);
-  }
-
-  /* ——— Todos ——— */
+  /* ——— Barra fija: el buscador grande y los filtros ——— */
   .barra {
     position: sticky;
     top: 76px;
     z-index: 5;
     background: var(--white);
+    border-block: 1px solid var(--line);
+  }
+  .barra-in {
     display: flex;
-    flex-wrap: wrap;
-    gap: 14px 24px;
-    align-items: center;
-    padding-block: 14px;
-    border-bottom: 1px solid var(--line);
-    margin-bottom: 8px;
+    flex-direction: column;
+    gap: 14px;
+    padding-block: 18px 16px;
   }
   .busca {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 14px;
     border-bottom: 2px solid var(--ink);
-    min-width: min(320px, 100%);
-    flex: 0 1 360px;
+    transition: border-color var(--dur-1) ease;
+  }
+  .busca:focus-within {
+    border-color: var(--red);
   }
   .busca svg {
-    width: 20px;
-    height: 20px;
+    width: 26px;
+    height: 26px;
     fill: none;
     stroke: var(--ink);
     stroke-width: 2;
@@ -565,10 +565,12 @@ const pagina = new URL(Astro.url.pathname, Astro.site).href;
   .busca input {
     border: 0;
     outline: 0;
-    font: 300 19px var(--f);
-    padding: 8px 0;
+    font: 300 clamp(22px, 2.4vw, 32px) var(--f);
+    padding: 6px 0 10px;
     width: 100%;
+    min-width: 0;
     background: transparent;
+    color: var(--ink);
   }
   .chips {
     display: flex;
@@ -576,16 +578,30 @@ const pagina = new URL(Astro.url.pathname, Astro.site).href;
     gap: 6px;
   }
   .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
     border: 1px solid var(--line);
     background: var(--white);
     padding: 8px 12px;
     font: 700 15px/1 var(--f);
     cursor: pointer;
     color: var(--ink);
+    transition:
+      background var(--dur-1) ease,
+      border-color var(--dur-1) ease;
+  }
+  .chip:hover {
+    border-color: var(--ink);
   }
   .chip span {
     font-weight: 300;
     color: var(--muted);
+  }
+  .chip-rec i {
+    width: 7px;
+    height: 7px;
+    background: var(--red);
   }
   .chip[aria-pressed='true'] {
     background: var(--ink);
@@ -595,83 +611,208 @@ const pagina = new URL(Astro.url.pathname, Astro.site).href;
   .chip[aria-pressed='true'] span {
     color: var(--steel);
   }
+
+  /* ——— Familias y tarjetas ——— */
+  .lista {
+    padding-bottom: clamp(48px, 6vw, 96px);
+  }
+  .grupo {
+    scroll-margin-top: 220px;
+  }
   .grupo-tit {
-    font-size: 15px;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    margin: 40px 0 0;
-    padding-bottom: 12px;
-    border-bottom: 2px solid var(--ink);
     display: flex;
-    gap: 10px;
+    align-items: baseline;
+    gap: 12px;
+    font-weight: 300;
+    font-size: clamp(30px, 3vw, 42px);
+    line-height: 1;
+    margin: clamp(40px, 5vw, 64px) 0 20px;
+    padding-bottom: 14px;
+    border-bottom: 2px solid var(--ink);
   }
   .grupo-tit span {
+    font-weight: 700;
+    font-size: 16px;
     color: var(--red);
   }
-  .filas {
+  .rejilla {
     list-style: none;
     padding: 0;
-  }
-  .fila {
     display: grid;
-    grid-template-columns: 64px minmax(0, 1fr) 150px auto;
+    grid-template-columns: repeat(auto-fill, minmax(272px, 1fr));
     gap: 20px;
-    align-items: center;
-    padding: 14px 0;
-    border-bottom: 1px solid var(--line);
   }
-  .fila > img {
-    width: 64px;
-    height: 64px;
-    object-fit: contain;
-    background: var(--panel);
-    padding: 6px;
-  }
-  .fila-nombre a {
-    font-weight: 700;
-    font-size: 22px;
-    text-decoration: none;
-  }
-  .fila-nombre a:hover {
-    color: var(--red);
-  }
-  .fila-nombre small {
-    display: block;
-    color: var(--muted);
-    font-size: 15px;
-    margin-top: 2px;
-  }
-  .fila-fecha {
-    font-size: 16px;
+  .doc {
+    position: relative;
     display: flex;
     flex-direction: column;
-    position: relative;
+    background: var(--white);
+    border: 1px solid var(--line);
+    transition:
+      border-color var(--dur-2) var(--ease),
+      box-shadow var(--dur-2) var(--ease);
   }
-  .fila-fecha small {
-    color: var(--muted);
-    font-size: 12px;
+  .doc:hover {
+    border-color: var(--ink);
+  }
+  .doc.elegido {
+    border-color: var(--red);
+    box-shadow: inset 0 0 0 1px var(--red);
+  }
+  .foto {
+    position: relative;
+    display: grid;
+    place-items: center;
+    aspect-ratio: 4 / 3;
+    background: var(--panel);
+    overflow: hidden;
+  }
+  .foto img {
+    width: 70%;
+    height: 80%;
+    object-fit: contain;
+    transition: transform var(--dur-3) var(--ease);
+  }
+  .doc:hover .foto img {
+    transform: scale(1.04);
+  }
+  .nuevo {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--white);
+    padding: 5px 8px;
+    font-weight: 700;
+    font-size: 11px;
     letter-spacing: 0.1em;
     text-transform: uppercase;
+    color: var(--ink);
   }
-  .punto {
-    position: absolute;
-    left: -14px;
-    bottom: 7px;
-    width: 7px;
-    height: 7px;
+  .nuevo::before {
+    content: '';
+    width: 6px;
+    height: 6px;
     background: var(--red);
   }
-  .fila .acciones {
-    margin: 0;
-    justify-content: flex-end;
+  .doc-txt {
+    flex: 1;
+    padding: 18px 20px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .doc h3 {
+    font-size: 26px;
+    line-height: 1;
+  }
+  .doc h3 a {
+    text-decoration: none;
+  }
+  .doc h3 a:hover {
+    color: var(--red);
+  }
+  .doc h3 span {
+    font-weight: 300;
+  }
+  .doc p {
+    color: var(--body);
+    font-size: 16px;
+    line-height: 1.3;
+    flex: 1;
+  }
+  .doc small {
+    color: var(--muted);
+    font-size: 13px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  /* Botones: los PDF con el idioma en negrita y el peso en fino; "Al dossier" ocupa lo que sobra */
+  .acciones {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 16px 20px 20px;
+  }
+  .pdf,
+  .elegir {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    height: 42px;
+    padding: 0 12px;
+    border: 1px solid var(--ink);
+    text-decoration: none;
+    font: 700 15px/1 var(--f);
+    background: var(--white);
+    color: var(--ink);
+    cursor: pointer;
+    transition:
+      background var(--dur-1) ease,
+      color var(--dur-1) ease,
+      border-color var(--dur-1) ease;
+  }
+  .pdf span {
+    font-weight: 300;
+    font-size: 13px;
+  }
+  .pdf:hover {
+    background: var(--ink);
+    color: #fff;
+  }
+  .elegir {
+    flex: 1;
+    justify-content: center;
+    border-color: var(--red);
+    color: var(--red);
+    white-space: nowrap;
+  }
+  .elegir svg {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+  }
+  .elegir:hover {
+    background: var(--red);
+    color: #fff;
+  }
+  .elegir .ok,
+  .elegir .si,
+  .elegir[aria-pressed='true'] .mas,
+  .elegir[aria-pressed='true'] .no {
+    display: none;
+  }
+  .elegir[aria-pressed='true'] .ok,
+  .elegir[aria-pressed='true'] .si {
+    display: inline;
+  }
+  .elegir[aria-pressed='true'] {
+    background: var(--red);
+    color: #fff;
+  }
+  .pdf:active,
+  .elegir:active,
+  .chip:active {
+    scale: 0.97;
+  }
+  .pdf:focus-visible,
+  .elegir:focus-visible,
+  .chip:focus-visible {
+    outline: var(--foco);
+    outline-offset: 2px;
   }
   .nada {
-    padding: 40px 0;
+    padding: 48px 0;
     color: var(--body);
     font-size: var(--t-sub);
   }
   .nota {
-    margin-top: 28px;
+    margin-top: 36px;
     color: var(--muted);
     font-size: 14px;
   }
@@ -706,69 +847,384 @@ const pagina = new URL(Astro.url.pathname, Astro.site).href;
     color: #fff;
   }
 
-  /* ——— Ventana del QR ——— */
-  .qr {
-    border: 0;
-    padding: 32px;
-    width: min(440px, calc(100vw - 32px));
-    margin: auto;
+  /* ——— Bandeja ——— */
+  :global(body.con-bandeja) {
+    padding-bottom: 88px;
   }
-  .qr::backdrop {
-    background: rgb(21 23 25 / 0.72);
-  }
-  .qr h2 {
-    font-size: 34px;
-    line-height: 1;
-    margin-top: 12px;
-  }
-  .qr-cerrar {
-    position: absolute;
-    top: 10px;
-    right: 14px;
-    border: 0;
-    background: none;
-    font-size: 32px;
-    line-height: 1;
-    cursor: pointer;
-    color: var(--ink);
-  }
-  .qr-idiomas {
+  .bandeja {
+    position: fixed;
+    left: 50%;
+    bottom: 16px;
+    z-index: 20;
+    translate: -50% 0;
+    width: min(680px, calc(100vw - 32px));
     display: flex;
-    gap: 6px;
-    margin-top: 16px;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 10px 10px 12px;
+    background: var(--carbon);
+    color: #fff;
+    border-top: 3px solid var(--red);
+    box-shadow: var(--sombra-flota);
+    animation: sube var(--dur-3) var(--ease-out);
   }
-  .qr-idiomas[hidden] {
+  .bandeja[hidden] {
     display: none;
   }
-  .qr-img {
-    margin: 18px auto 0;
-    width: min(280px, 100%);
-    border: 1px solid var(--line);
+  .bandeja.late {
+    animation: late var(--dur-2) var(--ease-out);
   }
-  .qr-img :global(svg) {
+  @keyframes sube {
+    from {
+      translate: -50% 120%;
+    }
+  }
+  @keyframes late {
+    50% {
+      scale: 1.02;
+    }
+  }
+  .ban-fotos {
+    display: flex;
+  }
+  .ban-fotos :global(img) {
+    width: 44px;
+    height: 44px;
+    object-fit: contain;
+    background: var(--panel);
+    padding: 4px;
+    border: 2px solid var(--carbon);
+  }
+  .ban-fotos :global(img + img) {
+    margin-left: -12px;
+  }
+  .ban-n {
+    flex: 1;
+    font-size: 17px;
+    min-width: 0;
+  }
+  .ban-vaciar,
+  .ban-ver {
+    height: 44px;
+    padding: 0 16px;
+    font: 700 15px var(--f);
+    cursor: pointer;
+    border: 1px solid var(--carbon-line);
+    background: none;
+    color: var(--on-dark);
+    white-space: nowrap;
+  }
+  .ban-vaciar:hover {
+    color: #fff;
+    border-color: var(--steel);
+  }
+  .ban-ver {
+    border-color: var(--red);
+    background: var(--red);
+    color: #fff;
+  }
+  .ban-ver:hover {
+    background: var(--red-d);
+  }
+
+  /* ——— Dossier: panel a la derecha ——— */
+  .dossier {
+    margin: 0 0 0 auto;
+    width: min(500px, 100vw);
+    max-width: none;
+    height: 100dvh;
+    max-height: none;
+    padding: 0;
+    border: 0;
+    border-left: 3px solid var(--red);
+    background: var(--white);
+  }
+  .dossier[open] {
+    display: flex;
+    flex-direction: column;
+    animation: entra var(--dur-3) var(--ease-out);
+  }
+  @keyframes entra {
+    from {
+      translate: 100% 0;
+    }
+  }
+  .dossier::backdrop {
+    background: rgba(21, 23, 25, 0.55);
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+  }
+  .dos-cab {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 24px 24px 18px;
+    border-bottom: 1px solid var(--line);
+  }
+  .dos-cab h2 {
+    font-size: 34px;
+    line-height: 1;
+    margin-top: 10px;
+  }
+  .dos-cerrar,
+  .dl-quitar {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    flex: none;
+    border: 0;
+    background: none;
+    color: var(--ink);
+    cursor: pointer;
+  }
+  .dl-quitar :global(svg) {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+  }
+  .dl-quitar:hover {
+    color: var(--red);
+  }
+  .dos-lista {
+    flex: 1;
+    overflow-y: auto;
+    list-style: none;
+    margin: 0;
+    padding: 4px 24px;
+  }
+  .dos-lista :global(li) {
+    display: grid;
+    grid-template-columns: 64px minmax(0, 1fr) auto;
+    gap: 14px;
+    align-items: start;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .dos-lista :global(li > img) {
+    width: 64px;
+    height: 64px;
+    object-fit: contain;
+    background: var(--panel);
+    padding: 6px;
+  }
+  .dos-lista :global(.dl-txt > a) {
+    font-weight: 700;
+    font-size: 21px;
+    line-height: 1.05;
+    text-decoration: none;
+  }
+  .dos-lista :global(.dl-txt > a span) {
+    font-weight: 300;
+  }
+  .dos-lista :global(.dl-txt small) {
     display: block;
-    width: 100%;
-    height: auto;
+    margin-top: 4px;
+    color: var(--muted);
+    font-size: 14px;
   }
-  .qr p {
+  .dos-lista :global(.dl-pdfs) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 10px;
+  }
+  .dos-lista :global(.dl-pdfs a) {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 6px;
+    padding: 7px 10px;
+    border: 1px solid var(--ink);
+    font-size: 14px;
+    text-decoration: none;
+  }
+  .dos-lista :global(.dl-pdfs a span) {
+    font-weight: 300;
+    font-size: 12px;
+  }
+  .dos-lista :global(.dl-pdfs a:hover) {
+    background: var(--ink);
+    color: #fff;
+  }
+  .dos-vacio {
+    display: none;
+    flex: 1;
+    padding: 32px 24px;
     color: var(--body);
-    font-size: 16px;
-    margin-top: 16px;
+    font-size: 18px;
   }
-  .qr-acc {
+  .dossier.vacio .dos-vacio {
+    display: block;
+  }
+  .dossier.vacio .dos-lista,
+  .dossier.vacio .dos-pie {
+    display: none;
+  }
+  .dos-pie {
+    padding: 20px 24px 24px;
+    background: var(--band);
+    border-top: 1px solid var(--line);
+  }
+  .dos-para {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .dos-para span {
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .dos-para input {
+    border: 0;
+    border-bottom: 2px solid var(--ink);
+    background: transparent;
+    font: 300 20px var(--f);
+    padding: 6px 0 8px;
+    outline: 0;
+  }
+  .dos-para input:focus {
+    border-color: var(--red);
+  }
+  .dos-acc {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
-    margin-top: 20px;
+    margin-top: 18px;
   }
-  .qr-acc .btn {
-    padding: 12px 16px;
-    font-size: 15px;
+  .dos-acc .btn {
+    padding: 12px 18px;
+    font-size: 16px;
     cursor: pointer;
     background: var(--white);
   }
-  .qr-acc .btn.red {
+  .dos-acc .btn.red {
     background: var(--red);
+  }
+  .dos-acc [hidden] {
+    display: none;
+  }
+  .dos-pie p {
+    margin-top: 14px;
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.35;
+  }
+
+  /* ——— Vista previa del PDF (como la del catálogo) ——— */
+  .vista-pdf {
+    width: min(980px, calc(100vw - 32px));
+    height: min(92vh, 1200px);
+    max-width: none;
+    max-height: none;
+    padding: 0;
+    border: 0;
+    border-top: 3px solid var(--red);
+    background: #fff;
+    box-shadow: 0 40px 80px -30px rgba(17, 19, 21, 0.6);
+  }
+  .vista-pdf[open] {
+    display: flex;
+    flex-direction: column;
+  }
+  .vista-pdf::backdrop {
+    background: rgba(21, 23, 25, 0.55);
+  }
+  .vp-cab {
+    display: flex;
+    flex: none;
+    align-items: center;
+    gap: 12px;
+    padding: 14px clamp(16px, 2.4vw, 28px);
+    border-bottom: 1px solid var(--line);
+  }
+  .vp-cab h2 {
+    margin-right: auto;
+    font-size: clamp(22px, 2.2vw, 28px);
+    font-weight: 300;
+  }
+  .vp-descargar,
+  .vp-imprimir {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 44px;
+    padding: 0 18px;
+    font: 700 16px var(--f);
+    cursor: pointer;
+  }
+  .vp-descargar {
+    border: 1px solid var(--red);
+    background: var(--red);
+    color: #fff;
+  }
+  .vp-imprimir {
+    border: 1px solid var(--line);
+    background: #fff;
+    color: var(--ink);
+  }
+  .vp-imprimir svg {
+    color: var(--red);
+  }
+  .vp-cerrar {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border: 0;
+    background: none;
+    color: var(--ink);
+    cursor: pointer;
+  }
+  .vp-cuerpo {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    background: #e9ebed;
+  }
+  .vp-cuerpo iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+  .vp-espera,
+  .vp-sin,
+  .vp-fallo {
+    position: absolute;
+    inset: 0;
+    display: none;
+    place-items: center;
+    margin: 0;
+    padding: 24px;
+    font-size: 17px;
+    color: var(--muted);
+    text-align: center;
+  }
+  .vista-pdf.cargando .vp-espera,
+  .vista-pdf.sin-visor .vp-sin,
+  .vista-pdf.fallo .vp-fallo {
+    display: grid;
+  }
+  .vista-pdf.cargando iframe,
+  .vista-pdf.fallo iframe,
+  .vista-pdf.sin-visor iframe {
+    visibility: hidden;
+  }
+  .vista-pdf.sin-visor .vp-imprimir {
+    display: none;
+  }
+  .vista-pdf.cargando .vp-descargar,
+  .vista-pdf.cargando .vp-imprimir,
+  .vista-pdf.fallo .vp-descargar,
+  .vista-pdf.fallo .vp-imprimir {
+    opacity: 0.4;
+    pointer-events: none;
   }
 
   @media (max-width: 1439px) {
@@ -777,36 +1233,90 @@ const pagina = new URL(Astro.url.pathname, Astro.site).href;
     }
   }
   @media (max-width: 900px) {
-    .cab-in {
-      grid-template-columns: 1fr;
-    }
-    .movil {
-      display: grid;
-      grid-template-columns: 96px 1fr;
-      gap: 16px;
-      align-items: center;
-      width: 100%;
-    }
-    .movil p {
-      margin: 0;
-    }
-    .fila {
-      grid-template-columns: 56px minmax(0, 1fr);
-      gap: 10px 16px;
-    }
-    .fila > img {
-      width: 56px;
-      height: 56px;
-      grid-row: span 2;
-    }
-    .fila-fecha {
-      display: none;
-    }
-    .fila .acciones {
-      justify-content: flex-start;
-    }
     .falta-in {
       grid-template-columns: 1fr;
+    }
+  }
+  @media (max-width: 640px) {
+    .barra-in {
+      gap: 10px;
+      padding-block: 12px;
+    }
+    .busca svg {
+      width: 20px;
+      height: 20px;
+    }
+    /* Los filtros, en una fila que se desliza */
+    .chips {
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      margin-inline: calc(var(--gut) * -1);
+      padding-inline: var(--gut);
+      scrollbar-width: none;
+    }
+    .chip {
+      flex: none;
+    }
+    /* En el móvil, la tarjeta en horizontal: foto pequeña a la izquierda */
+    .rejilla {
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+    .doc {
+      display: grid;
+      grid-template-columns: 96px minmax(0, 1fr);
+    }
+    .foto {
+      aspect-ratio: auto;
+      grid-row: span 2;
+    }
+    .foto img {
+      width: 84%;
+    }
+    .nuevo {
+      top: 6px;
+      left: 6px;
+      padding: 0;
+      width: 8px;
+      height: 8px;
+      background: var(--red);
+      font-size: 0;
+    }
+    .nuevo::before {
+      display: none;
+    }
+    .doc-txt {
+      padding: 14px 14px 0;
+      gap: 6px;
+    }
+    .doc h3 {
+      font-size: 22px;
+    }
+    .doc p {
+      font-size: 15px;
+    }
+    .acciones {
+      padding: 12px 14px 14px;
+    }
+    .pdf,
+    .elegir {
+      height: 40px;
+      padding: 0 10px;
+      font-size: 14px;
+    }
+    .ban-fotos {
+      display: none;
+    }
+    .ban-n {
+      font-size: 15px;
+    }
+    .ban-vaciar {
+      padding: 0 12px;
+    }
+    .dos-cab,
+    .dos-lista,
+    .dos-pie {
+      padding-inline: 16px;
     }
   }
 </style>
