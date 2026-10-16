@@ -7,7 +7,7 @@ Hasta que se publique la web, todo va en "Sin publicar"; al publicar se cierra l
 
 ### Corregido
 
-- Página de productos: **el hero ya no se corta en pantallas bajas**. Medía 660 px fijos y, en ventanas de poca altura o con zoom (≈ 1500 × 710), las cifras, la placa y los mandos del 3D quedaban cortados por abajo. Ahora llena la pantalla pero crece si su contenido no cabe, y el título se ajusta también a la altura de la ventana. En móvil no cambia.
+- Página de productos: **el hero cabe entero en pantallas bajas**. Medía 660 px fijos y, en ventanas de poca altura o con zoom (≈ 1500 × 710), las cifras, la placa y los mandos del 3D quedaban cortados por abajo. Ahora, por debajo de 860 px de alto, todo va más apretado (título según la altura, menos aire, cifras algo menores) y el hero cabe sin bajar desde ~640 px de alto; si aun así no cabe, crece en vez de cortar. La cámara encuadra la máquina hasta la placa con su nombre, así que la elipse del suelo ya no la pisa. En móvil no cambia.
 
 ### Cambiado
 

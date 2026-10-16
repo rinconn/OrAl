@@ -347,7 +347,7 @@ const recorrido = ['PP 367', 'PC 497', 'PI 448', 'PE 494', 'PP 821', 'PC 279'];
   /* Llena la pantalla, pero nunca menos que su contenido: en pantallas bajas (o con zoom) crece en vez de cortar */
   .hero {
     position: relative;
-    min-height: clamp(660px, calc(100svh - 77px), 980px);
+    min-height: clamp(560px, calc(100svh - 77px), 980px);
     overflow: hidden;
     isolation: isolate;
     background: #121416;
@@ -1071,6 +1071,35 @@ const recorrido = ['PP 367', 'PC 497', 'PI 448', 'PE 494', 'PP 821', 'PC 279'];
     }
     .accion.roja:hover {
       background: var(--red);
+    }
+  }
+
+  /* Pantallas bajas (portátiles, o con zoom): todo más apretado para que el hero quepa entero sin bajar */
+  @media (min-width: 901px) and (max-height: 860px) {
+    h1 {
+      font-size: clamp(60px, min(7.4vw, 13svh), 124px);
+    }
+    .texto {
+      padding-block: 28px 32px;
+    }
+    .lead {
+      margin-top: 16px;
+    }
+    .btn-todas {
+      margin-top: 24px;
+    }
+    .raya {
+      margin-top: 30px;
+    }
+    .cifras {
+      gap: 12px 40px;
+      padding-top: 18px;
+    }
+    .cifras b {
+      font-size: 28px;
+    }
+    .columna {
+      padding-block: 24px 28px;
     }
   }
 

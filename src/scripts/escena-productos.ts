@@ -458,8 +458,10 @@ export async function crearEscena(o: Opciones): Promise<Escena> {
     if (W > 900) {
       const a = lienzo.getBoundingClientRect();
       const b = columna.getBoundingClientRect();
+      // Abajo, hasta la placa con el nombre: la elipse del suelo no la pisa aunque el hero sea bajo
+      const pie = columna.querySelector('.pie')?.getBoundingClientRect();
       const top = b.top + 50 - a.top;
-      const bottom = b.bottom - 100 - a.top;
+      const bottom = (pie ? pie.top - 10 : b.bottom - 100) - a.top;
       zona = {
         cx: (b.left + b.width / 2 - a.left) / W,
         cy: (top + bottom) / 2 / H,
