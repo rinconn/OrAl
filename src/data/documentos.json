@@ -1,0 +1,90 @@
+{
+  "fuente": "https://ortoalresa.com/certificados-y-documentacion/ y https://ortoalresa.com/catalogos/",
+  "consulta": "2026-10-16",
+  "documentos": [
+    {
+      "id": "catalogo-general",
+      "tipo": "catalogo",
+      "es": "https://ortoalresa.com/catalogo_general/ES-catalogo-general.pdf"
+    },
+    {
+      "id": "aplicaciones-generales",
+      "tipo": "catalogo",
+      "es": "https://ortoalresa.com/catalogo_general/ES-catalogo-centrifugas-aplicaciones-generales.pdf"
+    },
+    {
+      "id": "centrifugas-pequenas",
+      "tipo": "catalogo",
+      "es": "https://ortoalresa.com/catalogo_general/ES-catalogo-centrifugas-peque%C3%B1as.pdf"
+    },
+    {
+      "id": "servicios",
+      "tipo": "catalogo",
+      "es": "https://ortoalresa.com/catalogo_general/ES-Catalogo-de-Servicios.pdf"
+    },
+    {
+      "id": "paquetes",
+      "tipo": "catalogo",
+      "es": "https://ortoalresa.com/catalogo_general/ES-Ortoalresa%20paquetes.pdf"
+    },
+    {
+      "id": "iso-9001",
+      "tipo": "certificado",
+      "es": "https://ortoalresa.com/catalogo_general/ES-iso-9001.pdf",
+      "en": "https://ortoalresa.com/catalogo_general/EN-iso-9001.pdf"
+    },
+    {
+      "id": "iso-13485",
+      "tipo": "certificado",
+      "es": "https://ortoalresa.com/catalogo_general/ES-iso-13485.pdf",
+      "en": "https://ortoalresa.com/catalogo_general/EN-iso-13485.pdf"
+    },
+    {
+      "id": "iso-14001",
+      "tipo": "certificado",
+      "es": "https://ortoalresa.com/catalogo_general/ES-iso-14001.pdf",
+      "en": "https://ortoalresa.com/catalogo_general/EN-iso-14001.pdf"
+    },
+    {
+      "id": "descontaminacion",
+      "tipo": "servicio",
+      "es": "https://ortoalresa.com/catalogo_general/ES-certificado-de-descontaminacion.pdf"
+    },
+    {
+      "id": "service-pattern",
+      "tipo": "servicio",
+      "es": "https://ortoalresa.com/catalogo_general/ES-service-pattern.pdf",
+      "en": "https://ortoalresa.com/catalogo_general/EN-service-pattern.pdf"
+    },
+    {
+      "id": "limpieza",
+      "tipo": "servicio",
+      "es": "https://ortoalresa.com/catalogo_general/ES-Manual-de-Limpieza-y-Descontaminaci%C3%B3n.pdf"
+    },
+    {
+      "id": "condiciones-venta",
+      "tipo": "condiciones",
+      "es": "https://ortoalresa.com/catalogo_general/ES-Condiciones-Generales-Venta-Prestacion-Servicios-OA.pdf"
+    },
+    {
+      "id": "garantia-productos",
+      "tipo": "condiciones",
+      "es": "https://ortoalresa.com/catalogo_general/ES-Condicionado-general-garantia.pdf"
+    },
+    {
+      "id": "garantia-reparaciones",
+      "tipo": "condiciones",
+      "es": "https://ortoalresa.com/catalogo_general/ES-Condicionado-garantia-reparaciones-repuestos.pdf"
+    },
+    {
+      "id": "politica-organizacion",
+      "tipo": "condiciones",
+      "es": "https://ortoalresa.com/catalogo_general/ES-politica-organizacion.pdf"
+    },
+    {
+      "id": "politica-ambiental",
+      "tipo": "condiciones",
+      "es": "https://ortoalresa.com/catalogo_general/ES-politica-ambiental.pdf"
+    }
+  ]
+}
