@@ -532,8 +532,6 @@ export const en: Textos = {
         chapa: 'Perforated plate',
         luz: 'Aperture',
         notaAire: '* Sieve for air jet sieving machines.',
-        buscar: 'Search a code or an aperture',
-        nada: 'No sieve with that code or aperture.',
         extras: 'Pans and lids',
         fondo: 'Pan',
         tapa: 'Lid',

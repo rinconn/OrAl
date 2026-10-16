@@ -542,8 +542,6 @@ export const es = {
         chapa: 'Chapa perforada',
         luz: 'Luz de malla',
         notaAire: '* Tamiz para tamizadoras de barrido por aire.',
-        buscar: 'Busca un código o una luz',
-        nada: 'Ningún tamiz con ese código o esa luz.',
         extras: 'Fondos y tapas',
         fondo: 'Fondo',
         tapa: 'Tapa',

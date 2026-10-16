@@ -1131,7 +1131,7 @@ const descripcion = m
                   </div>
                 ))}
                 {b.imagenes?.some((im) => esFotoTamices(im.src)) ? (
-                  <div class="tamices" data-tamices>
+                  <div class="tamices">
                     <div class="tm-barra">
                       <div class="tm-pestanas" role="radiogroup">
                         {seriesTamices.map((s, i) => (
@@ -1141,16 +1141,9 @@ const descripcion = m
                           </label>
                         ))}
                       </div>
-                      <label class="tm-buscar">
-                        <span class="sr">{tt.buscar}</span>
-                        <input type="search" placeholder={tt.buscar} autocomplete="off" data-tm-buscar />
-                      </label>
                     </div>
                     {seriesTamices.map((s) => (
                       <section class="tm-serie" aria-label={s.medida}>
-                        <p class="tm-nombre">
-                          {s.medida} <span>{s.normas}</span>
-                        </p>
                         {[
                           ...s.tablas.map((tb) => ({
                             titulo: tt[tb.tipo],
@@ -1160,7 +1153,6 @@ const descripcion = m
                               codigo: x.codigo,
                               valor: decimal(lang, x.luz),
                               aire: x.aire,
-                              busca: `${x.luz}`,
                             })),
                           })),
                           {
@@ -1171,7 +1163,6 @@ const descripcion = m
                               codigo: x.codigo,
                               valor: tt[x.que],
                               aire: undefined,
-                              busca: '',
                             })),
                           },
                         ].map((g) => (
@@ -1197,9 +1188,7 @@ const descripcion = m
                                       {fila.map((x) =>
                                         x ? (
                                           <>
-                                            <td
-                                              data-tm={`${x.codigo} ${x.codigo.replace(' ', '')} ${x.valor} ${x.busca}`}
-                                            >
+                                            <td>
                                               <button
                                                 type="button"
                                                 class="copiar"
@@ -1231,9 +1220,6 @@ const descripcion = m
                         ))}
                       </section>
                     ))}
-                    <p class="tm-nada" hidden data-tm-nada>
-                      {tt.nada}
-                    </p>
                     <p class="v-notas">
                       {tt.notaAire} {tt.medidas}: {medidasTamices.join(' · ')}. {tt.material} {tt.consulta}
                     </p>
@@ -1559,35 +1545,6 @@ const descripcion = m
   }
 
   // Códigos: un clic los copia (para el pedido). "Copiado" sale en el sitio de "Copiar", sin mover nada, y se anuncia
-  // Tamices: al escribir un código o una luz ("384", "PI384", "0,5") se ven las dos series, se marca lo que casa y
-  // se apaga lo demás; las tablas sin nada que casar salen
-  for (const caja of document.querySelectorAll<HTMLElement>('[data-tamices]')) {
-    const campo = caja.querySelector<HTMLInputElement>('[data-tm-buscar]');
-    const nada = caja.querySelector<HTMLElement>('[data-tm-nada]');
-    const norma = (s: string) => s.toLowerCase().replace(/\s+/g, '').replace(/\./g, ',');
-    campo?.addEventListener('input', () => {
-      const q = norma(campo.value);
-      caja.classList.toggle('buscando', Boolean(q));
-      let total = 0;
-      for (const serie of caja.querySelectorAll<HTMLElement>('.tm-serie')) {
-        let enSerie = 0;
-        for (const grupo of serie.querySelectorAll<HTMLElement>('.tm-grupo')) {
-          let enGrupo = 0;
-          for (const td of grupo.querySelectorAll<HTMLElement>('[data-tm]')) {
-            const casa = Boolean(q) && norma(td.dataset.tm!).includes(q);
-            td.classList.toggle('casa', casa);
-            td.classList.toggle('sale', Boolean(q) && !casa);
-            if (casa) enGrupo++;
-          }
-          grupo.classList.toggle('vacio', Boolean(q) && !enGrupo);
-          enSerie += enGrupo;
-        }
-        serie.classList.toggle('vacia', Boolean(q) && !enSerie);
-        total += enSerie;
-      }
-      if (nada) nada.hidden = !q || total > 0;
-    });
-  }
   // Solo un aviso a la vez: al copiar otro código, el "Copiado" anterior se quita en el momento
   const reponer = new Map<HTMLButtonElement, () => void>();
   for (const b of document.querySelectorAll<HTMLButtonElement>('[data-copiar]')) {
@@ -3310,7 +3267,7 @@ const descripcion = m
   }
   /* Tamices: con el mismo lenguaje que la tabla de versiones (cabecera fina, rayas, códigos en negrita). Una
      pestaña por serie, como el menú de la ficha, y cada tabla con cinco parejas código–luz por fila, leídas de arriba
-     abajo, para que no se alargue. Al buscar se ven las dos series y solo las tablas con algo que casa */
+     abajo, para que no se alargue. */
   .tm-barra {
     display: flex;
     flex-wrap: wrap;
@@ -3354,52 +3311,13 @@ const descripcion = m
     opacity: 0;
     pointer-events: none;
   }
-  .tm-buscar {
-    flex: 1 1 220px;
-    max-width: 300px;
-    margin-bottom: 8px;
-  }
-  .tm-buscar input {
-    width: 100%;
-    padding: 8px 12px;
-    font: inherit;
-    font-size: 15px;
-    color: var(--ink);
-    background: var(--white);
-    border: 1px solid var(--line);
-    border-radius: 0;
-    transition: border-color var(--dur-1) var(--ease);
-  }
-  .tm-buscar input:hover,
-  .tm-buscar input:focus {
-    border-color: var(--ink);
-    outline: none;
-  }
-  /* Solo la serie elegida, salvo mientras se busca */
-  .tamices:not(.buscando):has(.tm-pestanas label:nth-child(1) :checked) .tm-serie:not(:nth-of-type(1)),
-  .tamices:not(.buscando):has(.tm-pestanas label:nth-child(2) :checked) .tm-serie:not(:nth-of-type(2)) {
+  /* Solo la serie elegida */
+  .tamices:has(.tm-pestanas label:nth-child(1) :checked) .tm-serie:not(:nth-of-type(1)),
+  .tamices:has(.tm-pestanas label:nth-child(2) :checked) .tm-serie:not(:nth-of-type(2)) {
     display: none;
-  }
-  .tamices.buscando .tm-pestanas label:has(:checked) {
-    color: var(--muted);
-    border-bottom-color: transparent;
   }
   .tm-grupo {
     margin-top: 28px;
-  }
-  /* El nombre de la serie solo hace falta cuando se ven las dos, al buscar */
-  .tm-nombre {
-    display: none;
-    margin: 32px 0 -12px;
-    font-size: 20px;
-    font-weight: 700;
-  }
-  .tm-nombre span {
-    font-weight: 400;
-    color: var(--muted);
-  }
-  .tamices.buscando .tm-nombre {
-    display: block;
   }
   .tm-tipo {
     margin: 0 0 4px;
@@ -3427,24 +3345,6 @@ const descripcion = m
   }
   .tm-tabla sup {
     color: var(--red);
-  }
-  /* Al buscar: lo que casa, marcado; lo demás, apagado; una tabla o una serie sin nada, fuera */
-  .tm-tabla td.sale,
-  .tm-tabla td.sale + td {
-    opacity: 0.25;
-  }
-  .tm-tabla td.casa,
-  .tm-tabla td.casa + td {
-    background: #fdeced;
-  }
-  .tm-grupo.vacio,
-  .tm-serie.vacia {
-    display: none;
-  }
-  .tm-nada {
-    margin: 24px 0 0;
-    font-size: 16px;
-    color: var(--muted);
   }
   .tamices > .v-notas {
     margin-top: 20px;
