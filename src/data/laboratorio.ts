@@ -47,3 +47,7 @@ export const accesorios: ProductoLab[] = [
   },
   { slug: 'grs', modelo: 'Gas Release System', imagen: img('grs'), imagen2: img('grs-2') },
 ];
+
+/** Eficacia del destilado frente a cada contaminante, de 1 (baja) a 3 (excelente), como la da la ficha de los
+ * destiladores en ortoalresa.com. Los nombres, por idioma, en src/i18n/ (`catalogo.ficha.destilacion`) */
+export const destilacion = { pirogenos: 3, bacterias: 3, particulas: 3, solidos: 2, gases: 2, organicos: 2 } as const;
