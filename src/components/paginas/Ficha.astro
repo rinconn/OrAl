@@ -1122,81 +1122,81 @@ const descripcion = m
                   </div>
                 ))}
                 {b.imagenes?.some((im) => esFotoTamices(im.src)) ? (
-                  <div class="tamices">
-                    <div class="tm-mandos">
-                      <div class="tm-seg" role="radiogroup">
-                        {seriesTamices.map((s, i) => (
-                          <label>
-                            <input type="radio" name="tm-serie" checked={i === 0} />
-                            {s.medida} <span>{s.normas}</span>
-                          </label>
-                        ))}
-                      </div>
-                      <div class="tm-seg" role="radiogroup">
-                        {(['malla', 'chapa', 'extras'] as const).map((k, i) => (
-                          <label>
-                            <input type="radio" name="tm-tipo" checked={i === 0} />
-                            {tt[k]}
-                          </label>
-                        ))}
-                      </div>
+                  <div class="tamices" data-tamices>
+                    <div class="tm-barra">
+                      <label class="tm-buscar">
+                        <span class="sr">{tt.buscar}</span>
+                        <input type="search" placeholder={tt.buscar} autocomplete="off" data-tm-buscar />
+                      </label>
+                      <p class="tm-medidas">
+                        {tt.medidas}: {medidasTamices.join(' · ')}
+                      </p>
                     </div>
-                    {seriesTamices.map((s) => (
-                      <section class="tm-serie" aria-label={s.medida}>
-                        {(['malla', 'chapa'] as const).map((k) =>
-                          s.tablas
-                            .filter((tb) => tb.tipo === k)
-                            .map((tb) => (
-                              <div class="tm-grupo">
-                                <p class="tm-pie">
+                    <div class="tm-series">
+                      {seriesTamices.map((s) => (
+                        <section class="tm-serie">
+                          <h4>
+                            {s.medida} <span>{s.normas}</span>
+                          </h4>
+                          {s.tablas.map((tb) => (
+                            <div class="tm-grupo">
+                              <p class="tm-tipo">
+                                {tt[tb.tipo]}
+                                <span>
                                   {tb.norma} · {tb.acero} · {tt.luz}
                                   {tb.enMm && ' (mm)'}
-                                </p>
-                                <ul class="tm-fichas">
-                                  {tb.filas.map((x) => (
-                                    <li>
-                                      <button
-                                        type="button"
-                                        class="copiar"
-                                        data-copiar={x.codigo}
-                                        data-pista={tf.copiar}
-                                        data-hecho={tf.copiado}
-                                      >
-                                        <b>
-                                          {decimal(lang, x.luz)}
-                                          {x.aire && <sup>*</sup>}
-                                        </b>
-                                        <span>{x.codigo}</span>
-                                      </button>
-                                    </li>
-                                  ))}
-                                </ul>
-                              </div>
-                            )),
-                        )}
-                        <div class="tm-grupo">
-                          <p class="tm-pie">{s.medida}</p>
-                          <ul class="tm-fichas tm-anchas">
-                            {s.extras.map((x) => (
-                              <li>
-                                <button
-                                  type="button"
-                                  class="copiar"
-                                  data-copiar={x.codigo}
-                                  data-pista={tf.copiar}
-                                  data-hecho={tf.copiado}
-                                >
-                                  <b>{tt[x.que]}</b>
-                                  <span>{x.codigo}</span>
-                                </button>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      </section>
-                    ))}
+                                </span>
+                              </p>
+                              <ul class="tm-fichas">
+                                {tb.filas.map((x) => (
+                                  <li
+                                    data-tm={`${x.codigo} ${x.codigo.replace(' ', '')} ${decimal(lang, x.luz)} ${x.luz}`}
+                                  >
+                                    <button
+                                      type="button"
+                                      class="copiar"
+                                      data-copiar={x.codigo}
+                                      data-pista={tf.copiar}
+                                      data-hecho={tf.copiado}
+                                    >
+                                      <b>
+                                        {decimal(lang, x.luz)}
+                                        {x.aire && <sup>*</sup>}
+                                      </b>
+                                      <span>{x.codigo}</span>
+                                    </button>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          ))}
+                          <div class="tm-grupo">
+                            <p class="tm-tipo">{tt.extras}</p>
+                            <ul class="tm-fichas tm-anchas">
+                              {s.extras.map((x) => (
+                                <li data-tm={`${x.codigo} ${x.codigo.replace(' ', '')} ${tt[x.que]}`}>
+                                  <button
+                                    type="button"
+                                    class="copiar"
+                                    data-copiar={x.codigo}
+                                    data-pista={tf.copiar}
+                                    data-hecho={tf.copiado}
+                                  >
+                                    <b>{tt[x.que]}</b>
+                                    <span>{x.codigo}</span>
+                                  </button>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        </section>
+                      ))}
+                    </div>
+                    <p class="tm-nada" hidden data-tm-nada>
+                      {tt.nada}
+                    </p>
                     <p class="v-notas">
-                      {tt.notaAire} {tt.medidas}: {medidasTamices.join(' · ')}. {tt.material} {tt.consulta}
+                      {tt.notaAire} {tt.material} {tt.consulta}
                     </p>
                   </div>
                 ) : (
@@ -1520,6 +1520,24 @@ const descripcion = m
   }
 
   // Códigos: un clic los copia (para el pedido). "Copiado" sale en el sitio de "Copiar", sin mover nada, y se anuncia
+  // Tamices: el buscador deja solo las fichas cuyo código o luz contiene lo escrito ("384", "PI384", "0,5")
+  for (const caja of document.querySelectorAll<HTMLElement>('[data-tamices]')) {
+    const campo = caja.querySelector<HTMLInputElement>('[data-tm-buscar]');
+    const nada = caja.querySelector<HTMLElement>('[data-tm-nada]');
+    const fichas = [...caja.querySelectorAll<HTMLElement>('[data-tm]')];
+    const norma = (s: string) => s.toLowerCase().replace(/\s+/g, '').replace(/\./g, ',');
+    campo?.addEventListener('input', () => {
+      const q = norma(campo.value);
+      let quedan = 0;
+      for (const f of fichas) {
+        const sale = Boolean(q) && !norma(f.dataset.tm!).includes(q);
+        f.hidden = sale;
+        if (!sale) quedan++;
+      }
+      if (nada) nada.hidden = quedan > 0;
+    });
+  }
+
   // Solo un aviso a la vez: al copiar otro código, el "Copiado" anterior se quita en el momento
   const reponer = new Map<HTMLButtonElement, () => void>();
   for (const b of document.querySelectorAll<HTMLButtonElement>('[data-copiar]')) {
@@ -3240,85 +3258,88 @@ const descripcion = m
       font-size: 11px;
     }
   }
-  /* Tamices: arriba se elige la serie (ISO / ASTM) y el tipo (malla, chapa, fondos y tapas); abajo solo ese grupo,
-     cada tamiz en una ficha con la luz en grande y el código debajo. Un clic en la ficha copia el código */
-  .tm-mandos {
+  /* Tamices: las dos series a la vez, una por columna, y cada tamiz en una ficha con la luz en grande y el código
+     debajo (un clic lo copia). Todo a la vista, para que Ctrl+F y la impresión lo encuentren; el buscador solo
+     estrecha lo que se ve cuando se escribe un código o una luz */
+  .tm-barra {
     display: flex;
     flex-wrap: wrap;
-    justify-content: space-between;
+    align-items: center;
     gap: 12px 24px;
-    margin-bottom: 20px;
+    margin-bottom: 24px;
   }
-  .tm-seg {
+  .tm-buscar input {
+    width: min(100%, 280px);
+    padding: 10px 14px;
+    font: inherit;
+    font-size: 16px;
+    color: var(--ink);
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: 0;
+    transition: border-color var(--dur-1) var(--ease);
+  }
+  .tm-buscar input:hover,
+  .tm-buscar input:focus {
+    border-color: var(--ink);
+    outline: none;
+  }
+  .tm-medidas {
+    margin: 0;
+    font-size: 14px;
+    color: var(--muted);
+  }
+  .tm-series {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr));
+    gap: 32px clamp(32px, 4vw, 64px);
+    align-items: start;
+  }
+  .tm-serie h4 {
     display: flex;
     flex-wrap: wrap;
-    border: 1px solid var(--ink);
+    align-items: baseline;
+    gap: 4px 12px;
+    margin: 0 0 14px;
+    padding-bottom: 10px;
+    font-size: 20px;
+    border-bottom: 2px solid var(--ink);
   }
-  .tm-seg label {
-    padding: 9px 16px;
+  .tm-serie h4 span {
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--muted);
+  }
+  .tm-grupo + .tm-grupo {
+    margin-top: 16px;
+  }
+  .tm-tipo {
+    margin: 0 0 8px;
     font-size: 15px;
     font-weight: 700;
-    cursor: pointer;
-    transition:
-      background var(--dur-1) var(--ease),
-      color var(--dur-1) var(--ease);
   }
-  .tm-seg label + label {
-    border-left: 1px solid var(--ink);
-  }
-  .tm-seg label span {
+  .tm-tipo span {
+    margin-left: 6px;
+    font-size: 13px;
     font-weight: 400;
-  }
-  .tm-seg label:hover {
-    background: var(--panel);
-  }
-  .tm-seg label:has(:checked) {
-    color: var(--white);
-    background: var(--ink);
-  }
-  .tm-seg label:has(:focus-visible) {
-    outline: 2px solid var(--red);
-    outline-offset: 2px;
-  }
-  .tm-seg input {
-    position: absolute;
-    opacity: 0;
-    pointer-events: none;
-  }
-  /* Solo la serie y el tipo elegidos */
-  .tamices:has([name='tm-serie']:checked) .tm-serie,
-  .tamices:has([name='tm-tipo']:checked) .tm-grupo {
-    display: none;
-  }
-  .tamices:has(.tm-seg:first-child label:nth-child(1) :checked) .tm-serie:nth-of-type(1),
-  .tamices:has(.tm-seg:first-child label:nth-child(2) :checked) .tm-serie:nth-of-type(2),
-  .tamices:has(.tm-seg:last-child label:nth-child(1) :checked) .tm-grupo:nth-child(1),
-  .tamices:has(.tm-seg:last-child label:nth-child(2) :checked) .tm-grupo:nth-child(2),
-  .tamices:has(.tm-seg:last-child label:nth-child(3) :checked) .tm-grupo:nth-child(3) {
-    display: block;
-  }
-  .tm-pie {
-    margin: 0 0 10px;
-    font-size: 14px;
     color: var(--muted);
   }
   .tm-fichas {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
-    gap: 6px;
+    grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
+    gap: 4px;
     margin: 0;
     padding: 0;
     list-style: none;
   }
   .tm-anchas {
-    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
   }
   .tm-fichas .copiar {
     display: flex;
     flex-direction: column;
-    gap: 2px;
     width: 100%;
-    padding: 10px 12px;
+    padding: 7px 10px;
     text-align: left;
     text-decoration: none;
     background: var(--band);
@@ -3327,22 +3348,24 @@ const descripcion = m
       border-color var(--dur-1) var(--ease),
       background var(--dur-1) var(--ease);
   }
-  .tm-fichas .copiar:hover {
+  .tm-fichas .copiar:hover,
+  .tm-fichas .copiar:focus-visible {
     color: inherit;
     background: var(--white);
     border-color: var(--red);
+    outline: none;
   }
   .tm-fichas b {
-    font-size: 20px;
-    line-height: 1.1;
+    font-size: 17px;
+    line-height: 1.2;
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
   }
   .tm-anchas b {
-    font-size: 17px;
+    font-size: 15px;
   }
   .tm-fichas span {
-    font-size: 13px;
+    font-size: 12px;
     color: var(--muted);
   }
   .tm-fichas .copiar:hover span {
@@ -3351,8 +3374,19 @@ const descripcion = m
   .tm-fichas sup {
     color: var(--red);
   }
+  /* Lo que no casa con la búsqueda sale; un grupo o una serie sin nada que enseñar, también */
+  .tm-fichas li[hidden],
+  .tm-grupo:not(:has(li:not([hidden]))),
+  .tm-serie:not(:has(li:not([hidden]))) {
+    display: none;
+  }
+  .tm-nada {
+    margin: 0;
+    font-size: 16px;
+    color: var(--muted);
+  }
   .tamices > .v-notas {
-    margin-top: 16px;
+    margin-top: 20px;
   }
   .ref-foto {
     display: block;

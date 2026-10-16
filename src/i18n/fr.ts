@@ -533,6 +533,8 @@ export const fr: Textos = {
         chapa: 'Tôle perforée',
         luz: 'Ouverture',
         notaAire: '* Tamis pour tamiseuses à jet d’air.',
+        buscar: 'Rechercher un code ou une ouverture',
+        nada: 'Aucun tamis avec ce code ou cette ouverture.',
         extras: 'Fonds et couvercles',
         fondo: 'Fond',
         tapa: 'Couvercle',
