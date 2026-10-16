@@ -12,14 +12,15 @@ import { existsSync } from 'node:fs';
 import Base from '../../layouts/Base.astro';
 import Maquina from '../Maquina.astro';
 import Tarjeta from '../Tarjeta.astro';
-import Visor3D from '../Visor3D.astro';
 import IconoTemp from '../ui/IconoTemp.astro';
 import { familias, modelos, productos, type Modelo } from '../../data/productos';
 import { accesorios, destilacion, equipos, type ProductoLab } from '../../data/laboratorio';
+import { decimal, esFotoTamices, medidasTamices, seriesTamices } from '../../data/tamices';
 import {
   cifra,
   fichaCentrifuga,
   esCodigo,
+  familiaTubo,
   fichaLab,
   medida,
   rotor,
@@ -76,19 +77,22 @@ const rotores = (web?.rotores ?? []).map(rotor);
 const versiones = web?.versiones ?? lab?.versiones ?? [];
 const deAccesorios = [...accesorios].filter((a) => web?.accesorios.includes(a.slug));
 
-// Galería: la máquina entera, su foto de detalle (la de la gama, si es de esta versión), sus rotores y el 3D
-type Vista = { tipo: 'maquina' | 'detalle' | 'rotor' | '3d'; src: string; nombre: string };
+// Galería: la máquina entera, su foto de detalle (la de la gama, si es de esta versión) y sus rotores
+type Vista = { tipo: 'maquina' | 'detalle' | 'rotor'; src: string; nombre: string };
 const tg = tf.galeria;
-const conVisor = m?.slug === 'digicen-22';
 const gamaPropia = !!m && existsSync(`${process.cwd()}/public/img/gama/${m.slug}.webp`);
 const detalle = m && (gamaPropia || m.slug === m.serie) ? `/img/gama/${m.slug}.webp` : undefined;
 const vistas = [
-  conVisor && { tipo: '3d', src: imagen.src, nombre: tg.tresD },
   { tipo: 'maquina', src: imagen.src, nombre: tg.foto },
   detalle && { tipo: 'detalle', src: detalle, nombre: tg.detalle },
   p?.imagen2 && { tipo: 'detalle', src: p.imagen2.src, nombre: tg.detalle },
   ...rotores.filter((r) => r.imagen).map((r) => ({ tipo: 'rotor', src: r.imagen!, nombre: r.nombre })),
 ].filter(Boolean) as Vista[];
+// Con muchas vistas (los modelos con una docena de rotores) la tira no crece: enseña las primeras y una casilla "+N"
+// que abre todas a pantalla completa. Las demás siguen en la galería (flechas, deslizar), solo sin miniatura
+const MAX_MINIS = 6;
+const minisVisibles = vistas.length > MAX_MINIS ? MAX_MINIS - 1 : vistas.length;
+const minisFuera = vistas.length - minisVisibles;
 
 // ——— Tabla de la cabecera ———
 // Rotores: cuántos y de qué tipo ("13 angulares y oscilantes")
@@ -104,6 +108,9 @@ const conIvd = versiones.some((v) => v.ivd);
 // caben y qué adaptador lleva. Las opciones son las capacidades que admite algún rotor, de menor a mayor; lo que no la
 // tiene en el catálogo (microplacas, hemólisis, capilares…) va al final con su nombre
 // Opción de un tubo: su capacidad ("80 ml-85 ml" → "80-85 ml") o, si el catálogo no la da, su tipo
+// Las placas (microplacas, deep well, cultivo celular en placa: 128 × 86 mm) no tienen una capacidad única como un
+// tubo, depende de cada placa: "No aplica". A un tubo sin capacidad en el catálogo le falta el dato: "Bajo consulta"
+const esPlaca = (x: Tubo) => (!!x.tipo && familiaTubo(x.tipo) === 'placas') || /^128\s*x\s*86/i.test(x.medidas ?? '');
 const opcionDe = (x: Tubo) => (x.capacidad ? `c:${x.capacidad.replace(/\s*ml\s*-\s*/i, '-')}` : `t:${x.tipo}`);
 // "1,5-2,2 ml" → [1.5, 2.2], "1.000 ml" → [1000]: se ordena por la menor y luego por la mayor
 const mls = (c: string) =>
@@ -220,6 +227,17 @@ const refBloques = (txt?.bloques.filter(esReferencia) ?? []).map((b) =>
 );
 // La foto de la eficacia del destilado se cambia por su tabla, con los mismos datos, en cada idioma
 const esFotoDestilacion = (src: string) => /destil/i.test(src);
+// Y la foto de las tablas de tamices, por las tablas
+const tt = tf.tamices;
+// Cada tabla de tamices, en filas de cinco parejas código–luz que se leen de arriba abajo
+const PARES = 5;
+const columnasDe = (n: number) => Math.ceil(n / Math.ceil(n / PARES));
+const enColumnas = <T,>(xs: T[]): (T | undefined)[][] => {
+  const filas = Math.ceil(xs.length / PARES);
+  return Array.from({ length: filas }, (_, r) =>
+    Array.from({ length: columnasDe(xs.length) }, (_, c) => xs[c * filas + r]),
+  );
+};
 // Tabla de dos columnas con códigos (accesorios de los destiladores): su cabecera, la nuestra
 const esCodigoYTexto = (t: NonNullable<BloqueFicha['tablas']>[number]) =>
   t.filas.length > 0 && t.filas.every((f) => f.length === 2 && esCodigo(f[0].t));
@@ -411,9 +429,7 @@ const descripcion = m
                 role="tabpanel"
                 aria-label={v.tipo === 'maquina' ? nombre : v.nombre}
               >
-                {v.tipo === '3d' ? (
-                  <Visor3D />
-                ) : v.tipo === 'maquina' ? (
+                {v.tipo === 'maquina' ? (
                   <span class="pieza">
                     <span class="contacto" aria-hidden="true"></span>
                     <img
@@ -478,13 +494,21 @@ const descripcion = m
                   aria-controls={`vista-${i}`}
                   aria-selected={i === 0 ? 'true' : 'false'}
                   tabindex={i === 0 ? 0 : -1}
+                  hidden={i >= minisVisibles}
                 >
                   <span class="mini-foto">
-                    {v.tipo === '3d' ? <b>3D</b> : <img src={v.src} alt="" width="120" height="100" decoding="async" />}
+                    <img src={v.src} alt="" width="120" height="100" decoding="async" />
                   </span>
                   <span class="mini-nombre">{v.nombre}</span>
                 </button>
               ))}
+              {minisFuera > 0 && (
+                <button type="button" class="mini mini-todas" aria-label={`${tg.todas} (${vistas.length})`}>
+                  <span class="mini-foto">
+                    <b>+{minisFuera}</b>
+                  </span>
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -732,7 +756,7 @@ const descripcion = m
                     <dl class="rc-cifras">
                       <div>
                         <dt>{tf.capacidad}</dt>
-                        <dd>{medida(lang, r.capacidad) ?? '—'}</dd>
+                        <dd>{medida(lang, r.capacidad) ?? tf.rotores.consulta}</dd>
                       </div>
                       <div>
                         <dt>{tf.velocidad}</dt>
@@ -795,8 +819,11 @@ const descripcion = m
                                 <tr data-op={tb.tipo && opcionDe(tb)} data-tipo={tb.tipo}>
                                   <td class="num">{tb.posiciones}</td>
                                   <td>{may(tipoTubo(lang, tb.tipo) ?? '—')}</td>
-                                  <td>{medida(lang, tb.capacidad) ?? '—'}</td>
-                                  <td>{medida(lang, tb.medidas) ?? '—'}</td>
+                                  <td>
+                                    {medida(lang, tb.capacidad) ??
+                                      (esPlaca(tb) ? tf.rotores.noAplica : tf.rotores.consulta)}
+                                  </td>
+                                  <td>{medida(lang, tb.medidas) ?? tf.rotores.consulta}</td>
                                   <td>{tb.reductor ?? tf.rotores.directo}</td>
                                 </tr>
                               ))}
@@ -1103,26 +1130,124 @@ const descripcion = m
                     </table>
                   </div>
                 ))}
-                {b.puntos.map((pt) =>
-                  pt.punto ? (
-                    <p class="ref-nota">{pt.t}</p>
-                  ) : b.puntos.length > 1 && pt === b.puntos[0] && pt.t.length < 60 ? (
-                    <h4>{pt.t}</h4>
-                  ) : (
-                    <p class="ref-nota">{pt.t}</p>
-                  ),
+                {b.imagenes?.some((im) => esFotoTamices(im.src)) ? (
+                  <div class="tamices">
+                    <div class="tm-barra">
+                      <div class="tm-pestanas" role="radiogroup">
+                        {seriesTamices.map((s, i) => (
+                          <label>
+                            <input type="radio" name="tm-serie" checked={i === 0} />
+                            {s.medida} <span>{s.normas}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                    {seriesTamices.map((s) => (
+                      <section class="tm-serie" aria-label={s.medida}>
+                        {[
+                          ...s.tablas.map((tb) => ({
+                            titulo: tt[tb.tipo],
+                            pie: `${tb.norma} · ${tb.acero}`,
+                            col: tb.enMm ? `${tt.luz} (mm)` : tt.luz,
+                            filas: tb.filas.map((x) => ({
+                              codigo: x.codigo,
+                              valor: decimal(lang, x.luz),
+                              aire: x.aire,
+                            })),
+                          })),
+                          {
+                            titulo: tt.extras,
+                            pie: '',
+                            col: tf.descripcion,
+                            filas: s.extras.map((x) => ({
+                              codigo: x.codigo,
+                              valor: tt[x.que],
+                              aire: undefined,
+                            })),
+                          },
+                        ].map((g) => (
+                          <div class="tm-grupo">
+                            <p class="tm-tipo">
+                              {g.titulo} {g.pie && <span>{g.pie}</span>}
+                            </p>
+                            <div class="tabla-scroll">
+                              <table class="ref-tabla tm-tabla">
+                                <thead>
+                                  <tr>
+                                    {Array.from({ length: columnasDe(g.filas.length) }, () => (
+                                      <>
+                                        <th scope="col">{tf.versiones.codigo}</th>
+                                        <th scope="col">{g.col}</th>
+                                      </>
+                                    ))}
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {enColumnas(g.filas).map((fila) => (
+                                    <tr>
+                                      {fila.map((x) =>
+                                        x ? (
+                                          <>
+                                            <td>
+                                              <button
+                                                type="button"
+                                                class="copiar"
+                                                data-copiar={x.codigo}
+                                                data-pista={tf.copiar}
+                                                data-hecho={tf.copiado}
+                                              >
+                                                {x.codigo}
+                                              </button>
+                                            </td>
+                                            <td class="tm-luz">
+                                              {x.valor}
+                                              {x.aire && <sup>*</sup>}
+                                            </td>
+                                          </>
+                                        ) : (
+                                          <>
+                                            <td />
+                                            <td class="tm-luz" />
+                                          </>
+                                        ),
+                                      )}
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                        ))}
+                      </section>
+                    ))}
+                    <p class="v-notas">
+                      {tt.notaAire} {tt.medidas}: {medidasTamices.join(' · ')}. {tt.material} {tt.consulta}
+                    </p>
+                  </div>
+                ) : (
+                  b.puntos.map((pt) =>
+                    pt.punto ? (
+                      <p class="ref-nota">{pt.t}</p>
+                    ) : b.puntos.length > 1 && pt === b.puntos[0] && pt.t.length < 60 ? (
+                      <h4>{pt.t}</h4>
+                    ) : (
+                      <p class="ref-nota">{pt.t}</p>
+                    ),
+                  )
                 )}
-                {b.imagenes?.map((im) => (
-                  <img
-                    class="ref-foto"
-                    src={im.src}
-                    alt={im.alt || b.titulo}
-                    width={im.ancho}
-                    height={im.alto}
-                    loading="lazy"
-                    decoding="async"
-                  />
-                ))}
+                {b.imagenes
+                  ?.filter((im) => !esFotoTamices(im.src))
+                  .map((im) => (
+                    <img
+                      class="ref-foto"
+                      src={im.src}
+                      alt={im.alt || b.titulo}
+                      width={im.ancho}
+                      height={im.alto}
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  ))}
               </div>
             ))}
             {deAccesorios.length > 0 && (
@@ -1215,7 +1340,11 @@ const descripcion = m
   const escaparate = document.querySelector<HTMLElement>('.escaparate');
   const escena = document.querySelector<HTMLElement>('.escena');
   const tira = document.querySelector<HTMLElement>('.miniaturas');
-  const minis = [...document.querySelectorAll<HTMLButtonElement>('.miniaturas .mini')];
+  const minis = [...document.querySelectorAll<HTMLButtonElement>('.miniaturas .mini:not(.mini-todas)')];
+  const botonTodas = document.querySelector<HTMLButtonElement>('.miniaturas .mini-todas');
+  // Las vistas sin miniatura las representa la casilla "+N": el indicador se queda en ella y el foco va a ella
+  const nVisibles = minis.filter((x) => !x.hidden).length;
+  const mini = (i: number) => (minis[i].hidden && botonTodas ? botonTodas : minis[i]);
   const vistas = [...document.querySelectorAll<HTMLElement>('.escena .vista')];
   const dos = (n: number) => String(n).padStart(2, '0');
   const deslizar = matchMedia('(max-width: 760px)');
@@ -1228,7 +1357,8 @@ const descripcion = m
       x.setAttribute('aria-selected', String(j === iVista));
       x.tabIndex = j === iVista ? 0 : -1;
     });
-    tira?.style.setProperty('--sel', String(iVista));
+    if (botonTodas) botonTodas.toggleAttribute('data-dentro', iVista >= nVisibles);
+    tira?.style.setProperty('--sel', String(Math.min(iVista, nVisibles)));
     escaparate?.setAttribute('data-vista', vistas[iVista].dataset.tipo!);
     if (deslizar.matches && escena && !desdeScroll) {
       escena.scrollTo({ left: iVista * escena.clientWidth, behavior: quieto.matches ? 'auto' : 'smooth' });
@@ -1241,7 +1371,7 @@ const descripcion = m
       if (!j) return;
       e.preventDefault();
       verVista(i + j);
-      minis[iVista].focus();
+      mini(iVista).focus();
     });
   });
   // Al deslizar, la vista que queda centrada pasa a ser la elegida
@@ -1366,10 +1496,10 @@ const descripcion = m
     vigia.observe(franja);
   }
 
-  // Pantalla completa: solo las fotos (el 3D tiene su propio visor). Clic en la foto para acercar donde se pulsa
+  // Pantalla completa: todas las fotos, con flechas. Clic en la foto para acercar donde se pulsa
   const visor = document.querySelector<HTMLDialogElement>('.visor-foto');
   if (escena && visor) {
-    const fotos = vistas.filter((v) => v.dataset.tipo !== '3d');
+    const fotos = vistas;
     const img = visor.querySelector('img')!;
     const pie = visor.querySelector('figcaption b')!;
     const lbCuenta = visor.querySelector('.lb-cuenta')!;
@@ -1390,6 +1520,11 @@ const descripcion = m
       visor.showModal();
     };
     document.querySelector('.ampliar')?.addEventListener('click', abrir);
+    // "+N": a pantalla completa desde la primera foto sin miniatura (o desde la que se está viendo, si ya es una de ellas)
+    botonTodas?.addEventListener('click', () => {
+      verFoto(iVista >= nVisibles ? iVista : nVisibles);
+      visor.showModal();
+    });
     for (const f of fotos) f.querySelector('img')!.addEventListener('click', abrir);
     for (const b of visor.querySelectorAll<HTMLButtonElement>('.lb-paso')) {
       b.hidden = fotos.length < 2;
@@ -1784,7 +1919,7 @@ const descripcion = m
     color: var(--ink);
   }
 
-  .vista:not([data-tipo='3d']) img {
+  .vista img {
     cursor: zoom-in;
   }
   /* Mandos del escenario: ampliar arriba a la derecha y, abajo, flechas con el contador entre ellas */
@@ -1855,15 +1990,6 @@ const descripcion = m
   }
   .cuenta b {
     color: var(--ink);
-  }
-  /* El 3D trae sus propios mandos abajo: los de la galería se apartan */
-  .escena[data-vista='3d'] .ampliar {
-    opacity: 0;
-    pointer-events: none;
-  }
-  .escena[data-vista='3d'] .mandos {
-    top: 16px;
-    bottom: auto;
   }
 
   /* Pantalla completa */
@@ -3139,6 +3265,90 @@ const descripcion = m
       font-size: 11px;
     }
   }
+  /* Tamices: con el mismo lenguaje que la tabla de versiones (cabecera fina, rayas, códigos en negrita). Una
+     pestaña por serie, como el menú de la ficha, y cada tabla con cinco parejas código–luz por fila, leídas de arriba
+     abajo, para que no se alargue. */
+  .tm-barra {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 12px 24px;
+    margin-bottom: 8px;
+    border-bottom: 1px solid var(--line);
+  }
+  .tm-pestanas {
+    display: flex;
+    flex-wrap: wrap;
+    column-gap: 28px;
+  }
+  .tm-pestanas label {
+    margin-bottom: -1px;
+    padding: 10px 0 12px;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--muted);
+    border-bottom: 3px solid transparent;
+    cursor: pointer;
+    transition: color var(--dur-1) var(--ease);
+  }
+  .tm-pestanas label span {
+    font-weight: 400;
+  }
+  .tm-pestanas label:hover,
+  .tm-pestanas label:has(:checked) {
+    color: var(--ink);
+  }
+  .tm-pestanas label:has(:checked) {
+    border-bottom-color: var(--red);
+  }
+  .tm-pestanas label:has(:focus-visible) {
+    outline: 2px solid var(--ink);
+    outline-offset: -2px;
+  }
+  .tm-pestanas input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+  /* Solo la serie elegida */
+  .tamices:has(.tm-pestanas label:nth-child(1) :checked) .tm-serie:not(:nth-of-type(1)),
+  .tamices:has(.tm-pestanas label:nth-child(2) :checked) .tm-serie:not(:nth-of-type(2)) {
+    display: none;
+  }
+  .tm-grupo {
+    margin-top: 28px;
+  }
+  .tm-tipo {
+    margin: 0 0 4px;
+    font-size: 17px;
+    font-weight: 700;
+  }
+  .tm-tipo span {
+    margin-left: 8px;
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--muted);
+  }
+  .tm-tabla th,
+  .tm-tabla td {
+    padding: 9px 12px;
+  }
+  .tm-tabla td.tm-luz {
+    min-width: 0;
+    padding-right: 28px;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+  .tm-tabla tr > :last-child {
+    padding-right: 12px;
+  }
+  .tm-tabla sup {
+    color: var(--red);
+  }
+  .tamices > .v-notas {
+    margin-top: 20px;
+  }
   .ref-foto {
     display: block;
     max-width: 100%;
@@ -3422,15 +3632,6 @@ const descripcion = m
     }
   }
   @media (max-width: 1000px) {
-    .vista[data-tipo='3d'] {
-      position: relative;
-    }
-    .escena[data-vista='3d'] .mandos {
-      display: none;
-    }
-    .escena:has(.vista[data-tipo='3d']:not([hidden])) {
-      aspect-ratio: auto;
-    }
     .bloques {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
@@ -3952,7 +4153,7 @@ const descripcion = m
     background: rgba(0, 0, 0, 0.07);
     filter: blur(14px);
   }
-  .vista:not([data-tipo='3d']) img {
+  .vista img {
     cursor: zoom-in;
   }
   /* Detalle y rotores: en el mismo estudio, sin recuadro (el blanco de su foto se funde con el fondo) */
@@ -3963,18 +4164,6 @@ const descripcion = m
     max-width: 100%;
     object-fit: contain;
     mix-blend-mode: multiply;
-  }
-  .galeria .vista[data-tipo='3d'] {
-    display: flex;
-    max-width: 900px;
-    margin-inline: auto;
-    padding: var(--sp-4);
-    color: #fff;
-    background: var(--carbon);
-  }
-  .vista[data-tipo='3d'] > :global(.visor) {
-    flex: 1;
-    min-height: 0;
   }
   .pie-vista {
     position: absolute;
@@ -4001,9 +4190,6 @@ const descripcion = m
   .galeria .ampliar:hover {
     color: #fff;
     background: var(--red);
-  }
-  .escaparate[data-vista='3d'] .ampliar {
-    visibility: hidden;
   }
 
   /* Miniaturas: una fila centrada bajo la máquina; el indicador rojo se desliza a la elegida (--sel lo pone el script) */
@@ -4058,9 +4244,6 @@ const descripcion = m
   .mini[aria-selected='true'] .mini-foto {
     border-color: var(--ink);
   }
-  .mini[data-tipo='3d'] .mini-foto {
-    background: var(--carbon);
-  }
   .mini-foto img {
     width: 100%;
     height: 100%;
@@ -4071,9 +4254,24 @@ const descripcion = m
     padding: 0;
     object-fit: cover;
   }
-  .mini-foto b {
-    font-size: 16px;
+  .mini[hidden] {
+    display: none;
+  }
+  /* "+N": una casilla de tinta con la cuenta de las vistas que no tienen miniatura */
+  .mini-todas .mini-foto {
+    background: var(--ink);
+    border-color: var(--ink);
+    opacity: 1;
+  }
+  .mini-todas .mini-foto b {
+    font-size: 20px;
+    font-weight: 700;
     color: #fff;
+    font-variant-numeric: tabular-nums;
+  }
+  .mini-todas:hover .mini-foto {
+    background: var(--red);
+    border-color: var(--red);
   }
   .mini-nombre {
     position: absolute;
@@ -4523,9 +4721,6 @@ const descripcion = m
     .cifra + .cifra::before {
       display: none;
     }
-    .galeria .vista[data-tipo='3d'] {
-      position: absolute;
-    }
   }
 
   /* ——— 390: la máquina primero (deslizable con imán), luego el nombre y el pedido, la hoja de cifras ——— */
@@ -4554,10 +4749,6 @@ const descripcion = m
       flex: 0 0 100%;
       display: grid;
       scroll-snap-align: start;
-    }
-    .galeria .vista[data-tipo='3d'] {
-      position: relative;
-      display: flex;
     }
     .galeria {
       order: -2;
@@ -4600,6 +4791,21 @@ const descripcion = m
     .mini[aria-selected='true']::before {
       background: var(--ink);
       scale: 1.3;
+    }
+    .mini-todas::before {
+      display: none;
+    }
+    .mini-todas .mini-foto {
+      display: grid;
+      background: none;
+      border: 0;
+    }
+    .mini-todas .mini-foto b {
+      font-size: 14px;
+      color: var(--ink);
+    }
+    .mini-todas[data-dentro] .mini-foto b {
+      color: var(--red);
     }
     .franja {
       grid-template-columns: repeat(2, var(--d));

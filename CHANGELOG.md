@@ -5,7 +5,15 @@ Hasta que se publique la web, todo va en "Sin publicar"; al publicar se cierra l
 
 ## [Sin publicar]
 
+### Corregido
+
+- Página de productos: **el hero cabe entero en pantallas bajas**. Medía 660 px fijos y, en ventanas de poca altura o con zoom (≈ 1500 × 710), las cifras, la placa y los mandos del 3D quedaban cortados por abajo. Ahora, por debajo de 860 px de alto, todo va más apretado (título según la altura, menos aire, cifras algo menores) y el hero cabe sin bajar desde ~640 px de alto; si aun así no cabe, crece en vez de cortar. La cámara encuadra la máquina hasta la placa con su nombre, así que la elipse del suelo ya no la pisa. En móvil no cambia.
+
 ### Cambiado
+
+- Fichas de producto, tablas de tubos de cada rotor: **ninguna celda vacía con «—»**. En las placas (microplacas, deep well y cultivo celular en placa de 128 × 86 mm) la capacidad dice «No aplica»: no tienen una capacidad única, depende de cada placa. Donde el dato falta en origen (capacidad de los tubos de hemólisis, capilares y butirómetros; medidas de las bolsas de sangre y los Cytofunnel; capacidad de los rotores RT 330 y RT 332) dice «Bajo consulta». En los tres idiomas y en todas las fichas.
+- Fichas de producto: **la galería ya no se desborda**. Con más de seis vistas (13 fichas: las de muchos rotores, hasta 18 vistas en la Cyto 22), la tira enseña las cinco primeras y una casilla «+N» que abre todas a pantalla completa desde la primera que no tiene miniatura; las demás se siguen viendo con las flechas y, en móvil, deslizando (cinco puntos y «+12» en vez de 18 puntos en la Digicen 22). Antes la tira de la Digicen 22 cruzaba la página y tapaba las referencias.
+- Ficha de la Digicen 22: **sin el 3D**. Su galería empieza por la foto, como en el resto de modelos. El 3D sigue en la página de productos. Se borran `Visor3D.astro` y `visor3d.ts`, que solo usaba la ficha.
 
 - Fichas de producto: en Referencias, una versión sin datos publicados dice «Datos bajo consulta» en vez de una fila de rayas.
 - Fichas de producto en móvil: **Referencias en tarjetas**. Hasta 760 px, la tabla de versiones pasa a una tarjeta por versión con los códigos arriba y sus datos debajo, cada uno con su nombre, en tres columnas alineadas. Antes la tabla se cortaba por la derecha y había que deslizarla para ver voltaje, frecuencia y consumo. En escritorio no cambia.
@@ -78,7 +86,7 @@ Hasta que se publique la web, todo va en "Sin publicar"; al publicar se cierra l
   enlace "Saltar al contenido"; enlaces centralizados en `src/data/navegacion.ts`. (#3)
 - Entorno en GitHub Codespaces: se abre, instala y arranca la web solo; vista previa en `*.app.github.dev`. (#2)
 - Base de calidad: comprobación automática en cada PR (formato, lint, tipos y build), sitemap, página 404,
-  `robots.txt`, cabeceras de seguridad y caché, y normas del proyecto en `CLAUDE.md`. (#1)
+  `robots.txt`, cabeceras de seguridad y caché. (#1)
 - Portada nueva con la marca de Orto Alresa: titular, cifras, gama con filtro, tecnología, distribuidores,
   empresa y aplicaciones, con notas "antes y después" para la presentación.
 

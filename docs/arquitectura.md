@@ -46,7 +46,6 @@ src/
   styles/global.css      Variables de marca y utilidades comunes
   types/                 Tipos de librerías que no los traen
 astro.config.mjs         Dominio, integraciones, idiomas
-CLAUDE.md                Normas del proyecto
 CHANGELOG.md             Registro de cambios
 ```
 
