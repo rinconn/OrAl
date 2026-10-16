@@ -1144,6 +1144,26 @@ const descripcion = m
                     </div>
                     {seriesTamices.map((s) => (
                       <section class="tm-serie" aria-label={s.medida}>
+                        {s.tablas.some((tb) => tb.enMm) && (
+                          <div
+                            class="tm-medir"
+                            data-tm-medir
+                            data-retiene={tt.retiene}
+                            data-pasa={tt.pasa}
+                            data-exacta={tt.exacta}
+                          >
+                            <label>
+                              <span class="tm-medir-et">{tt.particula}</span>
+                              <span class="tm-medir-campo">
+                                <input type="text" inputmode="decimal" autocomplete="off" placeholder={tt.ejemplo} />
+                                <span>mm</span>
+                              </span>
+                            </label>
+                            <p class="tm-res" aria-live="polite" data-ayuda={tt.ayuda}>
+                              {tt.ayuda}
+                            </p>
+                          </div>
+                        )}
                         {[
                           ...s.tablas.map((tb) => ({
                             titulo: tt[tb.tipo],
@@ -1153,6 +1173,7 @@ const descripcion = m
                               codigo: x.codigo,
                               valor: decimal(lang, x.luz),
                               aire: x.aire,
+                              mm: tb.enMm ? x.luz : undefined,
                             })),
                           })),
                           {
@@ -1163,6 +1184,7 @@ const descripcion = m
                               codigo: x.codigo,
                               valor: tt[x.que],
                               aire: undefined,
+                              mm: undefined,
                             })),
                           },
                         ].map((g) => (
@@ -1188,7 +1210,7 @@ const descripcion = m
                                       {fila.map((x) =>
                                         x ? (
                                           <>
-                                            <td>
+                                            <td data-mm={x.mm}>
                                               <button
                                                 type="button"
                                                 class="copiar"
@@ -1545,6 +1567,47 @@ const descripcion = m
   }
 
   // Códigos: un clic los copia (para el pedido). "Copiado" sale en el sitio de "Copiar", sin mover nada, y se anuncia
+  // Tamices: con el tamaño de partícula, el tamiz que la retiene (la luz más grande por debajo) y el que la deja
+  // pasar (la más pequeña por encima), marcados en la tabla
+  for (const caja of document.querySelectorAll<HTMLElement>('[data-tm-medir]')) {
+    const campo = caja.querySelector('input')!;
+    const res = caja.querySelector<HTMLElement>('.tm-res')!;
+    const tamices = [...caja.closest('.tm-serie')!.querySelectorAll<HTMLElement>('td[data-mm]')]
+      .map((td) => ({
+        td,
+        mm: Number(td.dataset.mm),
+        codigo: td.textContent!.trim(),
+        luz: td.nextElementSibling!.textContent!.replace('*', '').trim(),
+      }))
+      .sort((a, b) => a.mm - b.mm);
+    type Tamiz = (typeof tamices)[number];
+    const dato = (et: string, t: Tamiz) => {
+      const linea = document.createElement('span');
+      linea.append(
+        et + ' ',
+        Object.assign(document.createElement('b'), { textContent: t.codigo }),
+        ' · ' + t.luz + ' mm',
+      );
+      return linea;
+    };
+    campo.addEventListener('input', () => {
+      for (const t of tamices) t.td.classList.remove('marca');
+      const x = Number(campo.value.replace(',', '.').trim());
+      if (!campo.value.trim() || !(x > 0)) {
+        res.textContent = res.dataset.ayuda!;
+        return;
+      }
+      const exacto = tamices.find((t) => t.mm === x);
+      const retiene = exacto ? undefined : tamices.filter((t) => t.mm < x).at(-1);
+      const pasa = exacto ? undefined : tamices.find((t) => t.mm > x);
+      const lineas: HTMLElement[] = [];
+      if (exacto) lineas.push(dato(caja.dataset.exacta!, exacto));
+      if (retiene) lineas.push(dato(caja.dataset.retiene!, retiene));
+      if (pasa) lineas.push(dato(caja.dataset.pasa!, pasa));
+      res.replaceChildren(...lineas);
+      for (const t of [exacto, retiene, pasa]) t?.td.classList.add('marca');
+    });
+  }
   // Solo un aviso a la vez: al copiar otro código, el "Copiado" anterior se quita en el momento
   const reponer = new Map<HTMLButtonElement, () => void>();
   for (const b of document.querySelectorAll<HTMLButtonElement>('[data-copiar]')) {
@@ -3342,6 +3405,72 @@ const descripcion = m
   }
   .tm-tabla tr > :last-child {
     padding-right: 12px;
+  }
+  /* Tamaño de partícula: el campo y, al lado, qué tamiz la retiene y cuál la deja pasar */
+  .tm-medir {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 24px;
+    margin-top: 24px;
+    padding: 14px 20px;
+    background: var(--band);
+  }
+  .tm-medir label {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 12px;
+  }
+  .tm-medir-et {
+    font-size: 16px;
+    font-weight: 700;
+  }
+  .tm-medir-campo {
+    display: flex;
+    align-items: center;
+    background: var(--white);
+    border: 1px solid var(--line);
+    transition: border-color var(--dur-1) var(--ease);
+  }
+  .tm-medir-campo:hover,
+  .tm-medir-campo:focus-within {
+    border-color: var(--ink);
+  }
+  .tm-medir input {
+    width: 10ch;
+    padding: 8px 0 8px 12px;
+    font: inherit;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--ink);
+    background: none;
+    border: 0;
+    outline: none;
+  }
+  .tm-medir-campo > span {
+    padding-right: 12px;
+    font-size: 15px;
+    color: var(--muted);
+  }
+  .tm-res {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 24px;
+    margin: 0;
+    font-size: 16px;
+    color: var(--body);
+  }
+  .tm-res b {
+    color: var(--ink);
+  }
+  .tm-tabla td.marca,
+  .tm-tabla td.marca + td {
+    background: #fdeced;
+  }
+  .tm-tabla td.marca + td {
+    font-weight: 700;
+    color: var(--ink);
   }
   .tm-tabla sup {
     color: var(--red);
