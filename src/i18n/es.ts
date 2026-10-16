@@ -536,6 +536,22 @@ export const es = {
       caracteristicas: 'Características',
       normas: 'Normas y directivas comunitarias',
       accesoriosEquipo: 'Accesorios',
+      // Tablas de tamices de la tamizadora (la web actual las da en una foto)
+      tamices: {
+        malla: 'Malla metálica',
+        chapa: 'Chapa perforada',
+        luz: 'Luz de malla',
+        aire: 'Aire',
+        notaAire: 'Aire: tamiz para tamizadoras de barrido por aire.',
+        extras: 'Fondos y tapas',
+        fondo: 'Fondo',
+        tapa: 'Tapa',
+        fondoHumeda: 'Fondo vía húmeda',
+        tapaHumeda: 'Tapa vía húmeda',
+        medidas: 'Medidas disponibles',
+        material: 'Acero inoxidable: AISI 304 en el bastidor y la chapa perforada, AISI 316 en las mallas.',
+        consulta: 'Otras medidas y luces de malla, bajo consulta.',
+      },
       descripcion: 'Descripción',
       destilacion: {
         titulo: 'Eficacia de la destilación',

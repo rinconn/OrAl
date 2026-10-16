@@ -526,6 +526,22 @@ export const en: Textos = {
       caracteristicas: 'Features',
       normas: 'Standards and Directives',
       accesoriosEquipo: 'Accessories',
+      // Tablas de tamices de la tamizadora (la web actual las da en una foto)
+      tamices: {
+        malla: 'Wire mesh',
+        chapa: 'Perforated plate',
+        luz: 'Aperture',
+        aire: 'Air jet',
+        notaAire: 'Air jet: sieve for air jet sieving machines.',
+        extras: 'Pans and lids',
+        fondo: 'Pan',
+        tapa: 'Lid',
+        fondoHumeda: 'Wet sieving pan',
+        tapaHumeda: 'Wet sieving lid',
+        medidas: 'Available sizes',
+        material: 'Stainless steel: AISI 304 for the frame and perforated plates, AISI 316 for the mesh.',
+        consulta: 'Other sizes and apertures on request.',
+      },
       descripcion: 'Description',
       destilacion: {
         titulo: 'Distillation efficiency',

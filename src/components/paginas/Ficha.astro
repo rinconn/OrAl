@@ -15,6 +15,7 @@ import Tarjeta from '../Tarjeta.astro';
 import IconoTemp from '../ui/IconoTemp.astro';
 import { familias, modelos, productos, type Modelo } from '../../data/productos';
 import { accesorios, destilacion, equipos, type ProductoLab } from '../../data/laboratorio';
+import { decimal, esFotoTamices, medidasTamices, seriesTamices } from '../../data/tamices';
 import {
   cifra,
   fichaCentrifuga,
@@ -226,6 +227,8 @@ const refBloques = (txt?.bloques.filter(esReferencia) ?? []).map((b) =>
 );
 // La foto de la eficacia del destilado se cambia por su tabla, con los mismos datos, en cada idioma
 const esFotoDestilacion = (src: string) => /destil/i.test(src);
+// Y la foto de las tablas de tamices, por las tablas
+const tt = tf.tamices;
 // Tabla de dos columnas con códigos (accesorios de los destiladores): su cabecera, la nuestra
 const esCodigoYTexto = (t: NonNullable<BloqueFicha['tablas']>[number]) =>
   t.filas.length > 0 && t.filas.every((f) => f.length === 2 && esCodigo(f[0].t));
@@ -1118,26 +1121,112 @@ const descripcion = m
                     </table>
                   </div>
                 ))}
-                {b.puntos.map((pt) =>
-                  pt.punto ? (
-                    <p class="ref-nota">{pt.t}</p>
-                  ) : b.puntos.length > 1 && pt === b.puntos[0] && pt.t.length < 60 ? (
-                    <h4>{pt.t}</h4>
-                  ) : (
-                    <p class="ref-nota">{pt.t}</p>
-                  ),
+                {b.imagenes?.some((im) => esFotoTamices(im.src)) ? (
+                  <div class="tamices">
+                    <ul class="tm-medidas" aria-label={tt.medidas}>
+                      {medidasTamices.map((x) => (
+                        <li>{x}</li>
+                      ))}
+                    </ul>
+                    <p class="ref-nota">
+                      {tt.material} {tt.consulta}
+                    </p>
+                    {seriesTamices.map((s) => (
+                      <section class="tm-serie">
+                        <h4>
+                          {s.medida} <span>{s.normas}</span>
+                        </h4>
+                        <div class="tm-tablas">
+                          {s.tablas.map((tb) => (
+                            <div class="tm-tabla">
+                              <p class="tm-tipo">
+                                {tt[tb.tipo]}
+                                <span>
+                                  {tb.norma} · {tb.acero}
+                                </span>
+                              </p>
+                              <table>
+                                <thead>
+                                  <tr>
+                                    <th scope="col">{tf.versiones.codigo}</th>
+                                    <th scope="col">
+                                      {tt.luz}
+                                      {tb.enMm && ' (mm)'}
+                                    </th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {tb.filas.map((x) => (
+                                    <tr>
+                                      <td>
+                                        <button
+                                          type="button"
+                                          class="copiar"
+                                          data-copiar={x.codigo}
+                                          data-pista={tf.copiar}
+                                          data-hecho={tf.copiado}
+                                        >
+                                          {x.codigo}
+                                        </button>
+                                      </td>
+                                      <td>
+                                        {decimal(lang, x.luz)}
+                                        {x.aire && <span class="tm-aire">{tt.aire}</span>}
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          ))}
+                        </div>
+                        <div class="tm-extras">
+                          <p class="tm-tipo">{tt.extras}</p>
+                          <ul>
+                            {s.extras.map((x) => (
+                              <li>
+                                <button
+                                  type="button"
+                                  class="copiar"
+                                  data-copiar={x.codigo}
+                                  data-pista={tf.copiar}
+                                  data-hecho={tf.copiado}
+                                >
+                                  {x.codigo}
+                                </button>
+                                <span>{tt[x.que]}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      </section>
+                    ))}
+                    <p class="v-notas">{tt.notaAire}</p>
+                  </div>
+                ) : (
+                  b.puntos.map((pt) =>
+                    pt.punto ? (
+                      <p class="ref-nota">{pt.t}</p>
+                    ) : b.puntos.length > 1 && pt === b.puntos[0] && pt.t.length < 60 ? (
+                      <h4>{pt.t}</h4>
+                    ) : (
+                      <p class="ref-nota">{pt.t}</p>
+                    ),
+                  )
                 )}
-                {b.imagenes?.map((im) => (
-                  <img
-                    class="ref-foto"
-                    src={im.src}
-                    alt={im.alt || b.titulo}
-                    width={im.ancho}
-                    height={im.alto}
-                    loading="lazy"
-                    decoding="async"
-                  />
-                ))}
+                {b.imagenes
+                  ?.filter((im) => !esFotoTamices(im.src))
+                  .map((im) => (
+                    <img
+                      class="ref-foto"
+                      src={im.src}
+                      alt={im.alt || b.titulo}
+                      width={im.ancho}
+                      height={im.alto}
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  ))}
               </div>
             ))}
             {deAccesorios.length > 0 && (
@@ -3154,6 +3243,102 @@ const descripcion = m
     .escala span {
       font-size: 11px;
     }
+  }
+  /* Tamices: las cuatro tablas de la foto de la web actual, una por norma y tipo, en columnas que se apilan en el
+     móvil. La luz de malla en cifras alineadas, para leer la serie de un vistazo */
+  .tm-medidas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .tm-medidas li {
+    padding: 6px 12px;
+    font-size: 15px;
+    border: 1px solid var(--line);
+  }
+  .tm-serie {
+    margin-top: clamp(36px, 4vw, 56px);
+  }
+  .tm-serie h4 {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 6px 14px;
+    margin: 0 0 20px;
+    padding-bottom: 12px;
+    font-size: 22px;
+    border-bottom: 2px solid var(--ink);
+  }
+  .tm-serie h4 span {
+    font-size: 15px;
+    font-weight: 400;
+    color: var(--muted);
+  }
+  .tm-tablas {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+    gap: 24px clamp(24px, 4vw, 56px);
+    align-items: start;
+  }
+  .tm-tipo {
+    margin: 0 0 6px;
+    font-size: 17px;
+    font-weight: 700;
+  }
+  .tm-tipo span {
+    display: block;
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--muted);
+  }
+  .tm-tabla th,
+  .tm-tabla td {
+    padding: 8px 12px;
+  }
+  .tm-tabla th:last-child,
+  .tm-tabla td:last-child {
+    text-align: right;
+  }
+  .tm-tabla td:last-child {
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+  .tm-tabla tbody tr:hover td {
+    background: var(--band);
+  }
+  .tm-aire {
+    margin-left: 8px;
+    padding: 1px 6px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--red);
+    border: 1px solid currentColor;
+  }
+  .tm-extras {
+    margin-top: 24px;
+  }
+  .tm-extras ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .tm-extras li {
+    display: flex;
+    gap: 10px;
+    padding: 8px 12px;
+    background: var(--panel);
+  }
+  .tm-extras .copiar {
+    font-weight: 700;
+  }
+  .tamices > .v-notas {
+    margin-top: 24px;
   }
   .ref-foto {
     display: block;

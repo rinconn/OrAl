@@ -527,6 +527,22 @@ export const fr: Textos = {
       caracteristicas: 'Caractéristiques',
       normas: 'Normes et directives communautaires',
       accesoriosEquipo: 'Accessoires',
+      // Tablas de tamices de la tamizadora (la web actual las da en una foto)
+      tamices: {
+        malla: 'Toile métallique',
+        chapa: 'Tôle perforée',
+        luz: 'Ouverture',
+        aire: 'Air',
+        notaAire: 'Air : tamis pour tamiseuses à jet d’air.',
+        extras: 'Fonds et couvercles',
+        fondo: 'Fond',
+        tapa: 'Couvercle',
+        fondoHumeda: 'Fond voie humide',
+        tapaHumeda: 'Couvercle voie humide',
+        medidas: 'Dimensions disponibles',
+        material: 'Acier inoxydable : AISI 304 pour le cadre et la tôle perforée, AISI 316 pour les mailles.',
+        consulta: 'Autres dimensions et ouvertures sur demande.',
+      },
       descripcion: 'Description',
       destilacion: {
         titulo: 'Efficacité de la distillation',
