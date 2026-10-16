@@ -5,6 +5,10 @@ Hasta que se publique la web, todo va en "Sin publicar"; al publicar se cierra l
 
 ## [Sin publicar]
 
+### Corregido
+
+- Página de productos: **el hero ya no se corta en pantallas bajas**. Medía 660 px fijos y, en ventanas de poca altura o con zoom (≈ 1500 × 710), las cifras, la placa y los mandos del 3D quedaban cortados por abajo. Ahora llena la pantalla pero crece si su contenido no cabe, y el título se ajusta también a la altura de la ventana. En móvil no cambia.
+
 ### Cambiado
 
 - Fichas de producto: **la galería ya no se desborda**. Con más de seis vistas (13 fichas: las de muchos rotores, hasta 18 vistas en la Cyto 22), la tira enseña las cinco primeras y una casilla «+N» que abre todas a pantalla completa desde la primera que no tiene miniatura; las demás se siguen viendo con las flechas y, en móvil, deslizando (cinco puntos y «+12» en vez de 18 puntos en la Digicen 22). Antes la tira de la Digicen 22 cruzaba la página y tapaba las referencias.
