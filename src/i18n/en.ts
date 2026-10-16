@@ -482,6 +482,8 @@ export const en: Textos = {
         capacidadTubo: 'Capacity',
         medidas: 'Size',
         directo: 'Direct',
+        noAplica: 'Not applicable',
+        consulta: 'On request',
       },
       versiones: {
         titulo: 'Versions and technical data',

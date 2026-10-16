@@ -11,6 +11,7 @@ Hasta que se publique la web, todo va en "Sin publicar"; al publicar se cierra l
 
 ### Cambiado
 
+- Fichas de producto, tablas de tubos de cada rotor: **ninguna celda vacía con «—»**. En las placas (microplacas, deep well y cultivo celular en placa de 128 × 86 mm) la capacidad dice «No aplica»: no tienen una capacidad única, depende de cada placa. Donde el dato falta en origen (capacidad de los tubos de hemólisis, capilares y butirómetros; medidas de las bolsas de sangre y los Cytofunnel; capacidad de los rotores RT 330 y RT 332) dice «Bajo consulta». En los tres idiomas y en todas las fichas.
 - Fichas de producto: **la galería ya no se desborda**. Con más de seis vistas (13 fichas: las de muchos rotores, hasta 18 vistas en la Cyto 22), la tira enseña las cinco primeras y una casilla «+N» que abre todas a pantalla completa desde la primera que no tiene miniatura; las demás se siguen viendo con las flechas y, en móvil, deslizando (cinco puntos y «+12» en vez de 18 puntos en la Digicen 22). Antes la tira de la Digicen 22 cruzaba la página y tapaba las referencias.
 - Ficha de la Digicen 22: **sin el 3D**. Su galería empieza por la foto, como en el resto de modelos. El 3D sigue en la página de productos. Se borran `Visor3D.astro` y `visor3d.ts`, que solo usaba la ficha.
 

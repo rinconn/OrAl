@@ -492,6 +492,8 @@ export const es = {
         capacidadTubo: 'Capacidad',
         medidas: 'Medidas',
         directo: 'Directo',
+        noAplica: 'No aplica',
+        consulta: 'Bajo consulta',
       },
       versiones: {
         titulo: 'Versiones y datos técnicos',

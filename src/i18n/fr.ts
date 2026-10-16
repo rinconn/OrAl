@@ -483,6 +483,8 @@ export const fr: Textos = {
         capacidadTubo: 'Capacité',
         medidas: 'Dimensions',
         directo: 'Direct',
+        noAplica: 'Sans objet',
+        consulta: 'Sur demande',
       },
       versiones: {
         titulo: 'Versions et données techniques',
