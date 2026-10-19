@@ -139,24 +139,24 @@ const iconos: Record<Temperatura, string> = {
           >
             <span class="temp-txt"></span>
           </button>
-        <div class="temps" id="temps-menu" role="group" aria-label={f.temperatura}>
-          <span class="etq-movil">{f.temperatura}</span>
-          {temperaturas.map((x) => (
-            <button type="button" class:list={['temp', x]} data-temp={x} aria-pressed="false">
-              <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
-                <path
-                  d={iconos[x]}
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="1.6"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                />
-              </svg>
-              {may(t.temperatura[x])}
-            </button>
-          ))}
-        </div>
+          <div class="temps" id="temps-menu" role="group" aria-label={f.temperatura}>
+            <span class="etq-movil">{f.temperatura}</span>
+            {temperaturas.map((x) => (
+              <button type="button" class:list={['temp', x]} data-temp={x} aria-pressed="false">
+                <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+                  <path
+                    d={iconos[x]}
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.6"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+                {may(t.temperatura[x])}
+              </button>
+            ))}
+          </div>
           <button type="button" class="quitar" data-quitar="temp" aria-label={f.quitar(f.temperatura)}>
             <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
               <path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="2"></path>
@@ -167,7 +167,14 @@ const iconos: Record<Temperatura, string> = {
         <!-- Aplicación: desplegable con el número de productos de cada una -->
         <div class="aplic">
           <span class="etq-movil">{f.aplicacion}</span>
-          <button type="button" class="aplic-btn" aria-expanded="false" aria-controls="aplic-menu" data-todas={f.todas} data-etq={f.aplicacion}>
+          <button
+            type="button"
+            class="aplic-btn"
+            aria-expanded="false"
+            aria-controls="aplic-menu"
+            data-todas={f.todas}
+            data-etq={f.aplicacion}
+          >
             <span class="aplic-txt">{f.todas}</span>
             <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
               <path d="m6 9 6 6 6-6" fill="none" stroke="currentColor" stroke-width="1.8"></path>
@@ -782,7 +789,12 @@ const iconos: Record<Temperatura, string> = {
       };
       cuentaEl.replaceChildren(
         ...partes.flatMap((p, k) =>
-          k ? [Object.assign(document.createElement('span'), { className: 'sep', textContent: ' · ' }), parte(p, 'extra')] : [parte(p, 'principal')],
+          k
+            ? [
+                Object.assign(document.createElement('span'), { className: 'sep', textContent: ' · ' }),
+                parte(p, 'extra'),
+              ]
+            : [parte(p, 'principal')],
         ),
       );
       verRes.textContent = cuenta(total, d.verUno!, d.verVarios!);
