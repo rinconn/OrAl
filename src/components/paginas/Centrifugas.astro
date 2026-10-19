@@ -1994,12 +1994,10 @@ const tubos = familiasTubo
     padding: 0 12px;
     font-size: 15px;
     font-weight: 700;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
     line-height: 1;
     color: var(--ink);
-    background: #fff;
-    box-shadow: inset 0 0 0 1px transparent;
+    background: #f2f3f5;
+    border-radius: 10px;
     cursor: pointer;
     transition:
       color 0.18s ease,
@@ -2024,6 +2022,8 @@ const tubos = familiasTubo
     width: 16px;
     height: 16px;
     border-color: #9aa0a5;
+    border-radius: 4px;
+    background: #fff;
   }
   .caja::after {
     content: '';
@@ -2047,11 +2047,21 @@ const tubos = familiasTubo
   }
   .comparar:has(input:checked) {
     color: var(--red);
-    box-shadow: inset 0 0 0 1.5px var(--red);
+    background: #fdecec;
   }
+  /* Al marcar, la casilla se llena de rojo desde abajo, como un tubo, y luego aparece la marca */
   .comparar input:checked + .caja {
-    background: var(--red);
     border-color: var(--red);
+    background: linear-gradient(var(--red), var(--red)) bottom / 100% 100% no-repeat #fff;
+    animation: llena 0.35s cubic-bezier(0.23, 1, 0.32, 1) both;
+  }
+  .comparar input:checked + .caja::after {
+    transition-delay: 0.2s;
+  }
+  @keyframes llena {
+    from {
+      background-size: 100% 0;
+    }
   }
   .comparar input:checked + .caja::after {
     opacity: 1;
@@ -2065,36 +2075,21 @@ const tubos = familiasTubo
     opacity: 0.4;
     cursor: not-allowed;
   }
-  /* En escritorio, "Comparar" baja de la foto a la franja de abajo, como en el teléfono: Presupuesto, Comparar y
-     "Ver producto" juntos, y en la foto solo la temperatura. Se reparten hasta donde empieza "Ver producto" (--izq en
-     src/components/Maquina.astro): 34 % y 30 %; en tarjetas de menos de 460 px, todo menos la flecha (56 px) */
-  @media (min-width: 641px) {
-    .ficha:has(.comparar) .anadir,
-    .ficha:has(.comparar) :global(.paso) {
-      width: calc(34% - 2px);
-    }
-    .comparar {
-      top: auto;
-      right: auto;
-      left: 34%;
-      bottom: 2px;
-      justify-content: center;
-      width: 30%;
-      height: 56px;
-      padding: 0 8px;
-      font-size: 14px;
-      border-right: 1px solid #b4b9bd;
-    }
-    @container (max-width: 459px) {
-      .ficha:has(.comparar) .anadir,
-      .ficha:has(.comparar) :global(.paso) {
-        width: calc((100% - 56px) * 0.53 - 2px);
-      }
-      .comparar {
-        left: calc((100% - 56px) * 0.53);
-        width: calc((100% - 56px) * 0.47);
-      }
-    }
+  /* "Comparar" va en la barra de abajo, entre Presupuesto y la flecha: los dos se reparten --resto (54 % y 46 %) */
+  .ficha:has(.comparar) .anadir,
+  .ficha:has(.comparar) :global(.paso) {
+    width: calc(var(--resto) * 0.54);
+  }
+  .comparar {
+    top: auto;
+    right: auto;
+    left: calc(var(--margen) + var(--resto) * 0.54 + 8px);
+    bottom: var(--margen);
+    justify-content: center;
+    gap: 8px;
+    width: calc(var(--resto) * 0.46);
+    height: var(--boton);
+    padding: 0 8px;
   }
 
   /* Sin resultados: el mensaje claro y el botón para empezar de nuevo */
@@ -2313,6 +2308,61 @@ const tubos = familiasTubo
       border-bottom-color: var(--steel);
     }
   }
+  /* Desde tableta: las familias, un selector segmentado sobre un carril gris claro, con el mismo lenguaje que la
+     cápsula de filtros de debajo. Cada número, en una pastilla; al pasar el ratón, la familia se levanta en blanco */
+  @media (min-width: 641px) {
+    .atajos {
+      width: fit-content;
+      max-width: 100%;
+      margin-inline: auto;
+      gap: 2px;
+      padding: 5px;
+      background: #f3f4f5;
+      border-bottom: 0;
+      border-radius: 12px;
+    }
+    .atajos a {
+      gap: 8px;
+      height: 42px;
+      margin: 0;
+      padding: 0 14px;
+      border: 0;
+      border-radius: 8px;
+      font-size: 16px;
+      transition:
+        background-color 0.2s ease,
+        box-shadow 0.2s ease;
+    }
+    .atajos .n {
+      display: inline-grid;
+      place-items: center;
+      min-width: 22px;
+      height: 20px;
+      padding: 0 6px;
+      border-radius: 999px;
+      background: #fff;
+      font-size: 12px;
+      font-weight: 700;
+      transition: background-color 0.2s ease;
+    }
+  }
+  @media (min-width: 641px) and (max-width: 1280px) {
+    .atajos a {
+      gap: 6px;
+      padding: 0 7px;
+      font-size: 15px;
+    }
+  }
+  @media (min-width: 641px) and (hover: hover) and (pointer: fine) {
+    .atajos a:hover {
+      background: #fff;
+      box-shadow: 0 1px 3px rgba(17, 19, 21, 0.14);
+    }
+    .atajos a:hover .n {
+      background: #f3f4f5;
+      color: var(--ink);
+    }
+  }
 
   /* ——— Selector de versión: en el mismo sitio y con el mismo aspecto que la etiqueta de temperatura de las tarjetas
      de una sola versión (arriba a la izquierda, mayúsculas en negrita), para que todas digan su temperatura igual.
@@ -2324,19 +2374,23 @@ const tubos = familiasTubo
     top: 14px;
     z-index: 3;
     display: flex;
-    box-shadow: 0 1px 2px rgba(17, 19, 21, 0.12);
+    gap: 2px;
+    padding: 3px;
+    border-radius: 10px;
+    background: rgba(22, 24, 26, 0.55);
+    backdrop-filter: blur(6px);
+    box-shadow: 0 2px 8px rgba(17, 19, 21, 0.18);
   }
   .versiones button {
     display: inline-flex;
     align-items: center;
     gap: 7px;
-    height: 30px;
-    padding: 0 11px 0 9px;
+    height: 28px;
+    padding: 0 10px 0 8px;
     border: 0;
-    background: rgba(22, 24, 26, 0.62);
+    border-radius: 7px;
+    background: transparent;
     font: 700 14px var(--f);
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
     color: #fff;
     cursor: pointer;
     transition:
@@ -2373,35 +2427,82 @@ const tubos = familiasTubo
   /* ——— Presupuesto en cada tarjeta: abajo a la izquierda, junto a "Ver producto". Sin añadir, "+ Presupuesto";
      añadida, un contador "− 1 ud. +" gris y tranquilo (lo pone src/scripts/presupuesto.ts): con 1, el "−" es una
      papelera que la quita ——— */
+  /* Barra de botones al pie (la franja la pinta src/components/Maquina.astro): 10 px de margen, botones de --boton de
+     alto y 8 px entre ellos, redondeados. Presupuesto, rojo; Comparar, gris suave */
+  .ficha {
+    --boton: 40px;
+    --aire: 16px;
+    --margen: calc(1px + var(--aire));
+    /* Lo que queda para Presupuesto y Comparar: el ancho menos bordes, márgenes, la flecha y dos huecos */
+    --resto: calc(100% - 2px - 2 * var(--aire) - var(--boton) - 16px);
+  }
   .anadir,
   .ficha :global(.paso) {
     position: absolute;
-    left: 2px;
-    bottom: 2px;
-    width: calc(50% - 2px);
+    left: var(--margen);
+    bottom: var(--margen);
+    width: calc(50% - var(--aire) - 4px);
     z-index: 2;
-    height: 56px;
+    height: var(--boton);
+    border-radius: 10px;
   }
   .anadir {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    padding: 0 16px 0 20px;
+    justify-content: center;
+    gap: 6px;
+    padding: 0 12px;
     border: 0;
-    border-right: 1px solid #b4b9bd;
-    background: #fff;
-    font: 700 16px var(--f);
-    color: var(--ink);
+    background: var(--red);
+    font: 700 15px var(--f);
+    color: #fff;
+    white-space: nowrap;
     cursor: pointer;
     transition: background-color 0.2s ease;
   }
+
+  /* Con relieve: luz arriba y sombra roja. Al pasar, un haz de luz fino y tenue lo cruza despacio y el «+» gira un
+     cuarto de vuelta */
+  .anadir {
+    overflow: hidden;
+    background: linear-gradient(180deg, #f2262c, var(--red) 55%, #c8030a);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.3),
+      0 6px 14px -8px rgba(221, 4, 10, 0.8);
+    transition:
+      box-shadow 0.25s ease,
+      translate 0.25s ease;
+  }
+  .anadir::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(105deg, transparent 42%, rgba(255, 255, 255, 0.28) 50%, transparent 58%);
+    translate: -110% 0;
+    pointer-events: none;
+  }
   .anadir svg {
-    color: var(--red);
+    transition: rotate 0.35s cubic-bezier(0.23, 1, 0.32, 1);
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .anadir:hover {
+      translate: 0 -1px;
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.3),
+        0 12px 22px -8px rgba(221, 4, 10, 0.85);
+    }
+    .anadir:hover::after {
+      translate: 110% 0;
+      transition: translate 1s cubic-bezier(0.45, 0, 0.25, 1);
+    }
+    .anadir:hover svg {
+      rotate: 90deg;
+    }
   }
   .ficha :global(.paso) {
     display: flex;
-    background: #f3f4f5;
-    border-right: 1px solid #b4b9bd;
+    overflow: hidden;
+    background: #f2f3f5;
     animation: aparece-paso 0.25s var(--ease);
   }
   .ficha :global(.paso[hidden]) {
@@ -2411,7 +2512,7 @@ const tubos = familiasTubo
     flex: none;
     display: grid;
     place-items: center;
-    width: 52px;
+    width: var(--boton);
     border: 0;
     background: none;
     color: var(--red);
@@ -2419,10 +2520,13 @@ const tubos = familiasTubo
     transition: background-color 0.2s ease;
   }
   .ficha :global(.paso button:first-child) {
-    border-right: 1px solid #d3d6d9;
+    border-right: 1px solid #fff;
   }
   .ficha :global(.paso button:last-child) {
-    border-left: 1px solid #d3d6d9;
+    border-left: 1px solid #fff;
+  }
+  .ficha :global(.paso button) {
+    color: var(--red);
   }
   .ficha :global(.paso button.borrar) {
     color: var(--muted);
@@ -2445,7 +2549,7 @@ const tubos = familiasTubo
   .anadir:focus-visible,
   .ficha :global(.paso button:focus-visible) {
     outline: 2px solid var(--red);
-    outline-offset: -2px;
+    outline-offset: 2px;
   }
   .anadir:active,
   .ficha :global(.paso button:active) {
@@ -2457,11 +2561,11 @@ const tubos = familiasTubo
     }
   }
   @media (hover: hover) and (pointer: fine) {
-    .anadir:hover {
-      background: #f3f4f5;
+    .comparar:hover:not(:has(input:checked, input:disabled)) {
+      background: #e8eaed;
     }
     .ficha :global(.paso button:hover) {
-      background: #e9ebed;
+      background: #e6e8eb;
     }
     .ficha :global(.paso button.borrar:hover),
     .pres-lista :global(button.borrar:hover) {
@@ -2470,6 +2574,10 @@ const tubos = familiasTubo
   }
   @media (prefers-reduced-motion: reduce) {
     .ficha :global(.paso) {
+      animation: none;
+    }
+    .anadir::after,
+    .comparar input:checked + .caja {
       animation: none;
     }
   }
@@ -2484,7 +2592,7 @@ const tubos = familiasTubo
     /* Debajo de la raya, sobre el blanco de la tarjeta: el mismo control, en gris claro y sin sombra */
     .versiones {
       left: 14px;
-      top: calc(2px + 168px + 4px + 3px);
+      top: calc(1px + 168px + 4px + 3px);
       background: #f0f1f2;
       gap: 3px;
       padding: 3px;
@@ -2500,37 +2608,14 @@ const tubos = familiasTubo
       background: #fff;
       color: var(--ink);
     }
-    .anadir,
-    .ficha :global(.paso) {
-      width: calc(42% - 2px);
-      height: 50px;
-    }
-    .anadir {
-      gap: 6px;
-      padding: 0 8px 0 14px;
-      font-size: 15px;
-    }
-    .ficha :global(.paso button) {
-      width: 40px;
+    .ficha {
+      --aire: 14px;
     }
     .ficha :global(.paso output) {
       font-size: 14px;
     }
     .ficha :global(.paso output b) {
       font-size: 18px;
-    }
-    .comparar {
-      top: auto;
-      right: auto;
-      left: 42%;
-      bottom: 2px;
-      justify-content: center;
-      gap: 7px;
-      width: 33%;
-      height: 50px;
-      padding: 0 8px;
-      font-size: 13px;
-      border-right: 1px solid #b4b9bd;
     }
   }
 
@@ -3640,8 +3725,8 @@ const tubos = familiasTubo
   }
 
   @media (hover: hover) {
-    .comparar:hover:not(:has(input:checked, input:disabled)) {
-      box-shadow: inset 0 0 0 1px var(--ink);
+    .comparar:hover:not(:has(input:checked, input:disabled)) .caja {
+      border-color: var(--ink);
     }
     .abrir-comparar:hover:not(:disabled) {
       background: var(--red-d);

@@ -1391,22 +1391,6 @@ const descripcion = m
   deslizar.addEventListener('change', () => verVista(iVista));
   if (vistas.length) verVista(0, true);
 
-  // Parallax: la máquina se mueve hasta 6 px con el ratón. Solo con ratón y sin movimiento reducido
-  const pieza = document.querySelector<HTMLElement>('.pieza');
-  if (escaparate && pieza && matchMedia('(pointer: fine)').matches && !quieto.matches) {
-    escaparate.addEventListener('pointermove', (e) => {
-      const r = escaparate.getBoundingClientRect();
-      const x = ((e.clientX - r.left) / r.width - 0.5) * 2;
-      const y = ((e.clientY - r.top) / r.height - 0.5) * 2;
-      pieza.style.setProperty('--px', `${(-x * 6).toFixed(1)}px`);
-      pieza.style.setProperty('--py', `${(-y * 4).toFixed(1)}px`);
-    });
-    escaparate.addEventListener('pointerleave', () => {
-      pieza.style.setProperty('--px', '0px');
-      pieza.style.setProperty('--py', '0px');
-    });
-  }
-
   // Pompas, entrada: la primera vez que se ven, el rojo las recorre de una en una (pompa, puente, pompa...) y al llegar
   // a la última se vacían todas a la vez. Una sola vez; con movimiento reducido, nada
   const pompas = [...document.querySelectorAll<HTMLElement>('.franja .cifra')];
@@ -3466,35 +3450,33 @@ const descripcion = m
   }
   /* Como en el catálogo: «+ Presupuesto» a la izquierda de «Ver producto», en la misma franja. Se guarda en la misma
      lista que el catálogo; añadida, pasa a «✓ Presupuesto» sobre gris y otro clic la quita */
-  .mas :global(.pieza) {
-    --izq: 50%;
-  }
   .mas .pista > li {
     position: relative;
   }
   .pres {
     position: absolute;
-    left: 1px;
-    bottom: 1px;
+    left: 17px;
+    bottom: 17px;
     z-index: 2;
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    width: calc(50% - 1px);
-    height: 56px;
-    padding: 0 16px 0 20px;
-    font: 700 16px var(--f);
-    color: var(--ink);
-    background: var(--white);
+    justify-content: center;
+    gap: 6px;
+    width: calc(50% - 16px);
+    height: 40px;
+    padding: 0 12px;
+    border-radius: 10px;
+    font: 700 15px var(--f);
+    color: #fff;
+    background: var(--red);
     border: 0;
-    border-right: 1px solid #b4b9bd;
     cursor: pointer;
     transition: background-color var(--dur-2) var(--ease);
   }
   .pres svg {
     flex: none;
     fill: none;
-    stroke: var(--red);
+    stroke: currentColor;
     stroke-width: 2;
     stroke-linecap: round;
     stroke-linejoin: round;
@@ -3507,18 +3489,57 @@ const descripcion = m
   .pres[aria-pressed='true'] .pres-si {
     display: block;
   }
+  /* Con relieve: luz arriba y sombra roja. Al pasar, un haz de luz fino y tenue lo cruza despacio y el «+» gira un
+     cuarto de vuelta */
+  .pres:not([aria-pressed='true']) {
+    overflow: hidden;
+    background: linear-gradient(180deg, #f2262c, var(--red) 55%, #c8030a);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.3),
+      0 6px 14px -8px rgba(221, 4, 10, 0.8);
+    transition:
+      box-shadow 0.25s ease,
+      translate 0.25s ease;
+  }
+  .pres:not([aria-pressed='true'])::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(105deg, transparent 42%, rgba(255, 255, 255, 0.28) 50%, transparent 58%);
+    translate: -110% 0;
+    pointer-events: none;
+  }
+  .pres:not([aria-pressed='true']) svg {
+    transition: rotate 0.35s cubic-bezier(0.23, 1, 0.32, 1);
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .pres:not([aria-pressed='true']):hover {
+      translate: 0 -1px;
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.3),
+        0 12px 22px -8px rgba(221, 4, 10, 0.85);
+    }
+    .pres:not([aria-pressed='true']):hover::after {
+      translate: 110% 0;
+      transition: translate 1s cubic-bezier(0.45, 0, 0.25, 1);
+    }
+    .pres:not([aria-pressed='true']):hover svg {
+      rotate: 90deg;
+    }
+  }
+
+  /* Añadida: en gris suave con la marca en rojo */
   .pres[aria-pressed='true'] {
-    background: #f3f4f5;
+    color: var(--ink);
+    background: #f2f3f5;
   }
-  .pres:hover {
-    background: #f3f4f5;
+  .pres[aria-pressed='true'] svg {
+    stroke: var(--red);
   }
-  .pres:hover .pres-mas {
-    rotate: 90deg;
-  }
+
   .pres:focus-visible {
     outline: var(--foco);
-    outline-offset: -2px;
+    outline-offset: 2px;
   }
   .pres:active {
     scale: 0.97;
@@ -3734,12 +3755,10 @@ const descripcion = m
       --car-gap: 14px;
       grid-auto-columns: 86%;
     }
-    /* En el teléfono la franja mide 50 px, como en el catálogo */
+    /* En el teléfono, con 14 px de aire, como en el catálogo */
     .pres {
-      height: 50px;
-      gap: 6px;
-      padding: 0 8px 0 14px;
-      font-size: 15px;
+      left: 15px;
+      bottom: 15px;
     }
   }
   @media (prefers-reduced-motion: reduce) {
@@ -4123,8 +4142,7 @@ const descripcion = m
     z-index: 1;
     height: 95%;
     max-width: 90%;
-    translate: calc(-50% + var(--px, 0px)) var(--py, 0px);
-    transition: translate var(--dur-2) var(--ease-out);
+    translate: -50% 0;
   }
   .pieza img {
     position: relative;
@@ -4603,14 +4621,21 @@ const descripcion = m
     translate: -50% 0;
   }
 
-  /* ——— Entrada (menos de 900 ms): el nombre sube, la máquina pasa de desenfocada a nítida y de 0.96 a 1, las cifras
-     detrás. Con movimiento reducido, nada ——— */
+  /* ——— Entrada (menos de 900 ms): el nombre sube; la máquina baja desde un poco más arriba y se posa en el suelo
+     del estudio mientras su sombra de contacto se forma debajo; las cifras detrás. Al cambiar de vista, un fundido
+     corto. Con movimiento reducido, nada ——— */
   @media (prefers-reduced-motion: no-preference) {
     .datos > * {
       animation: sube var(--dur-3) var(--ease-out) both;
     }
     .vista[data-tipo='maquina'] .pieza img {
-      animation: enfoca var(--dur-4) 80ms var(--ease-out) both;
+      animation: posa var(--dur-4) 80ms var(--ease-out) both;
+    }
+    .vista[data-tipo='maquina'] .contacto {
+      animation: asienta var(--dur-4) 80ms var(--ease-out) both;
+    }
+    .galeria .vista:not([hidden]) {
+      animation: funde var(--dur-2) var(--ease-out);
     }
     .cifra {
       animation: pompa var(--dur-3) calc(250ms + var(--i) * 70ms) var(--ease-out) backwards;
@@ -4619,11 +4644,22 @@ const descripcion = m
       animation: une var(--dur-3) calc(450ms + var(--i) * 70ms) var(--ease-out) backwards;
     }
   }
-  @keyframes enfoca {
+  @keyframes posa {
     from {
       opacity: 0;
-      filter: blur(10px);
-      scale: 0.96;
+      filter: blur(6px);
+      translate: 0 -24px;
+    }
+  }
+  @keyframes funde {
+    from {
+      opacity: 0;
+    }
+  }
+  @keyframes asienta {
+    from {
+      opacity: 0;
+      scale: 0.55 1;
     }
   }
   @keyframes pompa {

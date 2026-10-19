@@ -1,8 +1,10 @@
 // Documentos de la página de Descargas: el catálogo en PDF de cada serie de centrífugas (en español e inglés, el
-// mismo que enlaza su ficha) y el de cada equipo de laboratorio que lo tiene. Fecha y peso de cada archivo, de
+// mismo que enlaza su ficha), el de cada equipo de laboratorio que lo tiene y los documentos de empresa (catálogos
+// generales, certificados, servicio técnico y condiciones, de src/data/documentos.json). Fecha y peso de cada archivo, de
 // src/data/descargas.json (scripts/importar-descargas.mjs). Los nombres de grupo y los textos, en src/i18n/.
 
 import archivos from './descargas.json';
+import empresa from './documentos.json';
 import { modelos, productos, type Familia } from './productos';
 import { equipos } from './laboratorio';
 import { fichaCentrifuga } from './fichas';
@@ -81,6 +83,25 @@ const laboratorio: Documento[] = equipos.flatMap((e) => {
 });
 
 export const documentos: Documento[] = [...series, ...laboratorio];
+
+export type TipoGeneral = 'catalogo' | 'certificado' | 'servicio' | 'condiciones';
+export interface General {
+  /** Para su nombre y frase en src/i18n/ */
+  id: string;
+  tipo: TipoGeneral;
+  pdf: Partial<Record<IdiomaPdf, Archivo>>;
+  fecha: string;
+}
+
+/** Catálogos generales, certificados, documentos del servicio técnico y condiciones, tal como los publica la web */
+export const generales: General[] = (empresa.documentos as { id: string; tipo: TipoGeneral; es: string; en?: string }[])
+  .map((g) => {
+    const pdf = Object.fromEntries(
+      Object.entries({ es: archivo(g.es), en: archivo(g.en) }).filter(([, a]) => a),
+    ) as General['pdf'];
+    return { id: g.id, tipo: g.tipo, pdf, fecha: masReciente(pdf) };
+  })
+  .filter((g) => Object.keys(g.pdf).length);
 
 /** Día en que se comprobaron las fechas de los archivos */
 export const comprobado = archivos.fecha;

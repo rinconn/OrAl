@@ -23,6 +23,7 @@ export interface EquipoDossier {
   frase: string;
   /** "Actualizado 10 jun 2026" */
   fecha: string;
+  /** Foto del equipo; los documentos de empresa no tienen */
   img: string;
   /** Su ficha en la web, con la dirección completa */
   ficha: string;
@@ -64,14 +65,15 @@ function qr(doc: Doc, texto: string, x: number, y: number, lado: number) {
 
 export async function dossierPdf(d: Dossier, pie: Pie) {
   const { jsPDF } = await import('jspdf');
-  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+  // Comprimido: los QR son cientos de rectángulos
+  const doc = new jsPDF({ unit: 'mm', format: 'a4', compress: true });
   doc.setProperties({ title: pdfTxt(`${d.titulo} · ${d.fecha}`), author: 'Orto Alresa', creator: 'ortoalresa.com' });
   const M = 12;
   const ancho = 210 - 2 * M;
   const limite = 297 - 22;
   const [logo, ...fotos] = await Promise.all([
     cargar('/img/marca/logo-ortoalresa-white.svg', 600, true),
-    ...d.equipos.map((e) => cargar(e.img, 420)),
+    ...d.equipos.map((e) => (e.img ? cargar(e.img, 420) : Promise.resolve(undefined))),
   ]);
 
   cabecera(doc, logo, d, M, ancho);
@@ -97,6 +99,13 @@ export async function dossierPdf(d: Dossier, pie: Pie) {
     doc.rect(M, y + 2, foto, alto - 4, 'F');
     const f = fotos[n];
     if (f) doc.addImage(f.data, 'JPEG', ...encajar(f, M + 3, y + 5, foto - 6, alto - 10));
+    else {
+      // Documento sin foto (certificado, condiciones): la marca de PDF
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(14);
+      doc.setTextColor(...ROJO);
+      doc.text('PDF', M + foto / 2, y + alto / 2 + 2, { align: 'center' });
+    }
 
     const qrs = e.pdfs.length * lado + (e.pdfs.length - 1) * hueco;
     const xt = M + foto + 7;
@@ -127,7 +136,8 @@ export async function dossierPdf(d: Dossier, pie: Pie) {
     doc.text(pdfTxt(e.fecha), xt, y + alto - 9);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(...ROJO);
-    doc.textWithLink(pdfTxt(`${d.verFicha} »`), xt, y + alto - 4.5, { url: e.ficha });
+    // Solo los equipos tienen ficha; un documento de empresa ya es su propio PDF
+    if (e.img) doc.textWithLink(pdfTxt(`${d.verFicha} »`), xt, y + alto - 4.5, { url: e.ficha });
 
     e.pdfs.forEach((p, i) => {
       const xq = M + ancho - qrs + i * (lado + hueco);

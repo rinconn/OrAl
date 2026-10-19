@@ -128,8 +128,18 @@ const iconos: Record<Temperatura, string> = {
           </button>
         </div>
 
-        <!-- Temperatura: tres botones con icono -->
-        <div class="temps" role="group" aria-label={f.temperatura}>
+        <!-- Temperatura: tres botones con icono. En escritorio van en el menú de su chip; en móvil, a la vista -->
+        <div class="temperatura">
+          <button
+            type="button"
+            class="temp-btn"
+            aria-expanded="false"
+            aria-controls="temps-menu"
+            data-etq={f.temperatura}
+          >
+            <span class="temp-txt"></span>
+          </button>
+        <div class="temps" id="temps-menu" role="group" aria-label={f.temperatura}>
           <span class="etq-movil">{f.temperatura}</span>
           {temperaturas.map((x) => (
             <button type="button" class:list={['temp', x]} data-temp={x} aria-pressed="false">
@@ -147,11 +157,17 @@ const iconos: Record<Temperatura, string> = {
             </button>
           ))}
         </div>
+          <button type="button" class="quitar" data-quitar="temp" aria-label={f.quitar(f.temperatura)}>
+            <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+              <path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="2"></path>
+            </svg>
+          </button>
+        </div>
 
         <!-- Aplicación: desplegable con el número de productos de cada una -->
         <div class="aplic">
           <span class="etq-movil">{f.aplicacion}</span>
-          <button type="button" class="aplic-btn" aria-expanded="false" aria-controls="aplic-menu" data-todas={f.todas}>
+          <button type="button" class="aplic-btn" aria-expanded="false" aria-controls="aplic-menu" data-todas={f.todas} data-etq={f.aplicacion}>
             <span class="aplic-txt">{f.todas}</span>
             <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
               <path d="m6 9 6 6 6-6" fill="none" stroke="currentColor" stroke-width="1.8"></path>
@@ -174,6 +190,11 @@ const iconos: Record<Temperatura, string> = {
               </div>
             ))}
           </div>
+          <button type="button" class="quitar" data-quitar="aplic" aria-label={f.quitar(f.aplicacion)}>
+            <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+              <path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="2"></path>
+            </svg>
+          </button>
         </div>
 
         <!-- Tu tubo: deja solo las máquinas que lo admiten; cada tarjeta dice en qué rotor y cuántos caben. Un panel
@@ -187,6 +208,7 @@ const iconos: Record<Temperatura, string> = {
             aria-expanded="false"
             aria-controls="tubo-menu"
             data-todos={f.cualquierTubo}
+            data-etq={f.tubo}
           >
             <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
               <path
@@ -261,6 +283,11 @@ const iconos: Record<Temperatura, string> = {
               ))}
             </div>
           </div>
+          <button type="button" class="quitar" data-quitar="tubo" aria-label={f.quitar(f.tubo)}>
+            <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+              <path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="2"></path>
+            </svg>
+          </button>
         </div>
 
         <!-- Mínimos: el laboratorio pide un requisito, no un modelo. Fuerza, velocidad y cuántos tubos de cuántos ml a
@@ -274,6 +301,7 @@ const iconos: Record<Temperatura, string> = {
             aria-controls="min-menu"
             data-todos={m.boton}
             data-tubos={m.tubos}
+            data-etq={m.boton}
           >
             <span class="min-txt">{m.boton}</span>
             <svg class="flechita" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
@@ -326,6 +354,11 @@ const iconos: Record<Temperatura, string> = {
               {m.quitar}
             </button>
           </div>
+          <button type="button" class="quitar" data-quitar="min" aria-label={f.quitar(m.boton)}>
+            <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+              <path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="2"></path>
+            </svg>
+          </button>
         </div>
 
         <!-- Ordenar: dentro de cada familia, por la cifra que se elija (de mayor a menor) -->
@@ -400,6 +433,8 @@ const iconos: Record<Temperatura, string> = {
     const de = (s: HTMLElement) => (el: HTMLElement) => s.contains(el);
     const vacio = salasEl.querySelector<HTMLElement>('.vacio');
     const temps = [...form.querySelectorAll<HTMLButtonElement>('.temp')];
+    const tempBtn = form.querySelector<HTMLButtonElement>('.temp-btn')!;
+    const tempTxt = form.querySelector<HTMLElement>('.temp-txt')!;
     const opciones = [...form.querySelectorAll<HTMLButtonElement>('.opcion')];
     const aplicBtn = form.querySelector<HTMLButtonElement>('.aplic-btn')!;
     const aplicTxt = form.querySelector<HTMLElement>('.aplic-txt')!;
@@ -423,28 +458,6 @@ const iconos: Record<Temperatura, string> = {
     };
     new ResizeObserver(ajustaTexto).observe(q);
     document.fonts.ready.then(ajustaTexto);
-
-    // Escritorio: las herramientas de la franja de abajo (Comparar, Orden, Vista, Descargar) se reparten el ancho
-    // hasta un divisor de la fila de arriba (el final del buscador o, si no caben, el siguiente), para que las dos
-    // filas corten en la misma vertical
-    const franja = form.querySelector<HTMLElement>('.barra')!;
-    const herramientas = [...form.querySelectorAll<HTMLElement>('.ver-comparar, .orden, .vista, .fin .descargar')];
-    const arriba = [...form.querySelectorAll<HTMLElement>('.buscar, .temps, .aplic, .tubo, .minimos')];
-    const alinea = () => {
-      for (const h of herramientas) h.style.flexBasis = '';
-      if (movil.matches) return;
-      const x0 = franja.getBoundingClientRect().left;
-      const anchos = herramientas.map((h) => h.getBoundingClientRect().width);
-      const natural = anchos.reduce((a, b) => a + b, 0);
-      // +1: la raya de arriba es el borde izquierdo de la pieza siguiente, un píxel más allá
-      const cortes = arriba.map((p) => p.getBoundingClientRect().right - x0 + 1);
-      const hasta = cortes.find((c) => c >= natural) ?? natural;
-      const extra = (hasta - natural) / herramientas.length;
-      herramientas.forEach((h, i) => (h.style.flexBasis = `${anchos[i] + extra}px`));
-    };
-    const vigia = new ResizeObserver(alinea);
-    for (const el of [franja, ...arriba]) vigia.observe(el);
-    document.fonts.ready.then(alinea);
 
     let aplic = '';
     const elegidas = new Set<string>();
@@ -738,6 +751,12 @@ const iconos: Record<Temperatura, string> = {
       const elegida = aplic ? opciones.find((b) => b.dataset.aplic === aplic) : undefined;
       aplicTxt.textContent = elegida ? elegida.dataset.nombre! : aplicBtn.dataset.todas!;
       aplicBtn.classList.toggle('on', !!elegida);
+      // El chip de temperatura dice las elegidas
+      tempTxt.textContent = temps
+        .filter((b) => elegidas.has(b.dataset.temp!))
+        .map((b) => b.textContent!.trim())
+        .join(', ');
+      tempBtn.classList.toggle('on', elegidas.size > 0);
 
       const nActivos = (aplic ? 1 : 0) + elegidas.size + (selTubo.value ? 1 : 0) + (hayMin() ? 1 : 0);
       activos.hidden = nActivos === 0;
@@ -746,17 +765,25 @@ const iconos: Record<Temperatura, string> = {
       // El mismo criterio que la cabecera ("23 centrífugas"), en tarjetas y en tabla; accesorios y equipos, aparte
       const nCent = enTabla() ? total : cuantas(visibles.filter((el) => el.dataset.slugs));
       const nMas = enTabla() ? 0 : visibles.length - visibles.filter((el) => el.dataset.slugs).length;
-      const txt =
-        [
-          nCent && cuenta(nCent, d.centUno!, d.centVarios!),
-          nMas && cuenta(nMas, nCent ? d.masUno! : d.uno!, nCent ? d.masVarios! : d.varios!),
-        ]
-          .filter(Boolean)
-          .join(' · ') || cuenta(0, d.uno!, d.varios!);
+      const partes = [
+        nCent && cuenta(nCent, d.centUno!, d.centVarios!),
+        nMas && cuenta(nMas, nCent ? d.masUno! : d.uno!, nCent ? d.masVarios! : d.varios!),
+      ].filter((p): p is string => !!p);
+      if (!partes.length) partes.push(cuenta(0, d.uno!, d.varios!));
+      // Cada parte en su span (la principal y "5 más"), con las cifras en negrita; en escritorio se ven en dos tamaños
+      const parte = (txt: string, clase: string) => {
+        const s = Object.assign(document.createElement('span'), { className: clase });
+        s.append(
+          ...txt
+            .split(/(\d+)/)
+            .map((p, k) => (k % 2 ? Object.assign(document.createElement('b'), { textContent: p }) : p)),
+        );
+        return s;
+      };
       cuentaEl.replaceChildren(
-        ...txt
-          .split(/(\d+)/)
-          .map((p, k) => (k % 2 ? Object.assign(document.createElement('b'), { textContent: p }) : p)),
+        ...partes.flatMap((p, k) =>
+          k ? [Object.assign(document.createElement('span'), { className: 'sep', textContent: ' · ' }), parte(p, 'extra')] : [parte(p, 'principal')],
+        ),
       );
       verRes.textContent = cuenta(total, d.verUno!, d.verVarios!);
       if (vacio) vacio.hidden = total > 0;
@@ -847,10 +874,32 @@ const iconos: Record<Temperatura, string> = {
       for (const x of camposMin) x.value = url.searchParams.get(x.name) ?? '';
     }
 
+    // ——— Chip de temperatura (escritorio): abre el menú con las tres ———
+    const tempAbierto = () => tempBtn.getAttribute('aria-expanded') === 'true';
+    const cerrarTemp = () => tempBtn.setAttribute('aria-expanded', 'false');
+    tempBtn.addEventListener('click', () => {
+      cerrarMenu();
+      cerrarTubos();
+      cerrarMin();
+      tempBtn.setAttribute('aria-expanded', String(!tempAbierto()));
+    });
+    // ——— La × de cada chip quita ese filtro ———
+    for (const b of form.querySelectorAll<HTMLButtonElement>('.quitar')) {
+      b.addEventListener('click', () => {
+        const que = b.dataset.quitar;
+        if (que === 'temp') elegidas.clear();
+        if (que === 'aplic') aplic = '';
+        if (que === 'tubo') selTubo.value = '';
+        if (que === 'min') for (const x of camposMin) x.value = '';
+        aplicar();
+        b.parentElement?.querySelector<HTMLButtonElement>('.temp-btn, .aplic-btn, .tubo-btn, .min-btn')?.focus();
+      });
+    }
     // ——— Desplegable de aplicación ———
     const menuAbierto = () => aplicBtn.getAttribute('aria-expanded') === 'true';
     const cerrarMenu = () => aplicBtn.setAttribute('aria-expanded', 'false');
     aplicBtn.addEventListener('click', () => {
+      cerrarTemp();
       cerrarTubos();
       cerrarMin();
       aplicBtn.setAttribute('aria-expanded', String(!menuAbierto()));
@@ -859,6 +908,7 @@ const iconos: Record<Temperatura, string> = {
     const tubosAbierto = () => tuboBtn.getAttribute('aria-expanded') === 'true';
     const cerrarTubos = () => tuboBtn.setAttribute('aria-expanded', 'false');
     tuboBtn.addEventListener('click', () => {
+      cerrarTemp();
       cerrarMenu();
       cerrarMin();
       tuboBtn.setAttribute('aria-expanded', String(!tubosAbierto()));
@@ -873,6 +923,7 @@ const iconos: Record<Temperatura, string> = {
     const minAbierto = () => minBtn.getAttribute('aria-expanded') === 'true';
     const cerrarMin = () => minBtn.setAttribute('aria-expanded', 'false');
     minBtn.addEventListener('click', () => {
+      cerrarTemp();
       cerrarMenu();
       cerrarTubos();
       minBtn.setAttribute('aria-expanded', String(!minAbierto()));
@@ -929,6 +980,7 @@ const iconos: Record<Temperatura, string> = {
     }
     document.addEventListener('click', (e) => {
       const el = e.target as Element;
+      if (tempAbierto() && !el.closest('.temperatura')) cerrarTemp();
       if (menuAbierto() && !el.closest('.aplic')) cerrarMenu();
       if (tubosAbierto() && !el.closest('.tubo')) cerrarTubos();
       if (minAbierto() && !el.closest('.minimos')) cerrarMin();
@@ -1044,7 +1096,10 @@ const iconos: Record<Temperatura, string> = {
     verRes.addEventListener('click', cerrar);
     document.addEventListener('keydown', (e) => {
       if (e.key !== 'Escape') return;
-      if (menuAbierto()) {
+      if (tempAbierto()) {
+        cerrarTemp();
+        tempBtn.focus();
+      } else if (menuAbierto()) {
         cerrarMenu();
         aplicBtn.focus();
       } else if (tubosAbierto()) {
@@ -2461,133 +2516,250 @@ const iconos: Record<Temperatura, string> = {
   /* ——— Escritorio: un solo bloque debajo de las familias. Arriba, lo que se filtra, con la raya roja y divisores
      marcados en vez de un borde por control; debajo, en una franja gris claro, lo que sale: a la
      izquierda las herramientas (Comparar, Orden, Vista y Descargar), como texto, y a la derecha el total y Borrar ——— */
+  /* El chip de temperatura y las × solo existen en escritorio; en móvil la temperatura sigue a la vista en el panel */
+  .temp-btn,
+  .quitar {
+    display: none;
+  }
+  .temperatura {
+    display: contents;
+  }
+
+  /* ——— Escritorio: el buscador y, a su lado, un chip por filtro. En reposo cada chip es ligero (discontinuo, con
+     «+»); con algo elegido se rellena en rojo suave, dice su valor y lleva una × para quitarlo. Al pulsarlo se abre
+     su menú de siempre. Debajo, tras una línea fina, las herramientas a la izquierda y el total a la derecha ——— */
   @media (min-width: 1025px) {
     .filtros {
-      --sep: #a9afb4;
-      --sep-in: #c4c9cd;
+      --chip: 40px;
+      --tinte: #fdecec;
       margin-top: 20px;
     }
     .barra {
-      align-items: stretch;
-      gap: 0;
+      align-items: center;
+      gap: 8px;
       padding: 0;
       background: none;
       border: 0;
       box-shadow: none;
     }
-    /* Corte entre los dos niveles */
     .barra::after {
       content: '';
       order: 3;
       flex-basis: 100%;
+      height: 1px;
+      margin: 10px 0 4px;
+      background: var(--line);
     }
-    .panel {
+    .panel,
+    .fin {
       display: contents;
     }
 
-    /* Nivel 1: buscador y filtros, cada pieza con la raya roja arriba y un divisor a la izquierda; juntas, una caja */
+    /* Fila 1 */
     .buscar,
-    .temps,
+    .temperatura,
     .aplic,
     .tubo,
     .minimos {
       order: 1;
-      height: auto;
-      background: #fff;
-      border: 0;
-      border-top: 3px solid var(--red);
-      border-bottom: 1px solid var(--sep);
-      border-left: 1px solid var(--sep);
-    }
-    .minimos {
-      border-right: 1px solid var(--sep);
     }
     .buscar {
-      flex: 1 1 260px;
+      flex: 1 1 220px;
+      height: 46px;
+      border: 1px solid var(--osc);
+      border-radius: 10px;
     }
     .buscar:focus-within {
-      border-color: var(--red) var(--sep) var(--sep);
-      box-shadow: inset 0 -2px 0 var(--ink);
+      border-color: var(--ink);
+      box-shadow: inset 0 0 0 1px var(--ink);
     }
-    .temp,
+    .buscar input {
+      font-size: 17px;
+    }
+    .temperatura {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .aplic,
+    .tubo,
+    .minimos {
+      display: flex;
+      align-items: center;
+    }
+    .etq-movil {
+      display: none;
+    }
+    /* El chip */
+    .temp-btn,
     .aplic-btn,
     .tubo-btn,
     .min-btn {
-      border: 0;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      height: var(--chip);
+      padding: 0 16px;
+      border: 1px dashed #aeb4b9;
+      border-radius: 999px;
+      background: #fff;
+      font: 400 16px var(--f);
+      color: var(--body);
+      white-space: nowrap;
+      cursor: pointer;
+      transition:
+        background-color 0.2s ease,
+        border-color 0.2s ease,
+        color 0.2s ease;
     }
+    .temp-btn::before,
+    .aplic-btn::before,
+    .tubo-btn::before,
+    .min-btn::before {
+      content: '+\00a0\00a0' attr(data-etq);
+    }
+    .aplic-btn svg,
+    .tubo-btn svg,
+    .min-btn svg {
+      display: none;
+    }
+    /* En reposo, solo la etiqueta; el valor por defecto (Todas, Cualquier tubo) no se enseña */
+    .temp-btn:not(.on) .temp-txt,
+    .aplic-btn:not(.on) .aplic-txt,
+    .tubo-btn:not(.on) .tubo-txt,
+    .min-btn:not(.on) .min-txt {
+      display: none;
+    }
+    /* Con algo elegido: relleno rojo suave, la etiqueta y el valor en negrita, y sitio para la × */
+    .temp-btn.on,
+    .aplic-btn.on,
+    .tubo-btn.on,
+    .min-btn.on {
+      padding-right: 38px;
+      border: 1px solid transparent;
+      background: var(--tinte);
+      color: var(--red-d);
+    }
+    .temp-btn.on::before,
+    .aplic-btn.on::before,
+    .tubo-btn.on::before,
+    .min-btn.on::before {
+      content: attr(data-etq);
+    }
+    .temp-txt,
+    .aplic-txt,
+    .tubo-txt,
+    .min-txt {
+      font-weight: 700;
+    }
+    .temp-btn[aria-expanded='true'],
+    .aplic-btn[aria-expanded='true'],
+    .tubo-btn[aria-expanded='true'],
+    .min-btn[aria-expanded='true'] {
+      border-style: solid;
+      border-color: var(--ink);
+    }
+    .quitar {
+      position: relative;
+      z-index: 1;
+      margin-left: -34px;
+      width: 26px;
+      height: 26px;
+      place-items: center;
+      padding: 0;
+      border: 0;
+      border-radius: 50%;
+      background: none;
+      color: var(--red-d);
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+    .temperatura:has(.temp-btn.on) .quitar,
+    .aplic:has(.aplic-btn.on) .quitar,
+    .tubo:has(.tubo-btn.on) .quitar,
+    .minimos:has(.min-btn.on) .quitar {
+      display: grid;
+    }
+    .quitar:focus-visible {
+      outline: 2px solid var(--red);
+      outline-offset: 1px;
+    }
+    /* Menú de temperatura: las tres, una debajo de otra */
+    .temps {
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 0;
+      z-index: 6;
+      display: none;
+      flex-direction: column;
+      gap: 2px;
+      width: max-content;
+      min-width: 200px;
+      height: auto;
+      padding: 6px;
+      background: #fff;
+      border: 1px solid var(--ink);
+      border-radius: 10px;
+      box-shadow: 0 24px 50px -20px rgba(17, 19, 21, 0.35);
+    }
+    .temp-btn[aria-expanded='true'] + .temps {
+      display: flex;
+    }
+    .temp,
     .temp + .temp {
-      margin-left: 0;
-      border-left: 1px solid var(--sep-in);
+      justify-content: flex-start;
+      height: 40px;
+      margin: 0;
+      padding: 0 12px;
+      border: 0;
+      border-radius: 6px;
+      font-size: 16px;
     }
     .temp[aria-pressed='true'] {
-      border-color: var(--sep-in);
+      background: var(--panel);
+      box-shadow: inset 3px 0 0 var(--tc);
     }
-    /* El panel de tubos, debajo de la caja y a todo su ancho */
+    /* El panel de tubos, debajo de la barra y a todo su ancho */
     .tubo-menu {
-      top: calc(var(--alto) + 10px);
+      top: calc(var(--chip) + 14px);
       left: 0;
       right: 0;
     }
+    .aplic-menu,
+    .min-menu {
+      top: calc(100% + 8px);
+    }
 
-    /* Nivel 2: lo que sale, en una franja gris claro pegada debajo de la caja; los dos niveles, un solo bloque */
-    .barra::before {
-      content: '';
-      position: absolute;
-      inset: calc(var(--alto) + 4px) 0 0;
-      z-index: -1;
-      background: #f7f7f7;
-      border: 1px solid var(--sep);
-      border-top: 0;
-    }
-    .fin {
-      display: contents;
-    }
-    .cuenta,
-    .borrar,
+    /* Fila 2: las herramientas a la izquierda, como enlaces ligeros; el total y Borrar filtros a la derecha */
     .ver-comparar,
     .orden,
     .vista,
     .fin .descargar {
-      align-self: center;
-      margin-block: 6px;
-    }
-    .cuenta {
-      order: 8;
-      margin-left: auto;
-      margin-right: 18px;
-      font-size: 16px;
-    }
-    /* El total, una frase: la cifra en negrita del mismo tamaño que el texto */
-    .cuenta :global(b) {
+      display: flex;
+      align-items: center;
+      flex: none;
       margin: 0;
-      font-size: inherit;
-      vertical-align: baseline;
     }
-    .borrar,
-    .borrar span {
-      position: static;
-      width: auto;
-      height: 40px;
-      overflow: visible;
-      clip-path: none;
-    }
-    .borrar {
-      order: 9;
-      margin-left: -8px;
-      margin-right: 8px;
+    .ver-comparar,
+    .orden select,
+    .vista button,
+    .descargar button,
+    .descargar [data-exportar='pdf'] {
+      height: 36px;
       padding: 0 10px;
+      border: 0;
+      border-radius: 8px;
       background: none;
-      color: var(--red);
-    }
-    .borrar span {
-      height: auto;
+      box-shadow: none;
+      font-size: 15px;
+      color: var(--body);
+      transition:
+        background-color 0.2s ease,
+        color 0.2s ease;
     }
     .ver-comparar {
       order: 4;
-      height: 40px;
-      padding: 0 10px;
-      border: 0;
-      background: none;
+      margin-left: -10px;
     }
     /* "Hasta 3 centrífugas" sigue para lectores de pantalla; a la vista basta con el 0/3 */
     .vc-txt span {
@@ -2600,107 +2772,112 @@ const iconos: Record<Temperatura, string> = {
     .vc-n {
       min-width: 0;
     }
-    /* Cada herramienta, una celda con su contenido centrado; el divisor de la última cae bajo uno de arriba */
-    .ver-comparar,
-    .orden,
-    .vista,
-    .fin .descargar {
-      flex-grow: 0;
-      flex-shrink: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      align-self: stretch;
-      height: auto;
-      min-height: 52px;
-      margin-block: 0;
-    }
-    .orden,
-    .vista,
-    .fin .descargar {
-      border-left: 1px solid var(--sep-in);
-    }
-    .fin .descargar {
-      border-right: 1px solid var(--sep);
-      margin-left: 0;
-    }
     .orden {
       order: 5;
     }
-    /* Los mandos de abajo llenan su celda, como los filtros de arriba, para que el fondo y la raya al pasar el
-       ratón (y la roja de lo elegido) vayan de divisor a divisor */
-    .orden select,
-    .vista button,
-    .d-botones,
-    .descargar button,
-    .descargar [data-exportar='pdf'] {
-      align-self: stretch;
-      height: auto;
-    }
-    .orden select,
-    .vista button,
-    .descargar button,
-    .descargar [data-exportar='pdf'] {
-      flex: 1;
-    }
-    .d-botones {
-      flex: 1;
-    }
     .orden select {
-      padding: 0 34px 0 10px;
-      border: 0;
+      padding-right: 30px;
       background-position: right 10px center;
-      font-size: 16px;
     }
     .vista {
       order: 6;
+      gap: 2px;
     }
     .vista button {
-      width: auto;
-      border: 0;
+      width: 36px;
+      padding: 0;
     }
     .vista button + button {
       margin-left: 0;
     }
     .vista button[aria-pressed='true'] {
-      background: none;
+      background: var(--panel);
+      color: var(--ink);
     }
     .fin .descargar {
       order: 7;
     }
     .d-botones {
-      gap: 0;
+      gap: 2px;
     }
-    .descargar button,
-    .descargar [data-exportar='pdf'] {
-      justify-content: center;
-      padding: 0 10px;
-      border: 0;
-      background: none;
+    .cuenta {
+      order: 8;
+      margin: 0 0 0 auto;
+      font-size: 16px;
+      color: var(--body);
+    }
+    .cuenta :global(b) {
+      margin: 0;
+      font-size: inherit;
+      vertical-align: baseline;
       color: var(--ink);
+    }
+    .borrar,
+    .borrar span {
+      position: static;
+      width: auto;
+      height: 36px;
+      overflow: visible;
+      clip-path: none;
+    }
+    .borrar {
+      order: 9;
+      margin: 0 -10px 0 0;
+      padding: 0 10px;
+      border-radius: 8px;
+      background: none;
+      color: var(--red);
+    }
+    .borrar span {
+      height: auto;
+    }
+  }
+  /* Portátiles estrechos: chips un poco más compactos para que quepan en una línea */
+  @media (min-width: 1025px) and (max-width: 1280px) {
+    .temp-btn,
+    .aplic-btn,
+    .tubo-btn,
+    .min-btn {
+      padding: 0 12px;
+      font-size: 15px;
+    }
+    .temp-btn.on,
+    .aplic-btn.on,
+    .tubo-btn.on,
+    .min-btn.on {
+      padding-right: 36px;
     }
   }
   @media (min-width: 1025px) and (hover: hover) and (pointer: fine) {
-    .temp:not(:disabled):not([aria-pressed='true']):hover,
+    .temp-btn:not(.on):hover,
     .aplic-btn:not(.on):hover,
-    .buscar:not(:focus-within):hover {
-      border-color: var(--sep-in);
+    .tubo-btn:not(.on):hover,
+    .min-btn:not(.on):hover {
+      border-color: var(--ink);
+      color: var(--ink);
+    }
+    .temp-btn.on:hover,
+    .aplic-btn.on:hover,
+    .tubo-btn.on:hover,
+    .min-btn.on:hover {
+      background: #fbdcdd;
+    }
+    .quitar:hover {
+      background: rgba(221, 4, 10, 0.12);
+    }
+    .temp:not([aria-pressed='true']):not(:disabled):hover {
+      background: #f3f4f5;
     }
     .buscar:not(:focus-within):hover {
-      border-color: var(--red) var(--sep) var(--sep);
+      border-color: var(--ink);
     }
-    .borrar:hover {
-      background: none;
-      text-decoration: underline;
-    }
-    /* Las herramientas, igual que los filtros de arriba al pasar el ratón: fondo gris claro y raya gris debajo */
     .ver-comparar:hover,
     .orden select:hover,
     .vista button:not([aria-pressed='true']):hover,
     .descargar button:hover:not(:disabled),
-    .descargar [data-exportar='pdf']:hover:not(:disabled) {
-      background-color: var(--hover-bg);
-      box-shadow: inset 0 -3px 0 var(--hover-raya);
+    .descargar [data-exportar='pdf']:hover:not(:disabled),
+    .borrar:hover {
+      background: #f3f4f5;
       color: var(--ink);
     }
   }
