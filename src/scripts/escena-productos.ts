@@ -19,6 +19,7 @@ import {
   MeshBasicMaterial,
   MeshStandardMaterial,
   PerspectiveCamera,
+  Plane,
   PlaneGeometry,
   PMREMGenerator,
   PointLight,
@@ -38,6 +39,7 @@ import {
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { MeshSurfaceSampler } from 'three/examples/jsm/math/MeshSurfaceSampler.js';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 
 /** Despiece: cuánto se separa cada pieza (en metros, Y hacia arriba y +Z hacia delante). Lo demás no se mueve. */
@@ -129,6 +131,8 @@ export async function crearEscena(o: Opciones): Promise<Escena> {
   const renderer = new WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
   renderer.toneMapping = ACESFilmicToneMapping;
+  // Planos de corte por material: los usa la regeneración de la carcasa, de abajo arriba
+  renderer.localClippingEnabled = true;
   lienzo.prepend(renderer.domElement);
 
   const scene = new Scene();
@@ -397,6 +401,245 @@ export async function crearEscena(o: Opciones): Promise<Escena> {
       }
     }
     foco.intensity = rayos && !destacadas ? 1.5 : 6;
+  };
+
+  // ——— Paso de real a rayos X, y vuelta, contado como una historia. Hacia rayos X la carcasa arde: se enciende al
+  // rojo blanco, se deshace en brasas que saltan, se enfrían y caen al suelo como cenizas, y entre ellas queda la
+  // máquina en rayos X. De vuelta, renace de sus cenizas: suben en remolino y la carcasa se rehace de abajo arriba,
+  // con un frente de brasas justo donde se está formando. Los puntos de cada malla se muestrean una vez, con el
+  // navegador libre, en sus coordenadas propias; al empezar se llevan a su sitio actual ———
+  const N_PUNTOS = 22000;
+  let muestras: { malla: Mesh; local: Float32Array }[] | null = null;
+  const muestrear = () => {
+    if (muestras) return muestras;
+    const tam = new Vector3();
+    const caja_ = new Box3();
+    const areas = mallas.map((m) => {
+      m.geometry.computeBoundingBox();
+      caja_.copy(m.geometry.boundingBox!).getSize(tam);
+      return tam.x * tam.y + tam.y * tam.z + tam.x * tam.z + 1e-6;
+    });
+    const total = areas.reduce((a, b) => a + b, 0);
+    const p = new Vector3();
+    muestras = mallas.map((malla, i) => {
+      const n = Math.max(4, Math.round((areas[i] / total) * N_PUNTOS));
+      const sampler = new MeshSurfaceSampler(malla).build();
+      const local = new Float32Array(n * 3);
+      for (let k = 0; k < n; k++) {
+        sampler.sample(p);
+        local.set([p.x, p.y, p.z], k * 3);
+      }
+      return { malla, local };
+    });
+    return muestras;
+  };
+  const uP = { value: 0 };
+  const uA = { value: 0 };
+  const uModo = { value: 0 };
+  const uCentro = { value: new Vector3() };
+  const uSuelo = { value: 0 };
+  const uAlto = { value: 1 };
+  const nube = new Points(
+    new BufferGeometry(),
+    new ShaderMaterial({
+      uniforms: { uP, uA, uModo, uCentro, uSuelo, uAlto, uPx: { value: renderer.getPixelRatio() } },
+      vertexShader: `
+        attribute vec3 rumbo;
+        attribute float semilla;
+        attribute float altura;
+        uniform float uP;
+        uniform float uA;
+        uniform float uModo;
+        uniform vec3 uCentro;
+        uniform float uSuelo;
+        uniform float uAlto;
+        uniform float uPx;
+        varying float vA;
+        varying float vCalor;
+        vec3 girar(vec3 q, float a) {
+          float c = cos(a);
+          float s = sin(a);
+          q.xz = mat2(c, -s, s, c) * q.xz;
+          return q;
+        }
+        void main() {
+          // Dónde acaba cada brasa en el suelo, ya hecha ceniza
+          vec3 ceniza = vec3(position.x + rumbo.x, uSuelo + 0.002, position.z + rumbo.z);
+          vec3 p;
+          float calor;
+          float alfa;
+          if (uModo < 0.5) {
+            // Destrucción: cada punto arde con su retraso, salta un poco, se enfría y cae al suelo
+            float k = clamp((uP - semilla * 0.3) / 0.7, 0.0, 1.0);
+            float sal = 1.0 - pow(1.0 - k, 2.0);
+            p = mix(position, ceniza, vec3(sal, k * k, sal));
+            p.y += uAlto * 0.32 * (0.5 + semilla) * k * (1.0 - k);
+            p = girar(p - uCentro, k * (0.6 + semilla)) + uCentro;
+            calor = 1.0 - k;
+            alfa = 1.0 - 0.65 * smoothstep(0.75, 1.0, k);
+          } else {
+            // Regeneración: las cenizas suben en remolino y llegan a su sitio cuando el frente pasa por su altura
+            float llega = 0.12 + 0.72 * altura;
+            float k = clamp((uP - (llega - 0.42)) / 0.42, 0.0, 1.0);
+            float sk = k * k * (3.0 - 2.0 * k);
+            p = mix(ceniza, position, sk);
+            p = girar(p - uCentro, (1.0 - sk) * (2.2 + 2.0 * semilla)) + uCentro;
+            calor = sk;
+            // En el suelo, ceniza tenue; al llegar, se funde con la carcasa que renace
+            alfa = mix(0.35, 1.0, sk) * (1.0 - smoothstep(llega, llega + 0.1, uP));
+          }
+          vec4 mv = modelViewMatrix * vec4(p, 1.0);
+          gl_Position = projectionMatrix * mv;
+          gl_PointSize = uPx * (1.8 + 3.4 * calor) * (1.6 / -mv.z);
+          vA = uA * alfa * (0.55 + 0.45 * semilla);
+          vCalor = calor;
+        }`,
+      fragmentShader: `
+        varying float vA;
+        varying float vCalor;
+        void main() {
+          float d = length(gl_PointCoord - 0.5);
+          if (d > 0.5) discard;
+          // Del blanco al rojo vivo se enfría a naranja, rojo de la marca y, al final, ceniza
+          vec3 ceniza = vec3(0.32, 0.3, 0.3);
+          vec3 rojo = vec3(1.0, 0.16, 0.2);
+          vec3 naranja = vec3(1.0, 0.55, 0.25);
+          vec3 blanco = vec3(1.0, 0.93, 0.88);
+          vec3 c = mix(ceniza, rojo, smoothstep(0.0, 0.35, vCalor));
+          c = mix(c, naranja, smoothstep(0.35, 0.7, vCalor));
+          c = mix(c, blanco, smoothstep(0.7, 1.0, vCalor));
+          c += vec3(0.3) * smoothstep(0.22, 0.0, d) * vCalor;
+          gl_FragColor = vec4(c, vA * smoothstep(0.5, 0.0, d));
+        }`,
+      transparent: true,
+      depthWrite: false,
+      blending: AdditiveBlending,
+    }),
+  );
+  nube.frustumCulled = false;
+  nube.visible = false;
+  scene.add(nube);
+  const cajaNube = new Box3();
+  const montarNube = () => {
+    const lista = muestrear();
+    const n = lista.reduce((a, x) => a + x.local.length / 3, 0);
+    const pos = new Float32Array(n * 3);
+    const rumbo = new Float32Array(n * 3);
+    const semilla = new Float32Array(n);
+    const altura = new Float32Array(n);
+    cajaNube.setFromObject(modelo);
+    const centro_ = cajaNube.getCenter(new Vector3());
+    const alto_ = Math.max(cajaNube.max.y - cajaNube.min.y, 1e-3);
+    uCentro.value.copy(centro_);
+    uSuelo.value = cajaNube.min.y;
+    uAlto.value = alto_;
+    const v = new Vector3();
+    const r = new Vector3();
+    let i = 0;
+    for (const { malla, local } of lista) {
+      for (let k = 0; k < local.length; k += 3, i++) {
+        v.set(local[k], local[k + 1], local[k + 2]).applyMatrix4(malla.matrixWorld);
+        pos.set([v.x, v.y, v.z], i * 3);
+        // En el suelo, las cenizas quedan esparcidas hacia fuera de la máquina
+        r.set(v.x - centro_.x, 0, v.z - centro_.z).normalize();
+        r.x += (Math.random() - 0.5) * 0.9;
+        r.z += (Math.random() - 0.5) * 0.9;
+        r.normalize().multiplyScalar(ancho * (0.12 + Math.random() * 0.45));
+        rumbo.set([r.x, 0, r.z], i * 3);
+        semilla[i] = Math.random();
+        altura[i] = MathUtils.clamp((v.y - cajaNube.min.y) / alto_, 0, 1);
+      }
+    }
+    const g = nube.geometry;
+    g.setAttribute('position', new BufferAttribute(pos, 3));
+    g.setAttribute('rumbo', new BufferAttribute(rumbo, 3));
+    g.setAttribute('semilla', new BufferAttribute(semilla, 1));
+    g.setAttribute('altura', new BufferAttribute(altura, 1));
+  };
+  // Al renacer, la carcasa real se ve solo por debajo del frente de brasas, que sube; las líneas, solo por encima
+  const LEJOS = 1e6;
+  const planoReal = new Plane(new Vector3(0, -1, 0), LEJOS);
+  const planoLineas = new Plane(new Vector3(0, -1, 0), LEJOS);
+  for (const mat of originales.values()) for (const x of [mat].flat()) x.clippingPlanes = [planoReal];
+  linea.clippingPlanes = [planoLineas];
+  const OPACIDAD_FANTASMA = fantasma.opacity;
+  const OPACIDAD_LINEA = linea.opacity;
+  const verRayos = (f: number) => {
+    fantasma.opacity = OPACIDAD_FANTASMA * f;
+    linea.opacity = OPACIDAD_LINEA * f;
+  };
+  const ponerAristas = (si: boolean) => {
+    for (const m of mallas) {
+      const l = aristas?.get(m);
+      if (l) {
+        l.visible = si;
+        l.material = linea;
+      }
+    }
+  };
+  const IGNICION = 0.12;
+  let transicion: { t0: number; dur: number; aRayos: boolean; cambiado: boolean } | null = null;
+  const empezarTransicion = (aRayos: boolean) => {
+    prepararAristas();
+    montarNube();
+    uModo.value = aRayos ? 0 : 1;
+    if (aRayos) {
+      // Se sigue viendo lo real mientras se enciende
+      rayos = false;
+      aplicarMateriales();
+    } else {
+      // La carcasa real, recortada bajo el frente (de momento, nada) y las líneas de rayos X a la vista
+      for (const m of mallas) m.material = originales.get(m)!;
+      ponerAristas(true);
+      planoReal.set(new Vector3(0, -1, 0), -LEJOS);
+      foco.intensity = 6;
+    }
+    rayos = aRayos;
+    verRayos(1);
+    nube.visible = true;
+    transicion = { t0: performance.now(), dur: aRayos ? 2100 : 2300, aRayos, cambiado: false };
+  };
+  const suaveEntre = (a: number, b: number, x: number) => {
+    const t = MathUtils.clamp((x - a) / (b - a), 0, 1);
+    return t * t * (3 - 2 * t);
+  };
+  // Dibuja el fotograma y, durante el paso, mueve la nube y cambia los materiales en su momento
+  const dibujar = (ahora: number) => {
+    if (transicion) {
+      const t = transicion;
+      const p = Math.min((ahora - t.t0) / t.dur, 1);
+      if (t.aRayos) {
+        // Ignición sobre la carcasa; al arder, la carcasa desaparece con un golpe de luz y quedan los rayos X
+        uA.value = suaveEntre(0, IGNICION, p) * (1 - suaveEntre(0.88, 1, p));
+        uP.value = suaveEntre(IGNICION, 1, p);
+        if (!t.cambiado && p >= IGNICION) {
+          t.cambiado = true;
+          aplicarMateriales();
+        }
+        if (t.cambiado) verRayos(suaveEntre(0.3, 0.9, p));
+        const golpe = (p - IGNICION) / 0.25;
+        renderer.toneMappingExposure = 1 + 0.55 * (golpe >= 0 ? Math.max(0, 1 - golpe) : 0);
+      } else {
+        // El frente sube al mismo ritmo al que llegan las brasas (0,12 + 0,72 × altura)
+        uA.value = 1 - suaveEntre(0.94, 1, p);
+        uP.value = p;
+        const h = uSuelo.value + uAlto.value * ((p - 0.12) / 0.72) + uAlto.value * 0.01;
+        planoReal.set(new Vector3(0, -1, 0), h);
+        planoLineas.set(new Vector3(0, 1, 0), -h);
+        verRayos(1 - suaveEntre(0.55, 0.95, p));
+      }
+      if (p === 1) terminarTransicion();
+    }
+    renderer.render(scene, camera);
+  };
+  const terminarTransicion = () => {
+    transicion = null;
+    nube.visible = false;
+    renderer.toneMappingExposure = 1;
+    planoReal.set(new Vector3(0, -1, 0), LEJOS);
+    planoLineas.set(new Vector3(0, -1, 0), LEJOS);
+    verRayos(1);
+    aplicarMateriales();
   };
 
   // ——— Cámara ———
@@ -674,11 +917,11 @@ export async function crearEscena(o: Opciones): Promise<Escena> {
     filo.position.y += ((0.9 - raton.y * 0.5) * alto - filo.position.y) * 0.05;
     controls.autoRotate = !o.quieto && paso < 0 && !viaje && !arrastrando && ahora - idle > 5000;
     controls.update(dt);
-    renderer.render(scene, camera);
+    dibujar(ahora);
     ponerEtiquetas();
     o.alAngulo(MathUtils.radToDeg(az), 90 - MathUtils.radToDeg(controls.getPolarAngle()));
     // Con "reducir movimiento" solo se dibuja cuando algo cambia
-    if (!o.quieto || viaje || arrastrando || e !== hacia || Math.abs(zoom - zoomVa) > 0.001) pedir();
+    if (!o.quieto || viaje || arrastrando || transicion || e !== hacia || Math.abs(zoom - zoomVa) > 0.001) pedir();
   }
   controls.addEventListener('change', () => pedir());
   new IntersectionObserver(([en]) => {
@@ -702,8 +945,11 @@ export async function crearEscena(o: Opciones): Promise<Escena> {
       irA(vistas.tres, 1800);
     }
   }
-  // Las aristas de rayos X se preparan cuando el navegador está libre, para que el botón responda al momento
-  (window.requestIdleCallback ?? setTimeout)(() => prepararAristas());
+  // Aristas y puntos de rayos X se preparan con el navegador libre, para que el botón responda al momento
+  (window.requestIdleCallback ?? setTimeout)(() => {
+    prepararAristas();
+    muestrear();
+  });
 
   return {
     vista: (v) => {
@@ -711,8 +957,11 @@ export async function crearEscena(o: Opciones): Promise<Escena> {
       irA(vistas[v]);
     },
     modo: (si) => {
+      if (si === rayos) return;
       rayos = si;
-      aplicarMateriales();
+      // Con la máquina entera a la vista, el cambio va con partículas; en el recorrido o con movimiento reducido, directo
+      if (!o.quieto && paso < 0) empezarTransicion(si);
+      else aplicarMateriales();
       pedir();
     },
     despiece: (si) => {
@@ -723,6 +972,7 @@ export async function crearEscena(o: Opciones): Promise<Escena> {
       const antes_ = paso;
       paso = i;
       ponerZoom(1);
+      if (transicion) terminarTransicion();
       aplicarMateriales();
       if (i >= 0) {
         if (antes_ < 0) abrir(true, 1200);
