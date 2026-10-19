@@ -1,0 +1,294 @@
+---
+// Formulario de contacto en una ventana. Cualquier enlace a "#contacto" de la web lo abre; sin JS, el enlace
+// sigue bajando al pie, donde están teléfono y correos.
+// Destino: la URL del flujo de Power Automate ("Cuando se recibe una solicitud HTTP") en la variable
+// PUBLIC_CONTACTO_URL. Se envía un JSON con los campos del formulario más idioma y página. Mientras la variable
+// esté vacía, el formulario abre un correo a comercial con todo ya escrito, así nunca se pierde una consulta.
+import { contacto } from '../data/navegacion';
+import { idioma, ruta, textos } from '../i18n';
+
+const lang = idioma(Astro.currentLocale);
+const t = textos(lang).formulario;
+const destino = import.meta.env.PUBLIC_CONTACTO_URL ?? '';
+---
+
+<dialog class="contacto" id="formulario-contacto" aria-labelledby="contacto-titulo">
+  <form method="dialog" class="cerrar-f">
+    <button class="cerrar" aria-label={t.cerrar}>
+      ×
+    </button>
+  </form>
+  <h2 id="contacto-titulo">
+    {t.titulo[0]}
+    <b>{t.titulo[1]}</b>
+  </h2>
+  <p class="lead">{t.lead}</p>
+
+  <form class="campos" data-destino={destino} data-correo={contacto.comercial} data-lang={lang} novalidate>
+    <label>
+      <span>{t.nombre}</span>
+      <input name="nombre" autocomplete="name" required maxlength="120" />
+    </label>
+    <label>
+      <span>{t.empresa}</span>
+      <input name="empresa" autocomplete="organization" required maxlength="120" />
+    </label>
+    <label>
+      <span>{t.email}</span>
+      <input name="email" type="email" autocomplete="email" required maxlength="160" />
+    </label>
+    <label>
+      <span>
+        {t.telefono} <small>({t.opcional})</small>
+      </span>
+      <input name="telefono" type="tel" autocomplete="tel" maxlength="40" />
+    </label>
+    <label>
+      <span>{t.pais}</span>
+      <input name="pais" autocomplete="country-name" required maxlength="80" />
+    </label>
+    <label>
+      <span>{t.tipo}</span>
+      <select name="motivo" required>
+        {t.tipos.map((x) => (
+          <option>{x}</option>
+        ))}
+      </select>
+    </label>
+    <label class="ancho">
+      <span>{t.mensaje}</span>
+      <textarea name="mensaje" rows="5" required maxlength="4000"></textarea>
+    </label>
+    <!-- Trampa para robots: invisible para personas; si llega rellena, no se envía -->
+    <label class="trampa" aria-hidden="true">
+      Web <input name="web" tabindex="-1" autocomplete="off" />
+    </label>
+    <label class="ancho acepto">
+      <input name="privacidad" type="checkbox" required />
+      <span>
+        {t.acepto}{' '}
+        <a href={ruta(lang, '/privacidad/')} target="_blank">
+          {t.privacidad}
+        </a>
+      </span>
+    </label>
+    <div class="ancho pie">
+      <button class="btn red" type="submit" data-enviando={t.enviando}>
+        {t.enviar} <span aria-hidden="true">»</span>
+      </button>
+      <p class="estado" role="status" aria-live="polite" data-ok={t.ok} data-error={t.error}></p>
+    </div>
+  </form>
+</dialog>
+
+<script>
+  const dlg = document.getElementById('formulario-contacto') as HTMLDialogElement | null;
+  const form = dlg?.querySelector<HTMLFormElement>('form.campos');
+
+  if (dlg && form) {
+    // Todos los enlaces a #contacto abren la ventana en vez de bajar al pie
+    document.addEventListener('click', (e) => {
+      const a = (e.target as Element).closest?.('a[href$="#contacto"]');
+      if (!a || e.defaultPrevented || e.metaKey || e.ctrlKey || e.shiftKey) return;
+      e.preventDefault();
+      dlg.showModal();
+    });
+    // Pulsar fuera de la ventana la cierra
+    dlg.addEventListener('click', (e) => {
+      if (e.target === dlg) dlg.close();
+    });
+
+    const estado = form.querySelector<HTMLElement>('.estado')!;
+    const boton = form.querySelector<HTMLButtonElement>('button[type=submit]')!;
+    const textoBoton = boton.innerHTML;
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!form.reportValidity()) return;
+      const datos = Object.fromEntries(new FormData(form)) as Record<string, string>;
+      if (datos.web) return; // robot
+      delete datos.web;
+      const envio = {
+        ...datos,
+        privacidad: true,
+        idioma: form.dataset.lang,
+        pagina: location.href,
+        fecha: new Date().toISOString(),
+      };
+      const destino = form.dataset.destino;
+      const correo = form.dataset.correo!;
+
+      // Sin flujo conectado todavía: correo a comercial con la consulta ya escrita
+      if (!destino) {
+        const cuerpo = Object.entries(envio)
+          .map(([k, v]) => `${k}: ${v}`)
+          .join('\n');
+        location.href = `mailto:${correo}?subject=${encodeURIComponent(`${datos.motivo} · ${datos.empresa}`)}&body=${encodeURIComponent(cuerpo)}`;
+        return;
+      }
+
+      boton.disabled = true;
+      boton.textContent = boton.dataset.enviando!;
+      estado.textContent = '';
+      try {
+        const r = await fetch(destino, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(envio),
+        });
+        if (!r.ok) throw new Error(String(r.status));
+        form.reset();
+        estado.textContent = estado.dataset.ok!;
+        estado.classList.remove('mal');
+      } catch {
+        estado.innerHTML = `${estado.dataset.error} <a href="mailto:${correo}">${correo}</a>`;
+        estado.classList.add('mal');
+      } finally {
+        boton.disabled = false;
+        boton.innerHTML = textoBoton;
+      }
+    });
+  }
+</script>
+
+<style>
+  .contacto {
+    width: min(760px, calc(100vw - 32px));
+    max-height: calc(100dvh - 32px);
+    padding: clamp(24px, 4vw, 48px);
+    border: 0;
+    border-top: 4px solid var(--red);
+    border-radius: 0;
+    background: var(--white);
+    color: var(--ink);
+    box-shadow: var(--sombra-tarjeta);
+  }
+  .contacto::backdrop {
+    background: rgba(21, 23, 25, 0.72);
+  }
+  .contacto[open] {
+    animation: abre var(--dur-3) var(--ease-out);
+  }
+  @keyframes abre {
+    from {
+      opacity: 0;
+      translate: 0 16px;
+    }
+  }
+  .cerrar-f {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+  }
+  .cerrar {
+    width: 44px;
+    height: 44px;
+    border: 0;
+    background: none;
+    font: 300 32px/1 var(--f);
+    color: var(--ink);
+    cursor: pointer;
+  }
+  .cerrar:hover {
+    color: var(--red);
+  }
+  h2 {
+    padding-right: 40px;
+    font-weight: 300;
+    font-size: clamp(32px, 4vw, 48px);
+    line-height: 1;
+  }
+  h2 b {
+    color: var(--red);
+  }
+  .lead {
+    margin-top: var(--sp-3);
+    color: var(--body);
+  }
+  .campos {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--sp-4) var(--sp-5);
+    margin-top: var(--sp-6);
+  }
+  label {
+    display: grid;
+    gap: var(--sp-1);
+    min-width: 0;
+  }
+  label > span {
+    font-weight: 700;
+    font-size: 15px;
+  }
+  small {
+    font-weight: 300;
+    color: var(--muted);
+  }
+  .ancho {
+    grid-column: 1 / -1;
+  }
+  input,
+  select,
+  textarea {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid var(--line);
+    border-radius: 0;
+    background: var(--band);
+    font: 300 17px/1.3 var(--f);
+    color: var(--ink);
+  }
+  textarea {
+    resize: vertical;
+  }
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible {
+    outline: var(--foco);
+    outline-offset: 0;
+    border-color: var(--red);
+  }
+  .acepto {
+    grid-template-columns: auto 1fr;
+    align-items: start;
+    gap: var(--sp-3);
+  }
+  .acepto input {
+    width: 18px;
+    height: 18px;
+    margin-top: 3px;
+    accent-color: var(--red);
+  }
+  .acepto span {
+    font-weight: 300;
+  }
+  .trampa {
+    position: absolute;
+    left: -9999px;
+  }
+  .pie {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--sp-4);
+  }
+  .btn {
+    cursor: pointer;
+  }
+  .btn:disabled {
+    opacity: 0.6;
+    cursor: wait;
+  }
+  .estado {
+    color: var(--t-ventilada);
+    font-weight: 700;
+  }
+  .estado:global(.mal) {
+    color: var(--red);
+  }
+  @media (max-width: 600px) {
+    .campos {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
