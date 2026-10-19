@@ -2363,6 +2363,49 @@ const tubos = familiasTubo
       color: var(--ink);
     }
   }
+  /* Escritorio: las familias son la primera fila de la barra de filtros. Misma caja blanca que sigue debajo
+     (Filtros.astro), sin hueco entre ambas; pestañas de texto a la izquierda con el mismo hover gris que el resto */
+  @media (min-width: 1025px) {
+    .atajos {
+      width: auto;
+      justify-content: flex-start;
+      gap: 2px;
+      padding: 10px 10px 0;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-bottom: 0;
+      border-radius: 14px 14px 0 0;
+    }
+    .atajos a {
+      height: 38px;
+      padding: 0 12px;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+    .atajos .n {
+      background: #f3f4f5;
+    }
+  }
+  @media (min-width: 1025px) and (max-width: 1280px) {
+    .atajos {
+      gap: 0;
+      padding-inline: 6px;
+    }
+    .atajos a {
+      gap: 5px;
+      padding: 0 7px;
+      font-size: 15px;
+    }
+  }
+  @media (min-width: 1025px) and (hover: hover) and (pointer: fine) {
+    .atajos a:hover {
+      background: #e6e8eb;
+      box-shadow: none;
+    }
+    .atajos a:hover .n {
+      background: #fff;
+    }
+  }
 
   /* ——— Selector de versión: en el mismo sitio y con el mismo aspecto que la etiqueta de temperatura de las tarjetas
      de una sola versión (arriba a la izquierda, mayúsculas en negrita), para que todas digan su temperatura igual.

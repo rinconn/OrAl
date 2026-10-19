@@ -2544,23 +2544,28 @@ const iconos: Record<Temperatura, string> = {
     .filtros {
       --chip: 40px;
       --tinte: #fdecec;
-      margin-top: 20px;
+      /* Un gris de hover que se distinga también en monitores con poco contraste */
+      --hover-bg: #e6e8eb;
+      margin-top: 0;
     }
+    /* La misma caja que abren las familias (Centrifugas.astro): sin hueco ni borde entre ambas, una sola barra */
     .barra {
       align-items: center;
       gap: 8px;
-      padding: 0;
-      background: none;
-      border: 0;
-      box-shadow: none;
+      padding: 14px 16px 8px;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-top: 0;
+      border-radius: 0 0 14px 14px;
+      box-shadow: 0 24px 50px -40px rgba(17, 19, 21, 0.45);
     }
     .barra::after {
       content: '';
       order: 3;
-      flex-basis: 100%;
+      flex-basis: calc(100% + 32px);
       height: 1px;
-      margin: 10px 0 4px;
-      background: var(--line);
+      margin: 12px -16px 6px;
+      background: #eceef0;
     }
     .panel,
     .fin {
@@ -2731,15 +2736,35 @@ const iconos: Record<Temperatura, string> = {
       background: var(--panel);
       box-shadow: inset 3px 0 0 var(--tc);
     }
-    /* El panel de tubos, debajo de la barra y a todo su ancho */
-    .tubo-menu {
-      top: calc(var(--chip) + 14px);
-      left: 0;
-      right: 0;
+    /* Los menús, pegados a su chip y del tamaño justo, con las esquinas redondeadas como los chips */
+    .tubo {
+      position: relative;
     }
-    .aplic-menu,
+    .tubo-menu {
+      top: calc(100% + 8px);
+      left: auto;
+      right: 0;
+      width: min(640px, calc(100vw - 2 * var(--gut)));
+      padding: 12px;
+      border-radius: 12px;
+    }
+    .t-pasos,
+    .t-grupos {
+      grid-template-columns: 200px minmax(0, 1fr);
+    }
+    .t-sub {
+      grid-template-columns: repeat(auto-fill, minmax(126px, 1fr));
+    }
+    .aplic-menu {
+      top: calc(100% + 8px);
+      grid-template-columns: repeat(3, 168px);
+      gap: 2px 10px;
+      padding: 10px;
+      border-radius: 12px;
+    }
     .min-menu {
       top: calc(100% + 8px);
+      border-radius: 12px;
     }
 
     /* Fila 2: las herramientas a la izquierda, como enlaces ligeros; el total y Borrar filtros a la derecha */
@@ -2804,6 +2829,7 @@ const iconos: Record<Temperatura, string> = {
     }
     .vista button[aria-pressed='true'] {
       background: var(--panel);
+      box-shadow: none;
       color: var(--ink);
     }
     .fin .descargar {
@@ -2860,37 +2886,38 @@ const iconos: Record<Temperatura, string> = {
       padding-right: 36px;
     }
   }
+  /* Un solo hover para toda la barra, el mismo de los menús: fondo gris claro (--hover-bg) y el texto en tinta.
+     Los chips con un filtro puesto conservan su rojo (es su estado); en ellos solo reacciona la × */
   @media (min-width: 1025px) and (hover: hover) and (pointer: fine) {
+    .buscar:not(:focus-within):hover,
     .temp-btn:not(.on):hover,
     .aplic-btn:not(.on):hover,
     .tubo-btn:not(.on):hover,
-    .min-btn:not(.on):hover {
-      border-color: var(--ink);
-      color: var(--ink);
-    }
-    .temp-btn.on:hover,
-    .aplic-btn.on:hover,
-    .tubo-btn.on:hover,
-    .min-btn.on:hover {
-      background: #fbdcdd;
-    }
-    .quitar:hover {
-      background: rgba(221, 4, 10, 0.12);
-    }
-    .temp:not([aria-pressed='true']):not(:disabled):hover {
-      background: #f3f4f5;
-    }
-    .buscar:not(:focus-within):hover {
-      border-color: var(--ink);
-    }
+    .min-btn:not(.on):hover,
+    .temp:not([aria-pressed='true']):not(:disabled):hover,
     .ver-comparar:hover,
     .orden select:hover,
     .vista button:not([aria-pressed='true']):hover,
     .descargar button:hover:not(:disabled),
     .descargar [data-exportar='pdf']:hover:not(:disabled),
-    .borrar:hover {
-      background: #f3f4f5;
+    .borrar:hover,
+    .quitar:hover {
+      background-color: var(--hover-bg);
+      box-shadow: none;
       color: var(--ink);
+    }
+    /* Sin el borde negro ni la raya gris del estilo de móvil: en los chips solo cambia el fondo */
+    .temp-btn:not(.on):hover,
+    .aplic-btn:not(.on):hover,
+    .tubo-btn:not(.on):hover,
+    .min-btn:not(.on):hover {
+      border-color: #aeb4b9;
+    }
+    .buscar:not(:focus-within):hover {
+      border-color: var(--osc);
+    }
+    .buscar:not(:focus-within):hover input {
+      background: none;
     }
   }
   /* ——— "↑ Filtros": fijo abajo a la izquierda (a la derecha va Presupuesto y en el centro la barra del comparador),
