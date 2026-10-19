@@ -98,6 +98,10 @@ const blog = 'https://ortoalresa.com/blog/';
 </script>
 
 <style>
+  /* Al llegar desde el menú la sección se para justo debajo de la cabecera, sin franja de la anterior */
+  .apl {
+    scroll-margin-top: var(--cabecera, 0px);
+  }
   /* Cabecera: título a la izquierda, como en el resto de secciones, y "Ver todas las notas" a la derecha */
   .cab {
     display: flex;
