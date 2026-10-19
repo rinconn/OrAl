@@ -167,6 +167,8 @@ function silueta(n: number) {
     overflow: hidden;
     background: #15181b;
     color: #fff;
+    /* Al llegar desde el menú la sección se para justo debajo de la cabecera, sin franja de la anterior */
+    scroll-margin-top: var(--cabecera, 0px);
   }
   .fondo {
     position: absolute;

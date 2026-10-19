@@ -130,13 +130,43 @@ const actual = (href: string) => !href.startsWith('/#') && base.startsWith(href)
   });
   movil.addEventListener('change', () => abrir(false));
 
-  // Al bajar se aparta, al subir vuelve. Nunca se esconde con el menú abierto o con el foco dentro.
+  // Las secciones a las que se salta con un ancla se paran justo debajo de la cabecera (--cabecera)
+  if (top) {
+    const medir = () => document.documentElement.style.setProperty('--cabecera', `${top.offsetHeight}px`);
+    medir();
+    new ResizeObserver(medir).observe(top);
+  }
+
+  // Mientras se salta a un ancla la cabecera no se aparta: si lo hiciera, dejaría a la vista su hueco
   let ultimaY = window.scrollY;
+  let anclando = false;
+  let finAncla = 0;
+  // El salto termina cuando el scroll lleva un rato quieto (o si nunca llega a empezar)
+  const esperarFinAncla = (ms = 250) => {
+    clearTimeout(finAncla);
+    finAncla = window.setTimeout(() => {
+      anclando = false;
+      ultimaY = window.scrollY;
+    }, ms);
+  };
+  const saltarAAncla = () => {
+    anclando = true;
+    top?.classList.remove('oculta');
+    esperarFinAncla(600);
+  };
+  document.addEventListener('click', (e) => {
+    const a = (e.target as HTMLElement).closest<HTMLAnchorElement>('a[href*="#"]');
+    if (a && a.pathname === location.pathname && a.hash.length > 1) saltarAAncla();
+  });
+  if (location.hash.length > 1) saltarAAncla();
+
+  // Al bajar se aparta, al subir vuelve. Nunca se esconde con el menú abierto, con el foco dentro o
+  // mientras se salta a un ancla.
   let pendiente = false;
   const alHacerScroll = () => {
     const y = window.scrollY;
     const bajando = y > ultimaY;
-    const ocupado = nav?.classList.contains('open') || top?.contains(document.activeElement);
+    const ocupado = anclando || nav?.classList.contains('open') || top?.contains(document.activeElement);
     top?.classList.toggle('scrolled', y > 40);
     top?.classList.toggle('oculta', bajando && y > 360 && !ocupado);
     ultimaY = y;
@@ -145,6 +175,7 @@ const actual = (href: string) => !href.startsWith('/#') && base.startsWith(href)
   window.addEventListener(
     'scroll',
     () => {
+      if (anclando) esperarFinAncla();
       if (!pendiente) {
         pendiente = true;
         requestAnimationFrame(alHacerScroll);
