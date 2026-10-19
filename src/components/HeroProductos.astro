@@ -1,27 +1,15 @@
 ---
-// Hero de Productos: el texto y las cifras a la izquierda y la Digicen 22 en 3D a la derecha, en un estudio oscuro con
+// Hero de Productos: el texto a la izquierda y la Digicen 22 en 3D a la derecha, en un estudio oscuro con
 // un remolino de luz detrás. Mandos debajo de la máquina: acabado real o rayos X, vistas, despiece con etiquetas y un
 // recorrido por dentro pieza a pieza; zoom arriba a la derecha. La escena está en src/scripts/escena-productos.ts.
 // Sin WebGL se ve la foto de la Digicen 22 y no salen los mandos.
-import { categorias, modelos } from '../data/productos';
+import { modelos } from '../data/productos';
 import { idioma, ruta, textos } from '../i18n';
 
 const lang = idioma(Astro.currentLocale);
 const t = textos(lang);
 const v = t.catalogo.visor;
 const s = t.catalogo.escena;
-const cifras = [
-  { n: String(modelos.length), txt: t.catalogo.cifras.centrifugas },
-  {
-    n: String(categorias.generales.length + categorias.especiales.length),
-    txt: t.catalogo.cifras.aplicaciones,
-  },
-  { n: '1949', txt: t.catalogo.cifras.desde },
-  {
-    n: t.catalogo.cifras.stock.split(' ')[0],
-    txt: t.catalogo.cifras.stock.split(' ').slice(1).join(' '),
-  },
-];
 // La máquina del 3D, con su aplicación y el enlace a su ficha
 const digicen = modelos.find((m) => m.slug === 'digicen-22')!;
 const recorrido = ['PP 367', 'PC 497', 'PI 448', 'PE 494', 'PP 821', 'PC 279'];
@@ -69,17 +57,6 @@ const recorrido = ['PP 367', 'PC 497', 'PI 448', 'PE 494', 'PP 821', 'PC 279'];
         <a class="btn-todas" href="#catalogo">
           {s.verTodas(modelos.length)}
         </a>
-        <i class="raya" aria-hidden="true"></i>
-        <ul class="cifras">
-          {cifras.map((c) => (
-            <li>
-              <span>
-                <b>{c.n}</b>
-                <small>{c.txt}</small>
-              </span>
-            </li>
-          ))}
-        </ul>
       </div>
 
       <div class="columna">
@@ -430,7 +407,7 @@ const recorrido = ['PP 367', 'PC 497', 'PI 448', 'PE 494', 'PP 821', 'PC 279'];
     pointer-events: auto;
   }
 
-  /* Texto: título, entrada, botón al catálogo, raya roja y cifras (sin iconos: las cifras se sostienen solas) */
+  /* Texto: título, entrada y botón al catálogo */
   .texto {
     display: flex;
     flex-direction: column;
@@ -491,53 +468,6 @@ const recorrido = ['PP 367', 'PC 497', 'PI 448', 'PE 494', 'PP 821', 'PC 279'];
   .btn-todas:focus-visible {
     outline: 2px solid #fff;
     outline-offset: 3px;
-  }
-  /* Raya roja con destello blanco, la de los pasos entre secciones de la portada */
-  .raya {
-    position: relative;
-    display: block;
-    height: 2px;
-    margin-top: 46px;
-    overflow: hidden;
-    background: linear-gradient(90deg, var(--red) 70%, transparent);
-    box-shadow: 0 0 18px rgba(221, 4, 10, 0.55);
-    transform-origin: left;
-  }
-  .raya::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    width: 22%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.9), transparent);
-    translate: -120% 0;
-  }
-  .cifras {
-    display: grid;
-    grid-template-columns: repeat(2, max-content);
-    gap: 22px 40px;
-    margin: 0;
-    padding: 26px 0 0;
-    list-style: none;
-  }
-  .cifras li {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    padding-left: 16px;
-    border-left: 1px solid rgba(255, 255, 255, 0.22);
-  }
-  .cifras b {
-    display: block;
-    font-size: 32px;
-    line-height: 1;
-    font-variant-numeric: tabular-nums;
-  }
-  .cifras small {
-    display: block;
-    margin-top: 4px;
-    font-size: 14px;
-    line-height: 1.1;
-    color: var(--on-dark);
   }
 
   /* Columna de la máquina: grados y zoom arriba, mandos o recorrido abajo */
@@ -880,15 +810,6 @@ const recorrido = ['PP 367', 'PC 497', 'PI 448', 'PE 494', 'PP 821', 'PC 279'];
     .btn-todas {
       animation: aparece 0.9s 0.4s var(--ease) both;
     }
-    .raya {
-      animation: dibuja 1.2s 0.6s var(--ease) both;
-    }
-    .raya::after {
-      animation: recorre 5s var(--ease) 1.8s infinite;
-    }
-    .cifras {
-      animation: aparece 0.9s 0.5s var(--ease) both;
-    }
     .mandos,
     .zoom {
       animation: aparece 0.6s var(--ease) both;
@@ -909,20 +830,6 @@ const recorrido = ['PP 367', 'PC 497', 'PI 448', 'PE 494', 'PP 821', 'PC 279'];
     from {
       opacity: 0;
       transform: translateY(14px);
-    }
-  }
-  @keyframes dibuja {
-    from {
-      transform: scaleX(0);
-    }
-  }
-  @keyframes recorre {
-    0% {
-      translate: -120% 0;
-    }
-    45%,
-    100% {
-      translate: 560% 0;
     }
   }
   @keyframes halo {
@@ -1088,16 +995,6 @@ const recorrido = ['PP 367', 'PC 497', 'PI 448', 'PE 494', 'PP 821', 'PC 279'];
     .btn-todas {
       margin-top: 24px;
     }
-    .raya {
-      margin-top: 30px;
-    }
-    .cifras {
-      gap: 12px 40px;
-      padding-top: 18px;
-    }
-    .cifras b {
-      font-size: 28px;
-    }
     .columna {
       padding-block: 24px 28px;
     }
@@ -1130,24 +1027,6 @@ const recorrido = ['PP 367', 'PC 497', 'PI 448', 'PE 494', 'PP 821', 'PC 279'];
       margin-top: 18px;
       padding: 0 20px;
       font-size: 16px;
-    }
-    /* En móvil las cifras van en una fila corta, sin la raya, para que se vea pronto el catálogo */
-    .raya {
-      display: none;
-    }
-    .cifras {
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 10px;
-      padding-top: 22px;
-    }
-    .cifras li {
-      display: block;
-    }
-    .cifras b {
-      font-size: 20px;
-    }
-    .cifras small {
-      font-size: 12px;
     }
     .escena {
       position: relative;
@@ -1208,8 +1087,7 @@ const recorrido = ['PP 367', 'PC 497', 'PI 448', 'PE 494', 'PP 821', 'PC 279'];
   }
 
   /* Teléfono: el 3D sigue arriba, pero el bloque se compacta para que el primer producto asome en la primera
-     pantalla. El título va en una línea, la entrada se queda y sobran el botón al catálogo (está justo debajo) y las
-     cifras (repiten la entrada). La escena es más baja sin que la máquina encoja: la placa y el zoom van encima, en
+     pantalla. El título va en una línea, la entrada se queda y sobra el botón al catálogo (está justo debajo). La escena es más baja sin que la máquina encoja: la placa y el zoom van encima, en
      las esquinas de arriba, y los mandos caben en dos filas */
   @media (max-width: 640px) {
     .hero {
@@ -1252,9 +1130,7 @@ const recorrido = ['PP 367', 'PC 497', 'PI 448', 'PE 494', 'PP 821', 'PC 279'];
       font-size: 14px;
       line-height: 1.4;
     }
-    .btn-todas,
-    .raya,
-    .cifras {
+    .btn-todas {
       display: none;
     }
     .escena {

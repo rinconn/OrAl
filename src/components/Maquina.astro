@@ -31,6 +31,7 @@ const t = textos(lang);
 const tf = t.catalogo.ficha;
 const m = vs?.[0].m;
 const href = ruta(lang, `/centrifugas/${m?.slug ?? p!.slug}/`);
+const may = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 const cifras = (v: Version) => [
   { k: tf.capacidad, v: v.capacidad, u: '' },
   { k: tf.velocidad, v: numero(lang, v.m.rpm), u: 'rpm' },
@@ -40,13 +41,14 @@ const cifras = (v: Version) => [
 
 <a class:list={['pieza', { lab: p }]} href={href} style={`--fam: ${color}`}>
   <span class="estudio">
+    <span class="anillo" aria-hidden="true"></span>
     {vs ? (
       vs.map((v, i) => (
         <>
           {vs.length === 1 && (
             <span class:list={['temp', v.m.temperatura]}>
               <IconoTemp t={v.m.temperatura} size={15} />
-              {t.temperatura[v.m.temperatura]}
+              {may(t.temperatura[v.m.temperatura])}
             </span>
           )}
           <img
@@ -87,16 +89,16 @@ const cifras = (v: Version) => [
     </span>
   )}
 
-  <!-- Placa de datos: cada cifra con su nombre arriba y la unidad pequeña al lado -->
+  <!-- Las tres cifras en mosaicos: la cifra grande arriba y su nombre debajo (en el HTML, el nombre va primero) -->
   {vs ? (
     vs.map((v, i) => (
       <span class="placa" data-v={i} hidden={i > 0}>
         {cifras(v).map((c) => (
-          <span class:list={['cifra', { largo: c.v.length > 11, rpm: c.u === 'rpm' }]}>
+          <span class:list={['cifra', { largo: c.v.length > 11 }]}>
             <small>{c.k}</small>
             <b>
-              <span class="valor">{c.v}</span>
-              {c.u && <i>{'\u00a0' + c.u}</i>}
+              {c.v}
+              {c.u && <i>{' ' + c.u}</i>}
             </b>
           </span>
         ))}
@@ -107,11 +109,13 @@ const cifras = (v: Version) => [
   )}
 
   <span class="ver">
-    <span>{tf.verProducto}</span>
-    <span class="flecha" aria-hidden="true">
-      <svg viewBox="0 0 24 24" width="18" height="18">
-        <path d="M4 12h15M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2"></path>
-      </svg>
+    <span class="boton">
+      <span class="txt">{tf.verProducto}</span>
+      <span class="flecha" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="18" height="18">
+          <path d="M4 12h15M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2"></path>
+        </svg>
+      </span>
     </span>
   </span>
 </a>
@@ -130,8 +134,10 @@ const cifras = (v: Version) => [
     display: flex;
     flex-direction: column;
     height: 100%;
+    overflow: hidden;
     background: #fff;
-    border: 2px solid var(--marco);
+    border: 1px solid color-mix(in oklch, var(--fam-vivo) 22%, #e2e5e8);
+    border-radius: 14px;
     color: var(--ink);
     text-decoration: none;
     outline: 0;
@@ -178,7 +184,7 @@ const cifras = (v: Version) => [
     object-position: bottom;
     translate: -50% 0;
     transform-origin: bottom;
-    transition: transform 0.5s var(--sube);
+    transition: transform 0.6s var(--sube);
   }
   .lab .estudio img {
     height: 74%;
@@ -195,13 +201,12 @@ const cifras = (v: Version) => [
     gap: 7px;
     height: 30px;
     padding: 0 11px 0 9px;
+    border-radius: 8px;
     background: #fff;
     font-size: 14px;
     font-weight: 700;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
     color: var(--ink);
-    box-shadow: 0 1px 2px rgba(17, 19, 21, 0.12);
+    box-shadow: 0 2px 8px rgba(17, 19, 21, 0.18);
   }
   .temp :global(svg) {
     color: var(--tc);
@@ -288,136 +293,118 @@ const cifras = (v: Version) => [
     border-top: 0;
   }
 
-  /* Placa de datos: banda gris de borde a borde con tres casillas */
+  /* ——— Parte de abajo: las tres cifras en mosaicos gris suave (la cifra grande, su nombre debajo) y una fila de
+     botones redondeados con aire alrededor, sin rayas ni divisores ——— */
+  .pieza {
+    --boton: 40px;
+    --aire: 16px;
+    --suave: #eceef1;
+  }
   .placa {
     display: grid;
-    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1.1fr) minmax(0, 1fr);
-    margin-top: 4px;
-    background: #f3f4f5;
-    border-top: 1px solid var(--borde);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+    margin: auto var(--aire) 0;
+    padding-top: 4px;
   }
   .cifra {
-    display: grid;
-    align-content: start;
-    gap: 6px;
-    padding: 14px 10px 14px 20px;
+    display: flex;
+    flex-direction: column-reverse;
+    justify-content: flex-end;
+    gap: 3px;
+    min-width: 0;
+    padding: 11px 12px 10px;
+    border-radius: 10px;
+    background: var(--suave);
+    box-shadow: inset 0 0 0 1px #d8dce1;
     font-variant-numeric: tabular-nums;
-  }
-  .cifra + .cifra {
-    padding-left: 12px;
-    border-left: 1px solid var(--borde);
+    transition: background-color 0.35s ease;
   }
   .cifra small {
+    overflow: hidden;
     font-size: 12px;
-    font-weight: 400;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
     color: var(--muted);
     white-space: nowrap;
+    text-overflow: ellipsis;
   }
   .cifra b {
-    font-size: clamp(19px, 1.5vw, 22px);
-    font-weight: 400;
-    line-height: 1.1;
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
     white-space: nowrap;
     color: var(--ink);
   }
   /* Capacidades largas ("12 butirómetros"): un punto más pequeñas y, si no caben, en dos líneas */
   .cifra.largo b {
-    font-size: 17px;
+    font-size: 15px;
     white-space: normal;
   }
   /* La unidad va pegada a su cifra (espacio duro), nunca sola en otra línea */
   .cifra i {
-    white-space: nowrap;
-    font-size: 15px;
+    font-size: 12px;
     font-style: normal;
     font-weight: 400;
-    color: var(--body);
+    color: var(--muted);
   }
   .placa.modelo {
     display: block;
-    padding: 16px 24px;
-    font-size: 17px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    background: var(--suave);
+    font-size: 16px;
     font-weight: 700;
   }
-  /* Tarjeta estrecha (cuatro columnas a 1360-1500 px): las cifras y sus márgenes, un punto más pequeños, para que
-     "4 × 1000 ml" o "21.948 × g" quepan en su casilla */
+  /* Tarjeta estrecha (cuatro columnas a 1360-1500 px): un punto más pequeño para que "21.948 × g" quepa */
   @container (max-width: 330px) {
     .cifra {
-      padding: 12px 6px 12px 12px;
+      padding: 10px 9px 9px;
     }
-    .cifra + .cifra {
-      padding-left: 8px;
+    .cifra b {
+      font-size: 16px;
     }
     .cifra small {
       font-size: 11px;
-      letter-spacing: 0.03em;
-    }
-    .cifra b {
-      font-size: 17px;
-    }
-    .cifra.largo b {
-      font-size: 15px;
-    }
-    .cifra i {
-      font-size: 13px;
     }
   }
 
-  /* Franja de abajo: a la izquierda van "Presupuesto" y, en las centrífugas, "Comparar" (los pone la página encima,
-     hasta --izq); a la derecha "Ver producto →" */
-  .pieza {
-    --izq: 64%;
-  }
-  .pieza.lab {
-    --izq: 50%;
-  }
+  /* Fila de botones: a la izquierda la página pone "Presupuesto" y, en las centrífugas, "Comparar"; a la derecha,
+     "Ver producto": en las centrífugas solo la flecha, en una casilla que se pone roja al pasar por la tarjeta; en
+     los equipos, con su texto */
   .ver {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: flex-end;
-    gap: 8px;
-    height: 56px;
-    padding: 0 20px 0 calc(var(--izq) + 16px);
-    border-top: 1px solid var(--borde);
-    font-size: 17px;
+    height: calc(var(--boton) + var(--aire) + 12px);
+    padding: 12px var(--aire) 0;
+    font-size: 15px;
     font-weight: 700;
-    color: var(--red);
-    position: relative;
-    isolation: isolate;
-    transition: color 0.3s ease;
+    color: var(--ink);
   }
-  /* Al pasar por la tarjeta, la mitad de "Ver producto" se llena de rojo de izquierda a derecha */
-  .ver::before {
-    content: '';
+  .boton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: var(--boton);
+    min-width: var(--boton);
+    padding: 0 14px;
+    border-radius: 10px;
+    background: var(--suave);
+    transition:
+      color 0.25s ease,
+      background-color 0.25s ease,
+      box-shadow 0.25s ease;
+  }
+  .pieza:not(.lab) .boton {
+    padding: 0;
+  }
+  .pieza:not(.lab) .txt {
     position: absolute;
-    inset: 0 0 0 var(--izq);
-    z-index: -1;
-    background: var(--red);
-    scale: 0 1;
-    transform-origin: left;
-    transition: scale 0.45s var(--sube);
-  }
-  /* Tarjeta de menos de 460 px (tres o cuatro columnas): en las centrífugas "Ver producto" se queda en la flecha, en
-     una casilla de 56 px, para que quepan Presupuesto y Comparar. Solo en escritorio: el teléfono tiene su franja */
-  @media (min-width: 641px) {
-    @container (max-width: 459px) {
-      .pieza:not(.lab) {
-        --izq: calc(100% - 56px);
-      }
-      .pieza:not(.lab) .ver {
-        justify-content: center;
-        padding: 0 0 0 var(--izq);
-      }
-      .pieza:not(.lab) .ver > span:first-child {
-        position: absolute;
-        width: 1px;
-        height: 1px;
-        overflow: hidden;
-        clip-path: inset(50%);
-      }
-    }
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
   }
   .flecha {
     display: grid;
@@ -427,28 +414,103 @@ const cifras = (v: Version) => [
     transition: translate 0.45s var(--sube);
   }
 
+  /* ——— Vida al pasar el ratón ———
+     · Borde: una luz del color de la familia recorre el borde siguiendo el cursor (--mx/--my, del script de abajo).
+     · Centrífuga: quieta, con un anillo rojo girando debajo, como al centrifugar.
+     · Tarjeta: sube 3 px con una sombra tintada del color de su familia (solo se mueve una cosa).
+     · Flecha: se llena de rojo y la flecha sale por la derecha y vuelve a entrar por la izquierda */
+  @property --giro {
+    syntax: '<angle>';
+    inherits: false;
+    initial-value: 0deg;
+  }
+  .pieza::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    z-index: 5;
+    padding: 1.5px;
+    border-radius: inherit;
+    background: radial-gradient(240px circle at var(--mx, 50%) var(--my, 0%), var(--fam-vivo), transparent 70%);
+    mask:
+      linear-gradient(#000 0 0) content-box exclude,
+      linear-gradient(#000 0 0);
+    opacity: 0;
+    transition: opacity 0.35s ease;
+    pointer-events: none;
+  }
+  .anillo {
+    position: absolute;
+    left: 50%;
+    bottom: 6%;
+    width: 74%;
+    height: 17%;
+    border-radius: 50%;
+    translate: -50% 0;
+    background: conic-gradient(
+      from var(--giro),
+      transparent 0deg,
+      rgba(221, 4, 10, 0.15) 120deg,
+      #ff2a30 200deg,
+      transparent 230deg,
+      transparent 300deg,
+      rgba(255, 255, 255, 0.55) 340deg,
+      transparent 360deg
+    );
+    mask: radial-gradient(closest-side, transparent 80%, #000 84%, #000 96%, transparent 100%);
+    filter: drop-shadow(0 0 6px rgba(255, 42, 48, 0.8));
+    opacity: 0;
+    scale: 0.8;
+    transition:
+      opacity 0.4s ease,
+      scale 0.6s var(--sube);
+    pointer-events: none;
+  }
+  @keyframes gira {
+    to {
+      --giro: 360deg;
+    }
+  }
+  @keyframes sale-entra {
+    45% {
+      translate: 130% 0;
+      opacity: 0;
+    }
+    46% {
+      translate: -130% 0;
+      opacity: 0;
+    }
+  }
+  .boton {
+    overflow: hidden;
+  }
+
   @media (hover: hover) and (pointer: fine) {
     .pieza:hover {
-      border-color: #bfc4c8;
+      border-color: color-mix(in oklch, var(--fam-vivo) 45%, #dfe2e5);
+      transform: translateY(-3px);
       box-shadow:
-        0 2px 4px rgba(17, 19, 21, 0.06),
-        0 24px 48px -20px rgba(17, 19, 21, 0.3);
+        0 2px 6px rgba(17, 19, 21, 0.06),
+        0 34px 60px -30px color-mix(in oklch, var(--fam-vivo) 70%, transparent);
     }
-    .pieza:hover .estudio img {
-      transform: scale(1.04);
+    .pieza:hover::before {
+      opacity: 1;
     }
-    .pieza:hover .estudio::after {
-      scale: 0.92;
-      opacity: 0.8;
+    .pieza:hover .anillo {
+      opacity: 1;
+      scale: 1;
+      animation: gira 1.6s linear infinite;
     }
-    .pieza:hover .ver {
+    .pieza:hover .boton {
       color: #fff;
-    }
-    .pieza:hover .ver::before {
-      scale: 1 1;
+      background: var(--red);
+      box-shadow: 0 8px 18px -8px rgba(221, 4, 10, 0.7);
     }
     .pieza:hover .flecha svg {
-      translate: 4px 0;
+      animation: sale-entra 0.6s var(--sube);
+    }
+    .pieza:hover .cifra {
+      background: color-mix(in oklch, var(--fam-vivo) 9%, var(--suave));
     }
   }
   .pieza:focus-visible {
@@ -536,49 +598,20 @@ const cifras = (v: Version) => [
     }
     .placa {
       grid-area: 4 / 1 / 5 / -1;
-      margin-top: 0;
-    }
-    .cifra {
-      gap: 3px;
-      padding: 10px 6px 10px 14px;
-    }
-    .cifra + .cifra {
-      padding-left: 10px;
-    }
-    .cifra small {
-      font-size: 11px;
+      margin: 14px 14px 0;
+      padding: 0;
     }
     .cifra b {
-      font-size: 18px;
+      font-size: 17px;
     }
     .cifra.largo b {
       font-size: 15px;
     }
-    .cifra i {
-      font-size: 13px;
+    .pieza {
+      --aire: 14px;
     }
-    .placa.modelo {
-      padding: 12px 14px;
-      font-size: 16px;
-    }
-    /* Franja de abajo: en las centrífugas solo la flecha (toda la tarjeta lleva a la ficha); en los equipos, con
-       su texto, que ahí cabe */
     .ver {
       grid-area: 5 / 1 / 6 / -1;
-      justify-content: center;
-      height: 50px;
-      padding: 0 12px 0 var(--izq);
-      font-size: 15px;
-    }
-    .ver::before {
-      inset: 0 0 0 var(--izq);
-    }
-    .pieza:not(.lab) .ver > span:first-child {
-      position: absolute;
-      width: 1px;
-      height: 1px;
-      overflow: hidden;
-      clip-path: inset(50%);
     }
   }
   @media (prefers-reduced-motion: reduce) {
@@ -586,12 +619,33 @@ const cifras = (v: Version) => [
     .estudio img,
     .estudio::after,
     .flecha svg,
-    .ver::before {
+    .anillo {
       transition-property: border-color, box-shadow, opacity;
     }
     .pieza:hover,
     .pieza:hover .estudio img {
       transform: none;
     }
+    .pieza:hover .anillo,
+    .pieza:hover .flecha svg {
+      animation: none;
+    }
   }
 </style>
+
+<script>
+  // La luz del borde sigue al cursor: cada tarjeta guarda dónde está el ratón dentro de ella
+  if (matchMedia('(hover: hover) and (pointer: fine)').matches) {
+    addEventListener(
+      'pointermove',
+      (ev) => {
+        const c = (ev.target as Element | null)?.closest?.<HTMLElement>('.pieza');
+        if (!c) return;
+        const r = c.getBoundingClientRect();
+        c.style.setProperty('--mx', `${ev.clientX - r.left}px`);
+        c.style.setProperty('--my', `${ev.clientY - r.top}px`);
+      },
+      { passive: true },
+    );
+  }
+</script>

@@ -240,13 +240,6 @@ export const en: Textos = {
       lacteos: 'Dairy/Vet',
     },
     grupos: { otros: 'More products' },
-    cifras: {
-      desde: 'manufacturing in Daganzo',
-      stock: 'Always in stock',
-      centrifugas: 'centrifuges',
-      aplicaciones: 'applications',
-      otros: 'accessories and equipment',
-    },
     filtros: {
       cortos: { accesorios: 'Accessories', laboratorio: 'Laboratory' },
       titulo: 'Filter by',

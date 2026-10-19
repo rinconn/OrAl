@@ -12,7 +12,6 @@ const year = new Date().getFullYear();
 <footer class="foot" id="contacto">
   <div class="wrap top">
     <div>
-      <img class="logo" src="/img/marca/logo-ortoalresa-oscuro.svg" alt="orto alresa" width="98" height="44" />
       <p>
         {contacto.empresa}
         <br />
@@ -25,11 +24,13 @@ const year = new Date().getFullYear();
       </div>
     </div>
     <div class="llamar">
-      <a class="tel" href={contacto.telefonoHref}>
-        {contacto.telefono}
-      </a>
+      <img class="logo" src="/img/marca/logo-ortoalresa-oscuro.svg" alt="orto alresa" width="98" height="44" />
       <p>
-        {t.pie.pedidos} <a href={`mailto:${contacto.comercial}`}>{contacto.comercial}</a>
+        {t.pie.pedidos}
+        <span class="vias">
+          <a href={contacto.telefonoHref}>{contacto.telefono}</a>
+          <a href={`mailto:${contacto.comercial}`}>{contacto.comercial}</a>
+        </span>
       </p>
     </div>
   </div>
@@ -166,12 +167,8 @@ const year = new Date().getFullYear();
     padding-block: 72px 48px;
     border-bottom: 1px solid var(--carbon-line);
   }
-  .logo {
-    height: 52px;
-    width: auto;
-  }
   .top p {
-    margin: 18px 0 0;
+    margin: 0;
     line-height: 1.6;
   }
   .sellos {
@@ -184,40 +181,36 @@ const year = new Date().getFullYear();
     height: 56px;
     width: auto;
   }
+  /* El logo en grande; debajo, teléfono y correo de pedidos en una línea */
   .llamar {
     text-align: right;
   }
-  .tel {
+  .logo {
     display: inline-block;
-    position: relative;
-    color: #fff;
-    font-size: clamp(30px, 3.4vw, 44px);
-    font-weight: 700;
-  }
-  /* Subrayado rojo que se dibuja al pasar el ratón */
-  .tel::after {
-    content: '';
-    position: absolute;
-    left: 0;
-    right: 100%;
-    bottom: -6px;
-    height: 3px;
-    background: var(--red);
-    transition: right 0.35s var(--ease);
-  }
-  .tel:hover::after {
-    right: 0;
+    height: clamp(60px, 5.6vw, 80px);
+    width: auto;
   }
   .llamar p {
-    margin-top: 14px;
+    margin-top: 18px;
   }
-  .llamar p a {
+  .vias {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 4px 0;
+    margin-left: 6px;
+  }
+  .vias a {
     color: #fff;
+    font-weight: 700;
   }
-  .tel:hover,
-  .tel:active,
-  .llamar p a:hover,
-  .llamar p a:active {
+  .vias a + a::before {
+    content: '·';
+    margin-inline: 10px;
+    color: var(--steel);
+    font-weight: 400;
+  }
+  .vias a:hover,
+  .vias a:active {
     color: var(--red);
   }
 
@@ -324,8 +317,13 @@ const year = new Date().getFullYear();
     .cols {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
+    /* El logo abre el pie; la dirección y los sellos, debajo */
     .llamar {
+      order: -1;
       text-align: left;
+    }
+    .vias {
+      margin-left: 0;
     }
   }
   @media (max-width: 480px) {

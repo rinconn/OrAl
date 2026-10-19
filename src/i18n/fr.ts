@@ -241,13 +241,6 @@ export const fr: Textos = {
       lacteos: 'Laitiers/Vét.',
     },
     grupos: { otros: 'Autres produits' },
-    cifras: {
-      desde: 'de fabrication à Daganzo',
-      stock: 'Toujours en stock',
-      centrifugas: 'centrifugeuses',
-      aplicaciones: 'applications',
-      otros: 'accessoires et équipements',
-    },
     filtros: {
       cortos: { accesorios: 'Accessoires', laboratorio: 'Laboratoire' },
       titulo: 'Filtrer par',

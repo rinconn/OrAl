@@ -246,13 +246,6 @@ export const es = {
       lacteos: 'Lácteos/Vet',
     },
     grupos: { otros: 'Más productos' },
-    cifras: {
-      desde: 'fabricando en Daganzo',
-      stock: 'Siempre en stock',
-      centrifugas: 'centrífugas',
-      aplicaciones: 'aplicaciones',
-      otros: 'accesorios y equipos',
-    },
     filtros: {
       cortos: { accesorios: 'Accesorios', laboratorio: 'Laboratorio' },
       titulo: 'Filtrar por',
