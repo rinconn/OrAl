@@ -2239,8 +2239,9 @@ const tubos = familiasTubo
   /* ——— Atajos a las familias: el primer nivel, encima de los filtros. Pestañas de texto sobre una línea fina, cada
      una con su número en gris; al pasar el ratón, la raya roja de la marca
      debajo, como en el menú de arriba ——— */
+  /* Con relleno y no margen: el margen se sumaba al de la sección y la raya roja de arriba caía encima de la fila */
   .atajos-fila {
-    margin-top: clamp(48px, 6vw, 88px);
+    padding-top: clamp(40px, 4.5vw, 64px);
   }
   .atajos {
     display: flex;
@@ -2251,15 +2252,17 @@ const tubos = familiasTubo
   }
   @media (max-width: 1024px) {
     .atajos-fila {
-      margin-top: 32px;
+      padding-top: 32px;
     }
   }
-  /* En móvil, una sola fila que se desliza de borde a borde: en varias filas las siete familias ocupaban media
-     pantalla antes del primer producto */
   @media (max-width: 640px) {
     .atajos-fila {
-      margin-top: 10px;
+      padding-top: 16px;
     }
+  }
+  /* En móvil y tableta, una sola fila que se desliza de borde a borde: en varias filas las siete familias ocupaban
+     media pantalla antes del primer producto */
+  @media (max-width: 1024px) {
     .atajos {
       flex-wrap: nowrap;
       justify-content: flex-start;
@@ -2308,60 +2311,31 @@ const tubos = familiasTubo
       border-bottom-color: var(--steel);
     }
   }
-  /* Desde tableta: las familias, un selector segmentado sobre un carril gris claro, con el mismo lenguaje que la
-     cápsula de filtros de debajo. Cada número, en una pastilla; al pasar el ratón, la familia se levanta en blanco */
+  /* Desde tableta: pestañas de texto alineadas a la izquierda, al mismo ancho que el buscador de debajo, sobre su
+     línea fina. Sin cápsula gris: no flotan colgadas de la raya roja */
   @media (min-width: 641px) {
     .atajos {
-      width: fit-content;
-      max-width: 100%;
-      margin-inline: auto;
-      gap: 2px;
-      padding: 5px;
-      background: #f3f4f5;
-      border-bottom: 0;
-      border-radius: 12px;
+      justify-content: flex-start;
+      gap: 0 clamp(20px, 2.4vw, 32px);
     }
     .atajos a {
-      gap: 8px;
-      height: 42px;
-      margin: 0;
-      padding: 0 14px;
-      border: 0;
-      border-radius: 8px;
+      height: 46px;
       font-size: 16px;
-      transition:
-        background-color 0.2s ease,
-        box-shadow 0.2s ease;
-    }
-    .atajos .n {
-      display: inline-grid;
-      place-items: center;
-      min-width: 22px;
-      height: 20px;
-      padding: 0 6px;
-      border-radius: 999px;
-      background: #fff;
-      font-size: 12px;
-      font-weight: 700;
-      transition: background-color 0.2s ease;
     }
   }
   @media (min-width: 641px) and (max-width: 1280px) {
+    .atajos {
+      gap: 0 18px;
+    }
     .atajos a {
-      gap: 6px;
-      padding: 0 7px;
       font-size: 15px;
     }
   }
-  @media (min-width: 641px) and (hover: hover) and (pointer: fine) {
-    .atajos a:hover {
-      background: #fff;
-      box-shadow: 0 1px 3px rgba(17, 19, 21, 0.14);
-    }
-    .atajos a:hover .n {
-      background: #f3f4f5;
-      color: var(--ink);
-    }
+  /* Una familia sin nada con los filtros puestos se queda en su sitio, apagada, con su 0: la fila no salta */
+  .atajos a[aria-disabled='true'] {
+    color: var(--muted);
+    opacity: 0.45;
+    pointer-events: none;
   }
 
   /* ——— Selector de versión: en el mismo sitio y con el mismo aspecto que la etiqueta de temperatura de las tarjetas

@@ -803,7 +803,14 @@ const iconos: Record<Temperatura, string> = {
       for (const s of salas) {
         const a = document.querySelector<HTMLElement>(`.atajos [data-ir="${s.dataset.sala}"]`);
         if (!a) continue;
-        a.hidden = s.hidden;
+        // Sin resultados se queda apagada en su sitio, en vez de desaparecer y mover la fila
+        if (s.hidden) {
+          a.setAttribute('aria-disabled', 'true');
+          a.tabIndex = -1;
+        } else {
+          a.removeAttribute('aria-disabled');
+          a.removeAttribute('tabindex');
+        }
         a.querySelector('.n')!.textContent = String(cuantas(visibles.filter(de(s))));
       }
       // Lo puesto, en palabras, para la cabecera de lo que se descarga (tabla en PDF o Excel)
@@ -2537,18 +2544,18 @@ const iconos: Record<Temperatura, string> = {
     display: contents;
   }
 
-  /* ——— Escritorio: el buscador y, a su lado, un chip por filtro. En reposo cada chip es ligero (discontinuo, con
-     «+»); con algo elegido se rellena en rojo suave, dice su valor y lleva una × para quitarlo. Al pulsarlo se abre
-     su menú de siempre. Debajo, tras una línea fina, las herramientas a la izquierda y el total a la derecha ——— */
+  /* ——— Escritorio: arriba el buscador, a todo el ancho, para que no se encoja al poner filtros. Debajo, un chip por
+     filtro y, a la derecha, el total y Borrar filtros. En reposo cada chip es ligero (discontinuo, con «+»); con algo
+     elegido pasa a borde continuo oscuro, dice su valor y lleva una × para quitarlo. Sin rojo: los chips son neutros.
+     Al pulsarlo se abre su menú de siempre. Tras una línea fina, las herramientas ——— */
   @media (min-width: 1025px) {
     .filtros {
       --chip: 40px;
-      --tinte: #fdecec;
       margin-top: 20px;
     }
     .barra {
       align-items: center;
-      gap: 8px;
+      gap: 12px 8px;
       padding: 0;
       background: none;
       border: 0;
@@ -2556,10 +2563,10 @@ const iconos: Record<Temperatura, string> = {
     }
     .barra::after {
       content: '';
-      order: 3;
+      order: 5;
       flex-basis: 100%;
       height: 1px;
-      margin: 10px 0 4px;
+      margin: 2px 0 0;
       background: var(--line);
     }
     .panel,
@@ -2567,16 +2574,18 @@ const iconos: Record<Temperatura, string> = {
       display: contents;
     }
 
-    /* Fila 1 */
-    .buscar,
+    /* Fila 1: el buscador solo. Fila 2: los chips, y el total y Borrar a la derecha */
+    .buscar {
+      order: 1;
+    }
     .temperatura,
     .aplic,
     .tubo,
     .minimos {
-      order: 1;
+      order: 2;
     }
     .buscar {
-      flex: 1 1 220px;
+      flex: 1 1 100%;
       height: 46px;
       border: 1px solid var(--osc);
       border-radius: 10px;
@@ -2642,15 +2651,18 @@ const iconos: Record<Temperatura, string> = {
     .min-btn:not(.on) .min-txt {
       display: none;
     }
-    /* Con algo elegido: relleno rojo suave, la etiqueta y el valor en negrita, y sitio para la × */
+    /* Con algo elegido: borde continuo oscuro sobre blanco, la etiqueta en gris y el valor en negrita, y sitio para
+       la ×. Los cuatro iguales, sin la raya roja de debajo ni relleno */
     .temp-btn.on,
     .aplic-btn.on,
     .tubo-btn.on,
     .min-btn.on {
       padding-right: 38px;
-      border: 1px solid transparent;
-      background: var(--tinte);
-      color: var(--red-d);
+      border: 1px solid var(--ink);
+      background: #fff;
+      box-shadow: none;
+      font-weight: 400;
+      color: var(--body);
     }
     .temp-btn.on::before,
     .aplic-btn.on::before,
@@ -2663,6 +2675,7 @@ const iconos: Record<Temperatura, string> = {
     .tubo-txt,
     .min-txt {
       font-weight: 700;
+      color: var(--ink);
     }
     .temp-btn[aria-expanded='true'],
     .aplic-btn[aria-expanded='true'],
@@ -2674,7 +2687,7 @@ const iconos: Record<Temperatura, string> = {
     .quitar {
       position: relative;
       z-index: 1;
-      margin-left: -34px;
+      margin: 0 8px 0 -34px;
       width: 26px;
       height: 26px;
       place-items: center;
@@ -2682,7 +2695,7 @@ const iconos: Record<Temperatura, string> = {
       border: 0;
       border-radius: 50%;
       background: none;
-      color: var(--red-d);
+      color: var(--ink);
       cursor: pointer;
       transition: background-color 0.2s ease;
     }
@@ -2770,7 +2783,7 @@ const iconos: Record<Temperatura, string> = {
         color 0.2s ease;
     }
     .ver-comparar {
-      order: 4;
+      order: 6;
       margin-left: -10px;
     }
     /* "Hasta 3 centrífugas" sigue para lectores de pantalla; a la vista basta con el 0/3 */
@@ -2785,14 +2798,14 @@ const iconos: Record<Temperatura, string> = {
       min-width: 0;
     }
     .orden {
-      order: 5;
+      order: 7;
     }
     .orden select {
       padding-right: 30px;
       background-position: right 10px center;
     }
     .vista {
-      order: 6;
+      order: 8;
       gap: 2px;
     }
     .vista button {
@@ -2807,13 +2820,13 @@ const iconos: Record<Temperatura, string> = {
       color: var(--ink);
     }
     .fin .descargar {
-      order: 7;
+      order: 9;
     }
     .d-botones {
       gap: 2px;
     }
     .cuenta {
-      order: 8;
+      order: 3;
       margin: 0 0 0 auto;
       font-size: 16px;
       color: var(--body);
@@ -2832,16 +2845,19 @@ const iconos: Record<Temperatura, string> = {
       overflow: visible;
       clip-path: none;
     }
+    /* Borrar filtros, en texto subrayado y oscuro: está a mano sin gritar en rojo */
     .borrar {
-      order: 9;
+      order: 4;
       margin: 0 -10px 0 0;
       padding: 0 10px;
       border-radius: 8px;
       background: none;
-      color: var(--red);
+      color: var(--ink);
     }
     .borrar span {
       height: auto;
+      text-decoration: underline;
+      text-underline-offset: 3px;
     }
   }
   /* Portátiles estrechos: chips un poco más compactos para que quepan en una línea */
@@ -2861,21 +2877,25 @@ const iconos: Record<Temperatura, string> = {
     }
   }
   @media (min-width: 1025px) and (hover: hover) and (pointer: fine) {
+    /* Al pasar el ratón, los cuatro igual: el discontinuo se vuelve continuo y oscuro, sin relleno gris ni sombra */
     .temp-btn:not(.on):hover,
     .aplic-btn:not(.on):hover,
     .tubo-btn:not(.on):hover,
     .min-btn:not(.on):hover {
+      border-style: solid;
       border-color: var(--ink);
+      background: #fff;
+      box-shadow: none;
       color: var(--ink);
     }
     .temp-btn.on:hover,
     .aplic-btn.on:hover,
     .tubo-btn.on:hover,
     .min-btn.on:hover {
-      background: #fbdcdd;
+      box-shadow: inset 0 0 0 1px var(--ink);
     }
     .quitar:hover {
-      background: rgba(221, 4, 10, 0.12);
+      background: #eceef0;
     }
     .temp:not([aria-pressed='true']):not(:disabled):hover {
       background: #f3f4f5;
