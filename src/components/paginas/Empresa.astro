@@ -1478,8 +1478,10 @@ const ods = Array.from({ length: 17 }, (_, i) => {
     position: relative;
     text-align: center;
   }
-  .pr-cab h2 {
-    display: inline-block;
+  .pr-cab {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
   }
   .pr-cab .eyebrow {
     color: var(--on-dark);
