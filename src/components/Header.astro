@@ -59,7 +59,7 @@ const actual = (href: string) => !href.startsWith('/#') && base.startsWith(href)
         ))}
       </ul>
       <div class="nav-extra">
-        <a class="btn red" href={ruta(lang, contacto.href)}>
+        <a class="btn red rel" href={ruta(lang, contacto.href)}>
           {t.cabecera.contacto}
         </a>
         <a href={contacto.telefonoHref}>{contacto.telefono}</a>
@@ -69,7 +69,7 @@ const actual = (href: string) => !href.startsWith('/#') && base.startsWith(href)
 
     <div class="der">
       <Buscador />
-      <a class="btn red contacto" href={ruta(lang, contacto.href)}>
+      <a class="btn red rel contacto" href={ruta(lang, contacto.href)}>
         {t.cabecera.contacto}
       </a>
     </div>

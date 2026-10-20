@@ -14,10 +14,10 @@ export const principal: { href: string; clave: keyof Textos['nav'] }[] = [
   { href: '/#rei-system', clave: 'rei' },
   { href: '/#smartconnect', clave: 'smartconnect' },
   { href: '/#configurador', clave: 'configurador' },
-  { href: '/#empresa', clave: 'empresa' },
+  { href: '/empresa/', clave: 'empresa' },
   { href: '/#distribuidores', clave: 'distribuidores' },
   { href: '/#aplicaciones', clave: 'noticias' },
-  { href: '/#contacto', clave: 'servicio' },
+  { href: '/servicio-tecnico/', clave: 'servicio' },
   // Guías y descargas juntas en una página, con una sección para cada cosa
   { href: '/descargas/', clave: 'descargas' },
 ];

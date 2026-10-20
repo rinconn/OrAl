@@ -56,6 +56,38 @@ export const fr: Textos = {
     error: "L'envoi a échoué. Écrivez-nous à",
     cerrar: 'Fermer',
   },
+  // Fenêtre « Devenir distributeur »
+  alta: {
+    eyebrow: 'Devenir distributeur',
+    titulo: ['Travaillons ', 'ensemble'],
+    lead: 'Laissez-nous les coordonnées de votre entreprise et notre service commercial prendra contact avec vous.',
+    despuesTitulo: 'Et ensuite ?',
+    despues: [
+      'Vous nous laissez les coordonnées de votre entreprise.',
+      'Notre service commercial étudie votre demande.',
+      'Nous vous contactons pour parler de votre zone et de la gamme.',
+    ],
+    directo: 'Vous préférez parler tout de suite ?',
+    empresa: 'Entreprise',
+    nombre: 'Nom et prénom',
+    email: 'E-mail',
+    telefono: 'Téléphone',
+    pais: 'Pays',
+    mensaje: 'Parlez-nous de votre entreprise',
+    mensajeAyuda: 'Les secteurs que vous servez, votre zone ou les appareils qui vous intéressent.',
+    opcional: 'facultatif',
+    acepto: 'J’ai lu et j’accepte la',
+    privacidad: 'politique de confidentialité',
+    enviar: 'Je veux être distributeur',
+    enviando: 'Envoi…',
+    obligatorio: 'Ce champ est obligatoire.',
+    correoMal: 'Vérifiez l’e-mail : il doit ressembler à nom@entreprise.com.',
+    privacidadMal: 'Vous devez accepter la politique de confidentialité pour l’envoyer.',
+    okTitulo: ['Demande ', 'reçue'],
+    okTexto: 'Merci. Notre service commercial vous écrira à',
+    error: 'L’envoi a échoué. Écrivez-nous à',
+    cerrar: 'Fermer',
+  },
   pie: {
     pedidos: 'Commandes et distributeurs :',
     titulos: { centrifugas: 'Centrifugeuses', empresa: 'Entreprise' },
@@ -366,6 +398,7 @@ export const fr: Textos = {
     },
     comparar: {
       version: 'Version',
+      cambiar: 'Voir cette version',
       comparar: 'Comparer',
       hasta: 'Jusqu’à 3 centrifugeuses',
       elegir: 'Choisissez jusqu’à 3 centrifugeuses',
@@ -645,14 +678,17 @@ export const fr: Textos = {
       'iso-13485': { nombre: 'ISO 13485', frase: 'Qualité des dispositifs médicaux.' },
       'iso-14001': { nombre: 'ISO 14001', frase: 'Management environnemental.' },
       descontaminacion: { nombre: 'Certificat de décontamination' },
-      'service-pattern': { nombre: 'Service pattern' },
+      'service-pattern': { nombre: 'Demande de service' },
       limpieza: { nombre: 'Manuel de nettoyage et de décontamination' },
-      'condiciones-venta': { nombre: 'Conditions générales de vente et de prestation de services' },
-      'garantia-productos': { nombre: 'Conditions générales de garantie des produits' },
-      'garantia-reparaciones': { nombre: 'Conditions de garantie des réparations et pièces détachées' },
-      'politica-organizacion': { nombre: 'Politique de l’organisation' },
-      'politica-ambiental': { nombre: 'Politique environnementale' },
-    } as Record<string, { nombre: string; frase?: string }>,
+      'condiciones-venta': { nombre: 'Conditions générales de vente et de prestation de services', corto: 'Vente' },
+      'garantia-productos': { nombre: 'Conditions générales de garantie des produits', corto: 'Garantie produits' },
+      'garantia-reparaciones': {
+        nombre: 'Conditions de garantie des réparations et pièces détachées',
+        corto: 'Réparations et pièces',
+      },
+      'politica-organizacion': { nombre: 'Politique de l’organisation', corto: 'Organisation' },
+      'politica-ambiental': { nombre: 'Politique environnementale', corto: 'Environnement' },
+    } as Record<string, { nombre: string; frase?: string; corto?: string }>,
     destacado: 'Le document le plus complet',
     lab: 'Laboratoire',
     actualizado: 'Mis à jour',
@@ -667,6 +703,10 @@ export const fr: Textos = {
     copiar: 'Copier le lien',
     copiado: 'Lien copié',
     rotores: 'Rotors',
+    libroAbrir: 'Ouvrir le catalogue',
+    libroSig: 'Page suivante',
+    libroAnt: 'Page précédente',
+    libroIndice: 'Aller à une famille',
     columnas: ['Rotor', 'Type', 'Vitesse', 'Force', 'Capacité'],
     etqEquipo: 'Équipement',
     alDossier: 'À votre sélection',
@@ -698,6 +738,296 @@ export const fr: Textos = {
     faltaTexto: 'Si vous ne trouvez pas ce que vous cherchez, écrivez-nous et nous vous l’enverrons.',
     tecnico: 'Service technique',
     comercial: 'Commercial',
+  },
+  servicio: {
+    title: 'Service technique · Ouvrir une demande d’intervention · Orto Alresa',
+    description:
+      'Ouvrez une demande au service technique d’Orto Alresa en trois étapes : vos coordonnées, l’appareil et l’incident. Sans rien imprimer ni scanner.',
+    titulo: ['Ouvrir une ', 'demande d’intervention'],
+    lead: 'Vos coordonnées, l’appareil et ce qui ne va pas. Le service technique de l’usine la reçoit aussitôt, sans rien imprimer ni scanner.',
+    seccionTitulo: ['Trois étapes, ', 'un seul envoi'],
+    seccionTexto: 'Vos coordonnées, l’appareil et ce qui ne va pas. Les champs facultatifs peuvent rester vides.',
+    plazo: ['Réponse sous ', '48 h'],
+    plazoTexto: 'Mise en service, incidents, réparations et formation technique en ligne.',
+    directo: 'Vous préférez écrire ou appeler ?',
+    pasos: ['Vos coordonnées', 'L’appareil', 'L’incident'],
+    paso: (n: number, total: number) => `Étape ${n} sur ${total}`,
+    intro: [
+      'Le distributeur, ou le service technique qui suit le client.',
+      'Vous le trouverez sur la plaque signalétique de l’appareil et sur sa facture.',
+      'Plus il y a de détails, plus vite c’est résolu.',
+    ],
+    distribuidor: 'Distributeur',
+    contacto: 'Personne à contacter',
+    ciudad: 'Ville',
+    modelo: 'Modèle',
+    modeloAyuda: 'Saisissez le nom ou choisissez-le dans la liste',
+    serie: 'Numéro de série (SN)',
+    accesorios: 'Accessoires',
+    accesoriosAyuda: 'Rotor, adaptateurs, godets…',
+    factura: 'Nº de facture',
+    pedido: 'Nº de commande',
+    instalacion: 'Date d’installation',
+    tipo: 'De quoi avez-vous besoin ?',
+    tipos: ['Réparation', 'Mise en service', 'Incident ou question', 'Formation technique en ligne'],
+    descripcion: 'Description de l’incident',
+    descripcionAyuda: 'Ce qui se passe, depuis quand, et si l’écran affiche un code d’erreur.',
+    vuelve: 'L’appareil doit-il retourner à l’usine ?',
+    si: 'Oui',
+    no: 'Non',
+    descontaminacion: 'Avant l’envoi : certificat de décontamination',
+    descontaminacionTexto:
+      'Selon les procédures de sécurité d’Orto Alresa et la norme ISO 13485 (point 7.5.1.2.3), tout appareil usagé qui retourne à l’usine doit être accompagné du certificat de décontamination. S’il arrive sans, il est décontaminé à l’usine et facturé en conséquence.',
+    confirmo: 'J’enverrai l’appareil nettoyé, décontaminé et avec son certificat.',
+    atras: 'Retour',
+    siguiente: 'Suivant',
+    enviar: 'Envoyer la demande',
+    enviando: 'Envoi…',
+    borrador: 'Ce que vous saisissez reste dans ce navigateur jusqu’à l’envoi.',
+    vaciar: 'Recommencer',
+    parte: 'Demande d’intervention',
+    nuevo: 'Nouvelle',
+    enviado: 'Envoyée',
+    sinRellenar: 'Non renseigné',
+    okTitulo: ['Demande ', 'envoyée'],
+    okTexto: 'Le service technique de l’usine l’a reçue. Nous répondrons à',
+    otro: 'Ouvrir une autre demande',
+    error: 'L’envoi a échoué. Écrivez-nous à',
+  },
+  sobre: {
+    title: 'Entreprise · Fabricants de centrifugeuses depuis 1949 · Orto Alresa',
+    description:
+      'Orto Alresa est né en 1949 en tant que fabricant de centrifugeuses. Une entreprise familiale, avec un système de gestion de la qualité conforme aux normes ISO 9001, 13485 et 14001, et une référence parmi les fabricants européens.',
+    eyebrow: 'À propos',
+    titulo: ['Synonyme d’expertise en ', 'centrifugation'],
+    lead: 'Orto Alresa est né en 1949 en tant que fabricant de centrifugeuses. C’est aujourd’hui une référence parmi les fabricants européens, qui partage son expérience avec des utilisateurs du monde entier.',
+    escena: 'Des particules qui tournent et se séparent en couches, comme dans une centrifugeuse',
+    historiaEyebrow: 'Notre histoire',
+    historiaTitulo: ['Travail constant, talent, ', 'engagement et enthousiasme'],
+    hitos: [
+      {
+        cuando: '1949',
+        titulo: 'Naissance d’Orto Alresa',
+        texto: 'L’entreprise débute comme fabricant de centrifugeuses.',
+      },
+      {
+        cuando: '2001',
+        titulo: 'Système de gestion de la qualité',
+        texto:
+          'Conforme aux normes ISO 9001, 13485 et 14001, examiné périodiquement par des sociétés d’audit externes.',
+      },
+      {
+        cuando: 'Innovation',
+        titulo: 'Des systèmes propres',
+        texto:
+          'Freinage contrôlable PCBS à 175 rampes, Gas Release System (GRS) et écrans tactiles TFT couleur : pionniers dans l’intégration des systèmes les plus sophistiqués aux centrifugeuses de routine.',
+      },
+      {
+        cuando: 'Dans le monde',
+        titulo: 'Des alliances dans le monde entier',
+        texto:
+          'Spécialistes du commerce extérieur et statut d’expéditeur connu (KC). Présente dans l’industrie, la recherche, la biotechnologie et les laboratoires environnementaux.',
+      },
+      {
+        cuando: 'Aujourd’hui',
+        titulo: 'Une référence européenne',
+        texto:
+          'Plus de 75 ans après, une entreprise familiale de référence parmi les fabricants européens de centrifugeuses.',
+      },
+    ],
+    vitrinaAlt: 'Centrifugeuse Digtor 22 ouverte, avec le rotor chargé et l’écran tactile',
+    propuestaEyebrow: 'Notre proposition de valeur',
+    propuestaTitulo: ['Au-delà ', 'du standard'],
+    propuesta: [
+      'Des solutions de centrifugation innovantes grâce à des alliances stratégiques avec notre réseau de partenaires. ',
+      'Fabrication européenne avec des délais de livraison très courts.',
+    ],
+    ideas: [
+      {
+        clave: 'Innovation',
+        titulo: 'Des besoins réels',
+        texto:
+          'Nous ne voulons pas être une option de plus. Nous cherchons des solutions fondées sur l’innovation et la durabilité, à partir des besoins réels de chaque laboratoire.',
+      },
+      {
+        clave: 'Normes',
+        titulo: 'Nous anticipons',
+        texto:
+          'Nous devançons l’entrée en vigueur des règlements et des normes qui s’appliquent à nos équipements : plus de sécurité pour l’utilisateur et ses processus, dans le respect de l’environnement et des personnes.',
+      },
+      {
+        clave: 'Communication',
+        titulo: 'Utilisateur, équipement et fabricant',
+        texto:
+          'Nos équipements intègrent la technologie la plus avancée pour la communication entre l’utilisateur, l’équipement et le fabricant. La communication est la clé de notre présent et de notre avenir.',
+      },
+      {
+        clave: 'Famille',
+        titulo: 'Une entreprise familiale',
+        texto:
+          'Qui intègre partenaires, utilisateurs et associés dans une plateforme pour offrir des solutions réelles.',
+      },
+    ],
+    // Los valores, en una frase: los tramos impares van en negrita
+    caracter: [
+      'Ce qui nous caractérise : l’',
+      'intégrité',
+      ', le ',
+      'dynamisme',
+      ', la ',
+      'persévérance',
+      ', un ',
+      'excellent soutien',
+      ' et l’',
+      'amélioration continue',
+      '.',
+    ],
+    difEyebrow: 'Ce qui nous différencie',
+    difTitulo: ['Nous sommes ce que ', 'nous faisons'],
+    difLead:
+      'Des équipements innovants qui accroissent la sécurité, la fonctionnalité et la facilité d’utilisation, adaptés aux besoins de chaque laboratoire. Et un service basé sur une communication fluide avec nos clients.',
+    grupos: [
+      {
+        nombre: 'Dans l’équipement',
+        items: [
+          {
+            cifra: 'TFT',
+            unidad: '',
+            titulo: 'Écran tactile couleur',
+            texto:
+              'En plus des fonctions standard, des alternatives avec un haut degré de spécialisation technique. Tout utilisateur s’en sert intuitivement.',
+          },
+          {
+            cifra: '175',
+            unidad: 'rampes',
+            titulo: 'Freinage contrôlable (PCBS)',
+            texto:
+              'Le temps de freinage se contrôle en fractions de seconde et les couches gardent leur intégrité : elles ne se mélangent pas après la centrifugation.',
+          },
+          {
+            cifra: 'GRS',
+            unidad: '',
+            titulo: 'Gas Release System',
+            texto:
+              'Un accessoire qui renforce la sécurité des processus, pour l’utilisateur comme pour l’environnement du laboratoire.',
+          },
+          {
+            cifra: '< 4',
+            unidad: 'ºC',
+            titulo: 'Réfrigérées',
+            texto: 'En dessous de 4 ºC à la vitesse maximale de n’importe lequel de leurs rotors.',
+          },
+          {
+            cifra: '80',
+            unidad: 'ºC',
+            titulo: 'Chauffées',
+            texto: 'Jusqu’à 80 ºC, pour s’adapter à une large gamme d’applications.',
+          },
+          {
+            cifra: 'ULS',
+            unidad: '',
+            titulo: 'Détection du déséquilibre',
+            texto:
+              'Avec indication de la position où il s’est produit. Les paramètres se modifient aussi pendant le fonctionnement et les programmes s’enchaînent (linked program).',
+          },
+        ],
+      },
+      {
+        nombre: 'Dans l’entreprise',
+        items: [
+          {
+            cifra: '48',
+            unidad: 'h',
+            titulo: 'Réponse personnalisée',
+            texto: 'Réponse et conseil en 48 h maximum, pour le service commercial comme pour l’assistance technique.',
+          },
+          {
+            cifra: '2',
+            unidad: 'ans',
+            titulo: 'Garantie totale',
+            texto: 'Sur tous nos produits, sans surprises.',
+          },
+          {
+            cifra: 'SAV',
+            unidad: '',
+            titulo: 'Service usine',
+            texto:
+              'Installation et mise en service guidées par notre département technique, résolution d’incidents, réparations, formation technique en ligne, ainsi que procédures et certificats d’étalonnage.',
+          },
+          {
+            cifra: 'OEM',
+            unidad: '',
+            titulo: 'Équipements sur mesure',
+            texto:
+              'Pour les applications qui ne trouvent pas leur place dans les équipements standard : avec une analyse des risques pour protéger l’échantillon, l’utilisateur et son environnement, et une traçabilité de l’origine jusqu’à l’utilisateur.',
+          },
+          {
+            cifra: 'KC',
+            unidad: '',
+            titulo: 'Commerce extérieur',
+            texto:
+              'Des spécialistes qui gèrent les envois, la documentation et l’adaptation aux normes du pays de destination. En tant qu’expéditeur connu (Known Consignor), exporter est plus simple et coûte moins cher.',
+          },
+        ],
+      },
+    ],
+    calidadEyebrow: 'Qualité',
+    calidadTitulo: ['Nous anticipons ', 'la norme'],
+    calidadTexto:
+      'Depuis 2001, un système de gestion de la qualité conforme aux normes ISO 9001, 13485 et 14001, examiné périodiquement par des sociétés d’audit externes. Nous anticipons l’entrée en vigueur des réglementations et des normes qui s’appliquent à nos équipements : plus de sécurité pour l’utilisateur et ses processus, dans le respect de l’environnement et des personnes.',
+    compromisoEyebrow: 'Engagement',
+    compromisoTitulo: ['Un avenir plus durable, ', 'égalitaire et responsable'],
+    solidaria: {
+      titulo: 'Entreprise Solidaire',
+      cifra: '0,7 %',
+      texto:
+        'Le label Empresa Solidaria reconnaît notre engagement pour une société plus juste, égalitaire et inclusive : nous allouons 0,7 % de notre impôt sur les sociétés à des projets sociaux du Tiers Secteur.',
+    },
+    labmas: {
+      titulo: 'LABMAS Spain',
+      cifra: '90 %',
+      texto:
+        'Nous sommes membres de l’association qui regroupe 90 % des fabricants espagnols du secteur des laboratoires, pour stimuler l’exportation et l’internationalisation. Depuis 2013, elle fait partie de l’association européenne EUROM II.',
+      pie: '9 fabricants espagnols du secteur des laboratoires sur 10',
+    },
+    ods: {
+      titulo: 'Objectifs de Développement Durable',
+      texto: 'Nous collaborons activement à cinq des ODD des Nations Unies.',
+    },
+    objetivos: [
+      {
+        n: '3',
+        nombre: 'Santé et bien-être',
+        texto:
+          'Des équipements conçus pour garantir la sécurité et protéger la santé de ceux qui travaillent en laboratoire.',
+      },
+      {
+        n: '5',
+        nombre: 'Égalité entre les sexes',
+        texto:
+          'L’égalité des chances indépendamment du genre, avec des politiques qui garantissent le respect de ce principe.',
+      },
+      {
+        n: '9',
+        nombre: 'Industrie, innovation et infrastructure',
+        texto:
+          'Investissement dans l’innovation technologique et un développement industriel responsable, avec des équipements de haute précision.',
+      },
+      {
+        n: '12',
+        nombre: 'Consommation et production responsables',
+        texto: 'Moins de déchets et des équipements durables, contre l’obsolescence programmée.',
+      },
+      {
+        n: '13',
+        nombre: 'Lutte contre le changement climatique',
+        texto: 'Moins d’émissions et des technologies efficaces pour atténuer le changement climatique.',
+      },
+    ],
+    cierreTitulo: ['Travaillons ', 'ensemble'],
+    cierreTexto: 'Nous développons des alliances dans le monde entier avec notre réseau de distributeurs.',
+    distribuidor: 'Devenir distributeur',
+    contacto: 'Contact',
   },
   laboratorio: {
     equipos: 'Autres produits de laboratoire',

@@ -1,0 +1,799 @@
+---
+// Ventana "Hazte distribuidor": la empresa que quiere distribuir deja sus datos de contacto y comercial la llama.
+// La abren los enlaces con `data-alta` o a "#hazte-distribuidor" (también al entrar con ese ancla en la dirección).
+// Sin JS, el enlace sigue siendo "#contacto" y baja al pie, donde están teléfono y correos.
+// Destino: el mismo flujo de Power Automate que el contacto (PUBLIC_CONTACTO_URL), con el motivo "Ser
+// distribuidor". Mientras la variable esté vacía, se abre un correo a comercial con todo ya escrito.
+import { contacto } from '../data/navegacion';
+import { idioma, ruta, textos } from '../i18n';
+
+const lang = idioma(Astro.currentLocale);
+const tx = textos(lang);
+const t = tx.alta;
+const motivo = tx.formulario.tipos[0];
+const destino = import.meta.env.PUBLIC_CONTACTO_URL ?? '';
+
+// Iconos de línea, con el mismo trazo que los del parte de servicio técnico
+const ico = {
+  empresa: 'M4 20.5v-15l8-2.5v17.5M12 9h8v11.5M3 20.5h18M7.5 8h1.5M7.5 12h1.5M7.5 16h1.5M15 13h2M15 16.5h2',
+  nombre: 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM4.5 20.5a7.5 7.5 0 0 1 15 0',
+  email: 'M3.5 5.5h17v13h-17zM4 6l8 6.5L20 6',
+  telefono:
+    'M6.6 3.5h2.6l1.4 4-2 1.4a12 12 0 0 0 6.5 6.5l1.4-2 4 1.4v2.6a2 2 0 0 1-2.2 2A16.5 16.5 0 0 1 4.6 5.7a2 2 0 0 1 2-2.2Z',
+  pais: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18ZM3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3Z',
+};
+
+// Los campos de una línea, en orden: [nombre, tipo, autocompletar, obligatorio, ancho máximo]
+const campos: [keyof typeof ico, 'text' | 'email' | 'tel', string, boolean, number][] = [
+  ['empresa', 'text', 'organization', true, 120],
+  ['nombre', 'text', 'name', true, 120],
+  ['email', 'email', 'email', true, 160],
+  ['telefono', 'tel', 'tel', true, 40],
+  ['pais', 'text', 'country-name', true, 80],
+];
+
+// El fondo: una red. Desde un punto (la fábrica) sale una señal roja hacia cada nodo y lo enciende al llegar
+const centro = { x: 320, y: 470 };
+const nodos = [
+  [40, 300],
+  [140, 215],
+  [262, 262],
+  [384, 236],
+  [96, 420],
+  [208, 372],
+  [58, 560],
+  [186, 548],
+  [394, 372],
+  [300, 590],
+].map(([x, y], i) => ({ x, y, i }));
+---
+
+<dialog class="alta" id="hazte-distribuidor" aria-labelledby="alta-titulo">
+  <div class="caja">
+    <form method="dialog" class="cerrar-f">
+      <button class="cerrar" aria-label={t.cerrar}>
+        ×
+      </button>
+    </form>
+    <!-- Columna oscura: qué es esto, lo que tendrá el distribuidor y el contacto directo -->
+    <aside class="lado">
+      <svg class="malla" viewBox="0 0 400 600" preserveAspectRatio="xMaxYMax slice" aria-hidden="true">
+        {nodos.map((n) => (
+          <g style={`--i:${n.i}`}>
+            <path class="via" d={`M${centro.x} ${centro.y}L${n.x} ${n.y}`} />
+            <path class="senal" pathLength="1" d={`M${centro.x} ${centro.y}L${n.x} ${n.y}`} />
+            <circle class="nodo" cx={n.x} cy={n.y} r="4" />
+          </g>
+        ))}
+        <circle class="onda" cx={centro.x} cy={centro.y} r="7" />
+        <circle class="origen" cx={centro.x} cy={centro.y} r="7" />
+      </svg>
+
+      <span class="eyebrow">{t.eyebrow}</span>
+      <h2 id="alta-titulo">
+        {t.titulo[0]}
+        <b>{t.titulo[1]}</b>
+      </h2>
+      <p class="lead">{t.lead}</p>
+
+      <p class="despues-t">{t.despuesTitulo}</p>
+      <ol class="despues">
+        {t.despues.map((x, i) => (
+          <li style={`--i:${i}`}>{x}</li>
+        ))}
+      </ol>
+
+      <div class="directo">
+        <span>{t.directo}</span>
+        <a href={contacto.telefonoHref}>{contacto.telefono}</a>
+        <a href={`mailto:${contacto.comercial}`}>{contacto.comercial}</a>
+      </div>
+    </aside>
+
+    <div class="cuerpo">
+      <form
+        class="campos"
+        data-destino={destino}
+        data-correo={contacto.comercial}
+        data-lang={lang}
+        data-motivo={motivo}
+        data-obligatorio={t.obligatorio}
+        data-correo-mal={t.correoMal}
+        data-privacidad-mal={t.privacidadMal}
+        novalidate
+      >
+        {campos.map(([n, tipo, auto, req, max]) => (
+          <label class="campo">
+            <span>
+              {t[n]} {!req && <small>({t.opcional})</small>}
+            </span>
+            <span class="in">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d={ico[n]} />
+              </svg>
+              <input name={n} type={tipo} autocomplete={auto} required={req} maxlength={max} />
+            </span>
+            <em class="err" aria-live="polite" />
+          </label>
+        ))}
+        <label class="campo ancho">
+          <span>
+            {t.mensaje} <small>({t.opcional})</small>
+          </span>
+          <textarea name="mensaje" rows="4" maxlength="4000" placeholder={t.mensajeAyuda}></textarea>
+        </label>
+        <!-- Trampa para robots: invisible para personas; si llega rellena, no se envía -->
+        <label class="trampa" aria-hidden="true">
+          Web <input name="web" tabindex="-1" autocomplete="off" />
+        </label>
+        <label class="campo ancho acepto">
+          <span class="caja-check">
+            <input name="privacidad" type="checkbox" required />
+            <span>
+              {t.acepto}{' '}
+              <a href={ruta(lang, '/privacidad/')} target="_blank">
+                {t.privacidad}
+              </a>
+            </span>
+          </span>
+          <em class="err" aria-live="polite"></em>
+        </label>
+        <div class="ancho pie">
+          <button class="btn red rel" type="submit" data-enviando={t.enviando}>
+            <svg class="sobre" viewBox="0 0 24 24" aria-hidden="true">
+              <path d={ico.email} />
+            </svg>
+            {t.enviar} <span aria-hidden="true">»</span>
+          </button>
+          <p class="estado" role="status" aria-live="polite" data-error={t.error}></p>
+        </div>
+      </form>
+
+      <!-- Enviado: la confirmación ocupa el sitio del formulario -->
+      <div class="hecho" hidden tabindex="-1">
+        <svg viewBox="0 0 52 52" aria-hidden="true">
+          <circle cx="26" cy="26" r="24" pathLength="1" />
+          <path d="M15 27l7.5 7.5L37.5 19" pathLength="1" />
+        </svg>
+        <h3>
+          {t.okTitulo[0]}
+          <b>{t.okTitulo[1]}</b>
+        </h3>
+        <p>
+          {t.okTexto} <b data-ok-correo></b>.
+        </p>
+        <form method="dialog">
+          <button class="btn ghost rel">{t.cerrar}</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</dialog>
+
+<script>
+  const dlg = document.getElementById('hazte-distribuidor') as HTMLDialogElement | null;
+  const form = dlg?.querySelector<HTMLFormElement>('form.campos');
+
+  if (dlg && form) {
+    const hecho = dlg.querySelector<HTMLElement>('.hecho')!;
+    const estado = form.querySelector<HTMLElement>('.estado')!;
+    const boton = form.querySelector<HTMLButtonElement>('button[type=submit]')!;
+    const textoBoton = boton.innerHTML;
+    const d = form.dataset;
+
+    const abrir = () => {
+      if (dlg.open) return;
+      dlg.showModal();
+      form.querySelector<HTMLInputElement>('input')?.focus();
+    };
+    // Los enlaces de "Hazte distribuidor" abren esta ventana en vez de la de contacto
+    document.addEventListener('click', (e) => {
+      const a = (e.target as Element).closest?.('a[data-alta], a[href$="#hazte-distribuidor"]');
+      if (!a || e.metaKey || e.ctrlKey || e.shiftKey) return;
+      e.preventDefault();
+      abrir();
+    });
+    if (location.hash === '#hazte-distribuidor') abrir();
+    // Pulsar fuera de la ventana la cierra
+    dlg.addEventListener('click', (e) => {
+      if (e.target === dlg) dlg.close();
+    });
+    // Tras enviar, al cerrar vuelve a quedar el formulario limpio para la próxima vez
+    dlg.addEventListener('close', () => {
+      if (hecho.hidden) return;
+      hecho.hidden = true;
+      form.hidden = false;
+      form.reset();
+    });
+
+    // Validación campo a campo, con el mensaje debajo y en el idioma de la página
+    const mensaje = (el: HTMLInputElement) => {
+      if (el.validity.valueMissing) return el.type === 'checkbox' ? d.privacidadMal! : d.obligatorio!;
+      if (el.validity.typeMismatch || (el.type === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(el.value)))
+        return d.correoMal!;
+      return '';
+    };
+    const revisa = (el: HTMLInputElement) => {
+      const m = mensaje(el);
+      const caja = el.closest<HTMLElement>('.campo')!;
+      caja.classList.toggle('mal', !!m);
+      el.setAttribute('aria-invalid', String(!!m));
+      const err = caja.querySelector('.err');
+      if (err) err.textContent = m;
+      return !m;
+    };
+    const vigilados = [...form.querySelectorAll<HTMLInputElement>('input[required]')];
+    // Una vez marcado en rojo, se corrige al escribir; antes, solo al salir del campo con algo escrito
+    for (const el of vigilados) {
+      el.addEventListener('input', () => el.closest('.mal') && revisa(el));
+      el.addEventListener('change', () => el.type === 'checkbox' && revisa(el));
+      el.addEventListener('blur', () => el.value && revisa(el));
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const malos = vigilados.filter((el) => !revisa(el));
+      if (malos.length) {
+        malos[0].focus();
+        return;
+      }
+      const datos = Object.fromEntries(new FormData(form)) as Record<string, string>;
+      if (datos.web) return; // robot
+      delete datos.web;
+      const envio = {
+        motivo: d.motivo!,
+        ...datos,
+        privacidad: true,
+        idioma: d.lang,
+        pagina: location.href,
+        fecha: new Date().toISOString(),
+      };
+      const correo = d.correo!;
+
+      // Sin flujo conectado todavía: correo a comercial con la solicitud ya escrita
+      if (!d.destino) {
+        const cuerpo = Object.entries(envio)
+          .map(([k, v]) => `${k}: ${v}`)
+          .join('\n');
+        location.href = `mailto:${correo}?subject=${encodeURIComponent(`${d.motivo} · ${datos.empresa}`)}&body=${encodeURIComponent(cuerpo)}`;
+        return;
+      }
+
+      boton.disabled = true;
+      boton.textContent = boton.dataset.enviando!;
+      estado.textContent = '';
+      try {
+        const r = await fetch(d.destino, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(envio),
+        });
+        if (!r.ok) throw new Error(String(r.status));
+        hecho.querySelector('[data-ok-correo]')!.textContent = datos.email;
+        form.hidden = true;
+        hecho.hidden = false;
+        hecho.focus();
+      } catch {
+        estado.innerHTML = `${estado.dataset.error} <a href="mailto:${correo}">${correo}</a>`;
+      } finally {
+        boton.disabled = false;
+        boton.innerHTML = textoBoton;
+      }
+    });
+  }
+</script>
+
+<style>
+  .alta {
+    width: min(1080px, calc(100vw - 32px));
+    max-width: none;
+    max-height: calc(100dvh - 32px);
+    padding: 0;
+    border: 0;
+    border-radius: 20px;
+    background: var(--white);
+    color: var(--ink);
+    box-shadow: var(--sombra-tarjeta);
+  }
+  .alta::backdrop {
+    background: rgba(21, 23, 25, 0.72);
+    backdrop-filter: blur(3px);
+  }
+  .alta[open] {
+    animation: abre var(--dur-3) var(--ease-out);
+  }
+  @keyframes abre {
+    from {
+      opacity: 0;
+      translate: 0 18px;
+      scale: 0.98;
+    }
+  }
+  .caja {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(300px, 380px) minmax(0, 1fr);
+    min-height: 100%;
+  }
+
+  /* ——— Columna oscura ——— */
+  .lado {
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    padding: clamp(28px, 3.4vw, 44px);
+    background: var(--carbon);
+    color: #fff;
+  }
+  /* La red del fondo: vías grises, una señal roja que sale del origen y enciende cada nodo al llegar */
+  .malla {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+  .malla .via {
+    stroke: var(--carbon-line);
+    stroke-width: 1;
+    stroke-dasharray: 2 5;
+  }
+  .malla .senal {
+    stroke: var(--red);
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-dasharray: 0.1 2;
+    stroke-dashoffset: 0.1;
+    animation: viaja 4.2s var(--ease-out) calc(var(--i) * 0.42s) infinite;
+  }
+  @keyframes viaja {
+    70% {
+      stroke-dashoffset: -0.9;
+      opacity: 1;
+    }
+    80%,
+    100% {
+      stroke-dashoffset: -1;
+      opacity: 0;
+    }
+  }
+  .malla .nodo {
+    fill: var(--carbon-line);
+    animation: enciende 4.2s linear calc(var(--i) * 0.42s) infinite;
+  }
+  @keyframes enciende {
+    0%,
+    66% {
+      fill: var(--carbon-line);
+      r: 4px;
+    }
+    72% {
+      fill: var(--red);
+      r: 6px;
+    }
+    100% {
+      fill: var(--carbon-line);
+      r: 4px;
+    }
+  }
+  .malla .origen {
+    fill: var(--red);
+  }
+  .malla .onda {
+    fill: none;
+    stroke: var(--red);
+    stroke-width: 1.5;
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: onda 2.1s var(--ease-out) infinite;
+  }
+  @keyframes onda {
+    from {
+      opacity: 0.9;
+      scale: 1;
+    }
+    to {
+      opacity: 0;
+      scale: 5;
+    }
+  }
+  .lado > :not(.malla) {
+    position: relative;
+  }
+  .eyebrow {
+    color: var(--red-on-dark);
+  }
+  h2 {
+    margin-top: 14px;
+    font-weight: 300;
+    font-size: clamp(36px, 3.6vw, 50px);
+    line-height: 0.95;
+  }
+  h2 b {
+    color: var(--red-on-dark);
+  }
+  .lead {
+    margin-top: 16px;
+    color: var(--on-dark);
+    font-size: 17px;
+    line-height: 1.4;
+  }
+  /* Qué pasa después: tres pasos numerados */
+  .despues-t {
+    margin-top: 32px;
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--steel);
+  }
+  .despues {
+    display: grid;
+    gap: 14px;
+    margin: 16px 0 0;
+    padding: 0;
+    list-style: none;
+    counter-reset: paso;
+  }
+  .despues li {
+    position: relative;
+    display: grid;
+    grid-template-columns: 28px 1fr;
+    align-items: center;
+    gap: 14px;
+    color: #fff;
+    font-size: 17px;
+    line-height: 1.25;
+    counter-increment: paso;
+  }
+  .despues li::before {
+    content: counter(paso);
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border: 1px solid var(--red);
+    border-radius: 50%;
+    background: var(--carbon);
+    color: #fff;
+    font-weight: 700;
+    font-size: 13px;
+  }
+  .alta[open] .despues li {
+    animation: sube var(--dur-4) var(--ease-out) calc(0.15s + var(--i) * 90ms) both;
+  }
+  @keyframes sube {
+    from {
+      opacity: 0;
+      translate: 0 10px;
+    }
+  }
+  .directo {
+    display: grid;
+    gap: 4px;
+    margin-top: auto;
+    padding-top: 32px;
+  }
+  .directo span {
+    color: var(--steel);
+    font-size: 15px;
+  }
+  .directo a {
+    width: fit-content;
+    color: #fff;
+    font-weight: 700;
+    font-size: 18px;
+    text-decoration: none;
+    background: linear-gradient(var(--red), var(--red)) 0 100% / 0 2px no-repeat;
+    transition: background-size var(--dur-3) var(--ease-out);
+  }
+  .directo a:hover,
+  .directo a:focus-visible {
+    background-size: 100% 2px;
+  }
+
+  /* ——— Formulario ——— */
+  .cuerpo {
+    position: relative;
+    min-width: 0;
+    padding: clamp(28px, 3.4vw, 44px);
+  }
+  .cerrar-f {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 2;
+  }
+  .cerrar {
+    width: 44px;
+    height: 44px;
+    border: 0;
+    border-radius: 50%;
+    background: none;
+    font: 300 32px/1 var(--f);
+    color: var(--ink);
+    cursor: pointer;
+    transition:
+      background var(--dur-1) ease,
+      color var(--dur-1) ease,
+      rotate var(--dur-3) var(--ease-out);
+  }
+  .cerrar:hover {
+    background: var(--panel);
+    color: var(--red);
+    rotate: 90deg;
+  }
+  .campos {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px 20px;
+    padding-top: 22px;
+  }
+  .campos[hidden] {
+    display: none;
+  }
+  .ancho,
+  /* Cinco campos de una línea: el país, el último, ocupa la fila entera */
+  .campo:has([name='pais']) {
+    grid-column: 1 / -1;
+  }
+  .campo {
+    display: grid;
+    align-content: start;
+    gap: 8px;
+    min-width: 0;
+  }
+  .campo > span:first-child {
+    font-weight: 700;
+    font-size: 15px;
+  }
+  .campo small {
+    font-weight: 300;
+    color: var(--muted);
+  }
+  .in {
+    position: relative;
+    display: block;
+  }
+  .in svg {
+    position: absolute;
+    top: 50%;
+    left: 16px;
+    width: 20px;
+    height: 20px;
+    translate: 0 -50%;
+    fill: none;
+    stroke: #8a8f93;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    pointer-events: none;
+    transition: stroke var(--dur-1) ease;
+  }
+  .in:focus-within svg {
+    stroke: var(--red);
+  }
+  input:not([type='checkbox']),
+  textarea {
+    width: 100%;
+    min-width: 0;
+    padding: 0 16px;
+    border: 1px solid #c4c8cb;
+    border-radius: 10px;
+    background: #fff;
+    color: var(--ink);
+    font: 300 18px/1.3 var(--f);
+    transition:
+      border-color var(--dur-1) ease,
+      box-shadow var(--dur-1) ease;
+  }
+  input:not([type='checkbox']) {
+    height: 52px;
+  }
+  .in input {
+    padding-left: 48px;
+  }
+  textarea {
+    min-height: 112px;
+    padding: 14px 16px;
+    resize: vertical;
+  }
+  textarea::placeholder {
+    color: #8a8f93;
+  }
+  input:hover,
+  textarea:hover {
+    border-color: var(--ink);
+  }
+  input:not([type='checkbox']):focus,
+  textarea:focus {
+    outline: none;
+    border-color: var(--red);
+    box-shadow: 0 0 0 4px rgba(221, 4, 10, 0.12);
+  }
+  .campo.mal input {
+    border-color: var(--red);
+  }
+  .campo.mal > span:first-child {
+    color: var(--red);
+  }
+  .err {
+    font-style: normal;
+    font-size: 14px;
+    color: var(--red);
+  }
+  .err:empty {
+    display: none;
+  }
+  .caja-check {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: start;
+    gap: 12px;
+    font-weight: 300;
+    font-size: 16px;
+  }
+  .caja-check input {
+    width: 20px;
+    height: 20px;
+    margin: 1px 0 0;
+    accent-color: var(--red);
+    cursor: pointer;
+  }
+  .caja-check a {
+    color: var(--ink);
+    text-decoration-color: var(--red);
+    text-underline-offset: 3px;
+  }
+  .campo.mal .caja-check {
+    color: var(--red);
+  }
+  .trampa {
+    position: absolute;
+    left: -9999px;
+  }
+  .pie {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 16px;
+    padding-top: 4px;
+  }
+  .pie .btn {
+    height: 54px;
+    padding: 0 26px;
+    font-size: 17px;
+    cursor: pointer;
+  }
+  .btn:disabled {
+    opacity: 0.6;
+    cursor: wait;
+  }
+  .sobre {
+    width: 19px;
+    height: 19px;
+    flex: none;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.7;
+    stroke-linejoin: round;
+    transition: transform var(--dur-3) var(--ease-out);
+  }
+  .btn:not(:disabled):hover .sobre {
+    transform: translate(2px, -2px) rotate(-8deg);
+  }
+  .estado {
+    color: var(--red);
+    font-weight: 700;
+  }
+  .estado a {
+    color: inherit;
+  }
+
+  /* ——— Enviado ——— */
+  .hecho {
+    display: grid;
+    justify-items: start;
+    align-content: center;
+    gap: 16px;
+    min-height: 100%;
+    outline: none;
+    animation: sube var(--dur-4) var(--ease-out);
+  }
+  .hecho[hidden] {
+    display: none;
+  }
+  .hecho svg {
+    width: 64px;
+    height: 64px;
+    fill: none;
+    stroke: var(--red);
+    stroke-width: 2.4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .hecho svg * {
+    stroke-dasharray: 1;
+    animation: traza 0.9s var(--ease-out) both;
+  }
+  .hecho svg path {
+    animation-delay: 0.35s;
+  }
+  @keyframes traza {
+    from {
+      stroke-dashoffset: 1;
+    }
+  }
+  .hecho h3 {
+    font-weight: 300;
+    font-size: clamp(32px, 3.4vw, 44px);
+    line-height: 1;
+  }
+  .hecho h3 b {
+    color: var(--red);
+  }
+  .hecho p {
+    color: var(--body);
+    font-size: 18px;
+  }
+  .hecho p b {
+    color: var(--ink);
+  }
+
+  @media (max-width: 860px) {
+    .caja {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    /* Arriba, solo lo esencial: el formulario no queda lejos */
+    .lead,
+    .directo span {
+      display: none;
+    }
+    .despues-t {
+      margin-top: 22px;
+    }
+    .despues li {
+      font-size: 15px;
+    }
+    .directo {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px 20px;
+      padding-top: 20px;
+    }
+    .directo a {
+      font-size: 16px;
+    }
+    /* La columna oscura queda arriba: la cruz, en blanco */
+    .cerrar {
+      color: #fff;
+    }
+    .cerrar:hover {
+      background: var(--carbon-line);
+      color: #fff;
+    }
+  }
+  @media (max-width: 560px) {
+    .alta {
+      width: calc(100vw - 16px);
+      max-height: calc(100dvh - 16px);
+    }
+    .campos {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .pie .btn {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .malla *,
+    .alta[open],
+    .alta[open] .despues li,
+    .hecho,
+    .hecho svg * {
+      animation: none;
+    }
+  }
+</style>

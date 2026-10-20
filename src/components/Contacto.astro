@@ -73,7 +73,7 @@ const destino = import.meta.env.PUBLIC_CONTACTO_URL ?? '';
       </span>
     </label>
     <div class="ancho pie">
-      <button class="btn red" type="submit" data-enviando={t.enviando}>
+      <button class="btn red rel" type="submit" data-enviando={t.enviando}>
         {t.enviar} <span aria-hidden="true">»</span>
       </button>
       <p class="estado" role="status" aria-live="polite" data-ok={t.ok} data-error={t.error}></p>
@@ -88,7 +88,7 @@ const destino = import.meta.env.PUBLIC_CONTACTO_URL ?? '';
   if (dlg && form) {
     // Todos los enlaces a #contacto abren la ventana en vez de bajar al pie
     document.addEventListener('click', (e) => {
-      const a = (e.target as Element).closest?.('a[href$="#contacto"]');
+      const a = (e.target as Element).closest?.('a[href$="#contacto"]:not([data-alta])');
       if (!a || e.defaultPrevented || e.metaKey || e.ctrlKey || e.shiftKey) return;
       e.preventDefault();
       dlg.showModal();

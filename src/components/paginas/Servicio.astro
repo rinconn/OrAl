@@ -1,0 +1,2013 @@
+---
+// Servicio técnico: el parte de servicio en la web, en vez del PDF que había que imprimir, rellenar y escanear.
+// · Portada sin foto: un plano de taller (cuadrícula y el despiece de un rotor con su escala de calibración).
+// · Los campos son los del "Service Pattern" (PGC-IT-128) que publica la fábrica: datos del distribuidor, del equipo y
+//   descripción de la incidencia. Si el equipo vuelve a fábrica, el aviso del certificado de descontaminación
+//   (PGC-IT-091) con sus documentos para descargar.
+// · A la izquierda, los tres pasos en vertical: cada uno resume lo ya rellenado; debajo, el contacto directo.
+//   A la derecha, la tarjeta con el paso abierto y sus botones al pie.
+// · Lo escrito se guarda en el navegador hasta que se envía, por si se cierra la pestaña a medias.
+// Destino: la URL del flujo de Power Automate ("Cuando se recibe una solicitud HTTP") en PUBLIC_SAT_URL. Se envía un
+// JSON con los campos más idioma y página. Mientras esté vacía, se abre un correo al servicio técnico con todo escrito.
+// Sin JavaScript se ven los tres pasos seguidos y el formulario se envía por correo.
+import Base from '../../layouts/Base.astro';
+import { modelos } from '../../data/productos';
+import { equipos } from '../../data/laboratorio';
+import { generales, type IdiomaPdf } from '../../data/descargas';
+import { contacto } from '../../data/navegacion';
+import { idioma, ruta, textos } from '../../i18n';
+
+const lang = idioma(Astro.currentLocale);
+const t = textos(lang);
+const s = t.servicio;
+const f = t.formulario;
+const destino = import.meta.env.PUBLIC_SAT_URL ?? '';
+
+// Todo lo que fabrica la casa, para elegir el modelo; con su foto
+const lista = [
+  ...modelos.map((m) => ({ nombre: m.nombre, foto: m.imagen.src })),
+  ...equipos.map((e) => ({ nombre: t.laboratorio.items[e.slug].nombre, foto: e.imagen.src })),
+];
+const fotos = Object.fromEntries(lista.map((x) => [x.nombre.toLowerCase(), x.foto]));
+
+// Certificado de descontaminación y manual de limpieza, en el idioma de la página si existe
+const orden: IdiomaPdf[] = lang === 'es' ? ['es', 'en'] : ['en', 'es'];
+const docsVuelta = ['descontaminacion', 'limpieza'].flatMap((id) => {
+  const g = generales.find((x) => x.id === id);
+  const l = g && orden.find((o) => g.pdf[o]);
+  return g && l ? [{ nombre: t.descargas.docs[id]?.nombre ?? id, url: g.pdf[l]!.url, l }] : [];
+});
+
+// Cada paso con lo que resume en la columna de la izquierda cuando ya está rellenado
+const pasos = [{ campos: 'distribuidor ciudad' }, { campos: 'modelo serie' }, { campos: 'tipo' }].map((p, k) => ({
+  ...p,
+  n: String(k + 1).padStart(2, '0'),
+  titulo: s.pasos[k],
+  intro: s.intro[k],
+}));
+
+// Iconos de línea de cada campo, con el trazo de la web (sin emojis: se ven distintos en cada sistema)
+const ico: Record<string, string> = {
+  distribuidor: 'M4 20.5v-15l8-2.5v17.5M12 9h8v11.5M3 20.5h18M7.5 8h1.5M7.5 12h1.5M7.5 16h1.5M15 13h2M15 16.5h2',
+  contacto: 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM4.5 20.5a7.5 7.5 0 0 1 15 0',
+  email: 'M3.5 5.5h17v13h-17zM4 6l8 6.5L20 6',
+  telefono:
+    'M6.6 3.5h2.6l1.4 4-2 1.4a12 12 0 0 0 6.5 6.5l1.4-2 4 1.4v2.6a2 2 0 0 1-2.2 2A16.5 16.5 0 0 1 4.6 5.7a2 2 0 0 1 2-2.2Z',
+  ciudad: 'M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11ZM12 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z',
+  pais: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18ZM3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3Z',
+  modelo:
+    'M12 20.5a8.5 8.5 0 1 0 0-17 8.5 8.5 0 0 0 0 17ZM12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4ZM12 5.5V8M12 16v2.5M5.5 12H8M16 12h2.5',
+  serie: 'M4 6v12M7 6v12M10.5 6v12M13 6v12M16.5 6v12M20 6v12',
+  accesorios: 'M9 3h6M10 3v13.5a2 2 0 0 0 4 0V3M10 10h4',
+  factura: 'M6 3h9l3 3v15H6zM9 9h6M9 13h6M9 17h4',
+  pedido: 'M3.5 7.5 12 3l8.5 4.5v9L12 21l-8.5-4.5zM3.5 7.5 12 12l8.5-4.5M12 12v9',
+  instalacion: 'M4 6h16v14H4zM4 10h16M8 3.5v4M16 3.5v4',
+};
+
+// El fondo de la portada: un plano de taller dibujado, sin foto. El despiece de un rotor visto desde arriba (seis
+// alojamientos, eje, cotas y ejes de centro) y, alrededor, una escala de calibración que gira despacio.
+const marcas = Array.from({ length: 120 }, (_, i) => {
+  const a = (i * 3 * Math.PI) / 180;
+  const largo = i % 10 === 0 ? 26 : i % 5 === 0 ? 16 : 9;
+  const r1 = 262;
+  const r2 = r1 - largo;
+  const p = (r: number) => [(400 + r * Math.cos(a)).toFixed(1), (400 + r * Math.sin(a)).toFixed(1)];
+  return { a: p(r1), b: p(r2), fuerte: i % 10 === 0 };
+});
+const alojamientos = Array.from({ length: 6 }, (_, i) => {
+  const a = ((i * 60 - 90) * Math.PI) / 180;
+  return { x: (400 + 150 * Math.cos(a)).toFixed(1), y: (400 + 150 * Math.sin(a)).toFixed(1) };
+});
+---
+
+<Base title={s.title} description={s.description}>
+  <div class="sat">
+    <!-- ——— Portada ——— -->
+    <section class="portada">
+      <svg class="plano" viewBox="0 0 800 800" aria-hidden="true">
+        <!-- ejes de centro y cotas -->
+        <g class="eje">
+          <path d="M400 40v720M40 400h720" />
+          <path d="M138 138l524 524M662 138 138 662" />
+        </g>
+        <g class="cota">
+          <path class="traza" pathLength="1" d="M138 770h524M138 758v24M662 758v24" />
+          <path d="M150 770l-12-5v10zM650 770l12-5v10z" class="punta" />
+          <path class="traza" pathLength="1" d="M770 138v524M758 138h24M758 662h24" />
+        </g>
+        <!-- la escala que gira -->
+        <g class="escala">
+          <circle cx="400" cy="400" r="262" />
+          {marcas.map((m) => (
+            <line x1={m.a[0]} y1={m.a[1]} x2={m.b[0]} y2={m.b[1]} class:list={{ fuerte: m.fuerte }} />
+          ))}
+          <path class="aguja" d="M400 128v-36" />
+        </g>
+        <!-- el rotor -->
+        <g class="rotor">
+          <circle class="traza" pathLength="1" cx="400" cy="400" r="210" />
+          <circle class="fino traza" pathLength="1" cx="400" cy="400" r="196" />
+          {alojamientos.map((p, i) => (
+            <g style={`--i:${i}`}>
+              <circle class="traza" pathLength="1" cx={p.x} cy={p.y} r="40" />
+              <circle class="ping" cx={p.x} cy={p.y} r="30" />
+            </g>
+          ))}
+          <circle class="traza" pathLength="1" cx="400" cy="400" r="58" />
+          <circle cx="400" cy="400" r="34" class="fino" />
+          <path class="tuerca" d="M400 378l19 11v22l-19 11-19-11v-22z" />
+        </g>
+        <!-- el diagnóstico: un barrido que da la vuelta y enciende cada alojamiento al pasar -->
+        <g class="barrido">
+          <path class="estela" d="M400 400 400 138A262 262 0 0 0 334.2 146.4Z" />
+          <path class="haz" d="M400 400V138" />
+        </g>
+        <circle class="onda" cx="400" cy="400" r="5" />
+        <circle class="centro" cx="400" cy="400" r="5" />
+      </svg>
+      <div class="wrap">
+        <div class="portada-txt">
+          <span class="eyebrow">{t.nav.servicio}</span>
+          <h1>
+            {s.titulo[0]}
+            <b>{s.titulo[1]}</b>
+          </h1>
+          <p class="lead">{s.lead}</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ——— El parte ——— -->
+    <section class="wrap sat-cuerpo">
+      <header class="sec-cab">
+        <div>
+          <span class="eyebrow">{s.parte}</span>
+          <h2>
+            {s.seccionTitulo[0]}
+            <b>{s.seccionTitulo[1]}</b>
+          </h2>
+        </div>
+        <p>{s.seccionTexto}</p>
+      </header>
+
+      <div class="tarjeta" data-tarjeta>
+        <!-- Columna oscura: los pasos, con lo rellenado; debajo, el contacto directo -->
+        <aside class="rail">
+          <div class="rail-in">
+            <ol class="pasos" data-pasos style="--p: 0">
+              {pasos.map((p, k) => (
+                <li>
+                  <button type="button" data-ir={k} aria-current={k === 0 ? 'step' : undefined}>
+                    <i>{p.n}</i>
+                    <span>
+                      <b>{p.titulo}</b>
+                      <small data-espejo={p.campos} data-sep=" · ">
+                        {p.intro}
+                      </small>
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ol>
+            <div class="directo">
+              <p class="plazo">
+                {s.plazo[0]}
+                <b>{s.plazo[1]}</b>
+              </p>
+              <p class="plazo-txt">{s.plazoTexto}</p>
+              <p class="directo-t">{s.directo}</p>
+              <a href={`mailto:${contacto.tecnico}`}>
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <rect x="3" y="5.5" width="18" height="13" rx="2"></rect>
+                  <path d="m4 7 8 6 8-6"></path>
+                </svg>
+                {contacto.tecnico}
+              </a>
+              <a href={contacto.telefonoHref}>
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M6.6 3.5h2.6l1.4 4-2 1.4a12 12 0 0 0 6.5 6.5l1.4-2 4 1.4v2.6a2 2 0 0 1-2.2 2A16.5 16.5 0 0 1 4.6 5.7a2 2 0 0 1 2-2.2Z"></path>
+                </svg>
+                {contacto.telefono}
+              </a>
+            </div>
+          </div>
+        </aside>
+
+        <div class="cuerpo-f">
+          <form
+            class="parte-f"
+            action={`mailto:${contacto.tecnico}`}
+            method="post"
+            enctype="text/plain"
+            novalidate
+            data-destino={destino}
+            data-correo={contacto.tecnico}
+            data-lang={lang}
+          >
+            <!-- Paso 1 · Datos del distribuidor -->
+            <fieldset class="paso-f activo" data-paso="0">
+              <legend class="paso-cab">
+                <small>{s.paso(1, 3)}</small>
+                <b tabindex="-1">{pasos[0].titulo}</b>
+                <span>{pasos[0].intro}</span>
+              </legend>
+              <div class="rejilla">
+                <label class="campo">
+                  <span>{s.distribuidor}</span>
+                  <span class="in">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <path d={ico.distribuidor} />
+                    </svg>
+                    <input name="distribuidor" autocomplete="organization" required maxlength="120" />
+                  </span>
+                  <em class="err" aria-live="polite"></em>
+                </label>
+                <label class="campo">
+                  <span>{s.contacto}</span>
+                  <span class="in">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <path d={ico.contacto} />
+                    </svg>
+                    <input name="contacto" autocomplete="name" required maxlength="120" />
+                  </span>
+                  <em class="err" aria-live="polite"></em>
+                </label>
+                <label class="campo">
+                  <span>{f.email}</span>
+                  <span class="in">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <path d={ico.email} />
+                    </svg>
+                    <input name="email" type="email" autocomplete="email" required maxlength="160" />
+                  </span>
+                  <em class="err" aria-live="polite"></em>
+                </label>
+                <label class="campo">
+                  <span>{f.telefono}</span>
+                  <span class="in">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <path d={ico.telefono} />
+                    </svg>
+                    <input name="telefono" type="tel" autocomplete="tel" required maxlength="40" />
+                  </span>
+                  <em class="err" aria-live="polite"></em>
+                </label>
+                <label class="campo">
+                  <span>{s.ciudad}</span>
+                  <span class="in">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <path d={ico.ciudad} />
+                    </svg>
+                    <input name="ciudad" autocomplete="address-level2" required maxlength="80" />
+                  </span>
+                  <em class="err" aria-live="polite"></em>
+                </label>
+                <label class="campo">
+                  <span>{f.pais}</span>
+                  <span class="in">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <path d={ico.pais} />
+                    </svg>
+                    <input name="pais" autocomplete="country-name" required maxlength="80" />
+                  </span>
+                  <em class="err" aria-live="polite"></em>
+                </label>
+              </div>
+            </fieldset>
+
+            <!-- Paso 2 · El equipo -->
+            <fieldset class="paso-f" data-paso="1">
+              <legend class="paso-cab">
+                <small>{s.paso(2, 3)}</small>
+                <b tabindex="-1">{pasos[1].titulo}</b>
+                <span>{pasos[1].intro}</span>
+              </legend>
+              <div class="rejilla">
+                <div class="ancho modelo-fila">
+                  <label class="campo">
+                    <span>{s.modelo}</span>
+                    <span class="in">
+                      <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d={ico.modelo} />
+                      </svg>
+                      <input
+                        name="modelo"
+                        list="sat-modelos"
+                        required
+                        maxlength="80"
+                        autocomplete="off"
+                        placeholder={s.modeloAyuda}
+                      />
+                    </span>
+                    <em class="err" aria-live="polite"></em>
+                  </label>
+                  <!-- La foto del modelo elegido -->
+                  <figure class="modelo-foto" data-foto-caja aria-hidden="true">
+                    <img alt="" width="640" height="640" data-foto hidden />
+                    <svg viewBox="0 0 48 48" data-foto-vacia>
+                      <circle cx="24" cy="24" r="17"></circle>
+                      <circle cx="24" cy="24" r="4"></circle>
+                      <path d="M24 7v6M24 35v6M7 24h6M35 24h6"></path>
+                    </svg>
+                  </figure>
+                </div>
+                <label class="campo">
+                  <span>{s.serie}</span>
+                  <span class="in">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <path d={ico.serie} />
+                    </svg>
+                    <input name="serie" required maxlength="60" autocomplete="off" spellcheck="false" class="mono" />
+                  </span>
+                  <em class="err" aria-live="polite"></em>
+                </label>
+                <label class="campo">
+                  <span>
+                    {s.accesorios} <small>· {f.opcional}</small>
+                  </span>
+                  <span class="in">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <path d={ico.accesorios} />
+                    </svg>
+                    <input name="accesorios" maxlength="200" placeholder={s.accesoriosAyuda} />
+                  </span>
+                </label>
+                <div class="ancho tres">
+                  <label class="campo">
+                    <span>
+                      {s.factura} <small>· {f.opcional}</small>
+                    </span>
+                    <span class="in">
+                      <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d={ico.factura} />
+                      </svg>
+                      <input name="factura" maxlength="60" autocomplete="off" />
+                    </span>
+                  </label>
+                  <label class="campo">
+                    <span>
+                      {s.instalacion} <small>· {f.opcional}</small>
+                    </span>
+                    <span class="in">
+                      <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d={ico.instalacion} />
+                      </svg>
+                      <input name="instalacion" type="date" />
+                    </span>
+                    <em class="err" aria-live="polite"></em>
+                  </label>
+                  <label class="campo">
+                    <span>
+                      {s.pedido} <small>· {f.opcional}</small>
+                    </span>
+                    <span class="in">
+                      <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d={ico.pedido} />
+                      </svg>
+                      <input name="pedido" maxlength="60" autocomplete="off" />
+                    </span>
+                  </label>
+                </div>
+              </div>
+            </fieldset>
+
+            <!-- Paso 3 · La incidencia -->
+            <fieldset class="paso-f" data-paso="2">
+              <legend class="paso-cab">
+                <small>{s.paso(3, 3)}</small>
+                <b tabindex="-1">{pasos[2].titulo}</b>
+                <span>{pasos[2].intro}</span>
+              </legend>
+              <div class="rejilla">
+                <div class="campo ancho" role="radiogroup" aria-labelledby="sat-tipo">
+                  <span id="sat-tipo">{s.tipo}</span>
+                  <div class="tipos">
+                    {s.tipos.map((x) => (
+                      <label class="tipo">
+                        <input type="radio" name="tipo" value={x} required />
+                        <b>{x}</b>
+                      </label>
+                    ))}
+                  </div>
+                  <em class="err" aria-live="polite"></em>
+                </div>
+                <label class="campo ancho">
+                  <span>{s.descripcion}</span>
+                  <textarea
+                    name="descripcion"
+                    rows="6"
+                    required
+                    maxlength="4000"
+                    placeholder={s.descripcionAyuda}
+                  ></textarea>
+                  <small class="cuenta" aria-hidden="true">
+                    <b>0</b> / 4000
+                  </small>
+                  <em class="err" aria-live="polite"></em>
+                </label>
+                <div class="campo ancho" role="radiogroup" aria-labelledby="sat-vuelve">
+                  <span id="sat-vuelve">{s.vuelve}</span>
+                  <div class="sino">
+                    <label>
+                      <input type="radio" name="vuelve" value={s.si} data-si required />
+                      <b>{s.si}</b>
+                    </label>
+                    <label>
+                      <input type="radio" name="vuelve" value={s.no} required />
+                      <b>{s.no}</b>
+                    </label>
+                  </div>
+                  <em class="err" aria-live="polite"></em>
+                </div>
+                <div class="descon ancho" data-descon hidden>
+                  <b class="descon-t">{s.descontaminacion}</b>
+                  <p>{s.descontaminacionTexto}</p>
+                  <div class="descon-docs">
+                    {docsVuelta.map((x) => (
+                      <a href={x.url} target="_blank" rel="noopener" download>
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                          <path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 19.5h14" />
+                        </svg>
+                        {x.nombre}
+                        <small>PDF · {x.l.toUpperCase()}</small>
+                      </a>
+                    ))}
+                  </div>
+                  <label class="marca">
+                    <input type="checkbox" name="descontaminado" value="1" data-confirmo disabled />
+                    <span>{s.confirmo}</span>
+                  </label>
+                  <em class="err" aria-live="polite"></em>
+                </div>
+                <!-- Trampa para robots: invisible para personas; si llega rellena, no se envía -->
+                <label class="trampa" aria-hidden="true">
+                  Web <input name="web" tabindex="-1" autocomplete="off" />
+                </label>
+                <label class="marca ancho">
+                  <input name="privacidad" type="checkbox" required />
+                  <span>
+                    {f.acepto}{' '}
+                    <a href={ruta(lang, '/privacidad/')} target="_blank">
+                      {f.privacidad}
+                    </a>
+                  </span>
+                </label>
+              </div>
+            </fieldset>
+
+            <div class="nav-f">
+              <p class="borrador" data-borrador>
+                {s.borrador}
+                <button type="button" data-vaciar>
+                  {s.vaciar}
+                </button>
+              </p>
+              <div class="nav-btn">
+                <button type="button" class="atras" data-atras hidden>
+                  <span aria-hidden="true">«</span>
+                  {s.atras}
+                </button>
+                <button type="button" class="btn red rel" data-sig>
+                  {s.siguiente} <span aria-hidden="true">»</span>
+                </button>
+                <button type="submit" class="btn red rel" data-enviar data-enviando={s.enviando}>
+                  <svg class="sobre" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d={ico.email} />
+                  </svg>
+                  {s.enviar} <span aria-hidden="true">»</span>
+                </button>
+              </div>
+              <p class="estado" role="status" aria-live="polite" data-error={s.error}></p>
+            </div>
+          </form>
+
+          <!-- Enviado: el aviso y el parte, con su sello -->
+          <div class="hecho" data-hecho hidden tabindex="-1">
+            <svg class="hecho-ok" viewBox="0 0 64 64" aria-hidden="true">
+              <circle cx="32" cy="32" r="29"></circle>
+              <path d="m19 33 9 9 18-19"></path>
+            </svg>
+            <h2>
+              {s.okTitulo[0]}
+              <b>{s.okTitulo[1]}</b>
+            </h2>
+            <p>
+              {s.okTexto} <b data-espejo="email"></b>.
+            </p>
+            <dl class="resumen">
+              <div>
+                <dt>{s.pasos[0]}</dt>
+                <dd data-espejo="distribuidor contacto ciudad" data-sep=" · "></dd>
+              </div>
+              <div>
+                <dt>{s.pasos[1]}</dt>
+                <dd data-espejo="modelo serie" data-sep=" · "></dd>
+              </div>
+              <div>
+                <dt>{s.pasos[2]}</dt>
+                <dd data-espejo="tipo"></dd>
+              </div>
+              <span class="sello" aria-hidden="true">
+                {s.enviado}
+              </span>
+            </dl>
+            <button type="button" class="btn red rel" data-otro>
+              {s.otro} <span aria-hidden="true">»</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <datalist id="sat-modelos">
+      {lista.map((x) => (
+        <option value={x.nombre} />
+      ))}
+    </datalist>
+    <script type="application/json" id="sat-fotos" set:html={JSON.stringify(fotos)} />
+  </div>
+</Base>
+
+<script>
+  const form = document.querySelector<HTMLFormElement>('.parte-f');
+  if (form) {
+    const pasos = [...form.querySelectorAll<HTMLFieldSetElement>('.paso-f')];
+    const indice = document.querySelector<HTMLElement>('[data-pasos]')!;
+    const botonesPaso = [...indice.querySelectorAll<HTMLButtonElement>('[data-ir]')];
+    const atras = form.querySelector<HTMLButtonElement>('[data-atras]')!;
+    const sig = form.querySelector<HTMLButtonElement>('[data-sig]')!;
+    const enviar = form.querySelector<HTMLButtonElement>('[data-enviar]')!;
+    const estado = form.querySelector<HTMLElement>('.estado')!;
+    const descon = form.querySelector<HTMLElement>('[data-descon]')!;
+    const confirmo = form.querySelector<HTMLInputElement>('[data-confirmo]')!;
+    const tarjeta = document.querySelector<HTMLElement>('[data-tarjeta]')!;
+    const hecho = document.querySelector<HTMLElement>('[data-hecho]')!;
+    const cuenta = form.querySelector<HTMLElement>('.cuenta b')!;
+    const fotos = JSON.parse(document.getElementById('sat-fotos')!.textContent || '{}') as Record<string, string>;
+    const foto = form.querySelector<HTMLImageElement>('[data-foto]')!;
+    const fotoCaja = form.querySelector<HTMLElement>('[data-foto-caja]')!;
+    const lang = form.dataset.lang!;
+    const CLAVE = 'oa-parte-servicio';
+    const privados = new Set(['privacidad', 'descontaminado', 'web']);
+
+    form.classList.add('js');
+    let actual = 0;
+    let alcanzado = 0;
+
+    // ——— Validación: el mensaje del navegador, debajo de cada campo ———
+    const caja = (el: Element) => el.closest<HTMLElement>('.campo, .descon, .marca');
+    const marcar = (el: HTMLInputElement | HTMLTextAreaElement) => {
+      const c = caja(el);
+      const err = c?.querySelector<HTMLElement>('.err');
+      const ok = el.checkValidity();
+      c?.classList.toggle('mal', !ok);
+      el.setAttribute('aria-invalid', String(!ok));
+      if (err) err.textContent = ok ? '' : el.validationMessage;
+      return ok;
+    };
+    const validar = (k: number, foco = true) => {
+      const vistos = new Set<string>();
+      const campos = [...pasos[k].querySelectorAll<HTMLInputElement | HTMLTextAreaElement>('input, textarea')].filter(
+        (el) => el.willValidate && !(el.type === 'radio' && vistos.has(el.name)) && (vistos.add(el.name), true),
+      );
+      const malos = campos.filter((el) => !marcar(el));
+      if (foco) malos[0]?.focus();
+      return !malos.length;
+    };
+    form.addEventListener('input', (e) => {
+      const el = e.target as HTMLInputElement;
+      if (caja(el)?.classList.contains('mal')) marcar(el);
+    });
+    form.addEventListener('focusout', (e) => {
+      const el = e.target as HTMLInputElement;
+      if (el.matches('input:not([type=radio]):not([type=checkbox]), textarea') && el.value) marcar(el);
+    });
+
+    // ——— Pasos ———
+    // La línea entre pasos: se llena hacia abajo al avanzar y se vacía hacia arriba al volver, tramo a tramo
+    const tramos = [...indice.querySelectorAll<HTMLLIElement>('li')];
+    const linea = (de: number, a: number) => {
+      tramos.forEach((li, i) => {
+        const orden = a > de ? i - de : de - 1 - i;
+        li.style.setProperty('--retraso', `${Math.max(orden, 0) * 0.55}s`);
+        li.classList.toggle('lleno', i < a);
+      });
+    };
+    const ir = (k: number, foco = true) => {
+      linea(actual, k);
+      actual = k;
+      alcanzado = Math.max(alcanzado, k);
+      pasos.forEach((p, i) => p.classList.toggle('activo', i === k));
+      botonesPaso.forEach((b, i) => {
+        if (i === k) b.setAttribute('aria-current', 'step');
+        else b.removeAttribute('aria-current');
+        // Con tick solo los pasos por encima del actual: al volver atrás, los de abajo se apagan
+        b.classList.toggle('hecho', i < k);
+        b.disabled = i > alcanzado;
+      });
+      indice.style.setProperty('--p', String(k / (pasos.length - 1)));
+      atras.hidden = k === 0;
+      sig.hidden = k === pasos.length - 1;
+      enviar.hidden = k !== pasos.length - 1;
+      if (foco) {
+        pasos[k].querySelector<HTMLElement>('.paso-cab b')!.focus({ preventScroll: true });
+        const arriba = tarjeta.getBoundingClientRect().top;
+        if (arriba < 80) window.scrollBy({ top: arriba - 110, behavior: 'smooth' });
+      }
+    };
+    sig.addEventListener('click', () => validar(actual) && ir(actual + 1));
+    atras.addEventListener('click', () => ir(actual - 1));
+    botonesPaso.forEach((b, i) =>
+      b.addEventListener('click', () => {
+        if (i <= actual) return ir(i);
+        for (let k = actual; k < i; k++) if (!validar(k)) return ir(k, false);
+        ir(i);
+      }),
+    );
+
+    // ——— Si el equipo vuelve a fábrica: el certificado ———
+    const vuelta = () => {
+      const si = !!form.querySelector<HTMLInputElement>('[data-si]:checked');
+      descon.hidden = !si;
+      confirmo.disabled = !si;
+      confirmo.required = si;
+    };
+
+    // ——— Lo rellenado, copiado en los pasos de la izquierda y en el resumen final ———
+    const valor = (n: string) => {
+      const el = form.elements.namedItem(n);
+      if (el instanceof RadioNodeList) return el.value;
+      return (el as HTMLInputElement | null)?.value.trim() ?? '';
+    };
+    const espejos = [...document.querySelectorAll<HTMLElement>('.sat [data-espejo]')].map((el) => ({
+      el,
+      campos: el.dataset.espejo!.split(' '),
+      sep: el.dataset.sep ?? ', ',
+      vacio: el.textContent?.trim() ?? '',
+    }));
+    const pintar = () => {
+      for (const { el, campos, sep, vacio } of espejos) {
+        const v = campos.map(valor).filter(Boolean).join(sep);
+        el.textContent = v || vacio;
+        el.classList.toggle('lleno', !!v);
+      }
+      const src = fotos[valor('modelo').toLowerCase()];
+      if (src && foto.getAttribute('src') !== src) foto.src = src;
+      foto.hidden = !src;
+      fotoCaja.classList.toggle('con', !!src);
+      cuenta.textContent = String(valor('descripcion').length);
+      vuelta();
+    };
+
+    // ——— Borrador en el navegador ———
+    const guardar = () => {
+      const datos: Record<string, string> = {};
+      new FormData(form).forEach((v, k) => {
+        if (!privados.has(k) && typeof v === 'string' && v) datos[k] = v;
+      });
+      try {
+        localStorage.setItem(CLAVE, JSON.stringify(datos));
+      } catch {
+        /* sin almacenamiento: no pasa nada */
+      }
+    };
+    const borrar = () => {
+      try {
+        localStorage.removeItem(CLAVE);
+      } catch {
+        /* nada */
+      }
+    };
+    try {
+      const datos = JSON.parse(localStorage.getItem(CLAVE) || '{}') as Record<string, string>;
+      for (const [k, v] of Object.entries(datos)) {
+        const el = form.elements.namedItem(k);
+        if (el instanceof RadioNodeList) el.value = v;
+        else if (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement) el.value = v;
+      }
+    } catch {
+      /* nada */
+    }
+    form.addEventListener('input', () => {
+      pintar();
+      guardar();
+    });
+    form.addEventListener('change', pintar);
+    const reiniciar = () => {
+      form.reset();
+      form.querySelectorAll('.mal').forEach((c) => c.classList.remove('mal'));
+      form.querySelectorAll('.err').forEach((e) => (e.textContent = ''));
+      borrar();
+      alcanzado = 0;
+      pintar();
+      ir(0);
+    };
+    form.querySelector('[data-vaciar]')!.addEventListener('click', reiniciar);
+
+    // ——— Envío ———
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      // Intro en un campo de los primeros pasos: pasa al siguiente
+      if (actual < pasos.length - 1) {
+        if (validar(actual)) ir(actual + 1);
+        return;
+      }
+      for (let k = 0; k < pasos.length; k++) if (!validar(k)) return ir(k, false);
+      const datos = Object.fromEntries(new FormData(form)) as Record<string, string>;
+      if (datos.web) return; // robot
+      delete datos.web;
+      const envio = {
+        formulario: 'servicio-tecnico',
+        ...datos,
+        descontaminado: datos.descontaminado === '1',
+        privacidad: true,
+        idioma: lang,
+        pagina: location.href,
+        fecha: new Date().toISOString(),
+      };
+      const destino = form.dataset.destino;
+      const correo = form.dataset.correo!;
+
+      // Sin flujo conectado todavía: correo al servicio técnico con el parte ya escrito
+      if (!destino) {
+        const cuerpo = Object.entries(envio)
+          .map(([k, v]) => `${k}: ${v}`)
+          .join('\n');
+        location.href = `mailto:${correo}?subject=${encodeURIComponent(`${datos.tipo} · ${datos.modelo} · ${datos.distribuidor}`)}&body=${encodeURIComponent(cuerpo)}`;
+        return;
+      }
+
+      const texto = enviar.innerHTML;
+      enviar.disabled = true;
+      enviar.textContent = enviar.dataset.enviando!;
+      estado.textContent = '';
+      try {
+        const r = await fetch(destino, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(envio),
+        });
+        if (!r.ok) throw new Error(String(r.status));
+        borrar();
+        botonesPaso.forEach((b) => {
+          b.classList.add('hecho');
+          b.removeAttribute('aria-current');
+          b.disabled = true;
+        });
+        indice.style.setProperty('--p', '1');
+        linea(actual, pasos.length);
+        form.hidden = true;
+        hecho.hidden = false;
+        hecho.focus();
+      } catch {
+        estado.innerHTML = `${estado.dataset.error} <a href="mailto:${correo}">${correo}</a>`;
+      } finally {
+        enviar.disabled = false;
+        enviar.innerHTML = texto;
+      }
+    });
+
+    document.querySelector('[data-otro]')!.addEventListener('click', () => {
+      form.hidden = false;
+      hecho.hidden = true;
+      reiniciar();
+    });
+
+    pintar();
+    ir(0, false);
+  }
+</script>
+
+<style>
+  .sat {
+    background: #f3f4f5;
+  }
+  .trampa {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  /* ——— Portada: un plano de taller sobre gris claro, sin foto ——— */
+  .portada {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    min-height: min(56vh, 520px);
+    padding: clamp(56px, 7vw, 96px) 0;
+    border-bottom: 1px solid var(--line);
+    background:
+      linear-gradient(rgba(21, 23, 25, 0.045) 1px, transparent 1px) 0 0 / 32px 32px,
+      linear-gradient(90deg, rgba(21, 23, 25, 0.045) 1px, transparent 1px) 0 0 / 32px 32px,
+      #eceef0;
+  }
+  .portada > .wrap {
+    width: 100%;
+  }
+  .plano {
+    position: absolute;
+    z-index: -1;
+    top: 50%;
+    right: max(-120px, calc(50% - 760px));
+    width: min(820px, 64vw);
+    translate: 0 -50%;
+    fill: none;
+    stroke: rgba(21, 23, 25, 0.22);
+    stroke-width: 1.4;
+    overflow: visible;
+  }
+  .plano .fino {
+    stroke: rgba(21, 23, 25, 0.12);
+  }
+  .plano .eje path {
+    stroke: rgba(21, 23, 25, 0.14);
+    stroke-dasharray: 22 6 3 6;
+  }
+  .plano .cota {
+    stroke: rgba(21, 23, 25, 0.2);
+  }
+  .plano .cota .punta {
+    fill: rgba(21, 23, 25, 0.25);
+    stroke: none;
+  }
+  .plano .escala {
+    transform-origin: 400px 400px;
+    animation: gira 90s linear infinite;
+  }
+  .plano .escala line {
+    stroke: rgba(21, 23, 25, 0.2);
+  }
+  .plano .escala .fuerte {
+    stroke: rgba(21, 23, 25, 0.38);
+  }
+  .plano .aguja {
+    stroke: var(--red);
+    stroke-width: 3;
+  }
+  .plano .tuerca {
+    stroke: rgba(21, 23, 25, 0.35);
+  }
+  /* El dibujo se traza al llegar */
+  .plano .traza {
+    stroke-dasharray: 1;
+    animation: traza-plano 1.8s var(--ease-out) both;
+  }
+  .plano .rotor .traza {
+    animation-delay: 0.3s;
+  }
+  @keyframes traza-plano {
+    from {
+      stroke-dashoffset: 1;
+    }
+  }
+  /* El barrido: una vuelta cada 8 s; cada alojamiento se enciende cuando pasa (seis, uno cada 60°) */
+  .plano .barrido {
+    transform-origin: 400px 400px;
+    animation: gira 8s linear 1.6s infinite both;
+  }
+  .plano .haz {
+    stroke: var(--red);
+    stroke-width: 2;
+    opacity: 0.7;
+  }
+  .plano .estela {
+    fill: rgba(221, 4, 10, 0.07);
+    stroke: none;
+  }
+  .plano .ping {
+    stroke: rgba(21, 23, 25, 0.12);
+    animation: ping 8s linear calc(1.6s + var(--i) * 8s / 6) infinite;
+  }
+  @keyframes ping {
+    0%,
+    2% {
+      stroke: var(--red);
+      stroke-width: 3;
+      fill: rgba(221, 4, 10, 0.1);
+    }
+    22%,
+    100% {
+      stroke: rgba(21, 23, 25, 0.12);
+      stroke-width: 1.4;
+      fill: transparent;
+    }
+  }
+  .plano .onda {
+    stroke: var(--red);
+    stroke-width: 1.5;
+    transform-origin: 400px 400px;
+    animation: onda 2.4s var(--ease-out) infinite;
+  }
+  @keyframes onda {
+    from {
+      opacity: 0.8;
+      scale: 1;
+    }
+    to {
+      opacity: 0;
+      scale: 8;
+    }
+  }
+  .plano .centro {
+    fill: var(--red);
+    stroke: none;
+  }
+  @keyframes gira {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  .portada-txt {
+    width: min(620px, 100%);
+  }
+  h1 {
+    margin-top: 22px;
+    font-weight: 300;
+    font-size: var(--t-titulo);
+    line-height: 0.93;
+  }
+  h1 b,
+  h2 b {
+    color: var(--red);
+  }
+  h1 b {
+    display: block;
+  }
+  .lead {
+    max-width: 52ch;
+    margin-top: 20px;
+    color: var(--body);
+    font-size: var(--t-sub);
+  }
+
+  /* ——— Cuerpo: título de la sección y la tarjeta ——— */
+  .sat-cuerpo {
+    padding-top: clamp(64px, 8vw, 112px);
+    padding-bottom: clamp(96px, 12vw, 160px);
+  }
+  .sec-cab {
+    margin-bottom: clamp(32px, 4vw, 48px);
+  }
+  .sec-cab h2 {
+    margin-top: 16px;
+    font-weight: 300;
+    font-size: clamp(36px, 4.2vw, 60px);
+    line-height: 0.95;
+    position: relative;
+  }
+  /* La raya roja a la izquierda del título, como en Descargas: baja al pasar por la sección o al rellenarla */
+  .sec-cab h2::before {
+    content: '';
+    position: absolute;
+    top: 0.08em;
+    bottom: 0.08em;
+    left: calc(-1 * clamp(12px, 1.4vw, 22px));
+    width: 4px;
+    background: var(--red);
+    transform: scaleY(0);
+    transform-origin: top;
+    transition: transform var(--dur-4) var(--ease-out);
+  }
+  .sat-cuerpo:is(:hover, :focus-within) .sec-cab h2::before {
+    transform: scaleY(1);
+  }
+  /* La frase, en una sola línea bajo el título */
+  .sec-cab p {
+    margin-top: 14px;
+    color: var(--body);
+    font-size: 18px;
+  }
+  @media (min-width: 900px) {
+    .sec-cab p {
+      white-space: nowrap;
+    }
+  }
+
+  /* La tarjeta: columna oscura con los pasos y, al lado, el formulario */
+  .tarjeta {
+    display: grid;
+    grid-template-columns: clamp(270px, 25vw, 330px) minmax(0, 1fr);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    background: #fff;
+    box-shadow: 0 30px 60px -44px rgba(21, 23, 25, 0.5);
+  }
+  .cuerpo-f {
+    min-width: 0;
+  }
+  .rail {
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+    margin: -1px 0 -1px -1px;
+    padding: clamp(32px, 3.5vw, 48px) clamp(24px, 2.5vw, 36px);
+    border-radius: 20px 0 0 20px;
+    background:
+      linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px) 0 0 / 32px 32px,
+      linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px) 0 0 / 32px 32px,
+      var(--carbon);
+    color: #fff;
+  }
+
+  /* Los pasos ocupan todo el alto de la columna; el contacto, al pie */
+  .rail-in {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 40px;
+  }
+  /* Los pasos, con la raya roja que baja según se avanza */
+  .pasos {
+    position: relative;
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-height: 300px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .pasos li {
+    position: relative;
+    z-index: 1;
+  }
+  .pasos li:not(:last-child) {
+    flex: 1;
+    min-height: 96px;
+  }
+  /* La línea hasta el paso siguiente: gris, y roja cuando el paso está hecho */
+  .pasos li:not(:last-child)::before,
+  .pasos li:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    left: 21px;
+    top: 54px;
+    bottom: -10px;
+    width: 2px;
+    background: var(--carbon-line);
+  }
+  .pasos li:not(:last-child)::after {
+    background: var(--red);
+    transform-origin: top;
+    scale: 1 0;
+    box-shadow: 0 0 10px rgba(221, 4, 10, 0.7);
+    transition: scale 0.6s cubic-bezier(0.65, 0, 0.35, 1) var(--retraso, 0s);
+  }
+  .pasos li.lleno::after {
+    scale: 1 1;
+  }
+  .pasos button {
+    display: grid;
+    grid-template-columns: 44px minmax(0, 1fr);
+    align-items: start;
+    gap: 16px;
+    position: relative;
+    width: calc(100% + 24px);
+    margin: 0 -12px;
+    padding: 10px 12px;
+    border: 0;
+    border-radius: 14px 14px 0 0;
+    background: none;
+    color: var(--steel);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition:
+      background var(--dur-2) ease,
+      scale var(--dur-1) ease;
+  }
+  /* El hover de todas las secciones: fondo que se aclara, raya roja que crece y el círculo en rojo, girado */
+  .pasos button::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 3px;
+    background: var(--red);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform var(--dur-3) var(--ease-out);
+  }
+  .pasos button:not(:disabled):hover {
+    background: rgba(255, 255, 255, 0.06);
+  }
+  .pasos button:not(:disabled):hover::after {
+    transform: scaleX(1);
+  }
+  .pasos button:not(:disabled):not([aria-current]):hover i {
+    border-color: var(--red);
+    background-color: var(--red);
+    color: #fff;
+    transform: rotate(-6deg);
+  }
+  .pasos button:not(:disabled):active {
+    scale: 0.97;
+  }
+  .pasos button:disabled {
+    cursor: default;
+  }
+  .pasos i {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border: 1px solid var(--carbon-line);
+    border-radius: 50%;
+    background: var(--carbon);
+    font-style: normal;
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: 0.04em;
+    transition:
+      background var(--dur-2) ease,
+      border-color var(--dur-2) ease,
+      color var(--dur-2) ease,
+      box-shadow var(--dur-2) ease,
+      transform var(--dur-2) ease;
+  }
+  .pasos button > span {
+    display: grid;
+    gap: 4px;
+    padding-top: 5px;
+  }
+  .pasos b {
+    font-size: 21px;
+    line-height: 1.1;
+    transition: color var(--dur-2) ease;
+  }
+  .pasos small {
+    font-weight: 300;
+    font-size: 14px;
+    line-height: 1.35;
+    color: var(--steel);
+    overflow-wrap: anywhere;
+  }
+  .pasos small.lleno {
+    color: var(--on-dark);
+  }
+  .pasos button:not(:disabled):hover b {
+    color: #fff;
+  }
+  .pasos [aria-current],
+  .pasos .hecho {
+    color: #fff;
+  }
+  .pasos [aria-current] i {
+    position: relative;
+    border-color: var(--red);
+    background: var(--red);
+    color: #fff;
+    box-shadow:
+      0 0 0 6px rgba(221, 4, 10, 0.22),
+      0 0 24px 4px rgba(221, 4, 10, 0.55);
+    animation: late 2s ease-in-out infinite;
+  }
+  /* Las ondas que salen del paso actual */
+  .pasos [aria-current] i::before,
+  .pasos [aria-current] i::after {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border: 2px solid var(--red);
+    border-radius: 50%;
+    animation: emite 2s var(--ease-out) infinite;
+    pointer-events: none;
+  }
+  .pasos [aria-current] i::after {
+    animation-delay: 1s;
+  }
+  @keyframes emite {
+    from {
+      opacity: 0.9;
+      scale: 1;
+    }
+    to {
+      opacity: 0;
+      scale: 2.2;
+    }
+  }
+  @keyframes late {
+    50% {
+      box-shadow:
+        0 0 0 6px rgba(221, 4, 10, 0.3),
+        0 0 34px 10px rgba(221, 4, 10, 0.7);
+    }
+  }
+  .pasos .hecho:not([aria-current]) i {
+    border-color: #fff;
+    background: #fff
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23151719' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 12.5 4 4 8-9'/%3E%3C/svg%3E")
+      center / 20px no-repeat;
+    color: transparent;
+  }
+  .pasos button:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 4px;
+  }
+
+  /* Contacto directo, al pie de la columna */
+  .directo {
+    display: grid;
+    gap: 6px;
+    padding-top: 28px;
+    border-top: 1px solid var(--carbon-line);
+  }
+  .plazo {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    font-weight: 300;
+    font-size: 17px;
+    color: var(--on-dark);
+  }
+  .plazo b {
+    font-size: 48px;
+    line-height: 1;
+    color: #fff;
+  }
+  .plazo-txt {
+    margin-bottom: 16px;
+    color: var(--on-dark);
+    font-size: 15px;
+  }
+  .directo-t {
+    margin-bottom: 4px;
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--steel);
+  }
+  .directo a {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    width: fit-content;
+    padding: 4px 0;
+    color: #fff;
+    font-weight: 700;
+    font-size: 17px;
+    text-decoration: none;
+    background: linear-gradient(#fff, #fff) 30px 100% / 0 1px no-repeat;
+    transition: background-size var(--dur-2) var(--ease-out);
+  }
+  .directo a:hover {
+    background-size: calc(100% - 30px) 1px;
+  }
+  .directo svg {
+    width: 20px;
+    height: 20px;
+    fill: none;
+    stroke: var(--red);
+    stroke-width: 1.8;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+  }
+
+  /* Campos con su icono dentro */
+  .in {
+    position: relative;
+    display: block;
+  }
+  .in svg {
+    position: absolute;
+    top: 50%;
+    left: 16px;
+    width: 20px;
+    height: 20px;
+    translate: 0 -50%;
+    fill: none;
+    stroke: #8a8f93;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    pointer-events: none;
+    transition: stroke var(--dur-1) ease;
+  }
+  .in input {
+    padding-left: 48px;
+  }
+  .in:focus-within svg {
+    stroke: var(--red);
+  }
+  .tres {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 22px;
+  }
+
+  .parte-f {
+    min-width: 0;
+  }
+  .paso-f {
+    min-width: 0;
+    margin: 0;
+    padding: clamp(28px, 4vw, 52px) clamp(24px, 4vw, 52px) 8px;
+    border: 0;
+  }
+  .parte-f:not(.js) .paso-f + .paso-f {
+    border-top: 1px solid var(--line);
+  }
+  .parte-f.js .paso-f:not(.activo) {
+    display: none;
+  }
+  .parte-f.js .paso-f.activo {
+    animation: entra var(--dur-3) var(--ease-out);
+  }
+  @keyframes entra {
+    from {
+      opacity: 0;
+      translate: 0 10px;
+    }
+  }
+  /* La leyenda flota para que respete el relleno del fieldset y no se monte en su borde */
+  .paso-cab {
+    float: left;
+    display: grid;
+    gap: 8px;
+    width: 100%;
+    margin-bottom: 34px;
+    padding: 0;
+  }
+  .paso-cab small {
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--red);
+  }
+  .paso-cab b {
+    font-size: clamp(32px, 3.2vw, 44px);
+    line-height: 1;
+    outline: none;
+  }
+  .paso-cab span {
+    color: var(--body);
+    font-weight: 300;
+    font-size: 17px;
+  }
+
+  .rejilla {
+    clear: both;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px 22px;
+  }
+  .ancho {
+    grid-column: 1 / -1;
+  }
+  .campo {
+    display: grid;
+    align-content: start;
+    gap: 8px;
+    min-width: 0;
+  }
+  .campo > span {
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--ink);
+  }
+  .campo > span small {
+    font-weight: 300;
+    color: var(--muted);
+  }
+  input,
+  textarea {
+    width: 100%;
+    min-width: 0;
+    padding: 0 16px;
+    border: 1px solid #c4c8cb;
+    border-radius: 10px;
+    background: #fff;
+    color: var(--ink);
+    font: 300 18px/1.3 var(--f);
+    transition:
+      border-color var(--dur-1) ease,
+      box-shadow var(--dur-1) ease;
+  }
+  input {
+    height: 54px;
+  }
+  textarea {
+    min-height: 160px;
+    padding: 14px 16px;
+    resize: vertical;
+  }
+  input::placeholder,
+  textarea::placeholder {
+    color: #8a8f93;
+  }
+  input:hover,
+  textarea:hover {
+    border-color: var(--ink);
+  }
+  input:focus,
+  textarea:focus {
+    outline: none;
+    border-color: var(--red);
+    box-shadow: 0 0 0 4px rgba(221, 4, 10, 0.12);
+  }
+  .mono {
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .campo.mal input,
+  .campo.mal textarea {
+    border-color: var(--red);
+  }
+  .campo.mal > span {
+    color: var(--red);
+  }
+  .err {
+    font-style: normal;
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--red);
+  }
+  .err:empty {
+    display: none;
+  }
+  .cuenta {
+    justify-self: end;
+    margin-top: -2px;
+    font-size: 13px;
+    font-weight: 300;
+    color: var(--muted);
+  }
+
+  /* El modelo, con su foto al lado */
+  .modelo-fila {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 96px;
+    align-items: end;
+    gap: 16px;
+  }
+  .modelo-foto {
+    display: grid;
+    place-items: center;
+    width: 96px;
+    height: 96px;
+    margin: 0;
+    border: 1px dashed #c4c8cb;
+    border-radius: 14px;
+    background: #f7f8f9;
+    transition:
+      border-color var(--dur-2) ease,
+      background var(--dur-2) ease;
+  }
+  .modelo-foto.con {
+    border: 1px solid var(--line);
+    background: #fff;
+  }
+  .modelo-foto img {
+    width: 84px;
+    height: 84px;
+    object-fit: contain;
+    animation: aparece var(--dur-3) var(--ease-out);
+  }
+  .modelo-foto svg {
+    width: 36px;
+    height: 36px;
+    fill: none;
+    stroke: #b4b9bd;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+  }
+  .modelo-foto.con svg {
+    display: none;
+  }
+  @keyframes aparece {
+    from {
+      opacity: 0;
+      scale: 0.85;
+    }
+  }
+
+  /* Qué necesita: cuatro opciones */
+  .tipos {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+  .tipo {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-height: 62px;
+    padding: 12px 18px;
+    border: 1px solid #c4c8cb;
+    border-radius: 12px;
+    cursor: pointer;
+    transition:
+      border-color var(--dur-1) ease,
+      background var(--dur-1) ease,
+      box-shadow var(--dur-1) ease;
+  }
+  .tipo::before {
+    content: '';
+    flex: none;
+    width: 20px;
+    height: 20px;
+    border: 1px solid #a9adb0;
+    border-radius: 50%;
+    background: #fff;
+    transition: border var(--dur-1) ease;
+  }
+  .tipo input,
+  .sino input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .tipo b {
+    font-size: 18px;
+    line-height: 1.15;
+  }
+  .tipo:hover {
+    border-color: var(--ink);
+  }
+  .tipo:has(:checked) {
+    border-color: var(--red);
+    background: #fff6f6;
+    box-shadow: inset 0 0 0 1px var(--red);
+  }
+  .tipo:has(:checked)::before {
+    border: 6px solid var(--red);
+  }
+  .tipo:has(:focus-visible),
+  .sino label:has(:focus-visible) {
+    outline: var(--foco);
+    outline-offset: 2px;
+  }
+  .campo.mal .tipo,
+  .campo.mal .sino {
+    border-color: var(--red);
+  }
+
+  /* Sí / No */
+  .sino {
+    display: inline-flex;
+    width: fit-content;
+    padding: 4px;
+    border: 1px solid #c4c8cb;
+    border-radius: 999px;
+  }
+  .sino label {
+    position: relative;
+    min-width: 100px;
+    padding: 12px 24px;
+    border-radius: 999px;
+    text-align: center;
+    font-size: 17px;
+    cursor: pointer;
+    transition:
+      background var(--dur-2) ease,
+      color var(--dur-2) ease;
+  }
+  .sino label:hover {
+    background: #f3f4f5;
+  }
+  .sino label:has(:checked) {
+    background: var(--ink);
+    color: #fff;
+  }
+
+  /* El aviso del certificado, cuando el equipo vuelve a fábrica */
+  .descon {
+    display: grid;
+    gap: 14px;
+    padding: 22px 24px;
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--red);
+    border-radius: 12px;
+    background: #f7f8f9;
+    animation: entra var(--dur-3) var(--ease-out);
+  }
+  .descon[hidden] {
+    display: none;
+  }
+  .descon-t {
+    font-size: 20px;
+    line-height: 1.15;
+  }
+  .descon p {
+    color: var(--body);
+    font-size: 15px;
+  }
+  .descon-docs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .descon-docs a {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 18px 10px 14px;
+    border: 1px solid #c4c8cb;
+    border-radius: 999px;
+    background: #fff;
+    color: var(--ink);
+    font-weight: 700;
+    font-size: 15px;
+    text-decoration: none;
+    transition:
+      border-color var(--dur-1) ease,
+      color var(--dur-1) ease;
+  }
+  .descon-docs a:hover {
+    border-color: var(--red);
+    color: var(--red);
+  }
+  .descon-docs svg {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: var(--red);
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .descon-docs small {
+    font-weight: 300;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .marca {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: start;
+    gap: 12px;
+    font-weight: 300;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  .marca input {
+    width: 20px;
+    height: 20px;
+    margin-top: 1px;
+    padding: 0;
+    accent-color: var(--red);
+  }
+  .marca a {
+    color: inherit;
+  }
+  .marca.mal span {
+    color: var(--red);
+  }
+
+  /* Pie de la tarjeta: el borrador a la izquierda, los botones a la derecha */
+  .nav-f {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 14px 24px;
+    margin-top: 40px;
+    padding: 22px clamp(24px, 4vw, 52px);
+    border-top: 1px solid var(--line);
+    border-radius: 0 0 20px 0;
+    background: #fafafa;
+  }
+  .nav-btn {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+  }
+  .nav-f .btn {
+    height: 54px;
+    padding: 0 30px;
+    font-size: 18px;
+    cursor: pointer;
+  }
+  .nav-f .btn:disabled {
+    opacity: 0.6;
+    cursor: wait;
+  }
+  /* El sobre del botón de enviar: se inclina un poco al pasar, como si saliera */
+  .sobre {
+    width: 19px;
+    height: 19px;
+    flex: none;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.7;
+    stroke-linejoin: round;
+    transition: transform var(--dur-3) var(--ease-out);
+  }
+  [data-enviar]:not(:disabled):hover .sobre {
+    transform: translate(2px, -2px) rotate(-8deg);
+  }
+  .nav-f [hidden] {
+    display: none;
+  }
+  .parte-f:not(.js) [data-atras],
+  .parte-f:not(.js) [data-sig],
+  .parte-f:not(.js) .borrador {
+    display: none;
+  }
+  .atras {
+    display: inline-flex;
+    gap: 8px;
+    padding: 12px 4px;
+    border: 0;
+    background: none;
+    color: var(--body);
+    font: 700 17px/1 var(--f);
+    cursor: pointer;
+  }
+  .atras span {
+    color: var(--red);
+    transition: translate var(--dur-2) var(--ease-out);
+  }
+  .atras:hover {
+    color: var(--ink);
+  }
+  .atras:hover span {
+    translate: -4px 0;
+  }
+  .estado {
+    grid-column: 1 / -1;
+    color: var(--red);
+    font-weight: 700;
+  }
+  .estado:empty {
+    display: none;
+  }
+  .borrador {
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .borrador button {
+    margin-left: 4px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--body);
+    font: inherit;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+  .borrador button:hover {
+    color: var(--red);
+  }
+
+  /* ——— Enviado ——— */
+  .hecho {
+    display: grid;
+    justify-items: start;
+    gap: 16px;
+    padding: clamp(36px, 5vw, 64px) clamp(24px, 4vw, 52px);
+    outline: none;
+  }
+  .hecho[hidden] {
+    display: none;
+  }
+  .hecho-ok {
+    width: 60px;
+    height: 60px;
+    fill: none;
+    stroke: var(--t-ventilada);
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .hecho-ok circle {
+    stroke-dasharray: 190;
+    animation: traza 0.8s var(--ease-out) both;
+  }
+  .hecho-ok path {
+    stroke-dasharray: 44;
+    animation: traza 0.5s var(--ease-out) 0.45s both;
+  }
+  @keyframes traza {
+    from {
+      stroke-dashoffset: 190;
+    }
+  }
+  .hecho h2 {
+    font-weight: 300;
+    font-size: clamp(36px, 4vw, 52px);
+    line-height: 1;
+  }
+  .hecho > p {
+    max-width: 52ch;
+    color: var(--body);
+    font-size: 18px;
+  }
+  .hecho > p b {
+    color: var(--ink);
+  }
+  .resumen {
+    position: relative;
+    display: grid;
+    width: 100%;
+    margin: 12px 0 8px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+  .resumen > div {
+    display: grid;
+    grid-template-columns: 160px minmax(0, 1fr);
+    gap: 16px;
+    padding: 16px 20px;
+  }
+  .resumen > div + div {
+    border-top: 1px solid var(--line);
+  }
+  .resumen dt {
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding-top: 3px;
+  }
+  .resumen dd {
+    margin: 0;
+    font-size: 17px;
+    overflow-wrap: anywhere;
+  }
+  /* El sello de "enviado" cae sobre el resumen */
+  .sello {
+    position: absolute;
+    top: 50%;
+    right: 24px;
+    padding: 6px 16px;
+    border: 3px solid var(--red);
+    border-radius: 8px;
+    color: var(--red);
+    font-weight: 700;
+    font-size: 26px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    translate: 0 -50%;
+    rotate: -10deg;
+    opacity: 0.85;
+    pointer-events: none;
+    animation: sello 0.5s cubic-bezier(0.3, 1.6, 0.5, 1) 0.3s both;
+  }
+  @keyframes sello {
+    from {
+      opacity: 0;
+      scale: 2.2;
+    }
+  }
+  .hecho .btn {
+    margin-top: 8px;
+    cursor: pointer;
+  }
+
+  @media (max-width: 1000px) {
+    /* La columna oscura pasa arriba: los pasos en fila y, debajo, el contacto */
+    .tarjeta {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .rail {
+      gap: 24px;
+      margin: -1px -1px 0;
+      border-radius: 20px 20px 0 0;
+    }
+    .rail-in {
+      flex: none;
+      gap: 24px;
+    }
+    .pasos {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      min-height: 0;
+    }
+    .pasos li:not(:last-child) {
+      min-height: 0;
+    }
+    .pasos li::before,
+    .pasos li::after {
+      display: none;
+    }
+    .pasos::before,
+    .pasos::after {
+      content: '';
+      position: absolute;
+      background: var(--red);
+      left: 0;
+      top: auto;
+      bottom: -12px;
+      width: calc(100% * var(--p, 0));
+      height: 2px;
+      transition: width var(--dur-4) var(--ease-out);
+    }
+    .pasos::before {
+      width: 100%;
+      background: var(--carbon-line);
+    }
+    .pasos button {
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
+    .pasos small {
+      display: none;
+    }
+    .pasos b {
+      font-size: 17px;
+    }
+    .directo {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px 22px;
+      padding-top: 22px;
+    }
+    .plazo-txt,
+    .directo-t {
+      display: none;
+    }
+    .plazo b {
+      font-size: 32px;
+    }
+    .nav-f {
+      border-radius: 0 0 20px 20px;
+    }
+  }
+  @media (max-width: 640px) {
+    .plano {
+      right: -45%;
+      width: 120vw;
+      opacity: 0.5;
+    }
+    .rejilla,
+    .tipos {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .modelo-fila {
+      grid-template-columns: minmax(0, 1fr) 72px;
+    }
+    .modelo-foto {
+      width: 72px;
+      height: 72px;
+    }
+    .modelo-foto img {
+      width: 62px;
+      height: 62px;
+    }
+    .pasos i {
+      width: 36px;
+      height: 36px;
+      font-size: 13px;
+    }
+    .tres {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .pasos button:not([aria-current]) b {
+      display: none;
+    }
+    .nav-f {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .nav-btn {
+      order: -1;
+      justify-content: space-between;
+    }
+    .nav-f .btn {
+      flex: 1;
+      justify-content: center;
+    }
+    .resumen > div {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 4px;
+    }
+    .sello {
+      top: auto;
+      bottom: 10px;
+      font-size: 20px;
+      translate: none;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .plano .escala,
+    .plano .traza,
+    .plano .barrido,
+    .plano .ping,
+    .plano .onda,
+    .parte-f.js .paso-f.activo,
+    .descon,
+    .modelo-foto img,
+    .pasos [aria-current] i,
+    .pasos [aria-current] i::before,
+    .pasos [aria-current] i::after,
+    .sello,
+    .hecho-ok circle,
+    .hecho-ok path {
+      animation: none;
+    }
+  }
+</style>

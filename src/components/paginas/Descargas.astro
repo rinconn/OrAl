@@ -36,6 +36,14 @@ const cruz = 'M6 6l12 12M18 6 6 18';
 
 const fecha = (iso: string) =>
   new Date(iso).toLocaleDateString(t.meta.fechas, { day: 'numeric', month: 'short', year: 'numeric' });
+const hoja = (iso: string) => {
+  const f = new Date(iso);
+  return {
+    mes: f.toLocaleDateString(t.meta.fechas, { month: 'short', timeZone: 'UTC' }).replace('.', '').toUpperCase(),
+    dia: f.getUTCDate(),
+    anio: f.getUTCFullYear(),
+  };
+};
 const plano = (...partes: (string | undefined)[]) =>
   partes.filter(Boolean).join(' ').normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
 const limite = new Date(comprobado);
@@ -67,6 +75,8 @@ const iconoSeccion = {
   servicio: 'telefono',
   condiciones: 'ico-tabla',
 } as const;
+// Servicio técnico, en el orden en que se usa: limpiar el equipo, certificar la descontaminación y pedir el servicio
+const ordenServicio = ['limpieza', 'descontaminacion', 'service-pattern'];
 const iconoDoc: Record<string, string> = {
   descontaminacion: 'ico-seguridad',
   'service-pattern': 'telefono',
@@ -119,7 +129,7 @@ const grupos = [...(Object.keys(familias) as Documento['grupo'][]), 'laboratorio
 
 const totalDocs = generales.length + documentos.length;
 const totalPdf = [...generales, ...documentos].reduce((n, x) => n + Object.keys(x.pdf).length, 0);
-// El índice lleva las cinco; los certificados no van como sección sino en el cierre, junto a "¿Necesitas otro documento?"
+// El índice lleva las cinco; los certificados van aparte, después de las condiciones, con sus sellos
 const indiceSecciones = [
   { id: 'catalogo', n: porTipo('catalogo').length },
   { id: 'equipos', n: documentos.length },
@@ -186,6 +196,10 @@ const datos = {
 };
 
 const icoBajar = 'M12 4v11M7 10l5 5 5-5M5 20h14';
+// Iconos de los datos de cada documento (formato y peso, fecha)
+const icoArchivo = 'M7 3h7l4 4v14H7zM14 3v4h4M10 13h5M10 17h5';
+const icoFecha = 'M5 6h14v14H5zM5 10h14M9 3v4M15 3v4';
+const icoIdioma = 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18';
 ---
 
 <Base title={d.title} description={d.description(totalDocs)}>
@@ -229,9 +243,7 @@ const icoBajar = 'M12 4v11M7 10l5 5 5-5M5 20h14';
         {indiceSecciones.map((s) => (
           <li>
             <a href={`#${s.id}`}>
-              <span class="ind-ico">
-                <img src={icono(iconoSeccion[s.id])} alt="" width="26" height="26" />
-              </span>
+              <span class="ind-ico" style={`--ico: url(${icono(iconoSeccion[s.id])})`} aria-hidden="true"></span>
               <span class="ind-txt">
                 <b>{d.saltos[s.id]}</b>
                 <small>{d.equipos(s.n)}</small>
@@ -256,20 +268,35 @@ const icoBajar = 'M12 4v11M7 10l5 5 5-5M5 20h14';
             <>
               <dl class="ficha-doc">
                 <div>
+                  <span class="fd-ico">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <path d={icoIdioma} />
+                    </svg>
+                  </span>
                   <dt>{d.etqIdiomas}</dt>
                   <dd>{d.idiomas[l]}</dd>
                 </div>
                 <div>
+                  <span class="fd-ico">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <path d={icoArchivo} />
+                    </svg>
+                  </span>
                   <dt>PDF</dt>
                   <dd>{peso}</dd>
                 </div>
                 <div>
+                  <span class="fd-ico">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <path d={icoFecha} />
+                    </svg>
+                  </span>
                   <dt>{d.actualizado}</dt>
                   <dd>{fecha(a.fecha)}</dd>
                 </div>
               </dl>
               <div class="acc">
-                <a class="boton negro grande" href={a.url} target="_blank" rel="noopener" hreflang={l}>
+                <a class="boton rojo grande" href={a.url} target="_blank" rel="noopener" hreflang={l}>
                   <svg viewBox="0 0 24 24" aria-hidden="true">
                     <path d={icoBajar} />
                   </svg>
@@ -321,8 +348,15 @@ const icoBajar = 'M12 4v11M7 10l5 5 5-5M5 20h14';
                   </div>
                   <div class="pd-info">
                     {txt(g).frase && <p>{txt(g).frase}</p>}
-                    <p class="meta">
-                      PDF · {pdfs.map((p) => p.peso).join(' / ')} · {d.actualizado} {fecha(g.fecha)}
+                    <p class="pd-stats">
+                      <span>
+                        <small>PDF</small>
+                        <b>{pdfs.map((p) => p.peso).join(' / ')}</b>
+                      </span>
+                      <span>
+                        <small>{d.actualizado}</small>
+                        <b>{fecha(g.fecha)}</b>
+                      </span>
                     </p>
                     <div class="doc-acc">
                       {pdfs.map(({ l, a }) => (
@@ -354,100 +388,337 @@ const icoBajar = 'M12 4v11M7 10l5 5 5-5M5 20h14';
           </ul>
         )}
 
-        {s.id === 'equipos' &&
-          grupos.map(({ g, docs }) => (
-            <div class="wrap familia">
-              <h3 class="fam-tit">
-                {nombreGrupo(g)} <span>{docs.length}</span>
-              </h3>
-              <ul class="equipos">
-                {docs.map((x) => {
-                  const rot = rotoresDe(x);
-                  const pdfs = pdfsDe(x.pdf);
-                  return (
-                    <li class="doc equipo vidrio" data-busca={plano(nombre(x), x.variantes, nombreGrupo(g), frase(x))}>
-                      <div class="cab-tarjeta">
-                        <span class="insignia">
-                          <img src={icono(x.tipo === 'lab' ? 'pack' : 'centrifuge')} alt="" width="24" height="24" />
-                        </span>
-                        <span class="chips">
-                          {esReciente(x) && <span class="chip rojo">{d.reciente}</span>}
-                          <span class="chip">PDF</span>
-                          {rot.length > 0 && <span class="chip verde">XLSX</span>}
-                        </span>
-                      </div>
-                      <h4>
-                        <a href={ficha(x)}>
-                          {nombre(x)}
-                          {x.variantes && <span>{x.variantes}</span>}
-                        </a>
-                      </h4>
-                      <p class="eq-frase">{frase(x)}</p>
-                      <p class="meta">
-                        {d.actualizado} {fecha(x.fecha)}
-                      </p>
-                      <div class="doc-acc">
-                        {pdfs.map(({ l, a, peso }) => (
-                          <a
-                            class="pdf"
-                            href={a.url}
-                            target="_blank"
-                            rel="noopener"
-                            hreflang={l}
-                            title={`${d.idiomas[l]} · ${peso}`}
-                          >
-                            <svg viewBox="0 0 24 24" aria-hidden="true">
-                              <path d={icoBajar} />
-                            </svg>
-                            {l.toUpperCase()}
-                          </a>
-                        ))}
-                        {rot.length > 0 && (
-                          <button type="button" class="pdf xlsx" data-excel={x.slug} title={d.rotores} hidden>
-                            XLSX
-                          </button>
-                        )}
-                        <button
-                          type="button"
-                          class="sel mini"
-                          data-sel={x.slug}
-                          aria-pressed="false"
-                          aria-label={d.anadir(nombre(x))}
-                          hidden
-                        >
-                          <svg viewBox="0 0 24 24" aria-hidden="true">
-                            <path class="mas" d="M12 6v12M6 12h12" />
-                            <path class="ok" d="m6 12.5 4 4L18 8" />
-                          </svg>
-                        </button>
-                      </div>
-                    </li>
-                  );
-                })}
+        {s.id === 'equipos' && (
+          <div class="wrap libro-caja">
+            <div class="libro" data-libro>
+              <script is:inline>
+                document.currentScript.parentElement.classList.add('js');
+              </script>
+              <div class="libro-fondo" aria-hidden="true"></div>
+              <ul class="pliegos">
+                {grupos.flatMap(({ g, docs }) =>
+                  docs.map((x) => {
+                    const rot = rotoresDe(x);
+                    const pdfs = pdfsDe(x.pdf);
+                    const h = hoja(x.fecha);
+                    return (
+                      <li
+                        class="doc pliego"
+                        data-grupo={g}
+                        data-slug={x.slug}
+                        data-busca={plano(nombre(x), x.variantes, nombreGrupo(g), frase(x))}
+                      >
+                        <div class="pag izq">
+                          <span class="pag-grupo">{d.libroIndice}</span>
+                          <nav class="indlib">
+                            {grupos.map(({ g: g2, docs: docs2 }) => (
+                              <div class:list={['ind-fam', { abierta: g2 === g }]}>
+                                <button
+                                  type="button"
+                                  class="fam"
+                                  data-grupo={g2}
+                                  aria-expanded={g2 === g ? 'true' : 'false'}
+                                >
+                                  {nombreGrupo(g2)} <span>{docs2.length}</span>
+                                </button>
+                                {g2 === g && (
+                                  <ul>
+                                    {docs2.map((y) => (
+                                      <li>
+                                        <button
+                                          type="button"
+                                          data-ir={y.slug}
+                                          aria-current={y === x ? 'true' : undefined}
+                                        >
+                                          {nombre(y)}
+                                          {y.variantes && <small>{y.variantes}</small>}
+                                        </button>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                )}
+                              </div>
+                            ))}
+                          </nav>
+                          <span class="pag-pie">
+                            <img src="/img/marca/logo-ortoalresa-color-horizontal.svg" alt="" width="120" height="17" />
+                            <span class="pag-n"></span>
+                          </span>
+                          <button
+                            type="button"
+                            class="esquina"
+                            data-pasa="-1"
+                            tabindex="-1"
+                            aria-hidden="true"
+                          ></button>
+                        </div>
+                        <div class="pag der">
+                          <div class="der-cab">
+                            <span class="pag-marca" aria-hidden="true"></span>
+                            <span class="pag-grupo">{nombreGrupo(g)}</span>
+                            <span class="chips">
+                              {esReciente(x) && <span class="chip rojo">{d.reciente}</span>}
+                              <span class="chip">PDF</span>
+                              {rot.length > 0 && <span class="chip verde">XLSX</span>}
+                            </span>
+                          </div>
+                          <h4>
+                            <a href={ficha(x)}>
+                              {nombre(x)}
+                              {x.variantes && <span>{x.variantes}</span>}
+                            </a>
+                          </h4>
+                          <p class="eq-frase">{frase(x)}</p>
+                          <div class="pg-datos">
+                            <div>
+                              <small>{d.actualizado}</small>
+                              <b>{`${h.dia} ${h.mes} ${h.anio}`}</b>
+                            </div>
+                            <div>
+                              <small>{d.etqIdiomas}</small>
+                              <b>{pdfs.map(({ l }) => l.toUpperCase()).join(' · ')}</b>
+                            </div>
+                            {rot.length > 0 && (
+                              <div>
+                                <small>{d.rotores}</small>
+                                <b class="rotor-n">
+                                  <svg viewBox="0 0 48 48" aria-hidden="true">
+                                    <g class="gira">
+                                      <circle cx="24" cy="24" r="21" />
+                                      {[0, 60, 120, 180, 240, 300].map((a) => (
+                                        <circle
+                                          class="tubo"
+                                          cx={(24 + 13 * Math.cos((a * Math.PI) / 180)).toFixed(2)}
+                                          cy={(24 + 13 * Math.sin((a * Math.PI) / 180)).toFixed(2)}
+                                          r="3.6"
+                                        />
+                                      ))}
+                                    </g>
+                                    <circle class="eje" cx="24" cy="24" r="3" />
+                                  </svg>
+                                  <span
+                                    class="rotor-cnt"
+                                    style={`--max:${rot.length}`}
+                                    role="img"
+                                    aria-label={String(rot.length)}
+                                  ></span>
+                                </b>
+                              </div>
+                            )}
+                          </div>
+                          <div class="doc-acc">
+                            {pdfs.map(({ l, a, peso }) => (
+                              <a
+                                class="pdf"
+                                href={a.url}
+                                target="_blank"
+                                rel="noopener"
+                                hreflang={l}
+                                title={`${d.idiomas[l]} · ${peso}`}
+                              >
+                                <svg viewBox="0 0 24 24" aria-hidden="true">
+                                  <path d={icoBajar} />
+                                </svg>
+                                <span>{d.idiomas[l]}</span>
+                                <small>{peso}</small>
+                              </a>
+                            ))}
+                            {rot.length > 0 && (
+                              <button type="button" class="pdf xlsx" data-excel={x.slug} title={d.rotores} hidden>
+                                XLSX
+                              </button>
+                            )}
+                            <button
+                              type="button"
+                              class="sel mini"
+                              data-sel={x.slug}
+                              aria-pressed="false"
+                              aria-label={d.anadir(nombre(x))}
+                              hidden
+                            >
+                              <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <path class="mas" d="M12 6v12M6 12h12" />
+                                <path class="ok" d="m6 12.5 4 4L18 8" />
+                              </svg>
+                            </button>
+                          </div>
+                          <span class="pag-pie">
+                            <span class="pag-n"></span>
+                          </span>
+                          <button type="button" class="esquina" data-pasa="1" tabindex="-1" aria-hidden="true"></button>
+                        </div>
+                      </li>
+                    );
+                  }),
+                )}
               </ul>
+              <button type="button" class="tapa-fija" aria-label={d.libroAbrir}>
+                <span class="magia" aria-hidden="true">
+                  {Array.from({ length: 9 }, (_, k) => {
+                    const x = 8 + (k * 84) / 8;
+                    return (
+                      <i
+                        style={`--x:${x.toFixed(1)}%;--w:${Math.round((x - 50) * 3)}px;--h:-${240 + (k % 3) * 40}px;--g:${Math.round((x - 50) * 5 + (k % 2 ? 90 : -90))}deg;--t:${(4.6 + (k % 3) * 0.6).toFixed(1)}s;--r:${(k * 0.45).toFixed(2)}s;--z:${18 + (k % 3) * 5}px`}
+                      />
+                    );
+                  })}
+                  {Array.from({ length: 26 }, (_, k) => (
+                    <b
+                      style={`--x:${(4 + ((k * 41) % 92)).toFixed(0)}%;--w:${(((k * 13) % 9) - 4) * 14}px;--h:-${180 + ((k * 23) % 140)}px;--t:${(3 + ((k * 7) % 25) / 10).toFixed(1)}s;--r:${((k * 0.31) % 3).toFixed(2)}s;--z:${2 + (k % 3)}px`}
+                    />
+                  ))}
+                </span>
+                <span class="holo" aria-hidden="true">
+                  <img src="/img/marca/logo-ortoalresa-color.svg" alt="" width="130" height="59" />
+                  <b>{d.secciones.equipos.titulo.join('')}</b>
+                  <small>{d.libroAbrir}</small>
+                </span>
+                <svg class="intro-libro" viewBox="0 0 1000 300" aria-hidden="true">
+                  <defs>
+                    <linearGradient id="il-papel" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0" stop-color="#fffdf8" />
+                      <stop offset="1" stop-color="#e6e1d6" />
+                    </linearGradient>
+                    <radialGradient id="il-luz">
+                      <stop offset="0" stop-color="#dd040a" stop-opacity="0.12" />
+                      <stop offset="0.5" stop-color="#dd040a" stop-opacity="0.05" />
+                      <stop offset="1" stop-color="#dd040a" stop-opacity="0" />
+                    </radialGradient>
+                  </defs>
+                  <ellipse class="il-halo" cx="500" cy="215" rx="430" ry="150" fill="url(#il-luz)" />
+                  <path class="il-tapa" d="M38 262 L962 262 L978 282 L22 282 Z" />
+                  <path class="il-lomo" d="M468 270 Q500 238 532 270 Z" />
+                  <g>
+                    <path
+                      class="il-bloque"
+                      d="M60 252 C200 205 380 200 470 225 Q492 238 497 254 L497 268 Q300 256 60 270 Z"
+                    />
+                    <path class="il-canto" d="M62 259 Q300 247 496 257" />
+                    <path class="il-canto" d="M62 261.6 Q300 249.6 496 259.6" />
+                    <path class="il-canto" d="M62 264.2 Q300 252.2 496 262.2" />
+                    <path class="il-canto" d="M62 266.8 Q300 254.8 496 264.8" />
+                    <path class="il-hoja" d="M60 252 C200 205 380 200 470 225 Q492 238 497 254 Q300 240 60 256 Z" />
+                    <path
+                      class="il-ala a1"
+                      d="M499 254 C470 196 380 146 176 150 Q138 152 146 186 C300 186 440 212 493 256 Z"
+                    />
+                    <path
+                      class="il-ala a2"
+                      d="M499 254 C470 196 380 146 176 150 Q138 152 146 186 C300 186 440 212 493 256 Z"
+                    />
+                    <path
+                      class="il-ala a3"
+                      d="M499 254 C470 196 380 146 176 150 Q138 152 146 186 C300 186 440 212 493 256 Z"
+                    />
+                  </g>
+                  <g transform="translate(1000 0) scale(-1 1)">
+                    <path
+                      class="il-bloque"
+                      d="M60 252 C200 205 380 200 470 225 Q492 238 497 254 L497 268 Q300 256 60 270 Z"
+                    />
+                    <path class="il-canto" d="M62 259 Q300 247 496 257" />
+                    <path class="il-canto" d="M62 261.6 Q300 249.6 496 259.6" />
+                    <path class="il-canto" d="M62 264.2 Q300 252.2 496 262.2" />
+                    <path class="il-canto" d="M62 266.8 Q300 254.8 496 264.8" />
+                    <path class="il-hoja" d="M60 252 C200 205 380 200 470 225 Q492 238 497 254 Q300 240 60 256 Z" />
+                    <path
+                      class="il-ala a1"
+                      d="M499 254 C470 196 380 146 176 150 Q138 152 146 186 C300 186 440 212 493 256 Z"
+                    />
+                    <path
+                      class="il-ala a2"
+                      d="M499 254 C470 196 380 146 176 150 Q138 152 146 186 C300 186 440 212 493 256 Z"
+                    />
+                    <path
+                      class="il-ala a3"
+                      d="M499 254 C470 196 380 146 176 150 Q138 152 146 186 C300 186 440 212 493 256 Z"
+                    />
+                  </g>
+                </svg>
+                <span class="tapa-in">
+                  <img src="/img/marca/logo-ortoalresa-oscuro.svg" alt="Orto Alresa" width="170" height="77" />
+                  <span class="tapa-tit">
+                    {d.secciones.equipos.titulo[0]}
+                    <b>{d.secciones.equipos.titulo[1]}</b>
+                  </span>
+                </span>
+              </button>
+              <div class="hoja" aria-hidden="true" inert hidden>
+                <div class="cara fr"></div>
+                <div class="cara tr"></div>
+              </div>
+              <div class="libro-nav">
+                <button type="button" class="pasa" data-ant aria-label={d.libroAnt}>
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="m15 5-7 7 7 7" />
+                  </svg>
+                </button>
+                <span class="cuenta" aria-live="polite"></span>
+                <button type="button" class="pasa" data-sig aria-label={d.libroSig}>
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="m9 5 7 7-7 7" />
+                  </svg>
+                </button>
+              </div>
             </div>
-          ))}
+          </div>
+        )}
 
+        {s.id === 'condiciones' && (
+          <div class="arch-tabs" role="tablist" data-archivo-tabs>
+            {porTipo('condiciones').map((g, k) => (
+              <button
+                type="button"
+                role="tab"
+                class="arch-tab"
+                aria-selected={k === 0 ? 'true' : 'false'}
+                tabindex={k === 0 ? 0 : -1}
+              >
+                <i>{String(k + 1).padStart(2, '0')}</i>
+                {txt(g).corto ?? txt(g).nombre}
+              </button>
+            ))}
+          </div>
+        )}
         {(s.id === 'servicio' || s.id === 'condiciones') && (
-          <ul class:list={['wrap', 'tarjetas', `t-${s.id}`]}>
-            {porTipo(s.id).map((g) => {
+          <ul class:list={[s.id === 'condiciones' ? 'arch-cuerpo' : 'wrap', 'tarjetas', `t-${s.id}`]}>
+            {(s.id === 'servicio'
+              ? ordenServicio.map((id) => porTipo('servicio').find((x) => x.id === id)).filter((x) => x !== undefined)
+              : porTipo(s.id)
+            ).map((g, k) => {
               const pdfs = pdfsDe(g.pdf);
               return (
-                <li class="doc tarjeta vidrio" data-busca={plano(txt(g).nombre, txt(g).frase, d.saltos[s.id])}>
+                <li
+                  class:list={[
+                    'doc tarjeta',
+                    s.id === 'servicio' ? 'vidrio paso' : 'fila',
+                    { activa: s.id === 'condiciones' && k === 0 },
+                  ]}
+                  data-busca={plano(txt(g).nombre, txt(g).frase, d.saltos[s.id])}
+                >
+                  <span class="paso-n" aria-hidden="true">
+                    {String(k + 1).padStart(2, '0')}
+                  </span>
                   <div class="cab-tarjeta">
                     <span class="insignia">
                       <img src={icono(iconoDoc[g.id] ?? 'ico-tabla')} alt="" width="24" height="24" />
                     </span>
-                    <span class="chips">
-                      {nuevo(g.fecha) && <span class="chip rojo">{d.reciente}</span>}
-                      {pdfs.map((x) => (
-                        <span class="chip">{x.l.toUpperCase()}</span>
-                      ))}
-                    </span>
+                    <span class="chips">{nuevo(g.fecha) && <span class="chip rojo">{d.reciente}</span>}</span>
                   </div>
                   <h3>{txt(g).nombre}</h3>
                   <p class="meta">
-                    PDF · {pdfs.map((x) => x.peso).join(' / ')} · {d.actualizado} {fecha(g.fecha)}
+                    <span class="dato">
+                      <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d={icoArchivo} />
+                      </svg>
+                      PDF · {pdfs.map((x) => x.peso).join(' / ')}
+                    </span>
+                    <span class="dato">
+                      <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d={icoFecha} />
+                      </svg>
+                      {d.actualizado} {fecha(g.fecha)}
+                    </span>
                   </p>
                   <div class="doc-acc">
                     {pdfs.map(({ l, a }) => (
@@ -480,95 +751,112 @@ const icoBajar = 'M12 4v11M7 10l5 5 5-5M5 20h14';
       </section>
     ))}
 
+    <!-- ——— Certificados de calidad: una sección más, con sus sellos ——— -->
+    <section class="seccion sec-certificado" id="certificado" data-seccion>
+      <header class="wrap sec-cab raya">
+        <h2>
+          {d.secciones.certificado.titulo[0]}
+          <b>{d.secciones.certificado.titulo[1]}</b>
+        </h2>
+        <p>{d.secciones.certificado.texto}</p>
+      </header>
+      <ul class="wrap sellos">
+        {porTipo('certificado').map((g) => {
+          const n = txt(g).nombre.replace(/^ISO\s*/, '');
+          return (
+            <li class="doc sello" data-busca={plano(txt(g).nombre, txt(g).frase, d.saltos.certificado)}>
+              <span class="se-marca" aria-hidden="true">
+                <svg class="se-anillo" viewBox="0 0 120 120">
+                  <defs>
+                    <path id={`c-${g.id}`} d="M60 60m-46 0a46 46 0 1 1 92 0a46 46 0 1 1-92 0" />
+                  </defs>
+                  <circle cx="60" cy="60" r="56" />
+                  <circle cx="60" cy="60" r="34" />
+                  <text>
+                    <textPath href={`#c-${g.id}`}>ORTO ALRESA · CERTIFIED · ORTO ALRESA · CERTIFIED ·</textPath>
+                  </text>
+                </svg>
+                <span class="se-n">
+                  <small>ISO</small>
+                  {n}
+                </span>
+              </span>
+              <div class="se-txt">
+                <h3>{txt(g).nombre}</h3>
+                {txt(g).frase && <p>{txt(g).frase}</p>}
+              </div>
+              <div class="doc-acc">
+                {pdfsDe(g.pdf).map(({ l, a, peso }) => (
+                  <a
+                    class="pdf"
+                    href={a.url}
+                    target="_blank"
+                    rel="noopener"
+                    hreflang={l}
+                    title={`${d.idiomas[l]} · ${peso}`}
+                  >
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <path d={icoBajar} />
+                    </svg>
+                    {l.toUpperCase()}
+                  </a>
+                ))}
+                <button
+                  type="button"
+                  class="sel mini"
+                  data-sel={g.id}
+                  aria-pressed="false"
+                  aria-label={d.anadir(txt(g).nombre)}
+                  hidden
+                >
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path class="mas" d="M12 6v12M6 12h12" />
+                    <path class="ok" d="m6 12.5 4 4L18 8" />
+                  </svg>
+                </button>
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+    </section>
+
     <p class="wrap nada" id="nada" hidden>
       {d.nada}
     </p>
 
-    <!-- ——— Cierre: certificados de calidad y "¿Necesitas otro documento?", a modo de pie ——— -->
-    <section class="cierre raya" id="certificado" data-seccion>
-      <div class="wrap cierre-in">
+    <!-- ——— Cierre: "¿Necesitas otro documento?", la última acción antes del pie ——— -->
+    <div class="wrap cierre">
+      <div class="remate">
         <div class="falta">
           <h2>
             {d.falta[0]}
             <b>{d.falta[1]}</b>
           </h2>
           <p>{d.faltaTexto}</p>
-          <div class="falta-links">
-            <a class="arrow" href={`mailto:${contacto.tecnico}`}>
-              {d.tecnico} · {contacto.tecnico}
-            </a>
-            <a class="arrow" href={`mailto:${contacto.comercial}`}>
-              {d.comercial} · {contacto.comercial}
-            </a>
-          </div>
-          <p class="nota">
-            {d.comprobado} {fecha(comprobado)}.
-          </p>
         </div>
-        <div class="certificados">
-          <span class="eyebrow">{d.saltos.certificado}</span>
-          <ul class="sellos">
-            {porTipo('certificado').map((g) => {
-              const n = txt(g).nombre.replace(/^ISO\s*/, '');
-              return (
-                <li class="doc sello" data-busca={plano(txt(g).nombre, txt(g).frase, d.saltos.certificado)}>
-                  <span class="se-marca" aria-hidden="true">
-                    <svg class="se-anillo" viewBox="0 0 120 120">
-                      <defs>
-                        <path id={`c-${g.id}`} d="M60 60m-46 0a46 46 0 1 1 92 0a46 46 0 1 1-92 0" />
-                      </defs>
-                      <circle cx="60" cy="60" r="56" />
-                      <circle cx="60" cy="60" r="34" />
-                      <text>
-                        <textPath href={`#c-${g.id}`}>ORTO ALRESA · CERTIFIED · ORTO ALRESA · CERTIFIED ·</textPath>
-                      </text>
-                    </svg>
-                    <span class="se-n">
-                      <small>ISO</small>
-                      {n}
-                    </span>
-                  </span>
-                  <div class="se-txt">
-                    <h3>{txt(g).nombre}</h3>
-                    {txt(g).frase && <p>{txt(g).frase}</p>}
-                  </div>
-                  <div class="doc-acc">
-                    {pdfsDe(g.pdf).map(({ l, a, peso }) => (
-                      <a
-                        class="pdf"
-                        href={a.url}
-                        target="_blank"
-                        rel="noopener"
-                        hreflang={l}
-                        title={`${d.idiomas[l]} · ${peso}`}
-                      >
-                        <svg viewBox="0 0 24 24" aria-hidden="true">
-                          <path d={icoBajar} />
-                        </svg>
-                        {l.toUpperCase()}
-                      </a>
-                    ))}
-                    <button
-                      type="button"
-                      class="sel mini"
-                      data-sel={g.id}
-                      aria-pressed="false"
-                      aria-label={d.anadir(txt(g).nombre)}
-                      hidden
-                    >
-                      <svg viewBox="0 0 24 24" aria-hidden="true">
-                        <path class="mas" d="M12 6v12M6 12h12" />
-                        <path class="ok" d="m6 12.5 4 4L18 8" />
-                      </svg>
-                    </button>
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
+        <div class="falta-links">
+          {[
+            [d.tecnico, contacto.tecnico],
+            [d.comercial, contacto.comercial],
+          ].map(([quien, correo]) => (
+            <a class="buzon" href={`mailto:${correo}`}>
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <rect x="3" y="5" width="18" height="14" rx="2" />
+                <path d="m3.5 6.5 8.5 7 8.5-7" />
+              </svg>
+              <span>
+                <small>{quien}</small>
+                {correo}
+              </span>
+            </a>
+          ))}
         </div>
       </div>
-    </section>
+      <p class="nota">
+        {d.comprobado} {fecha(comprobado)}.
+      </p>
+    </div>
   </div>
 
   <!-- La bandeja: tu selección, con el QR para abrirla en el móvil -->
@@ -796,6 +1084,8 @@ const icoBajar = 'M12 4v11M7 10l5 5 5-5M5 20h14';
   // ——— Buscador ———
   const busca = document.querySelector<HTMLInputElement>('#busca')!;
   const nada = document.querySelector<HTMLElement>('#nada')!;
+  let sincronizarLibro = () => {};
+  let sincronizarArchivo = () => {};
   const filtrar = () => {
     const q = plano(busca.value);
     let total = 0;
@@ -812,6 +1102,8 @@ const icoBajar = 'M12 4v11M7 10l5 5 5-5M5 20h14';
       total += n;
     }
     nada.hidden = total > 0;
+    sincronizarLibro();
+    sincronizarArchivo();
   };
   busca.addEventListener('input', filtrar);
   busca.addEventListener('keydown', (e) => {
@@ -820,6 +1112,271 @@ const icoBajar = 'M12 4v11M7 10l5 5 5-5M5 20h14';
       filtrar();
     }
   });
+
+  // ——— El libro de catálogos: la tapa se abre y cada serie es un pliego; al pasar la hoja se ve la siguiente ———
+  const libro = document.querySelector<HTMLElement>('[data-libro]');
+  if (libro) {
+    const pliegos = [...libro.querySelectorAll<HTMLElement>('.pliego')];
+    const tapa = libro.querySelector<HTMLElement>('.tapa-fija')!;
+    const hoja = libro.querySelector<HTMLElement>('.hoja')!;
+    const caraFr = hoja.querySelector<HTMLElement>('.fr')!;
+    const caraTr = hoja.querySelector<HTMLElement>('.tr')!;
+    const ant = libro.querySelector<HTMLButtonElement>('[data-ant]')!;
+    const sig = libro.querySelector<HTMLButtonElement>('[data-sig]')!;
+    const cuenta = libro.querySelector<HTMLElement>('.cuenta')!;
+    const sinMovimiento = matchMedia('(prefers-reduced-motion: reduce)');
+    const movil = matchMedia('(max-width: 759px)');
+    let vis: HTMLElement[] = [];
+    let i = -1; // -1: el libro está cerrado
+    let ocupado = false;
+
+    const controles = () => {
+      ant.disabled = ocupado || i < 0;
+      sig.disabled = ocupado || i >= vis.length - 1;
+      cuenta.textContent = i < 0 ? '' : `${i + 1} / ${vis.length}`;
+    };
+    const pintar = () => {
+      libro.classList.toggle('abierto', i >= 0);
+      for (const p of pliegos) {
+        const es = i >= 0 && p === vis[i];
+        p.classList.toggle('v-i', es);
+        p.classList.toggle('v-d', es);
+      }
+      controles();
+    };
+    // Una hoja que gira sobre el lomo: delante, la página derecha del pliego menor; detrás, la izquierda del mayor
+    const volar = (menor: number, mayor: number, adelante: boolean, alTerminar: () => void) => {
+      caraFr.replaceChildren(
+        (menor < 0 ? tapa.querySelector('.tapa-in')! : vis[menor].querySelector('.der')!).cloneNode(true),
+      );
+      caraTr.replaceChildren(vis[mayor].querySelector('.izq')!.cloneNode(true));
+      hoja.hidden = false;
+      libro.classList.add('volteando');
+      const giro = [{ transform: 'rotateY(0deg)' }, { transform: 'rotateY(-180deg)' }];
+      const a = hoja.animate(adelante ? giro : giro.reverse(), {
+        duration: 520,
+        easing: 'cubic-bezier(0.45, 0, 0.2, 1)',
+        fill: 'both',
+      });
+      const sombra = (cara: HTMLElement, de: number, a2: number) =>
+        cara.animate([{ opacity: de }, { opacity: a2 }], {
+          duration: 520,
+          easing: 'linear',
+          pseudoElement: '::after',
+          fill: 'both',
+        });
+      sombra(caraFr, adelante ? 0 : 0.5, adelante ? 0.5 : 0);
+      sombra(caraTr, adelante ? 0.5 : 0, adelante ? 0 : 0.5);
+      a.onfinish = () => {
+        a.cancel();
+        hoja.hidden = true;
+        libro.classList.remove('volteando');
+        alTerminar();
+      };
+    };
+    const ir = (destino: number) => {
+      const j = Math.max(-1, Math.min(vis.length - 1, destino));
+      if (j === i || ocupado || !vis.length) return;
+      if (sinMovimiento.matches || movil.matches) {
+        i = j;
+        pintar();
+        return;
+      }
+      const viejo = i;
+      if (viejo < 0 || j < 0) {
+        // De la portada al libro y vuelta: la portada sube y se desvanece, el libro aparece (y al revés)
+        const portada = [tapa.querySelector('.intro-libro'), tapa.querySelector('.holo'), tapa.querySelector('.magia')];
+        const caja = libro.querySelector<HTMLElement>('.pliegos')!;
+        const suave = 'cubic-bezier(0.2, 0.8, 0.2, 1)';
+        const mostrar = () => {
+          for (const p of pliegos) p.classList.remove('entra');
+          if (j >= 0) vis[j].classList.add('entra');
+          i = j;
+          ocupado = false;
+          pintar();
+        };
+        ocupado = true;
+        controles();
+        const [lib, holo, magia] = portada;
+        const despliega = [
+          { opacity: 0, transform: 'perspective(1600px) rotateX(58deg) translateY(80px) scale(0.78)' },
+          { opacity: 1, offset: 0.55 },
+          { opacity: 1, transform: 'perspective(1600px) rotateX(-4deg) translateY(-8px) scale(1.02)', offset: 0.8 },
+          { opacity: 1, transform: 'none' },
+        ];
+        if (j >= 0) {
+          // Abrir: la portada coge impulso, el holograma parpadea y se apaga, y el catálogo se despliega desde abajo
+          const salidas = [
+            lib?.animate(
+              [
+                { opacity: 1, transform: 'none' },
+                { opacity: 1, transform: 'scale(0.96) translateY(10px)', offset: 0.25 },
+                { opacity: 1, transform: 'scale(1.06) translateY(-14px)', offset: 0.55 },
+                { opacity: 0, transform: 'scale(1.3) translateY(-50px)' },
+              ],
+              { duration: 950, easing: 'ease-in-out', fill: 'forwards' },
+            ),
+            holo?.animate(
+              [
+                { opacity: 1 },
+                { opacity: 0.15, offset: 0.12 },
+                { opacity: 0.95, offset: 0.2 },
+                { opacity: 0.1, offset: 0.34 },
+                { opacity: 0.8, offset: 0.42 },
+                { opacity: 0, transform: 'translateY(-70px) scaleY(1.5)' },
+              ],
+              { duration: 850, easing: 'linear', fill: 'forwards' },
+            ),
+            magia?.animate(
+              [
+                { opacity: 1, transform: 'none' },
+                { opacity: 1, transform: 'translateY(-30px) scale(1.15)', offset: 0.5 },
+                { opacity: 0, transform: 'translateY(-120px) scale(1.4)' },
+              ],
+              { duration: 950, easing: 'ease-out', fill: 'forwards' },
+            ),
+          ];
+          salidas[0]!.onfinish = () => {
+            mostrar();
+            salidas.forEach((x) => x?.cancel());
+            caja.animate(despliega, { duration: 1100, easing: suave });
+          };
+        } else {
+          // Cerrar: el catálogo se pliega hacia abajo y la portada vuelve a montarse pieza a pieza
+          caja.animate(
+            [
+              { opacity: 1, transform: 'none' },
+              { opacity: 1, transform: 'perspective(1600px) rotateX(-4deg) translateY(-8px) scale(1.02)', offset: 0.2 },
+              { opacity: 1, offset: 0.45 },
+              { opacity: 0, transform: 'perspective(1600px) rotateX(58deg) translateY(80px) scale(0.78)' },
+            ],
+            {
+              duration: 800,
+              easing: 'cubic-bezier(0.5, 0, 0.75, 0)',
+              fill: 'forwards',
+            },
+          ).onfinish = (e) => {
+            mostrar();
+            (e.target as Animation).cancel();
+            lib?.animate(
+              [
+                { opacity: 0, transform: 'scale(0.7) translateY(90px)' },
+                { opacity: 1, transform: 'scale(1.05) translateY(-10px)', offset: 0.65 },
+                { opacity: 1, transform: 'none' },
+              ],
+              { duration: 1000, easing: suave, fill: 'backwards' },
+            );
+            magia?.animate(
+              [
+                { opacity: 0, transform: 'translateY(60px) scale(0.6)' },
+                { opacity: 1, transform: 'none' },
+              ],
+              { duration: 900, delay: 350, easing: suave, fill: 'backwards' },
+            );
+            holo?.animate(
+              [
+                { opacity: 0, transform: 'translateY(40px) scaleY(0.2)' },
+                { opacity: 0.9, transform: 'none', offset: 0.45 },
+                { opacity: 0.2, offset: 0.55 },
+                { opacity: 1, offset: 0.65 },
+                { opacity: 0.4, offset: 0.75 },
+                { opacity: 1 },
+              ],
+              { duration: 1000, delay: 600, easing: 'linear', fill: 'backwards' },
+            );
+          };
+        }
+        return;
+      }
+      const adelante = j > viejo;
+      ocupado = true;
+      libro.classList.toggle('abierto', j >= 0);
+      for (const p of pliegos) p.classList.remove('entra');
+      if (adelante) {
+        vis[j].classList.add('entra', 'v-d');
+        vis[viejo]?.classList.remove('v-d');
+      } else {
+        vis[j]?.classList.add('v-i');
+        vis[viejo].classList.remove('v-i');
+      }
+      volar(Math.min(viejo, j), Math.max(viejo, j), adelante, () => {
+        ocupado = false;
+        i = j;
+        pintar();
+      });
+      controles();
+    };
+
+    sincronizarLibro = () => {
+      const actual = vis[i];
+      vis = pliegos.filter((p) => !p.hidden);
+      vis.forEach((p, k) => {
+        p.querySelector('.pag-marca')!.textContent = String(k + 1).padStart(2, '0');
+        p.querySelectorAll('.pag-n').forEach((n, c) => (n.textContent = String(2 * k + 2 + c).padStart(2, '0')));
+      });
+      for (const b of libro.querySelectorAll<HTMLElement>('[data-ir]'))
+        b.parentElement!.hidden = !vis.some((p) => p.dataset.slug === b.dataset.ir);
+      for (const f of libro.querySelectorAll<HTMLElement>('.ind-fam'))
+        f.hidden = !vis.some((p) => p.dataset.grupo === f.querySelector<HTMLElement>('.fam')!.dataset.grupo);
+      i = vis.length ? (vis.includes(actual) ? vis.indexOf(actual) : movil.matches || i >= 0 ? 0 : -1) : -1;
+      pintar();
+    };
+    sincronizarLibro();
+
+    tapa.addEventListener('click', () => ir(0));
+    ant.addEventListener('click', () => ir(i - 1));
+    sig.addEventListener('click', () => ir(i + 1));
+    // El índice de la página izquierda: una familia abre sus series y cada serie lleva a su pliego
+    libro.addEventListener('click', (e) => {
+      const b = (e.target as HTMLElement).closest<HTMLElement>('[data-ir], .fam, [data-pasa]');
+      if (!b || b.closest('.hoja')) return;
+      if (b.dataset.pasa) return ir(i + Number(b.dataset.pasa));
+      const k = b.dataset.ir
+        ? vis.findIndex((p) => p.dataset.slug === b.dataset.ir)
+        : vis.findIndex((p) => p.dataset.grupo === b.dataset.grupo);
+      if (k >= 0) ir(k);
+    });
+    libro.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft') ir(i - 1);
+      else if (e.key === 'ArrowRight') ir(i + 1);
+    });
+  }
+
+  // ——— Archivador de condiciones: una pestaña por documento ———
+  const pestanas = [...document.querySelectorAll<HTMLButtonElement>('[data-archivo-tabs] .arch-tab')];
+  const hojasArch = [...document.querySelectorAll<HTMLElement>('.arch-cuerpo > .doc')];
+  if (pestanas.length === hojasArch.length && pestanas.length) {
+    let act = 0;
+    const elegir = (k: number, foco = false) => {
+      act = k;
+      sincronizarArchivo();
+      if (foco) pestanas[k].focus();
+    };
+    sincronizarArchivo = () => {
+      if (hojasArch[act].hidden)
+        act = Math.max(
+          hojasArch.findIndex((h) => !h.hidden),
+          0,
+        );
+      pestanas.forEach((p, k) => {
+        p.hidden = hojasArch[k].hidden;
+        p.setAttribute('aria-selected', String(k === act));
+        p.tabIndex = k === act ? 0 : -1;
+        hojasArch[k].classList.toggle('activa', k === act);
+      });
+    };
+    pestanas.forEach((p, k) => p.addEventListener('click', () => elegir(k)));
+    pestanas[0].parentElement!.addEventListener('keydown', (e) => {
+      const dir = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+      if (!dir) return;
+      let k = act;
+      do k = (k + dir + pestanas.length) % pestanas.length;
+      while (hojasArch[k].hidden && k !== act);
+      e.preventDefault();
+      elegir(k, true);
+    });
+    sincronizarArchivo();
+  }
 
   // ——— Excel de rotores, con los datos de la ficha ———
   for (const b of document.querySelectorAll<HTMLButtonElement>('[data-excel]'))
@@ -1026,6 +1583,9 @@ const icoBajar = 'M12 4v11M7 10l5 5 5-5M5 20h14';
   h2 b {
     font-weight: 700;
   }
+  .portada h1 b {
+    color: var(--red);
+  }
 
   /* ——— Portada: la foto del catálogo a la izquierda, el texto a la derecha sobre un velo gris ——— */
   .portada {
@@ -1156,6 +1716,8 @@ const icoBajar = 'M12 4v11M7 10l5 5 5-5M5 20h14';
     gap: 14px;
     padding: 22px 20px;
     text-decoration: none;
+    border-radius: 14px 14px 0 0;
+    overflow: hidden;
     transition: background var(--dur-2) ease;
   }
   .indice a::after {
@@ -1182,22 +1744,28 @@ const icoBajar = 'M12 4v11M7 10l5 5 5-5M5 20h14';
     width: 48px;
     height: 48px;
     flex: none;
+    border-radius: 14px;
     background: var(--gris-fondo);
     transition:
       background var(--dur-2) ease,
       transform var(--dur-3) var(--ease-out);
   }
-  .ind-ico img {
+  /* Todos los iconos con el mismo trazo oscuro (el del teléfono venía en rojo): se pintan como máscara */
+  .ind-ico::before {
+    content: '';
     width: 26px;
     height: 26px;
-    transition: filter var(--dur-2) ease;
+    background: #333;
+    -webkit-mask: var(--ico) center / contain no-repeat;
+    mask: var(--ico) center / contain no-repeat;
+    transition: background var(--dur-2) ease;
   }
   .indice a:hover .ind-ico {
     background: var(--red);
     transform: rotate(-6deg);
   }
-  .indice a:hover .ind-ico img {
-    filter: brightness(0) invert(1);
+  .indice a:hover .ind-ico::before {
+    background: #fff;
   }
   .ind-txt b {
     display: block;
@@ -1255,28 +1823,77 @@ const icoBajar = 'M12 4v11M7 10l5 5 5-5M5 20h14';
     color: var(--body);
     font-size: var(--t-sub);
   }
+  /* Datos del documento como insignias de logro: medalla redonda con su icono y, al lado, valor y etiqueta */
   .ficha-doc {
     display: flex;
     flex-wrap: wrap;
-    gap: 12px clamp(20px, 3vw, 40px);
-    margin: 28px 0 0;
+    gap: 18px clamp(22px, 3vw, 40px);
+    margin: 30px 0 0;
   }
   .ficha-doc div {
-    display: flex;
-    flex-direction: column-reverse;
-    padding-left: 12px;
-    border-left: 2px solid var(--red);
+    display: grid;
+    grid-template-columns: auto auto;
+    grid-template-areas: 'ico dd' 'ico dt';
+    column-gap: 14px;
+    align-items: center;
+    align-content: center;
+  }
+  .fd-ico {
+    grid-area: ico;
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 32% 28%, #f2262c, var(--red) 60%, #b40308);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.35),
+      0 8px 14px -8px rgba(221, 4, 10, 0.85);
+    transition:
+      scale var(--dur-2) var(--ease-out),
+      rotate var(--dur-2) var(--ease-out);
+  }
+  .fd-ico::before {
+    content: '';
+    position: absolute;
+    inset: -5px;
+    border-radius: 50%;
+    border: 1.5px dashed rgba(221, 4, 10, 0.55);
+    transition: rotate var(--dur-4) var(--ease-out);
+  }
+  .fd-ico svg {
+    width: 24px;
+    height: 24px;
+    fill: none;
+    stroke: #fff;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .ficha-doc div:hover .fd-ico {
+      scale: 1.1;
+      rotate: -8deg;
+    }
+    .ficha-doc div:hover .fd-ico::before {
+      rotate: 180deg;
+    }
   }
   .ficha-doc dt {
+    grid-area: dt;
+    font-weight: 700;
     font-size: 11px;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
     color: var(--muted);
   }
   .ficha-doc dd {
+    grid-area: dd;
     margin: 0;
     font-weight: 700;
-    font-size: 21px;
+    font-size: 23px;
+    line-height: 1.1;
   }
   .acc {
     display: flex;
@@ -1324,6 +1941,17 @@ const icoBajar = 'M12 4v11M7 10l5 5 5-5M5 20h14';
     color: var(--body);
     font-size: 18px;
   }
+  :is(.sec-catalogo, .sec-equipos, .sec-servicio, .sec-condiciones) .sec-cab p {
+    max-width: none;
+  }
+  @media (min-width: 1100px) {
+    :is(.sec-catalogo, .sec-equipos, .sec-servicio, .sec-condiciones) .sec-cab p {
+      white-space: nowrap;
+    }
+    :is(.sec-servicio, .sec-condiciones) .sec-cab {
+      grid-template-columns: auto minmax(0, 1fr);
+    }
+  }
   :global(html.animar) :is(.doc, .destacado) {
     opacity: 0;
     translate: 0 22px;
@@ -1352,9 +1980,34 @@ const icoBajar = 'M12 4v11M7 10l5 5 5-5M5 20h14';
     height: 6px;
     background: var(--red);
   }
+  /* Formato, peso y fecha: cada dato en su pastilla con su icono */
   .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
     font-size: 13px;
     color: var(--muted);
+  }
+  .dato {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px 4px 8px;
+    border-radius: 999px;
+    background: rgba(21, 23, 25, 0.06);
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--body);
+  }
+  .dato svg {
+    width: 15px;
+    height: 15px;
+    flex: none;
+    fill: none;
+    stroke: var(--red);
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
   }
 
   /* Botones de descarga: barrido de abajo arriba */
@@ -1372,30 +2025,11 @@ const icoBajar = 'M12 4v11M7 10l5 5 5-5M5 20h14';
     align-items: center;
     gap: 6px;
     height: 36px;
-    padding: 0 12px;
-    border: 1px solid var(--ink);
-    background: transparent;
-    color: var(--ink);
+    padding: 0 14px;
+    border-radius: 10px;
     font: 700 14px/1 var(--f);
     text-decoration: none;
     cursor: pointer;
-    transition: color var(--dur-2) ease;
-  }
-  .pdf::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    background: var(--ink);
-    transform: scaleY(0);
-    transform-origin: bottom;
-    transition: transform var(--dur-2) var(--ease-out);
-  }
-  .pdf:hover {
-    color: #fff;
-  }
-  .pdf:hover::before {
-    transform: scaleY(1);
   }
   .pdf svg,
   .sel svg,
@@ -1407,33 +2041,14 @@ const icoBajar = 'M12 4v11M7 10l5 5 5-5M5 20h14';
     stroke: currentColor;
     stroke-width: 2;
   }
-  .xlsx {
-    border-color: #1e7f5c;
-    color: #1e7f5c;
-  }
-  .xlsx::before {
-    background: #1e7f5c;
-  }
   .sel.mini {
     display: grid;
     place-items: center;
     width: 36px;
     height: 36px;
     margin-left: auto;
-    border: 1px solid rgba(21, 23, 25, 0.22);
-    background: transparent;
-    color: var(--ink);
+    border-radius: 10px;
     cursor: pointer;
-    transition:
-      background var(--dur-1) ease,
-      border-color var(--dur-1) ease,
-      color var(--dur-1) ease,
-      transform var(--dur-2) var(--ease-out);
-  }
-  .sel.mini:hover {
-    border-color: var(--red);
-    color: var(--red);
-    transform: rotate(90deg);
   }
   .sel .ok,
   .sel[aria-pressed='true'] .mas {
@@ -1441,12 +2056,6 @@ const icoBajar = 'M12 4v11M7 10l5 5 5-5M5 20h14';
   }
   .sel[aria-pressed='true'] .ok {
     display: inline;
-  }
-  .sel.mini[aria-pressed='true'] {
-    background: var(--red);
-    border-color: var(--red);
-    color: #fff;
-    transform: none;
   }
   .sel[hidden],
   .xlsx[hidden] {
@@ -1521,16 +2130,55 @@ const icoBajar = 'M12 4v11M7 10l5 5 5-5M5 20h14';
     display: grid;
     gap: 10px;
     padding: 20px 22px 22px;
-    background: rgba(255, 255, 255, 0.94);
+    background: rgba(21, 23, 25, 0.93);
     -webkit-backdrop-filter: blur(14px);
     backdrop-filter: blur(14px);
-    color: var(--ink);
+    border-top: 2px solid var(--red);
+    color: #fff;
     transform: translateY(101%);
     transition: transform var(--dur-3) var(--ease-out);
   }
-  .pd-info p:not(.meta) {
+  .pd-info p:not(.pd-stats) {
     font-size: 15px;
-    color: var(--body);
+    color: var(--on-dark);
+  }
+  /* Tamaño y fecha: dos cifras grandes separadas por una regla, sin cajas ni iconos */
+  .pd-stats {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    margin: 0;
+  }
+  .pd-stats span {
+    display: grid;
+    gap: 3px;
+    padding-right: 18px;
+  }
+  .pd-stats span + span {
+    padding: 0 0 0 18px;
+    border-left: 1px solid var(--carbon-line);
+  }
+  .pd-stats small {
+    font-weight: 700;
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--steel);
+  }
+  .pd-stats b {
+    font-size: 20px;
+    line-height: 1.1;
+    color: #fff;
+  }
+  .pd-info .doc-acc {
+    flex-wrap: nowrap;
+  }
+  .pd-info .pdf {
+    flex: 1;
+    justify-content: center;
+  }
+  .pd-info .sel.mini {
+    margin-left: 0;
+    flex: none;
   }
   .portada-doc:hover > img,
   .portada-doc:focus-within > img {
@@ -1548,7 +2196,7 @@ const icoBajar = 'M12 4v11M7 10l5 5 5-5M5 20h14';
   }
   .portada-doc:hover .pd-cab,
   .portada-doc:focus-within .pd-cab {
-    transform: translateY(-104px);
+    transform: translateY(-116px);
   }
 
   /* — Tarjetas de cristal: equipos, servicio técnico y condiciones — */
@@ -1577,7 +2225,7 @@ const icoBajar = 'M12 4v11M7 10l5 5 5-5M5 20h14';
   .sec-equipos::before {
     top: 10%;
     left: -140px;
-    background: rgba(221, 4, 10, 0.16);
+    background: rgba(120, 132, 142, 0.22);
   }
   .sec-equipos::after {
     bottom: 5%;
@@ -1588,7 +2236,7 @@ const icoBajar = 'M12 4v11M7 10l5 5 5-5M5 20h14';
   .sec-servicio::before {
     top: 20%;
     right: -100px;
-    background: rgba(221, 4, 10, 0.13);
+    background: rgba(120, 132, 142, 0.2);
   }
   .sec-condiciones::after {
     bottom: 0;
@@ -1600,22 +2248,6 @@ const icoBajar = 'M12 4v11M7 10l5 5 5-5M5 20h14';
       transform: translate(60px, -40px) scale(1.15);
     }
   }
-  .familia + .familia {
-    margin-top: 34px;
-  }
-  .fam-tit {
-    display: flex;
-    align-items: baseline;
-    gap: 10px;
-    margin-bottom: 14px;
-    font-size: 13px;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-  }
-  .fam-tit span {
-    color: var(--red);
-  }
-  .equipos,
   .tarjetas {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
@@ -1624,11 +2256,82 @@ const icoBajar = 'M12 4v11M7 10l5 5 5-5M5 20h14';
     padding-block: 0;
     list-style: none;
   }
-  .equipos {
-    padding-inline: 0;
-  }
   .t-servicio {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 36px;
+    counter-reset: paso;
+  }
+  /* Servicio técnico como un recorrido de tres pasos unidos por una flecha de la marca */
+  .paso {
+    padding: 26px 24px 22px;
+    overflow: visible;
+  }
+  .paso-n {
+    position: absolute;
+    right: 20px;
+    top: 14px;
+    font-weight: 700;
+    font-size: 64px;
+    line-height: 1;
+    letter-spacing: -0.03em;
+    color: transparent;
+    -webkit-text-stroke: 1.5px rgba(21, 23, 25, 0.16);
+    transition: -webkit-text-stroke-color var(--dur-3) ease;
+  }
+  .paso:hover .paso-n {
+    -webkit-text-stroke-color: var(--red);
+  }
+  .paso h3 {
+    margin-top: 10px;
+    font-size: 26px;
+    line-height: 1;
+  }
+  .paso .insignia {
+    width: 54px;
+    height: 54px;
+    border-radius: 16px;
+  }
+  .paso .cab-tarjeta {
+    align-items: center;
+    justify-content: flex-start;
+    gap: 12px;
+  }
+  .paso .chips:empty {
+    display: none;
+  }
+  .paso .chips {
+    justify-content: flex-start;
+  }
+  .paso .doc-acc {
+    gap: 8px;
+  }
+  .paso .pdf {
+    height: 40px;
+    padding: 0 18px 0 14px;
+  }
+  .paso .sel.mini {
+    width: 40px;
+    height: 40px;
+    margin-left: 0;
+  }
+  .paso:not(:last-child)::after {
+    content: '»';
+    position: absolute;
+    top: 50%;
+    right: -36px;
+    z-index: 2;
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    translate: 0 -50%;
+    border-radius: 50%;
+    background: var(--red);
+    color: #fff;
+    font-weight: 700;
+    font-size: 20px;
+    line-height: 1;
+    box-shadow: 0 8px 16px -8px rgba(221, 4, 10, 0.7);
   }
   .vidrio {
     position: relative;
@@ -1758,6 +2461,1377 @@ const icoBajar = 'M12 4v11M7 10l5 5 5-5M5 20h14';
     padding-top: 12px;
     border-top: 1px solid rgba(21, 23, 25, 0.08);
   }
+  /* Condiciones y políticas: un archivador con una pestaña por documento */
+  .arch-tabs,
+  .arch-cuerpo {
+    width: calc(100% - 2 * var(--gut));
+    max-width: calc(var(--wrap) - 2 * var(--gut));
+    margin-inline: auto;
+  }
+  .arch-tabs {
+    display: flex;
+    align-items: flex-end;
+    gap: 6px;
+    margin-top: 8px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .arch-tab {
+    position: relative;
+    display: inline-flex;
+    flex: none;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: -1px;
+    padding: 14px 22px 12px;
+    border: 1px solid var(--line);
+    border-bottom: 0;
+    border-radius: 16px 16px 0 0;
+    background: #e9eaec;
+    color: var(--body);
+    font: 700 17px/1 var(--f);
+    cursor: pointer;
+    translate: 0 5px;
+    transition:
+      translate var(--dur-2) var(--ease-out),
+      background var(--dur-2) ease,
+      color var(--dur-2) ease;
+  }
+  .arch-tab i {
+    font-style: normal;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+  }
+  .arch-tab[hidden] {
+    display: none;
+  }
+  .arch-tab:hover {
+    translate: 0 1px;
+    color: var(--red);
+  }
+  .arch-tab[aria-selected='true'] {
+    z-index: 2;
+    translate: 0 0;
+    padding-top: 15px;
+    border-top: 3px solid var(--red);
+    background: #fff;
+    color: var(--carbon);
+  }
+  .arch-tab[aria-selected='true'] i {
+    color: var(--red);
+  }
+  .arch-tab:focus-visible {
+    outline: var(--foco);
+    outline-offset: -3px;
+  }
+  .arch-cuerpo {
+    position: relative;
+    z-index: 1;
+    display: block;
+    border: 1px solid var(--line);
+    border-radius: 0 22px 22px 22px;
+    background: #fff;
+    box-shadow: 0 30px 60px -44px rgba(21, 23, 25, 0.55);
+  }
+  .fila {
+    position: relative;
+    display: none;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-rows: auto auto;
+    align-items: center;
+    column-gap: clamp(28px, 3vw, 44px);
+    row-gap: 14px;
+    min-height: clamp(260px, 24vw, 320px);
+    padding: clamp(40px, 4.5vw, 64px) clamp(28px, 4.5vw, 64px);
+    overflow: hidden;
+  }
+  .fila.activa:not([hidden]) {
+    display: grid;
+    animation: hoja-arch 0.5s var(--ease-out);
+  }
+  @keyframes hoja-arch {
+    from {
+      opacity: 0;
+      translate: 18px 0;
+    }
+  }
+  :global(html.animar) .arch-cuerpo .doc {
+    opacity: 1;
+    translate: none;
+  }
+  /* El número del documento, de fondo, como el sello de una carpeta */
+  .fila .paso-n {
+    position: absolute;
+    right: clamp(170px, 24vw, 360px);
+    top: 50%;
+    translate: 0 -50%;
+    font-size: clamp(140px, 16vw, 230px);
+    line-height: 1;
+    -webkit-text-stroke-width: 1.5px;
+    -webkit-text-stroke-color: rgba(21, 23, 25, 0.1);
+    pointer-events: none;
+  }
+  .fila .cab-tarjeta {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+    margin: 0;
+  }
+  .fila .insignia {
+    width: clamp(72px, 7vw, 96px);
+    height: clamp(72px, 7vw, 96px);
+    border-radius: 24px;
+  }
+  .fila .insignia img {
+    width: 40%;
+    height: 40%;
+  }
+  .fila .chips:empty {
+    display: none;
+  }
+  .fila h3,
+  .fila .meta {
+    grid-column: 2;
+    position: relative;
+    z-index: 1;
+  }
+  .fila h3 {
+    align-self: end;
+    max-width: 20ch;
+    font-size: clamp(30px, 3.3vw, 46px);
+    line-height: 1;
+  }
+  .fila .meta {
+    align-self: start;
+    margin-top: 0;
+  }
+  .fila .doc-acc {
+    grid-column: 3;
+    grid-row: 1 / span 2;
+    position: relative;
+    z-index: 1;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    gap: 8px;
+  }
+  .fila .pdf {
+    height: 50px;
+    padding: 0 24px 0 20px;
+    font-size: 17px;
+  }
+  .fila .sel.mini {
+    width: 50px;
+    height: 50px;
+    margin-left: 0;
+  }
+  /* Servicio técnico y condiciones: insignias y chips más redondeados; los botones, los de toda la web */
+  .tarjetas.vidrio,
+  .tarjetas .vidrio {
+    border-radius: 18px;
+  }
+  .tarjetas .vidrio::before {
+    inset: 0 18px auto;
+    height: 3px;
+    border-radius: 0 0 3px 3px;
+  }
+  .tarjetas .insignia {
+    border-radius: 14px;
+  }
+  .tarjetas .chip {
+    padding: 4px 10px;
+    border-radius: 999px;
+  }
+  .tarjetas .sel.mini {
+    margin-left: 0;
+  }
+
+  /* — El libro de catálogos de cada equipo: tapa que se abre y un pliego por serie — */
+  .libro-caja {
+    padding-bottom: 96px;
+  }
+  .libro {
+    --papel: #f0ede6;
+    --alto: clamp(500px, 44vw, 620px);
+    position: relative;
+    width: min(100%, 1120px);
+    height: var(--alto);
+    margin-inline: auto;
+    perspective: 2600px;
+  }
+  .libro.js {
+    transition: translate 0.55s var(--ease-out);
+  }
+  .libro.js:not(.abierto) {
+    translate: -25% 0;
+  }
+  .libro-fondo {
+    position: absolute;
+    inset: -14px -16px -20px;
+    border-radius: 10px;
+    background: var(--carbon);
+    opacity: 0;
+    transition: opacity 0.6s ease;
+  }
+  .libro.abierto .libro-fondo {
+    opacity: 1;
+  }
+  .libro:not(.js) .libro-fondo,
+  .libro:not(.js) .tapa-fija,
+  .libro:not(.js) .hoja,
+  .libro:not(.js) .libro-nav {
+    display: none;
+  }
+  .pliegos {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .pliego {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+  .pliego .pag {
+    pointer-events: auto;
+  }
+  :global(html.animar) .pliego {
+    opacity: 1;
+    translate: none;
+  }
+  .pliego:not(.v-i) .izq,
+  .pliego:not(.v-d) .der {
+    display: none;
+  }
+
+  /* Cada página: papel con la sombra del lomo y el canto de las hojas */
+  .pag {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 50%;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    background: var(--papel);
+    color: var(--ink);
+  }
+  .pag.izq {
+    left: 0;
+    padding: 36px 40px 28px 44px;
+    border-radius: 6px 0 0 6px;
+    background: linear-gradient(90deg, transparent 80%, rgba(21, 23, 25, 0.08)), var(--papel);
+    box-shadow:
+      -2px 2px 0 #ebe8e2,
+      -4px 4px 0 #dedad3,
+      -6px 6px 0 #d0ccc4;
+  }
+  .pag.der {
+    right: 0;
+    padding: 36px 44px 28px 40px;
+    border-radius: 0 6px 6px 0;
+    background: linear-gradient(270deg, transparent 80%, rgba(21, 23, 25, 0.08)), var(--papel);
+    box-shadow:
+      2px 2px 0 #ebe8e2,
+      4px 4px 0 #dedad3,
+      6px 6px 0 #d0ccc4;
+  }
+  .pag-grupo {
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--red);
+  }
+  /* El índice: familias que se abren en sus series */
+  .indlib {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
+    overflow-y: auto;
+    scrollbar-width: thin;
+  }
+  .fam {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 11px 0;
+    border: 0;
+    border-bottom: 1px solid var(--line);
+    background: none;
+    color: var(--ink);
+    font: 700 17px/1.1 var(--f);
+    text-align: left;
+    cursor: pointer;
+    transition: color var(--dur-1) ease;
+  }
+  .fam span {
+    margin-left: auto;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .fam::after {
+    content: '»';
+    color: var(--red);
+    transition: rotate var(--dur-2) var(--ease-out);
+  }
+  .ind-fam.abierta .fam {
+    color: var(--red);
+  }
+  .ind-fam.abierta .fam::after {
+    rotate: 90deg;
+  }
+  .fam:hover {
+    color: var(--red);
+  }
+  .indlib ul {
+    display: grid;
+    gap: 1px;
+    margin: 6px 0 10px 2px;
+    padding: 0 0 0 12px;
+    border-left: 2px solid var(--red);
+    list-style: none;
+  }
+  .indlib ul button {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    width: 100%;
+    padding: 6px 8px;
+    border: 0;
+    border-radius: 6px;
+    background: none;
+    color: var(--body);
+    font: 300 16px/1.2 var(--f);
+    text-align: left;
+    cursor: pointer;
+    transition:
+      background var(--dur-1) ease,
+      color var(--dur-1) ease;
+  }
+  .indlib ul button small {
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .indlib ul button:hover {
+    background: rgba(221, 4, 10, 0.08);
+    color: var(--red);
+  }
+  .indlib ul button[aria-current='true'] {
+    background: rgba(221, 4, 10, 0.1);
+    color: var(--red);
+    font-weight: 700;
+  }
+  .fam:focus-visible,
+  .indlib ul button:focus-visible {
+    outline: var(--foco);
+    outline-offset: 2px;
+  }
+  .pag-pie {
+    margin-top: auto;
+    font-size: 13px;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+  }
+  .der .pag-pie {
+    margin-top: 0;
+    text-align: right;
+  }
+  .pliego h4 {
+    font-weight: 700;
+    font-size: clamp(30px, 3.2vw, 46px);
+    line-height: 1;
+  }
+  .pliego h4 a {
+    text-decoration: none;
+  }
+  .pliego h4 a:hover {
+    color: var(--red);
+  }
+  .pliego h4 span {
+    margin-left: 0.3em;
+    font-weight: 300;
+    color: var(--muted);
+  }
+  .pliego .eq-frase {
+    display: block;
+    overflow: visible;
+    font-size: 18px;
+    line-height: 1.35;
+  }
+  .pliego .chips {
+    justify-content: flex-start;
+  }
+  .pliego .doc-acc {
+    margin-top: auto;
+    padding-top: 16px;
+    border-top: 1px solid var(--line);
+  }
+  .pliego .pdf:not(.xlsx) {
+    padding: 0 18px;
+  }
+  .pliego.elegido .der::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto;
+    height: 4px;
+    background: var(--red);
+  }
+
+  /* La tapa: carbón con el lomo rojo; al pasar el ratón se entreabre */
+  .tapa-fija {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 2;
+    width: 50%;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: #fff;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    perspective: 1800px;
+  }
+  .libro.abierto .tapa-fija,
+  .libro.volteando .tapa-fija {
+    visibility: hidden;
+  }
+  .tapa-in {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 44px 48px 40px 56px;
+    border-radius: 4px 12px 12px 4px;
+    background: var(--carbon);
+    box-shadow:
+      inset 14px 0 0 var(--red),
+      inset 16px 0 0 rgba(0, 0, 0, 0.28),
+      5px 5px 0 #26292c;
+    transform-origin: left center;
+    transition: transform var(--dur-3) var(--ease-out);
+  }
+  .tapa-in img {
+    width: 160px;
+    height: auto;
+  }
+  .tapa-tit {
+    font-weight: 300;
+    font-size: clamp(34px, 4vw, 58px);
+    line-height: 0.95;
+  }
+  .tapa-tit b {
+    display: block;
+  }
+  .tapa-pie {
+    display: grid;
+    gap: 10px;
+    padding-top: 18px;
+    border-top: 1px solid var(--carbon-line);
+  }
+  .tapa-pie small {
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--steel);
+  }
+  .tapa-abrir {
+    font-weight: 700;
+    font-size: 17px;
+  }
+  .tapa-abrir::after {
+    content: '»';
+    margin-left: 8px;
+    color: var(--red-on-dark);
+  }
+  /* Detrás de la tapa, la primera hoja: al pasar el ratón la tapa se entreabre, sale luz por la rendija y el libro suelta chispas */
+  .tapa-fija::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 0 6px 6px 0;
+    background: var(--papel);
+    box-shadow:
+      3px 3px 0 #ebe8e2,
+      6px 6px 0 #d0ccc4;
+    transition: box-shadow var(--dur-3) ease;
+  }
+  .magia {
+    position: absolute;
+    z-index: 1;
+    inset: 0;
+    pointer-events: none;
+  }
+  .magia {
+    perspective: 700px;
+  }
+  .magia i {
+    position: absolute;
+    bottom: 34%;
+    left: var(--x);
+    width: var(--z);
+    height: calc(var(--z) * 1.3);
+    border: 1px solid #cdc8bd;
+    border-radius: 2px 5px 2px 5px;
+    background: linear-gradient(135deg, #fffdf7, var(--papel));
+    box-shadow:
+      0 0 10px 1px rgba(221, 4, 10, 0.22),
+      0 4px 8px -2px rgba(21, 23, 25, 0.3);
+    opacity: 0;
+  }
+  .magia i:nth-child(4n) {
+    border-color: var(--red);
+    background: linear-gradient(135deg, #fff, #ffe3e4);
+  }
+  .magia b {
+    position: absolute;
+    bottom: 34%;
+    left: var(--x);
+    width: var(--z);
+    height: var(--z);
+    border-radius: 50%;
+    background: var(--red);
+    box-shadow: 0 0 8px 2px rgba(221, 4, 10, 0.4);
+    opacity: 0;
+  }
+  .magia b:nth-child(3n) {
+    background: var(--steel);
+    box-shadow: 0 0 8px 2px rgba(120, 132, 142, 0.35);
+  }
+  .libro.js:not(.abierto) .tapa-fija .magia b {
+    animation: mota var(--t) ease-out var(--r) infinite;
+  }
+  @keyframes mota {
+    0% {
+      opacity: 0;
+      translate: 0 0;
+    }
+    20% {
+      opacity: 0.9;
+    }
+    100% {
+      opacity: 0;
+      translate: var(--w) var(--h);
+    }
+  }
+  /* Con el libro cerrado se ve un libro abierto de frente, del que sale la luz */
+  .intro-libro {
+    position: absolute;
+    left: 50%;
+    bottom: 0;
+    display: none;
+    width: 190%;
+    height: auto;
+    translate: -50% 0;
+    overflow: visible;
+  }
+  .libro.js:not(.abierto):not(.volteando) .intro-libro {
+    display: block;
+  }
+  .libro.js:not(.abierto):not(.volteando) .tapa-fija::after,
+  .libro.js:not(.abierto):not(.volteando) .pliegos::after,
+  .libro.js:not(.abierto):not(.volteando) .tapa-in,
+  .libro.js:not(.abierto):not(.volteando) .tapa-fija::before {
+    visibility: hidden;
+  }
+  .il-halo {
+    opacity: 0.6;
+    animation: il-respira 3.4s ease-in-out infinite alternate;
+  }
+  .il-tapa,
+  .il-lomo {
+    fill: var(--carbon);
+  }
+  .il-tapa {
+    stroke: var(--red);
+    stroke-width: 2;
+  }
+  .il-bloque {
+    fill: #d8d2c6;
+  }
+  .il-canto {
+    fill: none;
+    stroke: #bdb6a8;
+    stroke-width: 0.8;
+  }
+  .il-hoja,
+  .il-ala {
+    fill: url(#il-papel);
+    stroke: #d2ccc0;
+    stroke-width: 1;
+  }
+  .il-ala {
+    transform-box: view-box;
+    transform-origin: 500px 252px;
+    animation: il-aleteo 2.6s ease-in-out infinite alternate;
+  }
+  .il-ala.a1 {
+    --lo: -6deg;
+    --a: 6deg;
+  }
+  .il-ala.a2 {
+    --lo: 11deg;
+    --a: 22deg;
+    animation-duration: 3.1s;
+    animation-delay: -1.2s;
+  }
+  .il-ala.a3 {
+    --lo: 27deg;
+    --a: 38deg;
+    animation-duration: 3.7s;
+    animation-delay: -2.3s;
+  }
+  @keyframes il-aleteo {
+    from {
+      transform: rotate(var(--lo));
+    }
+    to {
+      transform: rotate(var(--a));
+    }
+  }
+  /* Al pasar el ratón, una ráfaga de viento: las hojas se agitan y todo lo que vuela se acelera hacia un lado */
+  @media (hover: hover) and (pointer: fine) {
+    .libro.js .tapa-fija:hover .il-ala {
+      animation-duration: 0.42s;
+    }
+    .libro.js:not(.abierto) .tapa-fija:hover .magia i,
+    .libro.js:not(.abierto) .tapa-fija:hover .magia b {
+      animation-duration: calc(var(--t) * 0.4);
+    }
+    .libro.js:not(.abierto) .tapa-fija:hover .magia {
+      animation: rafaga 0.8s ease-in-out infinite alternate;
+    }
+  }
+  @keyframes rafaga {
+    from {
+      translate: -14px 0;
+      skew: 4deg 0;
+    }
+    to {
+      translate: 26px -6px;
+      skew: -6deg 0;
+    }
+  }
+  @keyframes il-respira {
+    to {
+      opacity: 0.85;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .il-ala,
+    .il-halo {
+      animation: none;
+    }
+  }
+  /* El holograma: sobre el libro cerrado se proyecta el título del catálogo, como un haz de luz */
+  .holo {
+    position: absolute;
+    z-index: 3;
+    bottom: 50%;
+    left: 50%;
+    display: none;
+    width: min(150%, 760px);
+    height: 230px;
+    translate: -50% 0;
+    place-content: end center;
+    justify-items: center;
+    gap: 6px;
+    padding-bottom: 22px;
+    text-align: center;
+    clip-path: polygon(22% 100%, 78% 100%, 100% 0, 0 0);
+    background:
+      repeating-linear-gradient(0deg, rgba(21, 23, 25, 0.14) 0 1px, transparent 1px 5px),
+      linear-gradient(0deg, rgba(21, 23, 25, 0.26), rgba(21, 23, 25, 0.02));
+    color: var(--ink);
+    pointer-events: none;
+    animation: holo 4.5s ease-in-out infinite;
+  }
+  .libro.js:not(.abierto) .holo {
+    display: grid;
+  }
+  .holo img {
+    width: 130px;
+    height: auto;
+    margin-bottom: 6px;
+    opacity: 0.92;
+  }
+  .holo small {
+    color: var(--red);
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+  }
+  .holo b {
+    font-weight: 300;
+    font-size: clamp(24px, 2.5vw, 34px);
+    line-height: 1.05;
+    white-space: nowrap;
+  }
+  .holo small::after {
+    content: '»';
+    margin-left: 10px;
+    font-weight: 700;
+  }
+  @keyframes holo {
+    0%,
+    100% {
+      opacity: 0.9;
+      translate: -50% 0;
+    }
+    47% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.6;
+    }
+    52% {
+      opacity: 1;
+    }
+    55% {
+      translate: -50% -8px;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .holo,
+    .magia i,
+    .magia b {
+      animation: none;
+    }
+  }
+  @keyframes chispa {
+    0% {
+      opacity: 0;
+      transform: rotateX(0) rotateY(0);
+      translate: 0 0;
+      rotate: 0deg;
+      scale: 0.5;
+    }
+    15% {
+      opacity: 1;
+    }
+    70% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0;
+      transform: rotateX(540deg) rotateY(200deg);
+      translate: var(--w) var(--h);
+      rotate: var(--g);
+      scale: 1.1;
+    }
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .tapa-fija:hover .tapa-in,
+    .tapa-fija:focus-visible .tapa-in {
+      transform: rotateY(-32deg);
+    }
+    .tapa-fija:hover::before,
+    .tapa-fija:focus-visible::before {
+      box-shadow:
+        3px 3px 0 #ebe8e2,
+        6px 6px 0 #d0ccc4,
+        0 0 60px 6px rgba(255, 82, 87, 0.55);
+    }
+    .tapa-fija:hover .magia i,
+    .tapa-fija:focus-visible .magia i {
+      animation: chispa var(--t) ease-out var(--r) infinite;
+    }
+  }
+  /* Con el libro cerrado, como la pantalla de inicio de un videojuego: del libro emanan luz y chispas todo el rato */
+  .libro.js:not(.abierto) .tapa-fija .magia i {
+    animation: chispa var(--t) ease-out var(--r) infinite;
+  }
+  .tapa-fija:focus-visible {
+    outline: var(--foco);
+    outline-offset: 6px;
+  }
+
+  /* La hoja que se pasa: gira sobre el lomo, con otra cara por detrás */
+  .hoja {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    z-index: 5;
+    width: 50%;
+    transform-origin: left center;
+    transform-style: preserve-3d;
+    pointer-events: none;
+  }
+  .hoja[hidden] {
+    display: none;
+  }
+  .cara {
+    position: absolute;
+    inset: 0;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+  .cara.tr {
+    transform: rotateY(180deg);
+  }
+  .cara > .pag,
+  .cara > .tapa-in {
+    position: absolute;
+    inset: 0;
+    width: auto;
+  }
+  .cara > .tapa-in {
+    transform: none !important;
+  }
+
+  .libro-nav {
+    position: absolute;
+    top: calc(100% + 38px);
+    left: 50%;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    translate: -50% 0;
+    transition: opacity 0.4s ease;
+  }
+  .libro:not(.abierto) .libro-nav {
+    opacity: 0;
+    pointer-events: none;
+  }
+  .cuenta {
+    min-width: 64px;
+    text-align: center;
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: 0.1em;
+    color: var(--body);
+  }
+  .pasa {
+    display: grid;
+    place-items: center;
+    width: 46px;
+    height: 46px;
+    border: 1px solid rgba(21, 23, 25, 0.22);
+    border-radius: 10px;
+    background: #fff;
+    color: var(--ink);
+    cursor: pointer;
+    transition:
+      background var(--dur-1) ease,
+      border-color var(--dur-1) ease,
+      color var(--dur-1) ease,
+      translate 0.25s ease,
+      box-shadow 0.25s ease,
+      opacity var(--dur-1) ease;
+  }
+  .pasa svg {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .pasa:disabled {
+    opacity: 0.35;
+    cursor: default;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .pasa:not(:disabled):hover {
+      border-color: rgba(221, 4, 10, 0.3);
+      color: var(--red);
+      background: #fdecec;
+      translate: 0 -1px;
+      box-shadow: 0 8px 16px -10px rgba(221, 4, 10, 0.7);
+    }
+  }
+  .pasa:focus-visible {
+    outline: var(--foco);
+    outline-offset: 2px;
+  }
+
+  /* Sin JavaScript: los pliegos, uno debajo de otro */
+  .libro:not(.js) {
+    height: auto;
+  }
+  .libro:not(.js) .pliegos {
+    position: static;
+    display: grid;
+    gap: 36px;
+  }
+  .libro:not(.js) .pliego {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    min-height: 460px;
+  }
+  .libro:not(.js) .pliego .pag {
+    position: relative;
+    display: flex;
+    width: auto;
+  }
+
+  @media (max-width: 759px) {
+    .libro-caja {
+      padding-bottom: 24px;
+    }
+    .libro.js {
+      height: auto;
+      perspective: none;
+      translate: none !important;
+    }
+    .libro.js .libro-fondo,
+    .libro.js .tapa-fija,
+    .libro.js .hoja {
+      display: none;
+    }
+    .libro.js .pliegos,
+    .libro.js .pliego {
+      position: relative;
+      inset: auto;
+    }
+    .libro.js .pag {
+      position: relative;
+      width: auto;
+      padding: 24px 20px;
+      border-radius: 0;
+      box-shadow: none;
+      background: var(--papel);
+    }
+    .esquina,
+    .pag-marca {
+      display: none;
+    }
+    .libro.js .libro-nav {
+      position: static;
+      justify-content: center;
+      margin-top: 22px;
+      translate: none;
+    }
+    .libro.js:not(.abierto) .libro-nav {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .pliego .doc-acc {
+      margin-top: 8px;
+    }
+  }
+
+  /* — Más vida: la tapa en neón y flotando, y las páginas con cinta, marca de agua, lomo y esquina que se dobla — */
+  .tapa-fija {
+    animation: flota 5.5s ease-in-out infinite alternate;
+  }
+  @keyframes flota {
+    to {
+      translate: 0 -8px;
+    }
+  }
+  .tapa-in {
+    animation: latido 3.6s ease-in-out infinite;
+  }
+  @keyframes latido {
+    0%,
+    100% {
+      box-shadow:
+        inset 14px 0 0 var(--red),
+        inset 16px 0 0 rgba(0, 0, 0, 0.28),
+        5px 5px 0 #26292c,
+        0 0 0 rgba(221, 4, 10, 0);
+    }
+    50% {
+      box-shadow:
+        inset 14px 0 0 var(--red),
+        inset 16px 0 0 rgba(0, 0, 0, 0.28),
+        5px 5px 0 #26292c,
+        0 0 46px rgba(221, 4, 10, 0.35);
+    }
+  }
+  .cara,
+  .cara * {
+    animation: none !important;
+  }
+  .tapa-tit {
+    color: #fff;
+    text-shadow: 0 0 5px rgba(255, 255, 255, 0.22);
+  }
+  .tapa-tit b {
+    color: #ff4a50;
+    text-shadow:
+      0 0 4px rgba(255, 74, 80, 0.7),
+      0 0 12px rgba(221, 4, 10, 0.6),
+      0 0 26px rgba(221, 4, 10, 0.35);
+    animation: neon 6.5s linear infinite;
+    transition: text-shadow var(--dur-3) ease;
+  }
+  @keyframes neon {
+    0%,
+    18%,
+    22%,
+    54%,
+    57%,
+    100% {
+      opacity: 1;
+    }
+    20%,
+    55% {
+      opacity: 0.72;
+    }
+    21% {
+      opacity: 0.92;
+    }
+  }
+  .tapa-abrir {
+    transition:
+      color var(--dur-2) ease,
+      text-shadow var(--dur-2) ease;
+  }
+  .tapa-fija::after {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    top: -12%;
+    bottom: -12%;
+    left: -190px;
+    width: 380px;
+    background: radial-gradient(closest-side, rgba(255, 82, 87, 0.5), transparent);
+    opacity: 0;
+    transition: opacity var(--dur-4) ease;
+    pointer-events: none;
+  }
+  .magia i:nth-child(n + 8) {
+    animation-play-state: paused;
+  }
+  .magia i:nth-child(-n + 7) {
+    animation: chispa calc(var(--t) * 1.6) ease-out var(--r) infinite;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .tapa-fija:hover::after,
+    .tapa-fija:focus-visible::after {
+      opacity: 1;
+    }
+    .tapa-fija:hover .tapa-tit b,
+    .tapa-fija:focus-visible .tapa-tit b {
+      text-shadow:
+        0 0 5px rgba(255, 255, 255, 0.55),
+        0 0 14px rgba(255, 74, 80, 0.8),
+        0 0 32px rgba(221, 4, 10, 0.55);
+    }
+    .tapa-fija:hover .tapa-abrir,
+    .tapa-fija:focus-visible .tapa-abrir {
+      color: #ff4a50;
+      text-shadow:
+        0 0 4px rgba(255, 74, 80, 0.7),
+        0 0 14px rgba(221, 4, 10, 0.55);
+    }
+    .tapa-fija:hover .magia i,
+    .tapa-fija:focus-visible .magia i {
+      animation: chispa var(--t) ease-out var(--r) infinite;
+      animation-play-state: running;
+    }
+  }
+
+  .pliegos::after {
+    content: '';
+    position: absolute;
+    z-index: 2;
+    top: 0;
+    bottom: 0;
+    left: calc(50% - 46px);
+    width: 92px;
+    background: linear-gradient(90deg, transparent, rgba(21, 23, 25, 0.16) 50%, transparent);
+    pointer-events: none;
+  }
+  .cara::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgb(21, 23, 25);
+    opacity: 0;
+    pointer-events: none;
+  }
+  .pag-pie {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    font-weight: 700;
+  }
+  .pag-pie img {
+    width: auto;
+    height: 16px;
+    opacity: 0.8;
+  }
+  .der .pag-pie {
+    justify-content: flex-end;
+    padding-right: 30px;
+  }
+  .der-cab {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding-right: 28px;
+  }
+  .der-cab .chips {
+    margin-left: auto;
+    justify-content: flex-end;
+  }
+  .pag-marca {
+    font-weight: 700;
+    font-size: 40px;
+    line-height: 1;
+    letter-spacing: -0.03em;
+    color: var(--red);
+  }
+  .der-cab .pag-grupo {
+    padding-left: 14px;
+    border-left: 1px solid var(--line);
+    color: var(--body);
+  }
+  .pag.der > :not(.esquina) {
+    position: relative;
+  }
+  .pag.der::after {
+    content: '';
+    position: absolute;
+    top: -6px;
+    right: 14px;
+    width: 22px;
+    height: 74px;
+    background: var(--red);
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 80%, 0 100%);
+  }
+  .pliego .doc-acc {
+    flex-wrap: nowrap;
+    margin-top: 0;
+    padding-top: 0;
+    border-top: 0;
+  }
+  .pliego .doc-acc .pdf,
+  .pliego .doc-acc .sel.mini {
+    height: 52px;
+  }
+  .pliego .doc-acc .sel.mini {
+    width: 52px;
+    margin-left: 0;
+    flex: none;
+  }
+  .pliego .doc-acc .pdf:not(.xlsx) {
+    flex: 1;
+    justify-content: center;
+    gap: 8px;
+    font-size: 16px;
+  }
+  .pliego .doc-acc .pdf small {
+    font-weight: 300;
+    font-size: 13px;
+    opacity: 0.85;
+  }
+  .pliego .doc-acc .xlsx {
+    flex: none;
+    padding: 0 16px;
+  }
+  .pliego .eq-frase {
+    margin-bottom: 4px;
+  }
+  .pliego h4 {
+    margin-top: 6px;
+  }
+  .pliego h4::after {
+    content: '';
+    display: block;
+    width: 56px;
+    height: 3px;
+    margin-top: 14px;
+    background: var(--red);
+  }
+
+  /* Al aparecer una página, su contenido sube escalonado */
+  @keyframes entra {
+    from {
+      opacity: 0;
+      translate: 0 14px;
+    }
+  }
+  .pliego.entra .der > :is(.der-cab, h4, .eq-frase, .pg-datos, .doc-acc) {
+    animation: entra 0.7s var(--ease-out) both;
+  }
+  .pliego.entra .der > h4 {
+    animation-delay: 0.08s;
+  }
+  .pliego.entra .der > .eq-frase {
+    animation-delay: 0.16s;
+  }
+  .pliego.entra .der > .pg-datos {
+    animation-delay: 0.24s;
+  }
+  .pliego.entra .der > .doc-acc {
+    animation-delay: 0.32s;
+  }
+  .indlib ul button[aria-current='true']::before {
+    content: '';
+    flex: none;
+    width: 7px;
+    height: 7px;
+    align-self: center;
+    border-radius: 50%;
+    background: var(--red);
+    box-shadow: 0 0 10px 2px rgba(221, 4, 10, 0.55);
+  }
+  .indlib ul button {
+    transition:
+      background var(--dur-1) ease,
+      color var(--dur-1) ease,
+      translate var(--dur-2) var(--ease-out);
+  }
+  .indlib ul button:hover {
+    translate: 4px 0;
+  }
+
+  /* La esquina de abajo: una punta doblada que crece al acercar el ratón y pasa la hoja */
+  .esquina {
+    position: absolute;
+    bottom: 0;
+    z-index: 3;
+    width: 26px;
+    height: 26px;
+    padding: 0;
+    border: 0;
+    cursor: pointer;
+    transition:
+      width var(--dur-3) var(--ease-out),
+      height var(--dur-3) var(--ease-out);
+  }
+  .esquina:hover {
+    width: 56px;
+    height: 56px;
+  }
+  .der .esquina {
+    right: 0;
+    background: linear-gradient(135deg, #d6d2ca 50%, var(--carbon) 50%);
+  }
+  .izq .esquina {
+    left: 0;
+    background: linear-gradient(225deg, #d6d2ca 50%, var(--carbon) 50%);
+  }
+  .esquina {
+    filter: drop-shadow(0 0 0 transparent);
+  }
+
+  /* Los datos del pliego, grabados en una placa de característica como la de una centrífuga */
+  @property --cuenta-rotores {
+    syntax: '<integer>';
+    inherits: false;
+    initial-value: 0;
+  }
+  .pg-datos {
+    position: relative;
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+    align-items: stretch;
+    margin-top: auto;
+    padding: 18px 22px;
+    border-radius: 8px;
+    background:
+      radial-gradient(circle, #f4f6f7 0 1.4px, #8a9399 2.6px, transparent 3.2px) left 8px top 8px / 9px 9px no-repeat,
+      radial-gradient(circle, #f4f6f7 0 1.4px, #8a9399 2.6px, transparent 3.2px) right 8px top 8px / 9px 9px no-repeat,
+      radial-gradient(circle, #f4f6f7 0 1.4px, #8a9399 2.6px, transparent 3.2px) left 8px bottom 8px / 9px 9px no-repeat,
+      radial-gradient(circle, #f4f6f7 0 1.4px, #8a9399 2.6px, transparent 3.2px) right 8px bottom 8px / 9px 9px
+        no-repeat,
+      linear-gradient(180deg, #e9ecee, #cdd3d7 55%, #dde1e4);
+    color: var(--ink);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.9),
+      inset 0 -1px 0 rgba(21, 23, 25, 0.25),
+      0 0 0 1px rgba(21, 23, 25, 0.18),
+      0 10px 20px -12px rgba(21, 23, 25, 0.5);
+  }
+  .pg-datos > div {
+    display: grid;
+    align-content: center;
+    justify-items: center;
+    gap: 6px;
+    padding: 2px 10px;
+    text-align: center;
+  }
+  .pg-datos > div + div {
+    border-left: 1px solid rgba(21, 23, 25, 0.28);
+    box-shadow: -1px 0 0 rgba(255, 255, 255, 0.7);
+  }
+  .pg-datos small {
+    font-weight: 700;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #5b646b;
+  }
+  .pg-datos b {
+    font-size: 25px;
+    line-height: 1.1;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.8);
+  }
+  .rotor-n {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .rotor-n svg {
+    width: 30px;
+    height: 30px;
+    overflow: visible;
+  }
+  .rotor-n circle {
+    fill: none;
+    stroke: #6b747b;
+    stroke-width: 2;
+  }
+  .rotor-n .tubo {
+    fill: #353a3f;
+    stroke: none;
+  }
+  .rotor-n .eje {
+    fill: var(--red);
+    stroke: none;
+  }
+  .rotor-n .gira {
+    transform-origin: 24px 24px;
+    animation: gira 14s linear infinite;
+  }
+  .pliego:hover .rotor-n .gira {
+    animation-duration: 2.4s;
+  }
+  @keyframes gira {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  /* El número de rotores sube desde cero cuando llega la página */
+  .rotor-cnt {
+    --cuenta-rotores: var(--max);
+    counter-reset: n var(--cuenta-rotores);
+  }
+  .rotor-cnt::after {
+    content: counter(n);
+  }
+  .pliego.entra .rotor-cnt {
+    animation: cuenta 1.3s var(--ease-out) 0.35s both;
+  }
+  @keyframes cuenta {
+    from {
+      --cuenta-rotores: 0;
+    }
+  }
 
   /* Botones grandes */
   .boton {
@@ -1774,44 +3848,117 @@ const icoBajar = 'M12 4v11M7 10l5 5 5-5M5 20h14';
     text-decoration: none;
     white-space: nowrap;
     cursor: pointer;
-    transition:
-      background var(--dur-1) ease,
-      border-color var(--dur-1) ease,
-      color var(--dur-1) ease;
+    border-radius: 10px;
   }
   .boton.grande {
     height: 56px;
     padding: 0 28px;
     font-size: 17px;
   }
-  .boton:hover {
-    border-color: var(--ink);
+
+  /* ——— Botones: los mismos dos de toda la web ———
+     Rojo (descargar, crear, ver): el "Presupuesto" de las tarjetas de producto, con relieve (luz arriba, sombra
+     roja); al pasar sube 1 px y lo cruza un haz de luz.
+     Secundario (añadir, copiar, vaciar, imprimir, Excel): el "Comparar" de las tarjetas, gris suave; al pasar, texto
+     rojo sobre rosa muy claro, sube 1 px y el «+» gira un cuarto de vuelta. Elegido, rojo lleno */
+  .pdf:not(.xlsx),
+  .boton.rojo,
+  .ban-ver,
+  .vp-descargar {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+    border: 0;
+    border-radius: 10px;
+    background: linear-gradient(180deg, #f2262c, var(--red) 55%, #c8030a);
+    color: #fff;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.3),
+      0 6px 14px -8px rgba(221, 4, 10, 0.8);
+    transition:
+      box-shadow 0.25s ease,
+      translate 0.25s ease;
   }
-  .boton.negro {
-    background: var(--ink);
-    border-color: var(--ink);
+  .pdf:not(.xlsx)::before,
+  .boton.rojo::before,
+  .ban-ver::before,
+  .vp-descargar::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: linear-gradient(105deg, transparent 42%, rgba(255, 255, 255, 0.28) 50%, transparent 58%);
+    translate: -110% 0;
+    pointer-events: none;
+  }
+  .xlsx,
+  .sel.mini,
+  .boton:not(.rojo),
+  .ban-vaciar,
+  .vp-imprimir,
+  .dos-lista :global(.dl-pdfs a) {
+    border: 1px solid rgba(21, 23, 25, 0.16);
+    border-radius: 10px;
+    background: #f2f3f5;
+    color: var(--ink);
+    transition:
+      background var(--dur-1) ease,
+      border-color var(--dur-1) ease,
+      color var(--dur-1) ease,
+      box-shadow 0.25s ease,
+      translate 0.25s ease;
+  }
+  .xlsx {
+    color: #1e7f5c;
+  }
+  .sel svg {
+    transition: rotate 0.35s cubic-bezier(0.23, 1, 0.32, 1);
+  }
+  .sel[aria-pressed='true'] {
+    border-color: var(--red);
+    background: var(--red);
     color: #fff;
   }
-  .boton.negro:hover {
-    background: var(--red);
-    border-color: var(--red);
-  }
-  .boton.rojo {
-    background: var(--red);
-    border-color: var(--red);
-    color: #fff;
-  }
-  .boton.rojo:hover {
-    background: var(--red-d);
-  }
-  .boton.sel[aria-pressed='true'] {
-    background: var(--red);
-    border-color: var(--red);
-    color: #fff;
+  @media (hover: hover) and (pointer: fine) {
+    .pdf:not(.xlsx):hover,
+    .boton.rojo:hover,
+    .ban-ver:hover,
+    .vp-descargar:hover {
+      translate: 0 -1px;
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.3),
+        0 12px 22px -8px rgba(221, 4, 10, 0.85);
+    }
+    .pdf:not(.xlsx):hover::before,
+    .boton.rojo:hover::before,
+    .ban-ver:hover::before,
+    .vp-descargar:hover::before {
+      translate: 110% 0;
+      transition: translate 1s cubic-bezier(0.45, 0, 0.25, 1);
+    }
+    :is(.xlsx, .sel.mini, .boton:not(.rojo), .ban-vaciar, .vp-imprimir):not([aria-pressed='true']):hover,
+    .dos-lista :global(.dl-pdfs a:hover) {
+      border-color: rgba(221, 4, 10, 0.3);
+      background: #fdecec;
+      color: var(--red);
+      translate: 0 -1px;
+      box-shadow: 0 8px 16px -10px rgba(221, 4, 10, 0.7);
+    }
+    .sel:not([aria-pressed='true']):hover svg {
+      rotate: 90deg;
+    }
+    .sel[aria-pressed='true']:hover {
+      translate: 0 -1px;
+      box-shadow: 0 8px 16px -10px rgba(221, 4, 10, 0.8);
+    }
   }
   .boton:active,
   .pdf:active,
   .sel:active,
+  .ban-ver:active,
+  .ban-vaciar:active,
+  .vp-descargar:active,
+  .vp-imprimir:active,
   .indice a:active {
     scale: 0.97;
   }
@@ -1819,7 +3966,7 @@ const icoBajar = 'M12 4v11M7 10l5 5 5-5M5 20h14';
   .pdf:focus-visible,
   .sel:focus-visible,
   .indice a:focus-visible,
-  .equipo h4 a:focus-visible {
+  .pliego h4 a:focus-visible {
     outline: var(--foco);
     outline-offset: 2px;
   }
@@ -1829,67 +3976,147 @@ const icoBajar = 'M12 4v11M7 10l5 5 5-5M5 20h14';
     font-size: var(--t-sub);
   }
 
-  /* ——— Cierre: "¿Necesitas otro documento?" y los certificados, en oscuro, a modo de pie ——— */
+  /* ——— Cierre de la página ———
+     Un remate blanco con "¿Necesitas otro documento?" y los dos correos, la última acción antes del pie */
   .cierre {
-    margin-top: clamp(80px, 10vw, 140px);
-    padding: clamp(56px, 7vw, 96px) 0;
-    background: var(--carbon);
-    color: #fff;
-    scroll-margin-top: 60px;
-  }
-  .cierre-in {
     display: grid;
-    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
-    gap: clamp(40px, 6vw, 96px);
-  }
-  .falta h2 {
-    font-weight: 300;
-    font-size: clamp(36px, 4.2vw, 58px);
-    line-height: 0.95;
-    color: #fff;
-  }
-  .falta > p {
-    margin-top: 16px;
-    color: var(--on-dark);
-    font-size: var(--t-sub);
-  }
-  .falta-links {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin-top: 26px;
-  }
-  .falta .arrow {
-    color: #fff;
-  }
-  .falta .nota {
-    margin-top: 32px;
-    font-size: 13px;
-    color: var(--steel);
-  }
-  .certificados .eyebrow {
-    color: var(--on-dark);
+    gap: 18px;
+    margin-top: clamp(80px, 10vw, 140px);
+    padding-bottom: clamp(96px, 12vw, 160px);
   }
   .sellos {
-    margin: 18px 0 0;
-    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin-block: 0;
+    padding-block: 0;
     list-style: none;
-    border-top: 1px solid var(--carbon-line);
+    border-block: 1px solid var(--line);
   }
   .sello {
-    display: grid;
-    grid-template-columns: 84px minmax(0, 1fr) auto;
-    gap: 20px;
+    display: flex;
+    flex-direction: column;
     align-items: center;
-    padding: 16px 0;
-    border-bottom: 1px solid var(--carbon-line);
+    gap: 18px;
+    padding: clamp(32px, 4vw, 48px) 20px;
+    transition: background var(--dur-2) ease;
+  }
+  .sello + .sello {
+    border-left: 1px solid var(--line);
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .sello:hover {
+      background: #fff;
+    }
+  }
+  .sello .doc-acc {
+    justify-content: center;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    gap: 8px;
   }
   .se-marca {
     position: relative;
     display: grid;
     place-items: center;
-    width: 84px;
-    height: 84px;
+    width: 132px;
+    height: 132px;
+  }
+  .remate {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 24px clamp(32px, 5vw, 72px);
+    padding: clamp(28px, 3.5vw, 44px) clamp(28px, 4vw, 56px);
+    border: 1px solid var(--line);
+    border-top: 3px solid var(--red);
+    border-radius: 20px;
+    background: #fff;
+    box-shadow: 0 40px 70px -50px rgba(21, 23, 25, 0.45);
+  }
+  .falta h2 {
+    font-weight: 300;
+    font-size: clamp(30px, 3.2vw, 46px);
+    line-height: 1;
+    color: var(--ink);
+  }
+  .falta h2 b {
+    color: var(--red);
+  }
+  .falta > p {
+    margin-top: 10px;
+    color: var(--body);
+    font-size: var(--t-sub);
+  }
+  .falta-links {
+    display: flex;
+    gap: 10px;
+  }
+  .buzon {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: #f6f7f8;
+    color: var(--ink);
+    font-weight: 700;
+    font-size: 16px;
+    text-decoration: none;
+    overflow-wrap: anywhere;
+    transition:
+      border-color var(--dur-1) ease,
+      background var(--dur-1) ease,
+      translate 0.25s ease,
+      box-shadow 0.25s ease;
+  }
+  .buzon svg {
+    flex: none;
+    width: 22px;
+    height: 22px;
+    fill: none;
+    stroke: var(--red);
+    stroke-width: 1.8;
+    stroke-linejoin: round;
+  }
+  .buzon span {
+    display: grid;
+    gap: 3px;
+  }
+  .buzon small {
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .buzon::after {
+    content: '»';
+    margin-left: auto;
+    padding-left: 8px;
+    color: var(--red);
+    font-size: 22px;
+    transition: translate 0.25s ease;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .buzon:hover {
+      border-color: rgba(221, 4, 10, 0.3);
+      background: #fdecec;
+      translate: 0 -1px;
+      box-shadow: 0 8px 16px -10px rgba(221, 4, 10, 0.6);
+    }
+    .buzon:hover::after {
+      translate: 4px 0;
+    }
+  }
+  .buzon:focus-visible {
+    outline: var(--foco);
+    outline-offset: 2px;
+  }
+  .cierre .nota {
+    text-align: center;
+    font-size: 13px;
+    color: var(--muted);
   }
   .se-anillo {
     position: absolute;
@@ -1900,7 +4127,7 @@ const icoBajar = 'M12 4v11M7 10l5 5 5-5M5 20h14';
     animation: gira 30s linear infinite;
   }
   .se-anillo circle:first-of-type {
-    stroke: rgba(255, 255, 255, 0.22);
+    stroke: rgba(21, 23, 25, 0.18);
     stroke-width: 1;
   }
   .se-anillo circle:last-of-type {
@@ -1908,7 +4135,7 @@ const icoBajar = 'M12 4v11M7 10l5 5 5-5M5 20h14';
     stroke-width: 1.5;
   }
   .se-anillo text {
-    fill: var(--on-dark);
+    fill: var(--muted);
     font: 700 8.4px var(--f);
     letter-spacing: 0.22em;
   }
@@ -1925,37 +4152,26 @@ const icoBajar = 'M12 4v11M7 10l5 5 5-5M5 20h14';
     display: grid;
     text-align: center;
     font-weight: 700;
-    font-size: 15px;
+    font-size: 21px;
     line-height: 1;
   }
   .se-n small {
-    font-size: 8px;
+    font-size: 10px;
     letter-spacing: 0.24em;
-    color: var(--red-on-dark);
+    color: var(--red);
   }
   .se-txt h3 {
-    font-size: 22px;
+    font-size: clamp(22px, 2vw, 26px);
     line-height: 1;
   }
   .se-txt p {
-    margin-top: 4px;
-    color: var(--on-dark);
+    margin-top: 6px;
+    color: var(--body);
     font-size: 15px;
+    line-height: 1.3;
   }
-  .cierre .pdf {
-    border-color: rgba(255, 255, 255, 0.55);
-    color: #fff;
-  }
-  .cierre .pdf::before {
-    background: #fff;
-  }
-  .cierre .pdf:hover {
-    color: var(--ink);
-  }
-  .cierre .sel.mini {
+  .sello .sel.mini {
     margin-left: 0;
-    border-color: rgba(255, 255, 255, 0.35);
-    color: #fff;
   }
 
   /* ——— Bandeja: la selección y su QR ——— */
@@ -2031,21 +4247,20 @@ const icoBajar = 'M12 4v11M7 10l5 5 5-5M5 20h14';
   .ban-ver {
     height: 44px;
     padding: 0 16px;
-    border: 1px solid rgba(21, 23, 25, 0.2);
-    background: none;
     font: 700 15px var(--f);
     white-space: nowrap;
     cursor: pointer;
   }
-  .ban-ver {
-    border-color: var(--ink);
-    background: var(--ink);
-    color: #fff;
-    transition: background var(--dur-1) ease;
+  .bandeja {
+    transition:
+      box-shadow var(--dur-2) ease,
+      translate var(--dur-2) var(--ease-out);
   }
-  .ban-ver:hover {
-    background: var(--red);
-    border-color: var(--red);
+  @media (hover: hover) and (pointer: fine) {
+    .bandeja:hover {
+      translate: -50% -3px;
+      box-shadow: 0 32px 60px -20px rgba(21, 23, 25, 0.55);
+    }
   }
 
   /* ——— Tu selección ——— */
@@ -2194,8 +4409,6 @@ const icoBajar = 'M12 4v11M7 10l5 5 5-5M5 20h14';
   }
   .dos-lista :global(.dl-pdfs a) {
     padding: 5px 9px;
-    border: 1px solid rgba(21, 23, 25, 0.2);
-    background: #fff;
     font-size: 13px;
     text-decoration: none;
   }
@@ -2278,16 +4491,6 @@ const icoBajar = 'M12 4v11M7 10l5 5 5-5M5 20h14';
     font: 700 16px var(--f);
     cursor: pointer;
   }
-  .vp-descargar {
-    border: 1px solid var(--red);
-    background: var(--red);
-    color: #fff;
-  }
-  .vp-imprimir {
-    border: 1px solid var(--line);
-    background: #fff;
-    color: var(--ink);
-  }
   .vp-imprimir svg {
     color: var(--red);
   }
@@ -2368,11 +4571,46 @@ const icoBajar = 'M12 4v11M7 10l5 5 5-5M5 20h14';
     }
   }
   @media (max-width: 900px) {
+    .remate {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .se-marca {
+      width: 104px;
+      height: 104px;
+    }
     .destacado,
-    .cierre-in,
     .sec-cab,
     .t-servicio {
       grid-template-columns: minmax(0, 1fr);
+    }
+    .t-servicio {
+      gap: 40px;
+    }
+    .fila {
+      grid-template-columns: auto minmax(0, 1fr);
+      padding: 22px 18px;
+    }
+    .fila .doc-acc {
+      grid-column: 1 / -1;
+      grid-row: auto;
+    }
+    .fila .paso-n {
+      right: 12px;
+      top: 22px;
+      translate: none;
+      font-size: 64px;
+    }
+    .fila .insignia {
+      width: 52px;
+      height: 52px;
+    }
+    .paso:not(:last-child)::after {
+      top: auto;
+      right: auto;
+      bottom: -38px;
+      left: 50%;
+      translate: -50% 0;
+      rotate: 90deg;
     }
     .des-foto {
       min-height: 280px;
@@ -2396,15 +4634,15 @@ const icoBajar = 'M12 4v11M7 10l5 5 5-5M5 20h14';
     }
   }
   @media (max-width: 640px) {
-    .sello {
-      grid-template-columns: 72px minmax(0, 1fr);
+    .sellos {
+      grid-template-columns: minmax(0, 1fr);
     }
-    .se-marca {
-      width: 72px;
-      height: 72px;
+    .sello + .sello {
+      border-top: 1px solid var(--line);
+      border-left: 0;
     }
-    .sello .doc-acc {
-      grid-column: 2;
+    .falta-links {
+      flex-direction: column;
     }
     .portada {
       min-height: 0;
