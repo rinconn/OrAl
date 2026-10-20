@@ -3,6 +3,7 @@ import '../styles/global.css';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import Contacto from '../components/Contacto.astro';
+import AltaDistribuidor from '../components/AltaDistribuidor.astro';
 import { idioma, idiomas, ruta, sinIdioma, textos } from '../i18n';
 
 interface Props {
@@ -43,5 +44,6 @@ const base = sinIdioma(Astro.url.pathname);
     </main>
     <Footer />
     <Contacto />
+    <AltaDistribuidor />
   </body>
 </html>

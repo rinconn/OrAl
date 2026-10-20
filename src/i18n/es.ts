@@ -64,6 +64,38 @@ export const es = {
     error: 'No se ha podido enviar. Escríbenos a',
     cerrar: 'Cerrar',
   },
+  // Ventana "Hazte distribuidor": datos de contacto de la empresa que quiere distribuir
+  alta: {
+    eyebrow: 'Hazte distribuidor',
+    titulo: ['Trabajemos ', 'juntos'],
+    lead: 'Déjanos los datos de tu empresa y el departamento comercial se pone en contacto contigo.',
+    despuesTitulo: 'Qué pasa después',
+    despues: [
+      'Nos dejas los datos de tu empresa.',
+      'El departamento comercial revisa tu solicitud.',
+      'Te contactamos para hablar de tu zona y de la gama.',
+    ],
+    directo: '¿Prefieres hablar ya?',
+    empresa: 'Empresa',
+    nombre: 'Nombre y apellidos',
+    email: 'Correo electrónico',
+    telefono: 'Teléfono',
+    pais: 'País',
+    mensaje: 'Cuéntanos sobre tu empresa',
+    mensajeAyuda: 'A qué sectores vendes, en qué zona trabajas o qué equipos te interesan.',
+    opcional: 'opcional',
+    acepto: 'He leído y acepto la',
+    privacidad: 'política de privacidad',
+    enviar: 'Quiero ser distribuidor',
+    enviando: 'Enviando…',
+    obligatorio: 'Falta este dato.',
+    correoMal: 'Revisa el correo: debe ser como nombre@empresa.com.',
+    privacidadMal: 'Para enviarlo tienes que aceptar la política de privacidad.',
+    okTitulo: ['Solicitud ', 'recibida'],
+    okTexto: 'Gracias. El departamento comercial te escribirá a',
+    error: 'No se ha podido enviar. Escríbenos a',
+    cerrar: 'Cerrar',
+  },
   pie: {
     pedidos: 'Pedidos y distribuidores:',
     titulos: { centrifugas: 'Centrífugas', empresa: 'Empresa' },
@@ -373,6 +405,7 @@ export const es = {
     // Comparador del catálogo: 2 o 3 centrífugas lado a lado
     comparar: {
       version: 'Versión',
+      cambiar: 'Ver esta versión',
       comparar: 'Comparar',
       hasta: 'Hasta 3 centrífugas',
       elegir: 'Elige hasta 3 centrífugas',
@@ -655,14 +688,20 @@ export const es = {
       'iso-13485': { nombre: 'ISO 13485', frase: 'Calidad de productos sanitarios.' },
       'iso-14001': { nombre: 'ISO 14001', frase: 'Gestión ambiental.' },
       descontaminacion: { nombre: 'Certificado de descontaminación' },
-      'service-pattern': { nombre: 'Service pattern' },
+      'service-pattern': { nombre: 'Solicitud de servicio' },
       limpieza: { nombre: 'Manual de limpieza y descontaminación' },
-      'condiciones-venta': { nombre: 'Condiciones generales de venta y de prestación de servicios' },
-      'garantia-productos': { nombre: 'Condiciones generales de garantía de los productos' },
-      'garantia-reparaciones': { nombre: 'Condiciones de garantía de reparaciones y repuestos' },
-      'politica-organizacion': { nombre: 'Política de la organización' },
-      'politica-ambiental': { nombre: 'Política ambiental' },
-    } as Record<string, { nombre: string; frase?: string }>,
+      'condiciones-venta': { nombre: 'Condiciones generales de venta y de prestación de servicios', corto: 'Venta' },
+      'garantia-productos': {
+        nombre: 'Condiciones generales de garantía de los productos',
+        corto: 'Garantía de productos',
+      },
+      'garantia-reparaciones': {
+        nombre: 'Condiciones de garantía de reparaciones y repuestos',
+        corto: 'Reparaciones y repuestos',
+      },
+      'politica-organizacion': { nombre: 'Política de la organización', corto: 'Organización' },
+      'politica-ambiental': { nombre: 'Política ambiental', corto: 'Ambiental' },
+    } as Record<string, { nombre: string; frase?: string; corto?: string }>,
     destacado: 'El documento más completo',
     lab: 'Laboratorio',
     actualizado: 'Actualizado',
@@ -677,6 +716,10 @@ export const es = {
     copiar: 'Copiar enlace',
     copiado: 'Enlace copiado',
     rotores: 'Rotores',
+    libroAbrir: 'Abrir el catálogo',
+    libroSig: 'Página siguiente',
+    libroAnt: 'Página anterior',
+    libroIndice: 'Ir a una familia',
     columnas: ['Rotor', 'Tipo', 'Velocidad', 'Fuerza', 'Capacidad'],
     etqEquipo: 'Equipo',
     alDossier: 'A tu selección',
@@ -708,6 +751,290 @@ export const es = {
     faltaTexto: 'Si buscas algo que no está aquí, escríbenos y te lo enviamos.',
     tecnico: 'Servicio técnico',
     comercial: 'Comercial',
+  },
+  servicio: {
+    title: 'Servicio técnico · Abre un parte de servicio · Orto Alresa',
+    description:
+      'Abre un parte del servicio técnico de Orto Alresa en tres pasos: tus datos, el equipo y la incidencia. Sin imprimir ni escanear.',
+    titulo: ['Abre un ', 'parte de servicio'],
+    lead: 'Tus datos, el equipo y lo que le pasa. El servicio técnico de fábrica lo recibe al momento, sin imprimir ni escanear nada.',
+    seccionTitulo: ['Tres pasos, ', 'un solo envío'],
+    seccionTexto: 'Tus datos, el equipo y lo que le pasa. Los campos opcionales puedes dejarlos en blanco.',
+    plazo: ['Respuesta en ', '48 h'],
+    plazoTexto: 'Puesta en marcha, incidencias, reparaciones y formación técnica online.',
+    directo: '¿Prefieres escribir o llamar?',
+    pasos: ['Tus datos', 'El equipo', 'La incidencia'],
+    paso: (n: number, total: number) => `Paso ${n} de ${total}`,
+    intro: [
+      'El distribuidor o el servicio técnico que atiende al cliente.',
+      'Lo encontrarás en la placa de características del equipo y en su factura.',
+      'Cuanto más detalle, antes se resuelve.',
+    ],
+    distribuidor: 'Distribuidor',
+    contacto: 'Persona de contacto',
+    ciudad: 'Ciudad',
+    modelo: 'Modelo',
+    modeloAyuda: 'Escribe el nombre o elígelo de la lista',
+    serie: 'Número de serie (SN)',
+    accesorios: 'Accesorios',
+    accesoriosAyuda: 'Rotor, adaptadores, cestillos…',
+    factura: 'Nº de factura',
+    pedido: 'Nº de pedido',
+    instalacion: 'Fecha de instalación',
+    tipo: '¿Qué necesitas?',
+    tipos: ['Reparación', 'Puesta en marcha', 'Incidencia o duda', 'Formación técnica online'],
+    descripcion: 'Descripción de la incidencia',
+    descripcionAyuda: 'Qué ocurre, desde cuándo y si la pantalla muestra algún código de error.',
+    vuelve: '¿El equipo tiene que volver a fábrica?',
+    si: 'Sí',
+    no: 'No',
+    descontaminacion: 'Antes de enviarlo: certificado de descontaminación',
+    descontaminacionTexto:
+      'Según los procedimientos de seguridad de Orto Alresa y la ISO 13485 (punto 7.5.1.2.3), todo equipo usado que vuelve a fábrica tiene que llevar el certificado de descontaminación. Si llega sin él, se descontamina en fábrica con el cargo correspondiente.',
+    confirmo: 'Enviaré el equipo limpio, descontaminado y con su certificado.',
+    atras: 'Atrás',
+    siguiente: 'Siguiente',
+    enviar: 'Enviar el parte',
+    enviando: 'Enviando…',
+    borrador: 'Lo que escribes se guarda en este navegador hasta que lo envíes.',
+    vaciar: 'Empezar de cero',
+    parte: 'Parte de servicio',
+    nuevo: 'Nuevo',
+    enviado: 'Enviado',
+    sinRellenar: 'Sin rellenar',
+    okTitulo: ['Parte ', 'enviado'],
+    okTexto: 'El servicio técnico de fábrica ya lo tiene. Te responderemos a',
+    otro: 'Abrir otro parte',
+    error: 'No se ha podido enviar. Escríbenos a',
+  },
+  // Página Empresa (/empresa/). Todo sale de la página "Empresa" de ortoalresa.com; los certificados, de `empresa`
+  sobre: {
+    title: 'Empresa · Fabricantes de centrífugas desde 1949 · Orto Alresa',
+    description:
+      'Orto Alresa nació en 1949 como fabricante de centrífugas. Empresa familiar, con un Sistema de Gestión de la Calidad según ISO 9001, 13485 y 14001 y referente entre los fabricantes europeos.',
+    eyebrow: 'Sobre nosotros',
+    titulo: ['Sinónimo de experiencia en ', 'centrifugación'],
+    lead: 'Orto Alresa nació en 1949 como fabricante de centrífugas. Hoy es un referente entre los fabricantes europeos y comparte experiencia con usuarios de todo el mundo.',
+    escena: 'Partículas que giran y se separan en capas, como en una centrífuga',
+    historiaEyebrow: 'Nuestra historia',
+    historiaTitulo: ['Trabajo constante, talento, ', 'compromiso y entusiasmo'],
+    hitos: [
+      { cuando: '1949', titulo: 'Nace Orto Alresa', texto: 'Empieza como fabricante de centrífugas.' },
+      {
+        cuando: '2001',
+        titulo: 'Sistema de Gestión de la Calidad',
+        texto: 'Según las normas ISO 9001, 13485 y 14001, revisado periódicamente por empresas de auditoría externa.',
+      },
+      {
+        cuando: 'Innovación',
+        titulo: 'Sistemas propios',
+        texto:
+          'Freno controlable PCBS con 175 rampas, Gas Release System (GRS) y pantallas táctiles TFT: pioneros en llevar los sistemas más sofisticados a las centrífugas de uso rutinario.',
+      },
+      {
+        cuando: 'Al mundo',
+        titulo: 'Alianzas en todo el mundo',
+        texto:
+          'Especialistas en comercio exterior y expedidor conocido (KC). Presentes en laboratorios de industria, investigación, biotecnología y medio ambiente.',
+      },
+      {
+        cuando: 'Hoy',
+        titulo: 'Referente europeo',
+        texto:
+          'Más de 75 años después, una empresa familiar que es referente entre los fabricantes europeos de centrífugas.',
+      },
+    ],
+    vitrinaAlt: 'Centrífuga Digtor 22 abierta, con el rotor cargado y la pantalla táctil',
+    propuestaEyebrow: 'Nuestra propuesta de valor',
+    propuestaTitulo: ['Más allá de ', 'lo estándar'],
+    propuesta: [
+      'Soluciones innovadoras en centrifugación mediante alianzas estratégicas con nuestra red de colaboradores. ',
+      'Fabricación europea con plazos de entrega muy cortos.',
+    ],
+    ideas: [
+      {
+        clave: 'Innovación',
+        titulo: 'Requisitos reales',
+        texto:
+          'No queremos ser una opción más. Buscamos soluciones basadas en la innovación y la sostenibilidad, a partir de los requisitos reales de cada laboratorio.',
+      },
+      {
+        clave: 'Normativa',
+        titulo: 'Nos anticipamos',
+        texto:
+          'Nos adelantamos a la entrada en vigor de los reglamentos y normas que afectan a nuestros equipos: más seguridad para el usuario y sus procesos, con responsabilidad hacia el entorno y las personas.',
+      },
+      {
+        clave: 'Comunicación',
+        titulo: 'Usuario, equipo y fabricante',
+        texto:
+          'Nuestros equipos llevan la tecnología más avanzada para comunicar al usuario con el equipo y con nosotros. La comunicación es la clave de nuestro presente y futuro.',
+      },
+      {
+        clave: 'Familia',
+        titulo: 'Una empresa familiar',
+        texto: 'Que integra a socios, usuarios y asociados en una plataforma para ofrecer soluciones reales.',
+      },
+    ],
+    // Los valores, en una frase: los tramos impares van en negrita
+    caracter: [
+      'Nos caracterizan la ',
+      'integridad',
+      ', el ',
+      'dinamismo',
+      ', la ',
+      'perseverancia',
+      ', una ',
+      'excelente asistencia',
+      ' y la ',
+      'mejora continua',
+      '.',
+    ],
+    difEyebrow: 'Qué nos diferencia',
+    difTitulo: ['Somos lo que ', 'hacemos'],
+    difLead:
+      'Equipos innovadores que aumentan la seguridad, la funcionalidad y la facilidad de uso, adaptados a las necesidades de cada laboratorio. Y un servicio basado en una comunicación fluida con nuestros clientes.',
+    grupos: [
+      {
+        nombre: 'En el equipo',
+        items: [
+          {
+            cifra: 'TFT',
+            unidad: '',
+            titulo: 'Pantalla táctil a color',
+            texto:
+              'Además de las funciones estándar, opciones con un alto grado de especialización técnica. Cualquier usuario la maneja de forma intuitiva.',
+          },
+          {
+            cifra: '175',
+            unidad: 'rampas',
+            titulo: 'Frenado controlable (PCBS)',
+            texto:
+              'Controla en fracciones de segundo el tiempo de frenado y mantiene la integridad de las capas: no se vuelven a mezclar tras el centrifugado.',
+          },
+          {
+            cifra: 'GRS',
+            unidad: '',
+            titulo: 'Gas Release System',
+            texto: 'Accesorio que da más seguridad al proceso, para el usuario y para el entorno del laboratorio.',
+          },
+          {
+            cifra: '< 4',
+            unidad: 'ºC',
+            titulo: 'Refrigeradas',
+            texto: 'Por debajo de 4 ºC a la máxima velocidad de cualquiera de sus rotores.',
+          },
+          {
+            cifra: '80',
+            unidad: 'ºC',
+            titulo: 'Calefactadas',
+            texto: 'Hasta 80 ºC, para adaptarse a una gran diversidad de aplicaciones.',
+          },
+          {
+            cifra: 'ULS',
+            unidad: '',
+            titulo: 'Detección de desequilibrio',
+            texto:
+              'Indica la posición en la que se ha producido. Además, los parámetros se cambian en marcha y los programas se encadenan (linked program).',
+          },
+        ],
+      },
+      {
+        nombre: 'En la empresa',
+        items: [
+          {
+            cifra: '48',
+            unidad: 'h',
+            titulo: 'Respuesta personalizada',
+            texto:
+              'Respuesta y asesoramiento en un máximo de 48 h, tanto en asistencia comercial como en servicio técnico.',
+          },
+          {
+            cifra: '2',
+            unidad: 'años',
+            titulo: 'Garantía total',
+            texto: 'En todos nuestros productos, sin sorpresas.',
+          },
+          {
+            cifra: 'SAT',
+            unidad: '',
+            titulo: 'Servicio de fábrica',
+            texto:
+              'Instalación y puesta en marcha guiadas por el departamento técnico, resolución de incidencias, reparaciones, formación técnica online, y procedimientos y certificados para la calibración.',
+          },
+          {
+            cifra: 'OEM',
+            unidad: '',
+            titulo: 'Equipos a medida',
+            texto:
+              'Para las aplicaciones que no encuentran su lugar en los equipos estándar: con análisis de riesgos para proteger la muestra, al usuario y su entorno, y trazabilidad desde el origen hasta el usuario.',
+          },
+          {
+            cifra: 'KC',
+            unidad: '',
+            titulo: 'Comercio exterior',
+            texto:
+              'Especialistas que se ocupan de los envíos, la documentación y la adaptación a las normas del país de destino. Como expedidor conocido (Known Consignor), exportar es más fácil y cuesta menos.',
+          },
+        ],
+      },
+    ],
+    calidadEyebrow: 'Calidad',
+    calidadTitulo: ['Nos anticipamos ', 'a la norma'],
+    calidadTexto:
+      'Desde 2001, un Sistema de Gestión de la Calidad según ISO 9001, 13485 y 14001, revisado periódicamente por auditoría externa. Nos adelantamos a la entrada en vigor de los reglamentos y normas de nuestros equipos: más seguridad para el usuario y sus procesos, con respeto por el entorno y las personas.',
+    compromisoEyebrow: 'Compromiso',
+    compromisoTitulo: ['Un futuro más sostenible, ', 'igualitario y responsable'],
+    solidaria: {
+      titulo: 'Empresa Solidaria',
+      cifra: '0,7 %',
+      texto:
+        'El sello reconoce nuestro compromiso con una sociedad más justa, igualitaria e inclusiva: destinamos el 0,7 % del Impuesto de Sociedades a proyectos sociales del Tercer Sector.',
+    },
+    labmas: {
+      titulo: 'LABMAS Spain',
+      cifra: '90 %',
+      texto:
+        'Somos miembros de la asociación que agrupa al 90 % de los fabricantes españoles del sector laboratorio, para impulsar la exportación y la internacionalización. Desde 2013 forma parte de la asociación europea EUROM II.',
+      pie: '9 de cada 10 fabricantes españoles del sector laboratorio',
+    },
+    ods: {
+      titulo: 'Objetivos de Desarrollo Sostenible',
+      texto: 'Colaboramos activamente con cinco de los ODS de las Naciones Unidas.',
+    },
+    objetivos: [
+      {
+        n: '3',
+        nombre: 'Salud y bienestar',
+        texto:
+          'Equipos pensados para garantizar la seguridad y proteger la salud de quienes trabajan en el laboratorio.',
+      },
+      {
+        n: '5',
+        nombre: 'Igualdad de género',
+        texto: 'Igualdad de oportunidades, con políticas que aseguran que este principio se cumple.',
+      },
+      {
+        n: '9',
+        nombre: 'Industria, innovación e infraestructura',
+        texto:
+          'Inversión en innovación tecnológica y desarrollo industrial responsable, con equipos de alta precisión.',
+      },
+      {
+        n: '12',
+        nombre: 'Producción y consumo responsables',
+        texto: 'Menos residuos y equipos de larga vida útil, contra la obsolescencia programada.',
+      },
+      {
+        n: '13',
+        nombre: 'Acción por el clima',
+        texto: 'Menos emisiones y tecnologías eficientes para mitigar el cambio climático.',
+      },
+    ],
+    cierreTitulo: ['Trabajemos ', 'juntos'],
+    cierreTexto: 'Desarrollamos alianzas en todo el mundo con nuestra red de distribuidores.',
+    distribuidor: 'Hazte distribuidor',
+    contacto: 'Contacto',
   },
   laboratorio: {
     equipos: 'Otros productos de laboratorio',

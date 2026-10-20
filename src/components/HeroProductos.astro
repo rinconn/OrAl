@@ -457,8 +457,30 @@ const recorrido = ['PP 367', 'PC 497', 'PI 448', 'PE 494', 'PP 821', 'PC 279'];
     font-weight: 700;
     text-decoration: none;
     color: #fff;
-    background: var(--red);
-    transition: background 0.25s var(--ease);
+    /* El mismo acabado que el "Presupuesto" de las tarjetas (global.css, `.btn.rel`) */
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+    border-radius: 10px;
+    background: linear-gradient(180deg, #f2262c, var(--red) 55%, #c8030a);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.3),
+      0 6px 14px -8px rgba(221, 4, 10, 0.8);
+    transition:
+      box-shadow 0.25s ease,
+      translate 0.25s ease;
+  }
+  .btn-todas::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: linear-gradient(105deg, transparent 42%, rgba(255, 255, 255, 0.28) 50%, transparent 58%);
+    translate: -110% 0;
+    pointer-events: none;
+  }
+  .btn-todas:active {
+    scale: 0.97;
   }
   .btn-todas::after {
     content: '»';
@@ -774,7 +796,14 @@ const recorrido = ['PP 367', 'PC 497', 'PI 448', 'PE 494', 'PP 821', 'PC 279'];
 
   @media (hover: hover) {
     .btn-todas:hover {
-      background: var(--red-d);
+      translate: 0 -1px;
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.3),
+        0 12px 22px -8px rgba(221, 4, 10, 0.85);
+    }
+    .btn-todas:hover::before {
+      translate: 110% 0;
+      transition: translate 1s cubic-bezier(0.45, 0, 0.25, 1);
     }
     .btn-todas:hover::after {
       transform: translateX(4px);
