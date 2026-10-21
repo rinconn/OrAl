@@ -469,6 +469,9 @@ const icoIdioma = 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM3 12h18M12 3c3 3 3 15 0 
                             </a>
                           </h4>
                           <p class="eq-frase">{frase(x)}</p>
+                          <a class="arrow ir-ficha" href={ficha(x)}>
+                            {d.verFicha}
+                          </a>
                           <div class="pg-datos">
                             <div>
                               <small>{d.actualizado}</small>
@@ -571,7 +574,9 @@ const icoIdioma = 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM3 12h18M12 3c3 3 3 15 0 
                 <span class="holo" aria-hidden="true">
                   <img src="/img/marca/logo-ortoalresa-color.svg" alt="" width="130" height="59" />
                   <b>{d.secciones.equipos.titulo.join('')}</b>
-                  <small>{d.libroAbrir}</small>
+                </span>
+                <span class="tapa-cta btn red rel" aria-hidden="true">
+                  {d.libroAbrir}
                 </span>
                 <svg class="intro-libro" viewBox="0 0 1000 300" aria-hidden="true">
                   <defs>
@@ -3166,23 +3171,38 @@ const icoIdioma = 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM3 12h18M12 3c3 3 3 15 0 
     margin-bottom: 6px;
     opacity: 0.92;
   }
-  .holo small {
-    color: var(--red);
-    font-weight: 700;
-    font-size: 12px;
-    letter-spacing: 0.22em;
-    text-transform: uppercase;
-  }
   .holo b {
     font-weight: 300;
     font-size: clamp(24px, 2.5vw, 34px);
     line-height: 1.05;
     white-space: nowrap;
   }
-  .holo small::after {
+  /* Con el libro cerrado, un botón de verdad bajo el libro: deja claro que se abre al pincharlo */
+  .tapa-fija .tapa-cta {
+    position: absolute;
+    top: calc(100% + 30px);
+    left: 50%;
+    display: none;
+    translate: -50% 0;
+    white-space: nowrap;
+  }
+  .libro.js:not(.abierto) .tapa-cta {
+    display: inline-flex;
+  }
+  .tapa-cta::after {
     content: '»';
-    margin-left: 10px;
-    font-weight: 700;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .tapa-fija:hover .tapa-cta {
+      translate: -50% -1px;
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.3),
+        0 12px 22px -8px rgba(221, 4, 10, 0.85);
+    }
+    .tapa-fija:hover .tapa-cta::before {
+      translate: 110% 0;
+      transition: translate 1s cubic-bezier(0.45, 0, 0.25, 1);
+    }
   }
   @keyframes holo {
     0%,
@@ -3642,6 +3662,20 @@ const icoIdioma = 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM3 12h18M12 3c3 3 3 15 0 
   .pliego .eq-frase {
     margin-bottom: 4px;
   }
+  /* El nombre ya lleva a la ficha, pero no lo parece: un enlace explícito lo dice */
+  .pliego .ir-ficha {
+    align-self: flex-start;
+    color: var(--red);
+    font-size: 16px;
+  }
+  .pliego .ir-ficha:hover {
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+  .pliego .ir-ficha:focus-visible {
+    outline: var(--foco);
+    outline-offset: 2px;
+  }
   .pliego h4 {
     margin-top: 6px;
   }
@@ -3661,8 +3695,11 @@ const icoIdioma = 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM3 12h18M12 3c3 3 3 15 0 
       translate: 0 14px;
     }
   }
-  .pliego.entra .der > :is(.der-cab, h4, .eq-frase, .pg-datos, .doc-acc) {
+  .pliego.entra .der > :is(.der-cab, h4, .eq-frase, .ir-ficha, .pg-datos, .doc-acc) {
     animation: entra 0.7s var(--ease-out) both;
+  }
+  .pliego.entra .der > .ir-ficha {
+    animation-delay: 0.2s;
   }
   .pliego.entra .der > h4 {
     animation-delay: 0.08s;
