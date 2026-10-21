@@ -803,9 +803,10 @@ export const en: Textos = {
     hitos: [
       { cuando: '1949', titulo: 'Orto Alresa is born', texto: 'It starts out as a centrifuge manufacturer.' },
       {
-        cuando: '2001',
-        titulo: 'Quality Management System',
-        texto: 'According to ISO 9001, 13485 and 14001, periodically reviewed by external audit firms.',
+        cuando: 'Family',
+        titulo: 'A family business',
+        texto:
+          'Integrating partners, users and associates into a platform that offers real solutions. European manufacturing with very short delivery times.',
       },
       {
         cuando: 'Innovation',
@@ -814,19 +815,33 @@ export const en: Textos = {
           'Controllable braking (PCBS) with 175 ramps, Gas Release System (GRS) and colour TFT touch screens: pioneers in bringing the most sophisticated systems to routine centrifuges.',
       },
       {
+        cuando: 'Made to measure',
+        titulo: 'Made-to-measure equipment',
+        texto:
+          'For applications that do not fit standard equipment: with risk analysis to protect the sample, the user and the environment, and traceability from origin to user.',
+      },
+      {
         cuando: 'Worldwide',
         titulo: 'Partnerships worldwide',
         texto:
           'Foreign trade specialists and Known Consignor (KC) status. Present in industry, research, biotechnology and environmental labs.',
       },
-      {
-        cuando: 'Today',
-        titulo: 'A European reference',
-        texto:
-          'More than 75 years later, a family business that is a reference among European centrifuge manufacturers.',
-      },
     ],
-    vitrinaAlt: 'Digtor 22 centrifuge, open, with the loaded rotor and the touchscreen',
+    escaner: {
+      real: 'Outside',
+      rayos: 'Inside',
+      modelo: '3D model · Digicen 22',
+      saltar: 'Skip animation',
+      subir: 'Skip back up',
+      partes: [
+        { codigo: 'PP 367', nombre: 'Lid' },
+        { codigo: 'PP 821', nombre: 'Control panel' },
+        { codigo: 'PI 448', nombre: 'Chamber' },
+        { codigo: 'PE 494', nombre: 'Motor' },
+        { codigo: 'PC 497', nombre: 'Shock absorber' },
+      ],
+    },
+    valoresTitulo: 'We stand for',
     propuestaEyebrow: 'Our value proposition',
     propuestaTitulo: ['Beyond ', 'the standard'],
     propuesta: [
@@ -839,12 +854,6 @@ export const en: Textos = {
         titulo: 'Real requirements',
         texto:
           'We don’t want to be just another option. We look for solutions based on innovation and sustainability, built on the real requirements of each laboratory.',
-      },
-      {
-        clave: 'Regulations',
-        titulo: 'Ahead of the rules',
-        texto:
-          'We anticipate the entry into force of the regulations and standards that apply to our equipment: greater safety for users and their processes, responsibly towards the environment and people.',
       },
       {
         clave: 'Communication',
@@ -874,6 +883,8 @@ export const en: Textos = {
     ],
     difEyebrow: 'Where is the difference?',
     difTitulo: ['We are what ', 'we do'],
+    difAnterior: 'Previous',
+    difSiguiente: 'Next',
     difLead:
       'Innovative equipment that increases safety, functionality and usability, adapted to the needs of each laboratory. And a service based on fluid communication with our clients.',
     grupos: [
@@ -961,9 +972,9 @@ export const en: Textos = {
       },
     ],
     calidadEyebrow: 'Quality',
-    calidadTitulo: ['Ahead of ', 'the standard'],
+    calidadTitulo: ['Every unit, ', 'fully compliant.'],
     calidadTexto:
-      'Since 2001, a Quality Management System according to ISO 9001, 13485 and 14001, periodically reviewed by external auditors. We anticipate the entry into force of the regulations and standards that apply to our equipment: more safety for users and their processes, responsibly towards the environment and people.',
+      'Since 2001 we have worked with a Management System according to ISO 9001, 13485 and 14001, audited by external companies. Every centrifuge complies with the European directives on electrical safety, electromagnetic compatibility, hazardous substances and recycling, and our diagnostic equipment with the IVDR Regulation. The certificates are ready to download.',
     compromisoEyebrow: 'Commitment',
     compromisoTitulo: ['A more sustainable, ', 'equal and responsible future'],
     solidaria: {
@@ -971,6 +982,9 @@ export const en: Textos = {
       cifra: '0.7%',
       texto:
         'The Empresa Solidaria seal acknowledges our commitment to a more just, equal and inclusive society: we allocate 0.7% of our Corporate Tax to social projects developed by the Third Sector.',
+      pie: '€0.70 of every €100 of our Corporate Tax goes to social projects',
+      total: '€100',
+      parte: '€0.70',
     },
     labmas: {
       titulo: 'LABMAS Spain',
@@ -978,6 +992,9 @@ export const en: Textos = {
       texto:
         'We are members of the association formed by 90% of Spanish manufacturers in the laboratory field, to promote export and internationalisation. Since 2013 it belongs to the European association EUROM II.',
       pie: '9 out of 10 Spanish manufacturers in the laboratory field',
+      restante: 'remaining',
+      dentro: 'Manufacturers that are LABMAS Spain members',
+      fuera: 'Manufacturers outside the association',
     },
     ods: {
       titulo: 'Sustainable Development Goals',
@@ -1011,10 +1028,6 @@ export const en: Textos = {
         texto: 'Lower emissions and efficient technologies to mitigate climate change.',
       },
     ],
-    cierreTitulo: ["Let's work ", 'together'],
-    cierreTexto: 'We establish partnerships worldwide with our network of distributors.',
-    distribuidor: 'Become a distributor',
-    contacto: 'Contact',
   },
   laboratorio: {
     equipos: 'Other laboratory products',

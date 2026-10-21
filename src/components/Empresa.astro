@@ -10,7 +10,7 @@ const { pompas, certificados } = t;
 const primero = certificados[1];
 ---
 
-<section class="company" id="empresa">
+<section class="company" id="empresa" data-raya>
   <div class="foto ap">
     <div class="ph" role="img" aria-label={t.alt}></div>
     <Paso desde="#2c3034" />
@@ -234,6 +234,7 @@ const primero = certificados[1];
   h2 {
     margin: 0 auto;
     max-width: 17em;
+    width: fit-content;
     font-weight: 300;
     font-size: clamp(30px, 3.6vw, 52px);
     line-height: 1.08;

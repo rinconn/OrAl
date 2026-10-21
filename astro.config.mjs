@@ -9,9 +9,23 @@ export default defineConfig({
   integrations: [react(), sitemap()],
   // Permite la vista previa de desarrollo a través de GitHub Codespaces.
   server: { allowedHosts: ['.app.github.dev'] },
-  // jsPDF se carga al pulsar "PDF" (import dinámico). Sin esto, en desarrollo Vite lo descubre tarde, lo
-  // vuelve a empaquetar y la página se queda pidiendo la versión vieja (504 "Outdated Optimize Dep").
-  vite: { optimizeDeps: { include: ['jspdf', 'jspdf-autotable'] } },
+  // jsPDF y three (escenas 3D de Productos y Empresa) se cargan con import dinámico. Sin esto, en desarrollo
+  // Vite los descubre tarde, los vuelve a empaquetar y la página se queda pidiendo la versión vieja
+  // (504 "Outdated Optimize Dep") y no aparece el modelo.
+  vite: {
+    optimizeDeps: {
+      include: [
+        'jspdf',
+        'jspdf-autotable',
+        'three',
+        'three/examples/jsm/loaders/GLTFLoader.js',
+        'three/examples/jsm/loaders/DRACOLoader.js',
+        'three/examples/jsm/controls/OrbitControls.js',
+        'three/examples/jsm/math/MeshSurfaceSampler.js',
+        'three/examples/jsm/environments/RoomEnvironment.js',
+      ],
+    },
+  },
   i18n: {
     locales: ['es', 'en', 'fr'],
     defaultLocale: 'es',

@@ -1,0 +1,1028 @@
+---
+// Compromiso (página Empresa): dos gráficas de línea finas, a la misma altura, y debajo el círculo de los ODS.
+// · 01 Empresa Solidaria: de cada euro del Impuesto de Sociedades, 0,7 céntimos van a proyectos sociales; la línea
+//   sube de 0 € a 0,70 € a lo largo de los 100 €.
+// · 02 LABMAS Spain: los 10 fabricantes de cada 10, uno a uno; la línea sube del 10 % al 90 % y el décimo, fuera de la
+//   asociación, deja el 10 % restante marcado hasta el 100 %.
+// Las líneas se dibujan al verlas y después las recorre una luz suave; al pasar (o tocar) sale el valor de cada punto.
+// · ODS: los 17 objetivos en un círculo, como su emblema; los cinco nuestros, en rojo. Al elegir uno se lee su texto.
+// Sin JS (o con menos movimiento) todo se ve quieto y completo, y los cinco ODS con su texto.
+import Paso from './Paso.astro';
+import { sellos } from '../data/navegacion';
+import { idioma, textos } from '../i18n';
+
+const s = textos(idioma(Astro.currentLocale)).sobre;
+const selloOds = sellos.find((x) => x.clave === 'ods');
+const selloSolidaria = sellos.find((x) => x.clave === 'solidaria');
+const sol = s.solidaria;
+const lab = s.labmas;
+const pct = (v: number) => lab.cifra.replace(/\d+/, String(v));
+const dos = (n: number) => String(n).padStart(2, '0');
+
+// Área de dibujo de las dos gráficas (viewBox 400 × 150)
+const X0 = 44;
+const X1 = 388;
+const Y0 = 126;
+const ALTO = 112;
+const r1 = (n: number) => Math.round(n * 10) / 10;
+const y = (k: number) => r1(Y0 - k * ALTO); // k de 0 a 1
+
+// 01: cada 10 € del impuesto, lo que va a proyectos sociales (0,7 %), sobre una escala de 0 a 1 €
+const p1 = Array.from({ length: 11 }, (_, i) => ({ x: r1(X0 + (i * (X1 - X0)) / 10), y: y(i * 0.07), e: i * 10 }));
+// 02: los fabricantes de uno en uno; los nueve primeros suman de 10 en 10 y el décimo deja la línea en el 90 %
+const p2 = Array.from({ length: 10 }, (_, i) => ({
+  x: r1(X0 + (i * (X1 - X0)) / 9),
+  y: y(Math.min(i + 1, 9) / 10),
+  dentro: i < 9,
+}));
+const linea = (p: { x: number; y: number }[]) => p.map((q, i) => `${i ? 'L' : 'M'}${q.x} ${q.y}`).join(' ');
+const area = (p: { x: number; y: number }[]) => `${linea(p)} L${p.at(-1)!.x} ${Y0} L${p[0]!.x} ${Y0} Z`;
+const fin1 = p1.at(-1)!;
+const fin2 = p2[8]!;
+
+// ODS: 17 porciones alrededor de un círculo (empezando arriba), con un pequeño hueco entre ellas
+const nuestros = s.objetivos.map((o) => o.n);
+const R_EXT = 112;
+const R_INT = 96;
+const punto = (r: number, a: number) => [r1(150 + r * Math.sin(a)), r1(150 - r * Math.cos(a))] as const;
+const porciones = Array.from({ length: 17 }, (_, i) => {
+  const paso = (Math.PI * 2) / 17;
+  const a0 = i * paso + 0.025;
+  const a1 = (i + 1) * paso - 0.025;
+  const medio = (a0 + a1) / 2;
+  const n = String(i + 1);
+  const [ex0, ey0] = punto(R_EXT, a0);
+  const [ex1, ey1] = punto(R_EXT, a1);
+  const [ix1, iy1] = punto(R_INT, a1);
+  const [ix0, iy0] = punto(R_INT, a0);
+  const [tx, ty] = punto(R_EXT + 18, medio);
+  return {
+    n,
+    k: nuestros.indexOf(n),
+    d: `M${ex0} ${ey0} A${R_EXT} ${R_EXT} 0 0 1 ${ex1} ${ey1} L${ix1} ${iy1} A${R_INT} ${R_INT} 0 0 0 ${ix0} ${iy0} Z`,
+    tx,
+    ty: ty + 4,
+    dx: r1(Math.sin(medio) * 6),
+    dy: r1(-Math.cos(medio) * 6),
+  };
+});
+---
+
+<section class="compromiso sec-t" data-compromiso>
+  <Paso desde="transparent" />
+  <canvas class="onda" aria-hidden="true"></canvas>
+  <div class="wrap">
+    <header class="cab">
+      <p class="tag">
+        <i class="punto" aria-hidden="true"></i>
+        {s.compromisoEyebrow}
+      </p>
+      <h2 class="t">
+        {s.compromisoTitulo[0]}
+        <b>{s.compromisoTitulo[1]}</b>
+      </h2>
+    </header>
+
+    <div class="graficas">
+      <!-- 01 · Empresa Solidaria -->
+      <article class="g" data-g="sol">
+        <header class="g-cab">
+          <span class="g-n">01</span>
+          <h3>{sol.titulo}</h3>
+          {selloSolidaria && (
+            <img
+              src={selloSolidaria.src}
+              alt=""
+              width={selloSolidaria.ancho}
+              height={selloSolidaria.alto}
+              loading="lazy"
+            />
+          )}
+        </header>
+        <b class="cifra" data-cifra={sol.cifra} data-dur="1400">
+          {sol.cifra}
+        </b>
+        <p class="pie">{sol.pie}</p>
+        <div class="plano" data-plano>
+          <svg viewBox="0 0 400 150" role="img" aria-label={sol.pie}>
+            <defs>
+              <linearGradient id="g1-area" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#dd040a" stop-opacity="0.16"></stop>
+                <stop offset="1" stop-color="#dd040a" stop-opacity="0"></stop>
+              </linearGradient>
+            </defs>
+            <g class="rej">
+              {[0, 0.5, 1].map((k) => (
+                <line x1={X0} x2={X1} y1={y(k)} y2={y(k)} />
+              ))}
+            </g>
+            <g class="eti">
+              <text x={X0 - 8} y={y(1) + 4} text-anchor="end">
+                {sol.total.replace('100', '1')}
+              </text>
+              <text x={X0 - 8} y={Y0 + 4} text-anchor="end">
+                0
+              </text>
+              <text x={X0} y="146">
+                0
+              </text>
+              <text x={X1} y="146" text-anchor="end">
+                {sol.total}
+              </text>
+            </g>
+            <path class="area" d={area(p1)} fill="url(#g1-area)"></path>
+            <path class="raya" d={linea(p1)} pathLength="1"></path>
+            <path class="luz" d={linea(p1)} pathLength="1"></path>
+            {p1.map((q, i) => (
+              <circle class="pt" cx={q.x} cy={q.y} r="2.4" style={`--i: ${i}`} data-x={q.e} />
+            ))}
+            <circle class="fin" cx={fin1.x} cy={fin1.y} r="4"></circle>
+            <text class="fin-t" x={fin1.x - 10} y={fin1.y - 12} text-anchor="end">
+              {sol.parte}
+            </text>
+            <line class="mira" y1={y(1)} y2={Y0}></line>
+            <circle class="mira-p" r="4.5"></circle>
+          </svg>
+          <div class="burbuja" aria-hidden="true">
+            <b></b>
+            <span></span>
+          </div>
+        </div>
+        <p class="txt">{sol.texto}</p>
+      </article>
+
+      <!-- 02 · LABMAS Spain -->
+      <article class="g" data-g="lab" data-dentro={lab.dentro} data-fuera={lab.fuera}>
+        <header class="g-cab">
+          <span class="g-n">02</span>
+          <h3>{lab.titulo}</h3>
+        </header>
+        <b class="cifra" data-cifra={lab.cifra} data-dur="1200">
+          {lab.cifra}
+        </b>
+        <p class="pie">{lab.pie}</p>
+        <div class="plano" data-plano>
+          <svg viewBox="0 0 400 150" role="img" aria-label={lab.pie}>
+            <defs>
+              <linearGradient id="g2-area" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#dd040a" stop-opacity="0.16"></stop>
+                <stop offset="1" stop-color="#dd040a" stop-opacity="0"></stop>
+              </linearGradient>
+            </defs>
+            <g class="rej">
+              {[0, 0.5, 1].map((k) => (
+                <line x1={X0} x2={X1} y1={y(k)} y2={y(k)} />
+              ))}
+            </g>
+            <g class="eti">
+              <text x={X0 - 8} y={y(1) + 4} text-anchor="end">
+                {pct(100)}
+              </text>
+              <text x={X0 - 8} y={y(0.5) + 4} text-anchor="end">
+                {pct(50)}
+              </text>
+              <text x={X0 - 8} y={Y0 + 4} text-anchor="end">
+                0
+              </text>
+              {p2.map((q, i) => (
+                <text x={q.x} y="146" text-anchor="middle">
+                  {i + 1}
+                </text>
+              ))}
+            </g>
+            <path class="area" d={area(p2)} fill="url(#g2-area)"></path>
+            <path class="raya" d={linea(p2)} pathLength="1"></path>
+            <path class="luz" d={linea(p2)} pathLength="1"></path>
+            <line class="resto" x1={X1} x2={X1} y1={y(1)} y2={y(0.9)}></line>
+            <text class="resto-t" x={X1 - 8} y={y(1) + 4} text-anchor="end">{`${pct(10)} ${lab.restante}`}</text>
+            {p2.map((q, i) => (
+              <circle class:list={['pt', { fuera: !q.dentro }]} cx={q.x} cy={q.y} r="2.4" style={`--i: ${i}`} />
+            ))}
+            <circle class="fin" cx={fin2.x} cy={fin2.y} r="4"></circle>
+            <line class="mira" y1={y(1)} y2={Y0}></line>
+            <circle class="mira-p" r="4.5"></circle>
+          </svg>
+          <div class="burbuja" aria-hidden="true">
+            <b></b>
+            <span></span>
+          </div>
+        </div>
+        <p class="txt">{lab.texto}</p>
+      </article>
+    </div>
+
+    <!-- ODS -->
+    <div class="ods" data-ods>
+      <div class="rueda">
+        <svg viewBox="0 0 300 300" aria-hidden="true">
+          {porciones.map((p, i) => (
+            <g
+              class:list={['por', { nuestra: p.k >= 0 }]}
+              data-k={p.k >= 0 ? p.k : undefined}
+              style={`--i: ${i}; --dx: ${p.dx}px; --dy: ${p.dy}px`}
+            >
+              <path d={p.d}></path>
+              <text x={p.tx} y={p.ty} text-anchor="middle">
+                {p.n}
+              </text>
+            </g>
+          ))}
+        </svg>
+        <div class="centro">
+          {selloOds && <img src={selloOds.src} alt="" width={selloOds.ancho} height={selloOds.alto} loading="lazy" />}
+          <b>
+            {s.objetivos.length}
+            <span>/17</span>
+          </b>
+        </div>
+      </div>
+      <div class="ods-txt">
+        <h3>{s.ods.titulo}</h3>
+        <p class="ods-intro">{s.ods.texto}</p>
+        <ul class="lista">
+          {s.objetivos.map((o, k) => (
+            <li>
+              <button type="button" class="obj" data-obj={k} aria-expanded="true">
+                <span class="obj-n">{dos(Number(o.n))}</span>
+                <span class="obj-nom">{o.nombre}</span>
+              </button>
+              <p class="obj-txt" data-panel>
+                {o.texto}
+              </p>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  const sec = document.querySelector<HTMLElement>('[data-compromiso]');
+  if (sec) {
+    const quieto = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const conIO = 'IntersectionObserver' in window;
+    if (conIO && !quieto) sec.dataset.anim = '';
+    const euros = new Intl.NumberFormat(document.documentElement.lang || 'es', { style: 'currency', currency: 'EUR' });
+
+    // ——— Fondo: una rejilla virtual que no se ve. Cada pocos segundos, en un sitio al azar de la sección, sale una
+    // onda redonda que la revela al pasar y se apaga. Solo se dibuja con la sección a la vista y una onda viva ———
+    const lienzo = sec.querySelector<HTMLCanvasElement>('.onda');
+    const ctx = lienzo?.getContext('2d');
+    if (lienzo && ctx && !quieto && conIO) {
+      type V = readonly [number, number, number];
+      const PASO = 32;
+      const VIDA = 2600;
+      const ALCANCE = 300;
+      const ondas: { x: number; y: number; t0: number }[] = [];
+      let ancho = 0;
+      let alto = 0;
+      let ahora = 0;
+      let vivo = false;
+      let visible = false;
+      let proximo = 0;
+
+      const medir = () => {
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        ancho = sec.clientWidth;
+        alto = sec.clientHeight;
+        lienzo.width = ancho * dpr;
+        lienzo.height = alto * dpr;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      };
+      medir();
+      new ResizeObserver(medir).observe(sec);
+
+      const ONDAS = [{ retraso: 0, fuerza: 1 }];
+      const sale = (q: number) => 1 - (1 - q) ** 3;
+
+      const vertice = (x: number, y: number): V => {
+        let dx = 0;
+        let dy = 0;
+        let luz = 0;
+        for (const l of ondas) {
+          const ex = x - l.x;
+          const ey = y - l.y;
+          const d = Math.hypot(ex, ey) || 1;
+          if (d > ALCANCE + 40) continue;
+          for (const o of ONDAS) {
+            const q = (ahora - l.t0 - o.retraso) / VIDA;
+            if (q <= 0 || q >= 1) continue;
+            const r = sale(q) * ALCANCE;
+            const anillo = Math.exp(-((d - r) ** 2) / (2 * 22 * 22)) * (1 - q) ** 1.6 * o.fuerza;
+            dx += (ex / d) * anillo * 5;
+            dy += (ey / d) * anillo * 5;
+            luz += anillo;
+          }
+        }
+        return [x + dx, y + dy, Math.min(luz, 1)];
+      };
+
+      const dibujar = (ms: number) => {
+        ahora = ms;
+        ctx.clearRect(0, 0, ancho, alto);
+        while (ondas.length && ahora - ondas[0]!.t0 > VIDA) ondas.shift();
+        if (!ondas.length) {
+          vivo = false;
+          return;
+        }
+        // Solo la zona que rodea las ondas vivas
+        let x0 = Infinity;
+        let y0 = Infinity;
+        let x1 = -Infinity;
+        let y1 = -Infinity;
+        for (const l of ondas) {
+          x0 = Math.min(x0, l.x - ALCANCE - 40);
+          y0 = Math.min(y0, l.y - ALCANCE - 40);
+          x1 = Math.max(x1, l.x + ALCANCE + 40);
+          y1 = Math.max(y1, l.y + ALCANCE + 40);
+        }
+        const c0 = Math.max(0, Math.floor(x0 / PASO));
+        const f0 = Math.max(0, Math.floor(y0 / PASO));
+        const c1 = Math.min(Math.ceil(ancho / PASO), Math.ceil(x1 / PASO));
+        const f1 = Math.min(Math.ceil(alto / PASO), Math.ceil(y1 / PASO));
+        const cols = c1 - c0 + 1;
+        const puntos: V[] = [];
+        for (let f = f0; f <= f1; f++) for (let c = c0; c <= c1; c++) puntos.push(vertice(c * PASO, f * PASO));
+        ctx.lineWidth = 1;
+        const tramo = (a: V, z: V) => {
+          const luz = (a[2] + z[2]) / 2;
+          if (luz < 0.02) return;
+          ctx.strokeStyle = `rgba(221, 4, 10, ${(luz * 0.4).toFixed(3)})`;
+          ctx.beginPath();
+          ctx.moveTo(a[0], a[1]);
+          ctx.lineTo(z[0], z[1]);
+          ctx.stroke();
+        };
+        for (let k = 0; k < puntos.length; k++) {
+          const v = puntos[k]!;
+          if ((k + 1) % cols) tramo(v, puntos[k + 1]!);
+          if (k + cols < puntos.length) tramo(v, puntos[k + cols]!);
+        }
+        requestAnimationFrame(dibujar);
+      };
+
+      // Una onda cada 1,8–3,6 s en un cruce al azar de toda la sección, alternando mitad izquierda y derecha
+      let lado = 0;
+      const latir = () => {
+        if (!visible || document.hidden) return;
+        lado = 1 - lado;
+        const mitad = ancho / 2;
+        const x = Math.round((lado * mitad + Math.random() * mitad) / PASO) * PASO;
+        const y = Math.round((alto * 0.08 + Math.random() * alto * 0.84) / PASO) * PASO;
+        ondas.push({ x, y, t0: performance.now() });
+        if (!vivo) {
+          vivo = true;
+          requestAnimationFrame(dibujar);
+        }
+        proximo = window.setTimeout(latir, 1800 + Math.random() * 1800);
+      };
+      const reanudar = () => {
+        window.clearTimeout(proximo);
+        if (visible && !document.hidden) proximo = window.setTimeout(latir, 600);
+      };
+      new IntersectionObserver(([e]) => {
+        visible = !!e?.isIntersecting;
+        reanudar();
+      }).observe(sec);
+      document.addEventListener('visibilitychange', reanudar);
+    }
+
+    // ——— Cifras: cuentan desde cero una sola vez, con el formato de cada idioma ———
+    const numero = (el: HTMLElement) => (el.dataset.cifra ?? '').match(/\d+(?:[.,]\d+)?/)?.[0] ?? '0';
+    const pintar = (el: HTMLElement, v: number) => {
+      const num = numero(el);
+      const dec = num.split(/[.,]/)[1]?.length ?? 0;
+      const txt = v.toFixed(dec).replace('.', num.includes(',') ? ',' : '.');
+      el.textContent = (el.dataset.cifra ?? '').replace(num, txt);
+    };
+    const contar = (el: HTMLElement) => {
+      const fin = Number(numero(el).replace(',', '.'));
+      const dur = Number(el.dataset.dur);
+      const t0 = performance.now() + 200;
+      pintar(el, 0);
+      const paso = (t: number) => {
+        const k = Math.min(1, Math.max(0, (t - t0) / dur));
+        pintar(el, fin * (1 - Math.pow(1 - k, 3)));
+        if (k < 1) requestAnimationFrame(paso);
+      };
+      requestAnimationFrame(paso);
+    };
+
+    // ——— Al pasar o tocar: una mira vertical va al punto más cercano y sale su valor ———
+    const graficas = [...sec.querySelectorAll<HTMLElement>('[data-g]')];
+    graficas.forEach((g) => {
+      const plano = g.querySelector<HTMLElement>('[data-plano]')!;
+      const svg = plano.querySelector('svg')!;
+      const pts = [...svg.querySelectorAll<SVGCircleElement>('.pt')];
+      const mira = svg.querySelector<SVGLineElement>('.mira')!;
+      const miraP = svg.querySelector<SVGCircleElement>('.mira-p')!;
+      const burbuja = plano.querySelector<HTMLElement>('.burbuja')!;
+      const [b, t] = [...burbuja.children] as HTMLElement[];
+      const cifra = g.querySelector<HTMLElement>('[data-cifra]')!;
+      const pie = g.querySelector('.pie')?.textContent ?? '';
+      const texto = (i: number): [string, string] => {
+        if (g.dataset.g === 'sol') {
+          const e = Number(pts[i]!.dataset.x);
+          return [`${euros.format(e)} → ${euros.format(e * 0.007)}`, pie];
+        }
+        const v = Math.min(i + 1, 9) * 10;
+        return [
+          `${i + 1} / 10 · ${(cifra.dataset.cifra ?? '').replace(/\d+/, String(v))}`,
+          (i < 9 ? g.dataset.dentro : g.dataset.fuera) ?? '',
+        ];
+      };
+      const cx = (p: SVGCircleElement) => Number(p.getAttribute('cx'));
+      const mostrar = (x: number) => {
+        const caja = svg.getBoundingClientRect();
+        const vx = ((x - caja.left) / caja.width) * 400;
+        const i = pts.reduce((m, p, k) => (Math.abs(cx(p) - vx) < Math.abs(cx(pts[m]!) - vx) ? k : m), 0);
+        const p = pts[i]!;
+        const px = cx(p);
+        const py = Number(p.getAttribute('cy'));
+        mira.setAttribute('x1', String(px));
+        mira.setAttribute('x2', String(px));
+        miraP.setAttribute('cx', String(px));
+        miraP.setAttribute('cy', String(py));
+        pts.forEach((q, k) => q.classList.toggle('activo', k === i));
+        [b!.textContent, t!.textContent] = texto(i);
+        const esc = caja.width / 400;
+        const ancho = burbuja.offsetWidth;
+        burbuja.style.left = `${Math.max(0, Math.min(caja.width - ancho, px * esc - ancho / 2))}px`;
+        burbuja.style.top = `${py * esc}px`;
+        plano.classList.add('ve');
+      };
+      const ocultar = () => {
+        plano.classList.remove('ve');
+        pts.forEach((q) => q.classList.remove('activo'));
+      };
+      plano.addEventListener('pointermove', (e) => mostrar(e.clientX));
+      plano.addEventListener('pointerdown', (e) => mostrar(e.clientX));
+      plano.addEventListener('pointerleave', (e) => e.pointerType === 'mouse' && ocultar());
+    });
+    document.addEventListener('pointerdown', (e) => {
+      if ((e.target as Element).closest('[data-plano]')) return;
+      sec.querySelectorAll('[data-plano].ve').forEach((p) => p.classList.remove('ve'));
+    });
+
+    // ——— Entradas, una sola vez ———
+    if (conIO) {
+      const obs = new IntersectionObserver(
+        (entradas) => {
+          for (const e of entradas) {
+            if (!e.isIntersecting) continue;
+            const el = e.target as HTMLElement;
+            obs.unobserve(el);
+            el.classList.add('vivo');
+            const cifra = el.querySelector<HTMLElement>('[data-cifra]');
+            if (cifra && !quieto) contar(cifra);
+          }
+        },
+        { threshold: 0.35 },
+      );
+      sec.querySelectorAll('.cab, [data-g], [data-ods]').forEach((el) => obs.observe(el));
+    }
+
+    // ——— ODS: se elige uno desde el círculo o desde la lista ———
+    const ods = sec.querySelector<HTMLElement>('[data-ods]');
+    if (ods) {
+      const botones = [...ods.querySelectorAll<HTMLButtonElement>('[data-obj]')];
+      const paneles = [...ods.querySelectorAll<HTMLElement>('[data-panel]')];
+      const porciones = [...ods.querySelectorAll<SVGGElement>('.por.nuestra')];
+      ods.classList.add('viva');
+      const elegir = (k: number) => {
+        botones.forEach((b, i) => b.setAttribute('aria-expanded', String(i === k)));
+        paneles.forEach((p, i) => (p.hidden = i !== k));
+        porciones.forEach((p) => p.classList.toggle('elegida', Number(p.dataset.k) === k));
+      };
+      const engancha = (el: Element, k: number) => {
+        el.addEventListener('click', () => elegir(k));
+        el.addEventListener('pointerenter', (e) => (e as PointerEvent).pointerType === 'mouse' && elegir(k));
+      };
+      botones.forEach((b, k) => engancha(b, k));
+      porciones.forEach((p) => engancha(p, Number(p.dataset.k)));
+      elegir(0);
+    }
+  }
+</script>
+
+<style>
+  .compromiso {
+    position: relative;
+    padding-block: clamp(80px, 9vw, 128px);
+    overflow-x: clip;
+    background: #fff;
+    --tec: #9aa1a6;
+  }
+  .punto {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--red);
+    box-shadow: 0 0 0 3px rgba(221, 4, 10, 0.14);
+  }
+
+  /* ——— Cabecera ——— */
+  .tag {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+  .cab h2 {
+    max-width: 18ch;
+    margin: 18px 0 0;
+    font-weight: 300;
+    font-size: clamp(36px, 4.4vw, 60px);
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+  /* La barra roja vertical junto al título, como en el resto de secciones de Empresa */
+  .t {
+    position: relative;
+  }
+  .t::before {
+    content: '';
+    position: absolute;
+    top: 0.12em;
+    bottom: 0.12em;
+    left: calc(-1 * clamp(10px, 1.4vw, 22px));
+    width: 4px;
+    background: var(--red);
+    transform: scaleY(0);
+    transform-origin: top;
+    transition: transform var(--dur-4) var(--ease-out);
+  }
+  .actual .t::before {
+    transform: scaleY(1);
+  }
+  .cab h2 b {
+    display: block;
+    color: var(--red);
+    font-weight: 700;
+  }
+
+  /* ——— Las dos gráficas, iguales y a la misma altura ——— */
+  .graficas {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: clamp(40px, 6vw, 96px);
+    margin-top: clamp(48px, 6vw, 80px);
+  }
+  .g {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+  .g-cab {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    height: 48px;
+    border-bottom: 1px solid var(--line);
+  }
+  .g-n {
+    color: var(--red);
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 0.12em;
+  }
+  .g-cab h3 {
+    margin: 0;
+    font-size: 14px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .g-cab img {
+    width: auto;
+    height: 30px;
+    margin-left: auto;
+  }
+  .cifra {
+    margin-top: 28px;
+    color: var(--red);
+    font-weight: 300;
+    font-size: clamp(56px, 5.4vw, 80px);
+    font-variant-numeric: tabular-nums;
+    line-height: 0.9;
+    letter-spacing: -0.03em;
+  }
+  .pie {
+    min-height: 2.6em;
+    margin: 12px 0 0;
+    color: var(--ink);
+    font-weight: 700;
+    font-size: 16px;
+    line-height: 1.3;
+  }
+  .plano {
+    position: relative;
+    margin-top: 24px;
+    touch-action: pan-y;
+    cursor: crosshair;
+  }
+  .plano svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+  .rej line {
+    stroke: #eeeeee;
+  }
+  .rej line:first-child {
+    stroke: var(--line);
+  }
+  .eti text,
+  .resto-t {
+    fill: var(--tec);
+    font-family: var(--f);
+    font-weight: 700;
+    font-size: 10px;
+    letter-spacing: 0.04em;
+  }
+  /* La línea: fina, roja y con un halo suave */
+  .raya {
+    fill: none;
+    stroke: var(--red);
+    stroke-width: 1.75;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    filter: drop-shadow(0 0 4px rgba(221, 4, 10, 0.5));
+  }
+  /* La luz que la recorre despacio, una y otra vez */
+  .luz {
+    fill: none;
+    stroke: #ff7a7e;
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    stroke-dasharray: 0.06 1;
+    stroke-dashoffset: 0.06;
+    filter: drop-shadow(0 0 6px rgba(255, 60, 66, 0.9));
+    opacity: 0;
+  }
+  .pt {
+    fill: #fff;
+    stroke: var(--red);
+    stroke-width: 1.5;
+    transition: r var(--dur-2) var(--ease);
+  }
+  .pt.fuera {
+    stroke: var(--tec);
+  }
+  .pt.activo {
+    r: 4;
+  }
+  .fin {
+    fill: var(--red);
+    filter: drop-shadow(0 0 6px rgba(221, 4, 10, 0.7));
+  }
+  .fin-t {
+    fill: var(--red);
+    font-family: var(--f);
+    font-weight: 700;
+    font-size: 13px;
+  }
+  .resto {
+    stroke: var(--red);
+    stroke-width: 1.5;
+    stroke-dasharray: 2 3;
+  }
+  .mira,
+  .mira-p {
+    opacity: 0;
+    transition: opacity var(--dur-1) var(--ease);
+    pointer-events: none;
+  }
+  .mira {
+    stroke: var(--red);
+    stroke-dasharray: 2 3;
+  }
+  .mira-p {
+    fill: none;
+    stroke: var(--red);
+    stroke-width: 1.5;
+  }
+  .ve .mira,
+  .ve .mira-p {
+    opacity: 1;
+  }
+  .burbuja {
+    position: absolute;
+    z-index: 2;
+    display: grid;
+    gap: 2px;
+    width: max-content;
+    max-width: min(240px, 100%);
+    padding: 8px 12px;
+    background: var(--carbon);
+    color: #fff;
+    box-shadow: var(--sombra-flota);
+    translate: 0 calc(-100% - 14px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--dur-1) var(--ease);
+  }
+  .ve .burbuja {
+    opacity: 1;
+  }
+  .burbuja b {
+    font-weight: 700;
+    font-size: 15px;
+    font-variant-numeric: tabular-nums;
+  }
+  .burbuja span {
+    color: var(--on-dark);
+    font-size: 13px;
+    line-height: 1.3;
+  }
+  .txt {
+    margin: 24px 0 0;
+    color: var(--body);
+    font-size: 16px;
+    line-height: 1.55;
+  }
+
+  /* ——— ODS: el círculo de los 17 ——— */
+  .ods {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    align-items: center;
+    gap: clamp(40px, 6vw, 96px);
+    margin-top: clamp(72px, 8vw, 120px);
+    padding-top: clamp(40px, 5vw, 64px);
+    border-top: 1px solid var(--line);
+  }
+  .rueda {
+    position: relative;
+    width: min(100%, 360px);
+    margin-inline: auto;
+  }
+  .rueda svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+  .por {
+    transform-box: view-box;
+    transform-origin: 150px 150px;
+    transition: translate var(--dur-3) var(--ease-out);
+  }
+  .por path {
+    fill: #f0f1f2;
+    transition:
+      fill var(--dur-2) var(--ease),
+      filter var(--dur-2) var(--ease);
+  }
+  .por text {
+    fill: #c4c8cb;
+    font-family: var(--f);
+    font-weight: 700;
+    font-size: 11px;
+    pointer-events: none;
+  }
+  .por.nuestra {
+    cursor: pointer;
+  }
+  .por.nuestra path {
+    fill: rgba(221, 4, 10, 0.3);
+  }
+  .por.nuestra text {
+    fill: var(--red);
+  }
+  .por.elegida {
+    translate: var(--dx) var(--dy);
+  }
+  .por.elegida path {
+    fill: var(--red);
+    filter: drop-shadow(0 0 8px rgba(221, 4, 10, 0.55));
+  }
+  .por.elegida text {
+    fill: var(--red);
+  }
+  .centro {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-content: center;
+    justify-items: center;
+    gap: 6px;
+    pointer-events: none;
+  }
+  .centro img {
+    width: 44px;
+    height: 44px;
+  }
+  .centro b {
+    font-weight: 300;
+    font-size: 40px;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+  .centro b span {
+    color: var(--tec);
+    font-size: 18px;
+  }
+  .ods-txt h3 {
+    margin: 0;
+    font-size: clamp(22px, 1.8vw, 28px);
+  }
+  .ods-intro {
+    margin: 8px 0 0;
+    color: var(--body);
+    font-size: 16px;
+  }
+  .lista {
+    list-style: none;
+    margin: 24px 0 0;
+    padding: 0;
+  }
+  .lista li {
+    border-top: 1px solid var(--line);
+  }
+  .lista li:last-child {
+    border-bottom: 1px solid var(--line);
+  }
+  .obj {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    width: 100%;
+    padding: 12px 0;
+    border: 0;
+    background: none;
+    color: var(--ink);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+  }
+  .obj-n {
+    flex: 0 0 28px;
+    color: var(--tec);
+    font-weight: 700;
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+    transition: color var(--dur-2) var(--ease);
+  }
+  .obj-nom {
+    font-weight: 700;
+    font-size: 17px;
+    transition: color var(--dur-2) var(--ease);
+  }
+  .obj:hover .obj-n,
+  .obj[aria-expanded='true'] .obj-n,
+  .obj[aria-expanded='true'] .obj-nom {
+    color: var(--red);
+  }
+  .obj:focus-visible {
+    outline: 2px solid var(--red);
+    outline-offset: 2px;
+  }
+  .obj-txt {
+    max-width: 52ch;
+    margin: 0;
+    padding: 0 0 14px 44px;
+    color: var(--body);
+    font-size: 15px;
+    line-height: 1.5;
+  }
+  .viva .obj-txt:not([hidden]) {
+    animation: c-sube 0.35s var(--ease-out) both;
+  }
+
+  /* ——— Entradas (solo con JS y movimiento) ——— */
+  [data-anim] .cab:not(.vivo) > *,
+  [data-anim] [data-g]:not(.vivo) .cifra,
+  [data-anim] [data-g]:not(.vivo) .area,
+  [data-anim] [data-g]:not(.vivo) .pt,
+  [data-anim] [data-g]:not(.vivo) .fin,
+  [data-anim] [data-g]:not(.vivo) .fin-t,
+  [data-anim] [data-g]:not(.vivo) .resto,
+  [data-anim] [data-g]:not(.vivo) .resto-t,
+  [data-anim] [data-ods]:not(.vivo) .por,
+  [data-anim] [data-ods]:not(.vivo) .centro,
+  [data-anim] [data-ods]:not(.vivo) .ods-txt {
+    opacity: 0;
+  }
+  [data-anim] .cab.vivo > * {
+    animation: c-sube 0.7s var(--ease-out) both;
+  }
+  [data-anim] .cab.vivo > :nth-child(2) {
+    animation-delay: 0.08s;
+  }
+  [data-anim] [data-g] .raya {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+  }
+  [data-anim] [data-g].vivo .cifra {
+    animation: c-sube 0.6s var(--ease-out) both;
+  }
+  /* La línea sube dibujándose; luego el área, los puntos y el final, que late despacio */
+  [data-anim] [data-g].vivo .raya {
+    animation: c-traza 1.4s cubic-bezier(0.45, 0, 0.2, 1) 0.2s forwards;
+  }
+  [data-anim] [data-g].vivo .area {
+    animation: c-aparece 0.8s var(--ease) 0.9s both;
+  }
+  [data-anim] [data-g].vivo .pt {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: c-pop 0.35s var(--ease-out) calc(0.25s + var(--i) * 0.12s) both;
+  }
+  [data-anim] [data-g].vivo .fin-t,
+  [data-anim] [data-g].vivo .resto,
+  [data-anim] [data-g].vivo .resto-t {
+    animation: c-aparece 0.5s var(--ease) 1.5s both;
+  }
+  [data-anim] [data-g].vivo .fin {
+    animation:
+      c-aparece 0.5s var(--ease) 1.5s both,
+      c-late 3.6s var(--ease) 2s infinite;
+  }
+  [data-anim] [data-g].vivo .luz {
+    animation: c-luz 3.6s cubic-bezier(0.45, 0, 0.25, 1) 1.8s infinite;
+  }
+  [data-anim] [data-ods].vivo .por {
+    animation: c-pop 0.4s var(--ease-out) calc(var(--i) * 0.04s) both;
+  }
+  [data-anim] [data-ods].vivo .centro,
+  [data-anim] [data-ods].vivo .ods-txt {
+    animation: c-aparece 0.6s var(--ease) 0.5s both;
+  }
+
+  @keyframes c-sube {
+    from {
+      opacity: 0;
+      translate: 0 14px;
+    }
+  }
+  @keyframes c-aparece {
+    from {
+      opacity: 0;
+    }
+  }
+  @keyframes c-pop {
+    from {
+      opacity: 0;
+      scale: 0.4;
+    }
+  }
+  @keyframes c-traza {
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+  @keyframes c-luz {
+    0% {
+      opacity: 0;
+      stroke-dashoffset: 0.06;
+    }
+    10%,
+    80% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0;
+      stroke-dashoffset: -1;
+    }
+  }
+  @keyframes c-late {
+    0%,
+    100% {
+      filter: drop-shadow(0 0 4px rgba(221, 4, 10, 0.5));
+    }
+    50% {
+      filter: drop-shadow(0 0 10px rgba(221, 4, 10, 0.9));
+    }
+  }
+
+  /* ——— Móvil ——— */
+  /* Fondo: una rejilla virtual que no se ve; la revelan ondas al azar (en el script) */
+  .onda {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+  .compromiso > .wrap {
+    position: relative;
+    z-index: 1;
+  }
+
+  @media (max-width: 860px) {
+    .graficas,
+    .ods {
+      grid-template-columns: 1fr;
+    }
+    .pie {
+      min-height: 0;
+    }
+  }
+</style>

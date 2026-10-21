@@ -821,9 +821,10 @@ export const es = {
     hitos: [
       { cuando: '1949', titulo: 'Nace Orto Alresa', texto: 'Empieza como fabricante de centrífugas.' },
       {
-        cuando: '2001',
-        titulo: 'Sistema de Gestión de la Calidad',
-        texto: 'Según las normas ISO 9001, 13485 y 14001, revisado periódicamente por empresas de auditoría externa.',
+        cuando: 'Familia',
+        titulo: 'Una empresa familiar',
+        texto:
+          'Que integra a socios, usuarios y asociados en una plataforma para ofrecer soluciones reales. Fabricación europea con plazos de entrega muy cortos.',
       },
       {
         cuando: 'Innovación',
@@ -832,19 +833,33 @@ export const es = {
           'Freno controlable PCBS con 175 rampas, Gas Release System (GRS) y pantallas táctiles TFT: pioneros en llevar los sistemas más sofisticados a las centrífugas de uso rutinario.',
       },
       {
+        cuando: 'A medida',
+        titulo: 'Equipos a medida',
+        texto:
+          'Para las aplicaciones que no encuentran su lugar en los equipos estándar: con análisis de riesgos para proteger la muestra, al usuario y su entorno, y trazabilidad desde el origen hasta el usuario.',
+      },
+      {
         cuando: 'Al mundo',
         titulo: 'Alianzas en todo el mundo',
         texto:
           'Especialistas en comercio exterior y expedidor conocido (KC). Presentes en laboratorios de industria, investigación, biotecnología y medio ambiente.',
       },
-      {
-        cuando: 'Hoy',
-        titulo: 'Referente europeo',
-        texto:
-          'Más de 75 años después, una empresa familiar que es referente entre los fabricantes europeos de centrífugas.',
-      },
     ],
-    vitrinaAlt: 'Centrífuga Digtor 22 abierta, con el rotor cargado y la pantalla táctil',
+    escaner: {
+      real: 'Por fuera',
+      rayos: 'Por dentro',
+      modelo: 'Modelo 3D · Digicen 22',
+      saltar: 'Saltar animación',
+      subir: 'Subir sin animación',
+      partes: [
+        { codigo: 'PP 367', nombre: 'Tapa' },
+        { codigo: 'PP 821', nombre: 'Carátula' },
+        { codigo: 'PI 448', nombre: 'Depósito' },
+        { codigo: 'PE 494', nombre: 'Motor' },
+        { codigo: 'PC 497', nombre: 'Amortiguador' },
+      ],
+    },
+    valoresTitulo: 'Nos caracterizan',
     propuestaEyebrow: 'Nuestra propuesta de valor',
     propuestaTitulo: ['Más allá de ', 'lo estándar'],
     propuesta: [
@@ -857,12 +872,6 @@ export const es = {
         titulo: 'Requisitos reales',
         texto:
           'No queremos ser una opción más. Buscamos soluciones basadas en la innovación y la sostenibilidad, a partir de los requisitos reales de cada laboratorio.',
-      },
-      {
-        clave: 'Normativa',
-        titulo: 'Nos anticipamos',
-        texto:
-          'Nos adelantamos a la entrada en vigor de los reglamentos y normas que afectan a nuestros equipos: más seguridad para el usuario y sus procesos, con responsabilidad hacia el entorno y las personas.',
       },
       {
         clave: 'Comunicación',
@@ -892,6 +901,8 @@ export const es = {
     ],
     difEyebrow: 'Qué nos diferencia',
     difTitulo: ['Somos lo que ', 'hacemos'],
+    difAnterior: 'Anterior',
+    difSiguiente: 'Siguiente',
     difLead:
       'Equipos innovadores que aumentan la seguridad, la funcionalidad y la facilidad de uso, adaptados a las necesidades de cada laboratorio. Y un servicio basado en una comunicación fluida con nuestros clientes.',
     grupos: [
@@ -980,9 +991,9 @@ export const es = {
       },
     ],
     calidadEyebrow: 'Calidad',
-    calidadTitulo: ['Nos anticipamos ', 'a la norma'],
+    calidadTitulo: ['Cada equipo, ', 'con su normativa al día.'],
     calidadTexto:
-      'Desde 2001, un Sistema de Gestión de la Calidad según ISO 9001, 13485 y 14001, revisado periódicamente por auditoría externa. Nos adelantamos a la entrada en vigor de los reglamentos y normas de nuestros equipos: más seguridad para el usuario y sus procesos, con respeto por el entorno y las personas.',
+      'Desde 2001 trabajamos con un Sistema de Gestión según ISO 9001, 13485 y 14001, auditado por empresas externas. Cada centrífuga cumple las directivas europeas de seguridad eléctrica, compatibilidad electromagnética, sustancias peligrosas y reciclaje, y los equipos de diagnóstico, el Reglamento IVDR. Los certificados, listos para descargar.',
     compromisoEyebrow: 'Compromiso',
     compromisoTitulo: ['Un futuro más sostenible, ', 'igualitario y responsable'],
     solidaria: {
@@ -990,6 +1001,9 @@ export const es = {
       cifra: '0,7 %',
       texto:
         'El sello reconoce nuestro compromiso con una sociedad más justa, igualitaria e inclusiva: destinamos el 0,7 % del Impuesto de Sociedades a proyectos sociales del Tercer Sector.',
+      pie: '0,70 € de cada 100 € del Impuesto de Sociedades, a proyectos sociales',
+      total: '100 €',
+      parte: '0,70 €',
     },
     labmas: {
       titulo: 'LABMAS Spain',
@@ -997,6 +1011,9 @@ export const es = {
       texto:
         'Somos miembros de la asociación que agrupa al 90 % de los fabricantes españoles del sector laboratorio, para impulsar la exportación y la internacionalización. Desde 2013 forma parte de la asociación europea EUROM II.',
       pie: '9 de cada 10 fabricantes españoles del sector laboratorio',
+      restante: 'restante',
+      dentro: 'Fabricantes miembros de LABMAS Spain',
+      fuera: 'Fabricantes fuera de la asociación',
     },
     ods: {
       titulo: 'Objetivos de Desarrollo Sostenible',
@@ -1031,10 +1048,6 @@ export const es = {
         texto: 'Menos emisiones y tecnologías eficientes para mitigar el cambio climático.',
       },
     ],
-    cierreTitulo: ['Trabajemos ', 'juntos'],
-    cierreTexto: 'Desarrollamos alianzas en todo el mundo con nuestra red de distribuidores.',
-    distribuidor: 'Hazte distribuidor',
-    contacto: 'Contacto',
   },
   laboratorio: {
     equipos: 'Otros productos de laboratorio',
