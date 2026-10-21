@@ -265,6 +265,25 @@ button:focus-visible {
   font-size: var(--t-titulo);
   line-height: 0.95;
 }
+/* Raya roja a la izquierda del título de la sección que se está leyendo (como en Descargas) */
+[data-raya] h2 {
+  position: relative;
+}
+[data-raya] h2::before {
+  content: '';
+  position: absolute;
+  top: 0.08em;
+  bottom: 0.08em;
+  left: calc(-1 * clamp(12px, 1.4vw, 22px));
+  width: 4px;
+  background: var(--red);
+  transform: scaleY(0);
+  transform-origin: top;
+  transition: transform var(--dur-4) var(--ease-out);
+}
+[data-raya].actual h2::before {
+  transform: scaleY(1);
+}
 .head p {
   max-width: 44ch;
   color: var(--body);

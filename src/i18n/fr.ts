@@ -811,10 +811,10 @@ export const fr: Textos = {
         texto: 'L’entreprise débute comme fabricant de centrifugeuses.',
       },
       {
-        cuando: '2001',
-        titulo: 'Système de gestion de la qualité',
+        cuando: 'Famille',
+        titulo: 'Une entreprise familiale',
         texto:
-          'Conforme aux normes ISO 9001, 13485 et 14001, examiné périodiquement par des sociétés d’audit externes.',
+          'Qui intègre partenaires, utilisateurs et associés dans une plateforme pour offrir des solutions réelles. Fabrication européenne avec des délais de livraison très courts.',
       },
       {
         cuando: 'Innovation',
@@ -823,19 +823,33 @@ export const fr: Textos = {
           'Freinage contrôlable PCBS à 175 rampes, Gas Release System (GRS) et écrans tactiles TFT couleur : pionniers dans l’intégration des systèmes les plus sophistiqués aux centrifugeuses de routine.',
       },
       {
+        cuando: 'Sur mesure',
+        titulo: 'Équipements sur mesure',
+        texto:
+          'Pour les applications qui ne trouvent pas leur place dans les équipements standard : avec une analyse des risques pour protéger l’échantillon, l’utilisateur et son environnement, et une traçabilité de l’origine jusqu’à l’utilisateur.',
+      },
+      {
         cuando: 'Dans le monde',
         titulo: 'Des alliances dans le monde entier',
         texto:
           'Spécialistes du commerce extérieur et statut d’expéditeur connu (KC). Présente dans l’industrie, la recherche, la biotechnologie et les laboratoires environnementaux.',
       },
-      {
-        cuando: 'Aujourd’hui',
-        titulo: 'Une référence européenne',
-        texto:
-          'Plus de 75 ans après, une entreprise familiale de référence parmi les fabricants européens de centrifugeuses.',
-      },
     ],
-    vitrinaAlt: 'Centrifugeuse Digtor 22 ouverte, avec le rotor chargé et l’écran tactile',
+    escaner: {
+      real: 'Dehors',
+      rayos: 'Dedans',
+      modelo: 'Modèle 3D · Digicen 22',
+      saltar: 'Passer l’animation',
+      subir: 'Remonter directement',
+      partes: [
+        { codigo: 'PP 367', nombre: 'Couvercle' },
+        { codigo: 'PP 821', nombre: 'Façade de commande' },
+        { codigo: 'PI 448', nombre: 'Cuve' },
+        { codigo: 'PE 494', nombre: 'Moteur' },
+        { codigo: 'PC 497', nombre: 'Amortisseur' },
+      ],
+    },
+    valoresTitulo: 'Ce qui nous caractérise',
     propuestaEyebrow: 'Notre proposition de valeur',
     propuestaTitulo: ['Au-delà ', 'du standard'],
     propuesta: [
@@ -848,12 +862,6 @@ export const fr: Textos = {
         titulo: 'Des besoins réels',
         texto:
           'Nous ne voulons pas être une option de plus. Nous cherchons des solutions fondées sur l’innovation et la durabilité, à partir des besoins réels de chaque laboratoire.',
-      },
-      {
-        clave: 'Normes',
-        titulo: 'Nous anticipons',
-        texto:
-          'Nous devançons l’entrée en vigueur des règlements et des normes qui s’appliquent à nos équipements : plus de sécurité pour l’utilisateur et ses processus, dans le respect de l’environnement et des personnes.',
       },
       {
         clave: 'Communication',
@@ -884,6 +892,8 @@ export const fr: Textos = {
     ],
     difEyebrow: 'Ce qui nous différencie',
     difTitulo: ['Nous sommes ce que ', 'nous faisons'],
+    difAnterior: 'Précédent',
+    difSiguiente: 'Suivant',
     difLead:
       'Des équipements innovants qui accroissent la sécurité, la fonctionnalité et la facilité d’utilisation, adaptés aux besoins de chaque laboratoire. Et un service basé sur une communication fluide avec nos clients.',
     grupos: [
@@ -972,9 +982,9 @@ export const fr: Textos = {
       },
     ],
     calidadEyebrow: 'Qualité',
-    calidadTitulo: ['Nous anticipons ', 'la norme'],
+    calidadTitulo: ['Chaque appareil, ', 'conforme aux normes en vigueur.'],
     calidadTexto:
-      'Depuis 2001, un système de gestion de la qualité conforme aux normes ISO 9001, 13485 et 14001, examiné périodiquement par des sociétés d’audit externes. Nous anticipons l’entrée en vigueur des réglementations et des normes qui s’appliquent à nos équipements : plus de sécurité pour l’utilisateur et ses processus, dans le respect de l’environnement et des personnes.',
+      'Depuis 2001, nous travaillons avec un système de gestion conforme aux normes ISO 9001, 13485 et 14001, audité par des sociétés externes. Chaque centrifugeuse est conforme aux directives européennes de sécurité électrique, de compatibilité électromagnétique, de substances dangereuses et de recyclage, et nos équipements de diagnostic, au Règlement IVDR. Les certificats sont prêts à télécharger.',
     compromisoEyebrow: 'Engagement',
     compromisoTitulo: ['Un avenir plus durable, ', 'égalitaire et responsable'],
     solidaria: {
@@ -982,6 +992,9 @@ export const fr: Textos = {
       cifra: '0,7 %',
       texto:
         'Le label Empresa Solidaria reconnaît notre engagement pour une société plus juste, égalitaire et inclusive : nous allouons 0,7 % de notre impôt sur les sociétés à des projets sociaux du Tiers Secteur.',
+      pie: '0,70 € sur 100 € de notre impôt sur les sociétés, pour des projets sociaux',
+      total: '100 €',
+      parte: '0,70 €',
     },
     labmas: {
       titulo: 'LABMAS Spain',
@@ -989,6 +1002,9 @@ export const fr: Textos = {
       texto:
         'Nous sommes membres de l’association qui regroupe 90 % des fabricants espagnols du secteur des laboratoires, pour stimuler l’exportation et l’internationalisation. Depuis 2013, elle fait partie de l’association européenne EUROM II.',
       pie: '9 fabricants espagnols du secteur des laboratoires sur 10',
+      restante: 'restant',
+      dentro: 'Fabricants membres de LABMAS Spain',
+      fuera: 'Fabricants hors de l’association',
     },
     ods: {
       titulo: 'Objectifs de Développement Durable',
@@ -1024,10 +1040,6 @@ export const fr: Textos = {
         texto: 'Moins d’émissions et des technologies efficaces pour atténuer le changement climatique.',
       },
     ],
-    cierreTitulo: ['Travaillons ', 'ensemble'],
-    cierreTexto: 'Nous développons des alliances dans le monde entier avec notre réseau de distributeurs.',
-    distribuidor: 'Devenir distributeur',
-    contacto: 'Contact',
   },
   laboratorio: {
     equipos: 'Autres produits de laboratoire',

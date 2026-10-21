@@ -18,3 +18,17 @@ const t = textos(idioma(Astro.currentLocale)).portada;
   <Tecnologia />
   <Aplicaciones />
 </Base>
+
+<script>
+  // La sección que se está leyendo: su título enciende la raya roja
+  const secciones = document.querySelectorAll<HTMLElement>('[data-raya]');
+  if ('IntersectionObserver' in window) {
+    const vistas = new IntersectionObserver(
+      (es) => {
+        for (const e of es) e.target.classList.toggle('actual', e.isIntersecting);
+      },
+      { rootMargin: '-35% 0px -50% 0px' },
+    );
+    secciones.forEach((s) => vistas.observe(s));
+  }
+</script>
