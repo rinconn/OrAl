@@ -521,11 +521,11 @@ const descripcion = m
           <p class="frase">{frase}</p>
 
           <div class="botones">
-            <a class="btn red" href={pedir}>
+            <a class="btn red rel" href={pedir}>
               {tf.distribuidor}
             </a>
             {pdf && (
-              <a class="btn ghost" href={pdf} target="_blank" rel="noopener">
+              <a class="btn ghost rel" href={pdf} target="_blank" rel="noopener">
                 {tf.pdf}
               </a>
             )}
@@ -670,7 +670,7 @@ const descripcion = m
               ))}
             </ul>
           )}
-          <a class="btn red barra-pedir" href={pedir}>
+          <a class="btn red rel barra-pedir" href={pedir}>
             {tf.pedir}
           </a>
         </div>

@@ -14,6 +14,8 @@ export default defineConfig({
   // (504 "Outdated Optimize Dep") y no aparece el modelo.
   vite: {
     optimizeDeps: {
+      // Rehace la caché de dependencias en cada arranque: una caché vieja dejaba escenas sin cargar.
+      force: true,
       include: [
         'jspdf',
         'jspdf-autotable',
