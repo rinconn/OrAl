@@ -578,14 +578,14 @@ const tubos = familiasTubo
           </p>
           <p class="oem-txt">{td.oem}</p>
         </div>
-        <a class="btn red" href={ruta(lang, contacto.href)}>
+        <a class="btn red rel" href={ruta(lang, contacto.href)}>
           {t.cabecera.contacto}
         </a>
       </aside>
 
       <div class="vacio" hidden>
         <p>{f.vacio}</p>
-        <button type="button" class="btn red limpiar">
+        <button type="button" class="btn red rel limpiar">
           {f.limpiar}
         </button>
       </div>
@@ -600,7 +600,7 @@ const tubos = familiasTubo
       <button type="button" class="vaciar">
         {tc.vaciar}
       </button>
-      <button type="button" class="abrir-comparar" data-txt={tc.abrir(999)}></button>
+      <button type="button" class="abrir-comparar btn red rel" data-txt={tc.abrir(999)}></button>
     </div>
   </div>
 
@@ -627,7 +627,7 @@ const tubos = familiasTubo
           <textarea name="pres-com" rows="3" maxlength="600" placeholder={tp.comentarioEj}></textarea>
         </label>
       </div>
-      <a class="pres-pedir" href={`mailto:${contacto.comercial}`}>
+      <a class="pres-pedir btn red rel" href={`mailto:${contacto.comercial}`}>
         <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
           <path
             d="M3 6h18v12H3zM3 6l9 7 9-7"
@@ -656,7 +656,7 @@ const tubos = familiasTubo
         {tp.vaciar}
       </button>
     </div>
-    <button type="button" class="pres-abrir" aria-expanded="false" aria-controls="pres-panel">
+    <button type="button" class="pres-abrir btn red rel" aria-expanded="false" aria-controls="pres-panel">
       <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
         <path
           d="M7 3h7l5 5v13H7zM14 3v5h5M10 13h6M10 17h6"
@@ -709,7 +709,7 @@ const tubos = familiasTubo
           </svg>
           <span>{tc.compartir}</span>
         </button>
-        <button type="button" class="comp-presupuesto">
+        <button type="button" class="comp-presupuesto btn red rel">
           <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
             <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
           </svg>
@@ -2786,10 +2786,8 @@ const tubos = familiasTubo
     gap: 10px;
     height: 52px;
     padding: 0 20px 0 16px;
-    background: var(--red);
     color: #fff;
     font: 700 17px var(--f);
-    box-shadow: 0 18px 40px -16px rgba(17, 19, 21, 0.55);
     animation: sube-barra 0.45s var(--ease);
   }
   .pres-panel {
@@ -2971,7 +2969,6 @@ const tubos = familiasTubo
     gap: 10px;
     margin-top: 14px;
     padding: 14px 16px;
-    background: var(--red);
     color: #fff;
     font-size: 17px;
     font-weight: 700;
@@ -3006,10 +3003,6 @@ const tubos = familiasTubo
     outline-offset: 2px;
   }
   @media (hover: hover) and (pointer: fine) {
-    .pres-abrir:hover,
-    .pres-pedir:hover {
-      background: var(--red-d);
-    }
     .pres-lista :global(button:hover),
     .pres-cerrar:hover,
     .pres-vaciar:hover {
@@ -3126,17 +3119,21 @@ const tubos = familiasTubo
     font-size: 16px;
     font-weight: 700;
     color: #fff;
-    background: var(--red);
-    transition: background 0.25s var(--ease);
   }
   .abrir-comparar::after {
     content: ' »';
     font-weight: 300;
   }
-  .abrir-comparar:disabled {
+  /* Sin dos elegidas, gris y sin relieve ni haz de luz (`.btn.rel` lo pone en rojo) */
+  .abrir-comparar.btn.rel:disabled {
     background: var(--panel);
     color: #9aa0a5;
+    box-shadow: none;
+    translate: none;
     cursor: default;
+  }
+  .abrir-comparar.btn.rel:disabled::before {
+    display: none;
   }
   .barra-comparar button:focus-visible {
     outline-color: var(--red);
@@ -3415,16 +3412,13 @@ const tubos = familiasTubo
   }
   .comp-compartir {
     border: 1px solid var(--ink);
+    border-radius: 10px;
     background: #fff;
     color: var(--ink);
   }
   .comp-compartir.hecho {
     border-color: var(--red);
     color: var(--red);
-  }
-  .comp-presupuesto {
-    background: var(--red);
-    color: #fff;
   }
   .comp-acciones button:focus-visible {
     outline: 2px solid var(--red);
@@ -3436,9 +3430,6 @@ const tubos = familiasTubo
   @media (hover: hover) and (pointer: fine) {
     .comp-compartir:hover {
       background: var(--panel);
-    }
-    .comp-presupuesto:hover {
-      background: var(--red-d);
     }
     .cerrar-comp:hover {
       color: #fff;
@@ -3820,9 +3811,6 @@ const tubos = familiasTubo
   @media (hover: hover) {
     .comparar:hover:not(:has(input:checked, input:disabled)) .caja {
       border-color: var(--red);
-    }
-    .abrir-comparar:hover:not(:disabled) {
-      background: var(--red-d);
     }
     .vaciar:hover,
     .elegidas :global(button:hover) {
